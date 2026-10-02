@@ -1,0 +1,27 @@
+{
+  "name": "boveda-claves-jira",
+  "version": "1.0.0",
+  "description": "Boveda local de claves de Jira por empresa (Node.js + PostgreSQL)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "seed": "node seed_data.js",
+    "seed:notas": "node seed_notas.js",
+    "seed:jaivana": "node seed_jaivana.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "connect-pg-simple": "^9.0.1",
+    "dotenv": "^16.4.5",
+    "ejs": "^3.1.10",
+    "express": "^4.19.2",
+    "express-ejs-layouts": "^2.5.1",
+    "express-session": "^1.18.0",
+    "mammoth": "^1.13.0",
+    "multer": "^2.4.0",
+    "pdf-parse": "^2.4.5",
+    "pdfkit": "^0.20.2",
+    "pg": "^8.12.0",
+    "xlsx": "^0.18.5"
+  }
+}

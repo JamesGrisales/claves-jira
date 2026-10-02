@@ -1,0 +1,619 @@
+<style>
+  .top{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:6px; }
+  .top h1{ margin:0; }
+  .top .acciones{ display:flex; gap:8px; flex-wrap:wrap; }
+  .top .acciones button{ padding:9px 15px; font-size:13.5px; }
+
+  .inf-grid{ display:grid; grid-template-columns:minmax(380px, 560px) minmax(0, 1fr); gap:18px; align-items:start; }
+  @media (max-width: 1000px){ .inf-grid{ grid-template-columns:1fr; } }
+
+  .bloque{ padding:16px 18px; margin-bottom:14px; }
+  .bloque h2{ font-size:14px; margin:0 0 12px; display:flex; align-items:center; gap:8px; }
+  .bloque h2 .n{ display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border-radius:50%; background:var(--accent-soft); color:var(--accent-dark); font-size:12px; font-weight:800; }
+
+  .campo{ display:flex; flex-direction:column; gap:5px; margin-bottom:10px; min-width:0; }
+  .campo > span{ font-size:11px; font-weight:700; color:var(--muted); letter-spacing:.03em; text-transform:uppercase; }
+  .campo input, .campo select, .fila input, .fila select{
+    background:var(--panel-alt); border:1px solid var(--panel-edge); color:var(--text); font-family:var(--sans);
+    font-size:13.5px; padding:8px 10px; border-radius:8px; outline:none; width:100%; min-width:0; box-sizing:border-box;
+  }
+  .campo textarea{ background:var(--panel-alt); border:1px solid var(--panel-edge); color:var(--text); font-family:var(--sans); font-size:13.5px; line-height:1.45;
+    padding:9px 10px; border-radius:8px; outline:none; width:100%; min-height:96px; resize:vertical; box-sizing:border-box; }
+  .campo textarea:focus{ border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft); }
+  .obs-pie{ display:flex; justify-content:space-between; gap:10px; font-size:12px; color:var(--muted); margin-top:-2px; }
+  .campo input:focus, .campo select:focus, .fila input:focus{ border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft); }
+  .dos{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .con-btn{ display:flex; gap:6px; }
+  .con-btn button{ padding:0 10px; font-size:12px; white-space:nowrap; }
+
+  .cab{ display:grid; grid-template-columns:1.3fr 60px 60px 60px 1.1fr 30px; gap:6px; font-size:10.5px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.03em; margin-bottom:5px; padding:0 2px; }
+  .fila{ display:grid; grid-template-columns:1.3fr 60px 60px 60px 1.1fr 30px; gap:6px; margin-bottom:6px; align-items:center; }
+  .fila input{ padding:7px 8px; font-size:13px; }
+  .fila input.num{ text-align:center; padding-left:2px; padding-right:2px; }
+  .fila .x{ padding:0; height:30px; width:30px; font-size:14px; line-height:1; }
+  .agregar{ margin-top:6px; padding:8px 13px; font-size:13px; }
+
+
+  .combo{ position:relative; min-width:0; }
+  .fila .combo input{ padding-right:22px; }
+  .fila .combo .chev{ position:absolute; right:2px; top:2px; bottom:2px; width:20px; height:auto; padding:0; border:none; border-radius:6px;
+    background:transparent; color:var(--muted); box-shadow:none; font-size:10px; line-height:1; transform:none; filter:none; }
+  .fila .combo .chev:hover{ background:var(--accent-soft); color:var(--accent-dark); transform:none; box-shadow:none; filter:none; }
+  #combo{ position:fixed; z-index:60; display:none; background:var(--panel); border:1px solid var(--panel-edge); border-radius:10px;
+    box-shadow:0 10px 30px rgba(0,0,0,.22); max-height:260px; overflow:auto; padding:4px; font-size:13px; }
+  #combo .enc{ padding:5px 10px 3px; font-size:10.5px; color:var(--muted); font-weight:700; text-transform:uppercase; letter-spacing:.03em; }
+  #combo .opt{ padding:7px 10px; border-radius:7px; cursor:pointer; display:flex; justify-content:space-between; gap:10px; color:var(--text); }
+  #combo .opt:hover, #combo .opt.act{ background:var(--accent-soft); color:var(--accent-dark); }
+  #combo .opt.sel{ font-weight:700; }
+  #combo .opt.usada{ color:var(--muted); }
+  #combo .opt small{ font-size:11px; flex-shrink:0; opacity:.85; }
+  #combo .vacio{ padding:9px 10px; color:var(--muted); font-size:12.5px; }
+  .fila .combo .chev{ display:none; }
+  #filas.con-lista .combo .chev{ display:block; }
+  .botones-emp{ display:flex; gap:8px; flex-wrap:wrap; margin-top:6px; }
+  .botones-emp .agregar{ margin-top:0; }
+  .modal{ position:fixed; inset:0; z-index:70; display:none; align-items:center; justify-content:center; padding:16px; background:rgba(8,12,22,.55); }
+  .modal-box{ width:min(520px, 100%); max-height:88vh; display:flex; flex-direction:column; gap:10px; background:var(--panel); border:1px solid var(--panel-edge); border-radius:14px; padding:16px 18px; box-shadow:0 20px 50px rgba(0,0,0,.35); }
+  .modal-box h3{ margin:0; font-size:15px; }
+  .modal-box input[type=text]{ width:100%; box-sizing:border-box; background:var(--panel-alt); border:1px solid var(--panel-edge); color:var(--text); font-family:var(--sans); font-size:13.5px; padding:8px 10px; border-radius:8px; outline:none; }
+  .modal-box input[type=text]:focus{ border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft); }
+  .pk-tools{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .pk-tools button{ padding:6px 11px; font-size:12.5px; }
+  .pk-tools .cnt{ margin-left:auto; font-size:12px; color:var(--muted); }
+  .pk-list{ overflow:auto; min-height:120px; max-height:48vh; border:1px solid var(--panel-edge); border-radius:10px; padding:4px; }
+  .pk-item{ display:flex; align-items:center; gap:9px; padding:7px 9px; border-radius:7px; cursor:pointer; font-size:13px; margin:0; text-transform:none; letter-spacing:0; font-weight:500; color:var(--text); }
+  .pk-item:hover{ background:var(--accent-soft); }
+  .pk-item input{ width:auto; margin:0; accent-color:var(--accent); }
+  .pk-item.usada{ color:var(--muted); cursor:default; }
+  .pk-item.usada:hover{ background:transparent; }
+  .pk-item small{ margin-left:auto; font-size:11px; }
+  .pk-vacio{ padding:14px; text-align:center; color:var(--muted); font-size:12.5px; }
+  .pk-foot{ display:flex; gap:8px; justify-content:flex-end; }
+  .pk-foot button{ padding:8px 14px; font-size:13px; }
+  .ayuda-emp{ font-size:12px; color:var(--muted); margin:8px 0 0; }
+  .ayuda-emp.mal{ color:var(--danger); font-weight:600; }
+  .auto{ display:flex; align-items:center; gap:7px; margin-top:2px; font-size:12px; font-weight:600; color:var(--muted); text-transform:none; letter-spacing:0; cursor:pointer; }
+  .auto input{ width:auto !important; padding:0 !important; margin:0; accent-color:var(--accent); cursor:pointer; }
+  .campo input[readonly]{ background:var(--accent-soft); border-color:var(--accent); color:var(--accent-dark); font-weight:700; cursor:default; }
+  .auto-info{ font-size:12px; color:var(--muted); margin:-2px 0 12px; line-height:1.45; }
+  .auto-info.ok{ color:var(--accent-dark); }
+  .auto-info.viejo{ color:#8a5300; font-weight:600; }
+  :root[data-theme="dark"] .auto-info.viejo{ color:#ffc46b; }
+  .auto-info a{ color:var(--accent-dark); font-weight:700; }
+  .estado{ font-size:12.5px; color:var(--muted); min-height:18px; margin:0 0 8px; }
+  .estado.mal{ color:var(--danger); font-weight:600; }
+  .vista{ position:sticky; top:10px; }
+  .vista iframe{ width:100%; height:calc(100vh - 150px); min-height:560px; border:1px solid var(--panel-edge); border-radius:10px; background:#e9edf3; }
+  .nota{ font-size:12px; color:var(--muted); margin-top:8px; }
+  .nota a{ color:var(--accent-dark); font-weight:600; }
+
+  .toast{ position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(10px) scale(.96); background:linear-gradient(135deg, var(--accent), var(--accent-dark)); color:#fff; font-size:13px; font-weight:600; padding:9px 18px; border-radius:8px; opacity:0; pointer-events:none; transition:opacity .18s ease, transform .18s ease; z-index:50; }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0) scale(1); }
+</style>
+
+<div class="top">
+  <h1>Informe diario</h1>
+  <div class="acciones">
+    <button type="button" class="secondary" id="btnEjemplo" title="Vuelve a los datos del informe de ejemplo">Restablecer</button>
+    <button type="button" id="btnDescargar">⬇ Descargar PDF</button>
+  </div>
+</div>
+<p class="sub">Formato diario de reporte de envío de documentos electrónicos. Cambia la fecha, la hora y los demás campos; la vista previa es el PDF real y se descarga idéntica al formato del Word.</p>
+
+<div class="inf-grid">
+  <div>
+    <div class="card bloque">
+      <h2>Datos del reporte</h2>
+      <label class="campo"><span>Título</span><input type="text" id="titulo" maxlength="200"></label>
+      <label class="campo"><span>Técnico responsable</span><input type="text" id="tecnico" maxlength="120"></label>
+      <div class="dos">
+        <label class="campo"><span>Fecha del reporte</span>
+          <div class="con-btn"><input type="date" id="fecha"><button type="button" class="secondary" id="btnHoy" title="Poner la fecha y la hora actuales">Ahora</button></div>
+        </label>
+        <label class="campo"><span>Hora</span><input type="time" id="hora"></label>
+      </div>
+      <label class="campo"><span>Cómo se escribe la hora</span>
+        <select id="horaFormato">
+          <option value="word">17:40pm (igual que el Word)</option>
+          <option value="12h">5:40 pm</option>
+          <option value="24h">17:40</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="card bloque">
+      <h2><span class="n">1</span> Detalles por empresa</h2>
+      <div class="cab"><span>Empresa</span><span>Envia.</span><span>Pend.</span><span>Rech.</span><span>Observaciones</span><span></span></div>
+      <div id="filas"></div>
+      <div class="botones-emp">
+        <button type="button" class="secondary agregar" id="btnAgregar">+ Agregar empresa</button>
+        <button type="button" class="secondary agregar" id="btnPicker" title="Marca varias empresas de la lista y se agregan de una vez">☰ Elegir varias de la lista</button>
+      </div>
+      <p class="ayuda-emp" id="ayudaEmp"></p>
+    </div>
+
+    <div class="card bloque">
+      <h2>Observaciones</h2>
+      <div class="campo">
+        <textarea id="observaciones" maxlength="3000" placeholder="Escribe aquí cualquier observación adicional del día…"></textarea>
+        <div class="obs-pie"><span>Sale en el PDF debajo de la tabla. Si lo dejas vacío, no aparece.</span><span id="obsCnt">0 / 3000</span></div>
+      </div>
+    </div>
+
+    <div class="card bloque">
+      <h2><span class="n">2</span> ¿Se generó ticket en mesa de ayuda?</h2>
+      <div class="dos">
+        <label class="campo"><span>Respuesta</span>
+          <select id="ticket"><option value="Si">Si</option><option value="No">No</option></select>
+        </label>
+        <label class="campo"><span>Número del ticket</span><input type="text" id="numeroTicket" maxlength="60"></label>
+      </div>
+    </div>
+
+    <div class="card bloque">
+      <h2><span class="n">3</span> Resumen diario</h2>
+      <div class="campo"><span>Total de empresas revisadas</span>
+        <input type="text" id="r_empresas" maxlength="40">
+        <label class="auto"><input type="checkbox" id="a_empresas" checked> Automático (desde Aceptados)</label>
+      </div>
+      <div class="campo"><span>Total de documentos aceptadas</span>
+        <input type="text" id="r_aceptados" maxlength="40">
+        <label class="auto"><input type="checkbox" id="a_aceptados" checked> Automático (desde Aceptados)</label>
+      </div>
+      <p class="auto-info" id="autoInfo"></p>
+      <label class="campo"><span>Total de documentos pendientes</span><input type="text" id="r_pendientes" maxlength="40"></label>
+      <label class="campo"><span>Total de casos escalados a infraestructura</span><input type="text" id="r_escalados" maxlength="40"></label>
+      <label class="campo"><span>Tickets generados para automatización</span><input type="text" id="r_tickets" maxlength="40"></label>
+    </div>
+  </div>
+
+  <div class="vista">
+    <p class="estado" id="estado">Generando vista previa…</p>
+    <iframe id="marco" title="Vista previa del informe en PDF"></iframe>
+    <p class="nota">Si tu navegador no muestra la vista previa (pasa en algunos celulares), usa <a href="#" id="abrirNueva">abrir en una pestaña nueva</a> o descarga el PDF.</p>
+  </div>
+</div>
+
+<script type="application/json" id="empresas-data"><%- JSON.stringify({ empresas: (typeof empresas !== 'undefined' ? empresas : []), error: !!(typeof empresasError !== 'undefined' && empresasError) }).replace(/</g, '\\u003c') %></script>
+<div class="modal" id="picker" role="dialog" aria-modal="true" aria-label="Elegir empresas">
+  <div class="modal-box">
+    <h3>Elegir empresas de la lista</h3>
+    <input type="text" id="pkBuscar" placeholder="Buscar empresa…" autocomplete="off">
+    <div class="pk-tools">
+      <button type="button" class="secondary" id="pkTodas">Marcar las visibles</button>
+      <button type="button" class="secondary" id="pkNinguna">Quitar marcas</button>
+      <span class="cnt" id="pkCnt"></span>
+    </div>
+    <div class="pk-list" id="pkList"></div>
+    <div class="pk-foot">
+      <button type="button" class="secondary" id="pkCancelar">Cancelar</button>
+      <button type="button" id="pkAgregar">Agregar</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+'use strict';
+
+var $ = function(id){ return document.getElementById(id); };
+var KEY = 'boveda-informe-v1';
+
+function pad(n){ return (n < 10 ? '0' : '') + n; }
+function hoy(){ var d = new Date(); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+function ahora(){ var d = new Date(); return pad(d.getHours()) + ':' + pad(d.getMinutes()); }
+
+function ejemplo(){
+  return {
+    titulo: 'FORMATO DIARIO DE REPORTE DE ENVÍO DE DOCUMENTOS ELECTRÓNICOS',
+    tecnico: 'John James Grisales',
+    fecha: hoy(), hora: ahora(), horaFormato: 'word',
+    filas: [
+      ['AUTOSERVICIO LA PRIMAVERA', '102', '0', '0', 'FIRMA ELECTRONICA'],
+      ['UNOA SUPIA', '1', '0', '0', 'FECHA'],
+      ['INSERCOM', '34', '0', '0', 'SERVICIO'],
+      ['', '', '', '', ''],
+      ['', '', '', '', '']
+    ],
+    observaciones: '',
+    ticket: 'Si', numeroTicket: '',
+    resumen: { empresas: '46', aceptados: '9599', pendientes: '0', escalados: '0', tickets: '0' },
+    auto: { empresas: true, aceptados: true }
+  };
+}
+
+var toastT;
+function toast(msg){
+  var t = $('toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastT); toastT = setTimeout(function(){ t.classList.remove('show'); }, 1800);
+}
+
+var EMPRESAS = [], errorLista = false;
+try { var inicialData = JSON.parse($('empresas-data').textContent) || {}; EMPRESAS = inicialData.empresas || []; errorLista = !!inicialData.error; } catch (e) { EMPRESAS = []; }
+
+/* ---------- desplegable de empresas (buscador + lista) ---------- */
+function norm(t){ return String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim(); }
+var panel = document.createElement('div'); panel.id = 'combo'; document.body.appendChild(panel);
+var comboInput = null, comboFiltrar = false, activo = -1, visibles = [], sinAbrir = false;
+
+function usadasEnTabla(excluir){
+  var u = {};
+  [].forEach.call($('filas').querySelectorAll('input.emp'), function(i){ if (i !== excluir && norm(i.value)) u[norm(i.value)] = 1; });
+  return u;
+}
+function posicionarCombo(){
+  if (!comboInput) return;
+  var r = comboInput.getBoundingClientRect(), ancho = Math.max(r.width, 280);
+  var left = Math.max(8, Math.min(r.left, window.innerWidth - ancho - 8));
+  panel.style.width = ancho + 'px'; panel.style.left = left + 'px';
+  var alto = panel.offsetHeight, top = r.bottom + 4;
+  if (top + alto > window.innerHeight - 8 && r.top - alto - 4 > 8) top = r.top - alto - 4;
+  panel.style.top = top + 'px';
+}
+function marcarActivo(){
+  var ops = panel.querySelectorAll('.opt');
+  for (var i = 0; i < ops.length; i++) ops[i].classList.toggle('act', i === activo);
+  if (activo >= 0 && ops[activo]) ops[activo].scrollIntoView({ block: 'nearest' });
+}
+function abrirCombo(inp, filtrar){
+  refrescarEmpresas();
+  if (!EMPRESAS.length) return;
+  comboInput = inp; comboFiltrar = filtrar;
+  var q = filtrar ? norm(inp.value) : '', actual = norm(inp.value), usadas = usadasEnTabla(inp);
+  visibles = EMPRESAS.filter(function(e){ return !q || norm(e).indexOf(q) >= 0; });
+  panel.innerHTML = '';
+  if (!visibles.length) {
+    panel.innerHTML = '<div class="vacio">Sin coincidencias: se usará lo que escribiste.</div>';
+  } else {
+    var enc = document.createElement('div'); enc.className = 'enc';
+    enc.textContent = q ? visibles.length + ' de ' + EMPRESAS.length + ' empresas' : EMPRESAS.length + ' empresas';
+    panel.appendChild(enc);
+    visibles.forEach(function(e){
+      var d = document.createElement('div');
+      var ya = usadas[norm(e)];
+      d.className = 'opt' + (ya ? ' usada' : '') + (norm(e) === actual ? ' sel' : '');
+      var t = document.createElement('span'); t.textContent = e; d.appendChild(t);
+      if (ya) { var sm = document.createElement('small'); sm.textContent = '✓ ya está'; d.appendChild(sm); }
+      d.addEventListener('mousedown', function(ev){ ev.preventDefault(); elegirEmpresa(e); });
+      panel.appendChild(d);
+    });
+  }
+  activo = -1;
+  panel.style.display = 'block'; posicionarCombo();
+  var sel = panel.querySelector('.opt.sel'); if (sel) sel.scrollIntoView({ block: 'nearest' });
+}
+function cerrarCombo(){ panel.style.display = 'none'; comboInput = null; activo = -1; }
+function elegirEmpresa(nombre){
+  var inp = comboInput; if (!inp) return;
+  inp.value = nombre;
+  sinAbrir = true; inp.dispatchEvent(new Event('input', { bubbles: true })); sinAbrir = false;
+  cerrarCombo();
+  var sig = inp.closest('.fila').querySelector('input[data-c="1"]');
+  if (sig) { sig.focus(); sig.select(); }
+}
+
+$('filas').addEventListener('focusin', function(e){ if (e.target.classList.contains('emp')) abrirCombo(e.target, false); });
+$('filas').addEventListener('input', function(e){ if (e.target.classList.contains('emp') && !sinAbrir) abrirCombo(e.target, true); });
+$('filas').addEventListener('focusout', function(e){ if (e.target.classList.contains('emp')) setTimeout(function(){ if (comboInput === e.target) cerrarCombo(); }, 120); });
+$('filas').addEventListener('keydown', function(e){
+  if (!e.target.classList.contains('emp')) return;
+  var abierto = panel.style.display === 'block';
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+    e.preventDefault();
+    if (!abierto) { abrirCombo(e.target, false); return; }
+    var n = visibles.length; if (!n) return;
+    activo = e.key === 'ArrowDown' ? Math.min(n - 1, activo + 1) : Math.max(0, activo - 1);
+    marcarActivo();
+  } else if (e.key === 'Enter' && abierto && activo >= 0 && visibles[activo]) {
+    e.preventDefault(); elegirEmpresa(visibles[activo]);
+  } else if (e.key === 'Escape' && abierto) { e.preventDefault(); cerrarCombo(); }
+  else if (e.key === 'Tab') cerrarCombo();
+});
+window.addEventListener('resize', posicionarCombo);
+window.addEventListener('scroll', function(e){ if (e.target !== panel && panel.style.display === 'block') cerrarCombo(); }, true);
+
+/* ---------- totales automáticos desde la pestaña Aceptados ---------- */
+var KEY_ACEPT = 'boveda-aceptados-resumen';
+function leerAceptados(){
+  try { var r = JSON.parse(localStorage.getItem(KEY_ACEPT) || 'null'); return r && typeof r === 'object' ? r : null; }
+  catch (e) { return null; }
+}
+function hace(ms){
+  var min = Math.max(0, Math.round((Date.now() - ms) / 60000));
+  if (min < 1) return 'hace un momento';
+  if (min < 60) return 'hace ' + min + ' min';
+  var h = Math.floor(min / 60);
+  if (h < 48) return 'hace ' + h + ' h';
+  return 'hace ' + Math.floor(h / 24) + ' días';
+}
+function aplicarAuto(){
+  var r = leerAceptados(), info = $('autoInfo');
+  ['empresas', 'aceptados'].forEach(function(k){
+    var cb = $('a_' + k), inp = $('r_' + k);
+    cb.disabled = !r;
+    if (r && cb.checked) { inp.value = String(r[k]); inp.readOnly = true; }
+    else inp.readOnly = false;
+  });
+  if (!r) {
+    info.className = 'auto-info';
+    info.innerHTML = 'Todavía no hay datos en <a href="/aceptados">Aceptados</a>. Pega allí la tabla del dashboard y estos dos campos se llenan solos; mientras tanto puedes escribirlos.';
+    return;
+  }
+  var viejo = Date.now() - (r.pegado || 0) > 864e5;
+  info.className = 'auto-info ' + (viejo ? 'viejo' : 'ok');
+  info.innerHTML = 'Desde <a href="/aceptados">Aceptados</a>: <strong>' + r.empresas + '</strong> empresas · <strong>' +
+    Number(r.aceptados).toLocaleString('es-CO') + '</strong> ' + String(r.columna || 'aceptados').toLowerCase().replace(/[<>&]/g, '') +
+    ' · pegado ' + hace(r.pegado || Date.now()) + (viejo ? ' ⚠ parecen datos de otro día: vuelve a pegar la tabla en Aceptados.' : '.');
+}
+function refrescarAuto(){
+  var antes = $('r_empresas').value + '|' + $('r_aceptados').value;
+  aplicarAuto();
+  if (antes !== $('r_empresas').value + '|' + $('r_aceptados').value) cambio();
+}
+
+/* ---------- la lista se mantiene al día con la tabla de empresas ---------- */
+var ultimaCarga = Date.now(), cargando = null;
+function estadoLista(){
+  $('filas').classList.toggle('con-lista', EMPRESAS.length > 0);
+  var a = $('ayudaEmp');
+  if (EMPRESAS.length) {
+    a.className = 'ayuda-emp';
+    a.textContent = 'Elige entre las ' + EMPRESAS.length + ' empresas de la bóveda o escribe para buscar. Si agregas una nueva en Empresas, aparece aquí sola. También puedes escribir una que no esté en la lista.';
+  } else if (errorLista) {
+    a.className = 'ayuda-emp mal';
+    a.textContent = 'No se pudo leer la tabla de empresas: escribe los nombres a mano.';
+  } else {
+    a.className = 'ayuda-emp';
+    a.textContent = 'Todavía no hay empresas en la bóveda. Agrégalas en Empresas y aparecerán aquí.';
+  }
+  $('btnPicker').disabled = !EMPRESAS.length;
+}
+function refrescarEmpresas(forzar){
+  if (cargando) return cargando;
+  if (!forzar && Date.now() - ultimaCarga < 4000) return Promise.resolve(false);
+  cargando = fetch('/informe/empresas', { credentials: 'same-origin', cache: 'no-store' }).then(function(r){
+    if (!r.ok) throw new Error('http');
+    return r.json();
+  }).then(function(j){
+    if (!Array.isArray(j.empresas)) throw new Error('formato');
+    ultimaCarga = Date.now(); errorLista = false;
+    var distinta = JSON.stringify(j.empresas) !== JSON.stringify(EMPRESAS);
+    EMPRESAS = j.empresas; estadoLista();
+    if (distinta) {
+      if (comboInput && panel.style.display === 'block') abrirCombo(comboInput, comboFiltrar);
+      else if (document.activeElement && document.activeElement.classList && document.activeElement.classList.contains('emp') && panel.style.display !== 'block') abrirCombo(document.activeElement, false);
+      if ($('picker').style.display === 'flex') pintarPicker();
+    }
+    return distinta;
+  }).catch(function(){ ultimaCarga = Date.now(); if (!EMPRESAS.length) { errorLista = true; estadoLista(); } return false; })
+    .then(function(v){ cargando = null; return v; });
+  return cargando;
+}
+window.addEventListener('focus', function(){ refrescarEmpresas(); });
+document.addEventListener('visibilitychange', function(){ if (!document.hidden) refrescarEmpresas(); });
+
+/* ---------- elegir varias empresas de la lista ---------- */
+var seleccion = {};
+function pintarPicker(){
+  var q = norm($('pkBuscar').value), usadas = usadasEnTabla(null), lista = $('pkList');
+  lista.innerHTML = '';
+  var visiblesPk = EMPRESAS.filter(function(e){ return !q || norm(e).indexOf(q) >= 0; });
+  visiblesPk.forEach(function(e){
+    var ya = usadas[norm(e)];
+    var lb = document.createElement('label'); lb.className = 'pk-item' + (ya ? ' usada' : '');
+    var cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = !!ya || !!seleccion[e]; cb.disabled = !!ya; cb._nombre = e;
+    var t = document.createElement('span'); t.textContent = e;
+    lb.appendChild(cb); lb.appendChild(t);
+    if (ya) { var sm = document.createElement('small'); sm.textContent = '✓ ya está en la tabla'; lb.appendChild(sm); }
+    lista.appendChild(lb);
+  });
+  if (!visiblesPk.length) lista.innerHTML = '<div class="pk-vacio">Ninguna empresa coincide con la búsqueda.</div>';
+  contarPicker();
+}
+function contarPicker(){
+  var usadas = usadasEnTabla(null), n = 0;
+  for (var k in seleccion) if (seleccion[k] && !usadas[norm(k)]) n++;
+  $('pkCnt').textContent = n + (n === 1 ? ' marcada' : ' marcadas');
+  $('pkAgregar').textContent = n ? 'Agregar ' + n : 'Agregar';
+  $('pkAgregar').disabled = !n;
+}
+function abrirPicker(){
+  if (!EMPRESAS.length) { toast('Todavía no hay empresas en la lista'); return; }
+  seleccion = {}; $('pkBuscar').value = ''; pintarPicker();
+  $('picker').style.display = 'flex'; $('pkBuscar').focus();
+  refrescarEmpresas(true);
+}
+function cerrarPicker(){ $('picker').style.display = 'none'; }
+$('btnPicker').addEventListener('click', abrirPicker);
+$('pkCancelar').addEventListener('click', cerrarPicker);
+$('picker').addEventListener('mousedown', function(e){ if (e.target === this) cerrarPicker(); });
+$('pkBuscar').addEventListener('input', pintarPicker);
+// Marcar no reconstruye la lista: así no se pierde la posición del scroll
+$('pkList').addEventListener('change', function(e){
+  if (e.target && e.target._nombre) seleccion[e.target._nombre] = e.target.checked;
+  contarPicker();
+});
+$('pkTodas').addEventListener('click', function(){
+  [].forEach.call($('pkList').querySelectorAll('input'), function(c){ if (!c.disabled) { c.checked = true; seleccion[c._nombre] = true; } });
+  contarPicker();
+});
+$('pkNinguna').addEventListener('click', function(){
+  seleccion = {};
+  [].forEach.call($('pkList').querySelectorAll('input'), function(c){ if (!c.disabled) c.checked = false; });
+  contarPicker();
+});
+document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && $('picker').style.display === 'flex') cerrarPicker(); });
+$('pkAgregar').addEventListener('click', function(){
+  var usadas = usadasEnTabla(null);
+  var nombres = EMPRESAS.filter(function(e){ return seleccion[e] && !usadas[norm(e)]; });
+  if (!nombres.length) return;
+  var filas = [].slice.call($('filas').children);
+  var vacias = filas.filter(function(f){ return [].every.call(f.querySelectorAll('input'), function(i){ return !i.value.trim(); }); });
+  nombres.forEach(function(nombre){
+    var f = vacias.shift();
+    if (!f) { f = crearFila(['', '', '', '', '']); $('filas').appendChild(f); }
+    f.querySelector('input.emp').value = nombre;
+  });
+  cerrarPicker(); cambio();
+  toast(nombres.length === 1 ? '1 empresa agregada' : nombres.length + ' empresas agregadas');
+});
+
+/* ---------- filas de la tabla ---------- */
+function crearFila(datos){
+  var f = document.createElement('div'); f.className = 'fila';
+  var ph = ['Empresa', '0', '0', '0', 'Observación'];
+  for (var i = 0; i < 5; i++) {
+    var inp = document.createElement('input');
+    inp.type = 'text'; inp.maxLength = 120; inp.placeholder = ph[i]; inp.value = datos[i] || '';
+    inp.setAttribute('data-c', i);
+    if (i >= 1 && i <= 3) inp.className = 'num';
+    if (i === 0) {
+      inp.classList.add('emp'); inp.autocomplete = 'off'; inp.placeholder = 'Elige o escribe…';
+      var caja = document.createElement('div'); caja.className = 'combo';
+      var chev = document.createElement('button');
+      chev.type = 'button'; chev.className = 'chev'; chev.tabIndex = -1; chev.textContent = '▼'; chev.title = 'Ver empresas';
+      chev.addEventListener('mousedown', function(ev){
+        ev.preventDefault();
+        var el = this.parentNode.querySelector('input');
+        if (panel.style.display === 'block' && comboInput === el) cerrarCombo();
+        else { el.focus(); abrirCombo(el, false); }
+      });
+      caja.appendChild(inp); caja.appendChild(chev); f.appendChild(caja);
+    } else {
+      f.appendChild(inp);
+    }
+  }
+  var x = document.createElement('button');
+  x.type = 'button'; x.className = 'secondary x'; x.textContent = '✕'; x.title = 'Quitar esta fila';
+  x.addEventListener('click', function(){ f.remove(); cambio(); });
+  f.appendChild(x);
+  return f;
+}
+function pintarFilas(filas){
+  var cont = $('filas'); cont.innerHTML = '';
+  (filas || []).forEach(function(r){ cont.appendChild(crearFila(r)); });
+}
+
+/* ---------- leer / pintar el formulario ---------- */
+function leer(){
+  var filas = [].map.call($('filas').children, function(f){
+    return [].map.call(f.querySelectorAll('input'), function(i){ return i.value; });
+  });
+  return {
+    titulo: $('titulo').value, tecnico: $('tecnico').value,
+    fecha: $('fecha').value, hora: $('hora').value, horaFormato: $('horaFormato').value,
+    filas: filas,
+    observaciones: $('observaciones').value,
+    ticket: $('ticket').value, numeroTicket: $('numeroTicket').value,
+    resumen: {
+      empresas: $('r_empresas').value, aceptados: $('r_aceptados').value, pendientes: $('r_pendientes').value,
+      escalados: $('r_escalados').value, tickets: $('r_tickets').value
+    },
+    auto: { empresas: $('a_empresas').checked, aceptados: $('a_aceptados').checked }
+  };
+}
+function pintar(d){
+  $('titulo').value = d.titulo; $('tecnico').value = d.tecnico;
+  $('fecha').value = d.fecha; $('hora').value = d.hora; $('horaFormato').value = d.horaFormato || 'word';
+  pintarFilas(d.filas);
+  $('observaciones').value = d.observaciones || ''; contarObs();
+  $('ticket').value = d.ticket === 'No' ? 'No' : 'Si'; $('numeroTicket').value = d.numeroTicket || '';
+  var r = d.resumen || {};
+  $('r_empresas').value = r.empresas || ''; $('r_aceptados').value = r.aceptados || '';
+  $('r_pendientes').value = r.pendientes || ''; $('r_escalados').value = r.escalados || ''; $('r_tickets').value = r.tickets || '';
+  var au = d.auto || {};
+  $('a_empresas').checked = au.empresas !== false; $('a_aceptados').checked = au.aceptados !== false;
+  aplicarAuto();
+}
+
+function contarObs(){ $('obsCnt').textContent = $('observaciones').value.length + ' / 3000'; }
+function guardar(){ try { localStorage.setItem(KEY, JSON.stringify(leer())); } catch (e) {} }
+
+/* ---------- vista previa (es el PDF real) ---------- */
+var ctrl = null, urlActual = null, temporizador;
+function estado(msg, mal){ var e = $('estado'); e.textContent = msg || ''; e.className = 'estado' + (mal ? ' mal' : ''); }
+
+function pedirPdf(descargar, senal){
+  return fetch('/informe/pdf' + (descargar ? '?descargar=1' : ''), {
+    method: 'POST', credentials: 'same-origin', signal: senal,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(leer())
+  }).then(function(r){
+    var tipo = r.headers.get('content-type') || '';
+    if (!r.ok || tipo.indexOf('pdf') < 0) throw new Error('No se pudo generar el PDF. Si tu sesión venció, recarga la página.');
+    return r.blob();
+  });
+}
+
+function vistaPrevia(){
+  if (ctrl) ctrl.abort();
+  ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+  estado('Actualizando vista previa…');
+  pedirPdf(false, ctrl ? ctrl.signal : undefined).then(function(blob){
+    if (urlActual) URL.revokeObjectURL(urlActual);
+    urlActual = URL.createObjectURL(blob);
+    $('marco').src = urlActual + '#toolbar=0&navpanes=0&view=FitH';
+    estado('');
+  }).catch(function(e){ if (e && e.name === 'AbortError') return; estado(e.message || 'Error al generar el PDF', true); });
+}
+
+function cambio(){ guardar(); clearTimeout(temporizador); temporizador = setTimeout(vistaPrevia, 600); }
+
+/* ---------- eventos ---------- */
+$('observaciones').addEventListener('input', contarObs);
+document.querySelector('.inf-grid').addEventListener('input', cambio);
+document.querySelector('.inf-grid').addEventListener('change', cambio);
+
+$('btnAgregar').addEventListener('click', function(){
+  var f = crearFila(['', '', '', '', '']); $('filas').appendChild(f);
+  f.querySelector('input').focus(); cambio();
+});
+$('btnHoy').addEventListener('click', function(){ $('fecha').value = hoy(); $('hora').value = ahora(); cambio(); });
+$('btnEjemplo').addEventListener('click', function(){
+  if (!confirm('¿Volver a los datos del informe de ejemplo? Se pierde lo que tienes escrito.')) return;
+  pintar(ejemplo()); cambio(); toast('Datos restablecidos');
+});
+
+$('btnDescargar').addEventListener('click', function(){
+  var btn = this; btn.disabled = true;
+  pedirPdf(true).then(function(blob){
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'INFORME_DOCUMENTOS_ELECTRONICOS_' + ($('fecha').value || hoy()) + '.pdf';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(a.href); }, 2000);
+    toast('PDF descargado');
+  }).catch(function(e){ toast(e.message || 'Error al descargar'); })
+    .then(function(){ btn.disabled = false; });
+});
+
+$('abrirNueva').addEventListener('click', function(ev){
+  ev.preventDefault();
+  if (urlActual) window.open(urlActual, '_blank'); else toast('Espera a que se genere la vista previa');
+});
+
+$('a_empresas').addEventListener('change', aplicarAuto);
+$('a_aceptados').addEventListener('change', aplicarAuto);
+window.addEventListener('storage', function(e){ if (e.key === KEY_ACEPT) refrescarAuto(); });
+window.addEventListener('focus', refrescarAuto);
+document.addEventListener('visibilitychange', function(){ if (!document.hidden) refrescarAuto(); });
+
+/* ---------- arranque ---------- */
+var inicial = ejemplo();
+try {
+  var g = JSON.parse(localStorage.getItem(KEY) || 'null');
+  if (g && typeof g === 'object') {
+    inicial = Object.assign(inicial, g);
+    // si el borrador es de otro día, la fecha y la hora vuelven a ser las de hoy
+    if (g.fecha !== hoy()) { inicial.fecha = hoy(); inicial.hora = ahora(); }
+    if (!Array.isArray(inicial.filas)) inicial.filas = ejemplo().filas;
+  }
+} catch (e) {}
+pintar(inicial);
+estadoLista();
+if (errorLista || !EMPRESAS.length) refrescarEmpresas(true);
+vistaPrevia();
+
+})();
+</script>

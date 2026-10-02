@@ -1,0 +1,83 @@
+<div class="auth">
+  <aside class="auth-side">
+    <div class="auth-brand"><span class="badge">🔐</span> Bóveda Jira</div>
+    <h2><%= primero ? 'Empecemos: crea tu primer usuario.' : 'Da acceso a otra persona.' %></h2>
+    <p>
+      <% if (primero) { %>
+        Aún no existe ningún usuario en esta bóveda. Crea el tuyo para poder entrar.
+      <% } else { %>
+        Puedes crear otro usuario con su propio acceso a la bóveda.
+      <% } %>
+    </p>
+    <ul class="auth-points">
+      <li><span class="ico"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span><div><b>1. Elige un usuario</b><span>El nombre con el que se entra a la bóveda.</span></div></li>
+      <li><span class="ico"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span><div><b>2. Crea una contraseña</b><span>Mínimo 6 caracteres; mientras más larga, más segura.</span></div></li>
+      <li><span class="ico"><svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span><div><b>3. Confírmala</b><span>Escríbela otra vez para evitar errores.</span></div></li>
+    </ul>
+  </aside>
+
+  <section class="auth-main">
+    <h1><%= primero ? 'Crea el primer usuario' : 'Crear nuevo usuario' %></h1>
+    <p class="sub">Completa los tres datos y listo.</p>
+    <form method="post" action="/registro">
+      <label for="usuario">Usuario</label>
+      <div class="field">
+        <svg class="lead" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <input type="text" id="usuario" name="username" autocomplete="username" placeholder="Nombre de usuario" required autofocus>
+      </div>
+
+      <label for="pw">Contraseña</label>
+      <div class="field">
+        <svg class="lead" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <input type="password" id="pw" name="password" autocomplete="new-password" placeholder="Mínimo 6 caracteres" required minlength="6">
+        <button type="button" class="pw-toggle" aria-label="Mostrar contraseña" title="Mostrar / ocultar contraseña">
+          <svg class="eye" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          <svg class="eye-off" viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+        </button>
+      </div>
+      <div class="meter"><i id="meterBar"></i></div>
+      <div class="meter-txt"><span>Seguridad de la contraseña</span><b id="meterTxt"></b></div>
+
+      <label for="pw2">Confirmar contraseña</label>
+      <div class="field">
+        <svg class="lead" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <input type="password" id="pw2" name="confirm" autocomplete="new-password" placeholder="Repite la contraseña" required minlength="6">
+        <button type="button" class="pw-toggle" aria-label="Mostrar contraseña" title="Mostrar / ocultar contraseña">
+          <svg class="eye" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          <svg class="eye-off" viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+        </button>
+      </div>
+      <ul class="reqs">
+        <li id="reqLen">Al menos 6 caracteres</li>
+        <li id="reqMatch">Las dos contraseñas coinciden</li>
+      </ul>
+      <div class="caps"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Tienes activado Bloq Mayús</div>
+
+      <button class="full" type="submit" data-loading="Creando usuario…"><span>Crear usuario</span><svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>
+    </form>
+    <% if (!primero) { %>
+      <p class="foot"><a href="/">← Volver a la bóveda</a></p>
+    <% } else { %>
+      <p class="foot">¿Ya tienes usuario? <a href="/login">Inicia sesión</a></p>
+    <% } %>
+  </section>
+</div>
+
+<script>
+(function(){
+  var pw = document.getElementById('pw'), cf = document.getElementById('pw2'), bar = document.getElementById('meterBar'), txt = document.getElementById('meterTxt');
+  var rl = document.getElementById('reqLen'), rm = document.getElementById('reqMatch');
+  var nombres = ['', 'Débil', 'Aceptable', 'Buena', 'Excelente'];
+  function revisar(){
+    var v = pw.value, p = 0;
+    if (v.length >= 6) p++; if (v.length >= 10) p++; if (/[a-z]/.test(v) && /[A-Z]/.test(v)) p++; if (/\d/.test(v)) p++; if (/[^A-Za-z0-9]/.test(v)) p++;
+    var n = !v.length ? 0 : (p <= 1 ? 1 : (p === 2 ? 2 : (p === 3 ? 3 : 4)));
+    bar.className = n ? 'l' + n : ''; txt.textContent = nombres[n];
+    rl.classList.toggle('ok', v.length >= 6);
+    var igual = cf.value.length > 0 && cf.value === v;
+    rm.classList.toggle('ok', igual);
+    cf.setCustomValidity(cf.value && cf.value !== v ? 'Las contraseñas no coinciden' : '');
+  }
+  pw.addEventListener('input', revisar); cf.addEventListener('input', revisar); revisar();
+})();
+</script>

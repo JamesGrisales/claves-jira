@@ -1,0 +1,394 @@
+<style>
+  .top{ display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+  .top h1{ margin:0; }
+  .top .count{ color:var(--accent-dark); background:var(--accent-soft); font-size:12px; font-weight:700; padding:4px 11px; border-radius:999px; }
+  .toolbar{ display:flex; gap:10px; margin-bottom:16px; }
+  .toolbar .search-wrap{ position:relative; flex:1; }
+  .toolbar .search-wrap input{ padding-left:38px; font-family:var(--sans); font-size:14.5px; }
+  .toolbar .search-wrap svg{ position:absolute; left:12px; top:50%; transform:translateY(-50%); width:16px; height:16px; stroke:var(--muted); pointer-events:none; }
+  .toolbar button{ white-space:nowrap; }
+  #results{ display:flex; flex-direction:column; gap:8px; }
+  .row{ background:var(--panel); border:1px solid var(--panel-edge); border-radius:12px; padding:13px 15px; box-shadow:var(--shadow); transition: border-color .18s ease, transform .18s ease, box-shadow .18s ease, background-color .2s ease; }
+  .row:hover{ border-color:var(--accent); transform:translateY(-1px); box-shadow:0 4px 14px rgba(20,30,45,.08), 0 1px 2px rgba(20,30,45,.05); }
+  .row .main{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
+  .row .name{ display:flex; align-items:center; gap:10px; font-size:14.5px; font-weight:600; }
+  .row .avatar{ width:30px; height:30px; border-radius:8px; flex-shrink:0; background:linear-gradient(135deg, var(--accent-soft), var(--accent-soft)); color:var(--accent-dark); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; transition:background .18s ease, transform .18s ease; }
+  .row:hover .avatar{ background:linear-gradient(135deg, var(--accent), var(--accent-dark)); color:#fff; transform:scale(1.05); }
+  .row .pw-area{ display:flex; align-items:center; gap:6px; }
+  .row .pw{ font-family:var(--mono); font-size:13px; color:var(--muted); letter-spacing:0.03em; min-width:140px; text-align:right; }
+  .row .pw.revealed{ color:var(--accent-dark); }
+  .iconbtn{ background:transparent; border:1px solid var(--panel-edge); color:var(--muted); width:30px; height:30px; border-radius:7px; padding:0; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:border-color .15s ease, color .15s ease, transform .12s cubic-bezier(.34,1.56,.64,1), background-color .15s ease; flex-shrink:0; }
+  .iconbtn:hover{ border-color:var(--accent); color:var(--accent-dark); background:var(--accent-soft); transform:translateY(-1px); }
+  .iconbtn:active{ transform:translateY(0) scale(.92); }
+  .iconbtn svg{ width:14px; height:14px; }
+  @keyframes panelIn{ from{ opacity:0; transform:translateY(-4px); } to{ opacity:1; transform:translateY(0); } }
+  .edit-panel{ display:none; margin-top:12px; padding-top:12px; border-top:1px dashed var(--panel-edge); }
+  .edit-panel.open{ display:block; animation:panelIn .18s ease; }
+  .edit-panel .fields{ display:flex; gap:10px; flex-wrap:wrap; }
+  .edit-panel .fields > div{ flex:1; min-width:150px; }
+  .edit-panel label{ margin-top:0; }
+  .edit-panel .actions{ display:flex; gap:8px; margin-top:12px; }
+  .edit-panel .actions form{ display:inline; }
+  .empty{ color:var(--muted); font-size:13.5px; text-align:center; padding:30px 0; }
+  .foot-note{ color:var(--muted); font-size:12px; text-align:center; margin-top:18px; opacity:.75; }
+  .add-card{ margin-bottom:16px; display:none; }
+  .add-card.open{ display:block; animation:panelIn .18s ease; }
+  .add-card .fields{ display:flex; gap:10px; flex-wrap:wrap; }
+  .add-card .fields > div{ flex:1; min-width:160px; }
+  .add-card label{ margin-top:0; }
+  .imp-head{ display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:4px; }
+  .imp-head span{ color:var(--muted); font-size:12.5px; }
+  .imp-help{ color:var(--muted); font-size:12.5px; margin:0 0 12px; line-height:1.5; }
+  .imp-drop{ border:2px dashed var(--panel-edge); border-radius:12px; padding:18px; text-align:center; background:var(--panel-alt); transition:border-color .15s ease, background .15s ease; }
+  .imp-drop.drag{ border-color:var(--accent); background:var(--accent-soft); }
+  .imp-drop input[type=file]{ margin-top:8px; font-size:13px; }
+  .imp-msg{ margin-top:10px; font-size:13px; }
+  .imp-msg.err{ color:var(--danger); background:var(--danger-soft); border-radius:8px; padding:8px 12px; }
+  .imp-chips{ display:flex; gap:6px; flex-wrap:wrap; margin:14px 0 10px; }
+  .imp-chip{ font-size:12px; font-weight:700; padding:4px 11px; border-radius:999px; color:var(--accent-dark); background:var(--accent-soft); }
+  .imp-chip.mute{ color:var(--muted); background:var(--panel-alt); border:1px solid var(--panel-edge); font-weight:600; }
+  .imp-chip.warn{ color:#8a5300; background:#fff4e0; }
+  :root[data-theme="dark"] .imp-chip.warn{ color:#ffc46b; background:#3a2c12; }
+  .imp-tools{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:10px; }
+  .imp-tools button{ padding:7px 12px; font-size:12.5px; }
+  .imp-wrap{ overflow-x:auto; border:1px solid var(--panel-edge); border-radius:10px; max-height:55vh; overflow-y:auto; }
+  .imp-t{ width:100%; border-collapse:collapse; font-size:13px; }
+  .imp-t th{ position:sticky; top:0; background:var(--panel-alt); text-align:left; font-size:11px; letter-spacing:.03em; text-transform:uppercase; color:var(--muted); padding:8px 10px; border-bottom:1px solid var(--panel-edge); }
+  .imp-t td{ padding:7px 10px; border-bottom:1px solid var(--panel-edge); vertical-align:middle; }
+  .imp-t tr:last-child td{ border-bottom:none; }
+  .imp-t tr.off td{ opacity:.6; }
+  .imp-t .k{ font-family:var(--mono); color:var(--muted); white-space:nowrap; }
+  .imp-t select{ background:var(--panel); border:1px solid var(--panel-edge); color:var(--text); font-family:var(--sans); font-size:12.5px; padding:5px 8px; border-radius:7px; max-width:260px; }
+  .imp-b{ display:inline-block; font-size:11.5px; font-weight:700; padding:3px 9px; border-radius:999px; white-space:nowrap; }
+  .imp-b.upd{ color:var(--accent-dark); background:var(--accent-soft); }
+  .imp-b.same{ color:var(--muted); background:var(--panel-alt); border:1px solid var(--panel-edge); font-weight:600; }
+  .imp-b.warn{ color:#8a5300; background:#fff4e0; }
+  :root[data-theme="dark"] .imp-b.warn{ color:#ffc46b; background:#3a2c12; }
+  .imp-avisos{ font-size:12.5px; color:#8a5300; background:#fff4e0; border-radius:8px; padding:8px 12px; margin-top:10px; }
+  :root[data-theme="dark"] .imp-avisos{ color:#ffc46b; background:#3a2c12; }
+  .imp-avisos ul{ margin:4px 0 0; padding-left:18px; }
+  .imp-foot{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:12px; }
+  .imp-foot .nota{ color:var(--muted); font-size:12px; }
+  .toast{ position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(10px) scale(.96); background:linear-gradient(135deg, var(--accent), var(--accent-dark)); color:#fff; font-size:13px; font-weight:600; padding:9px 18px; border-radius:8px; opacity:0; pointer-events:none; transition:opacity .22s ease, transform .22s cubic-bezier(.34,1.56,.64,1); box-shadow:0 6px 20px rgba(20,30,45,.18); }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0) scale(1); }
+</style>
+
+<div class="top">
+  <h1>Claves Jira por empresa</h1>
+  <span class="count"><%= companies.length %> empresas</span>
+</div>
+
+<div class="toolbar">
+  <div class="search-wrap">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg>
+    <input type="text" id="searchInput" placeholder="Buscar empresa…" autocomplete="off">
+  </div>
+  <button type="button" class="secondary" id="toggleAddBtn">+ Agregar empresa</button>
+  <button type="button" class="secondary" id="toggleImportBtn">⬆ Importar claves</button>
+</div>
+
+<div class="card add-card" id="addCard">
+  <form method="post" action="/empresa/agregar">
+    <div class="fields">
+      <div><label>Nombre de la empresa</label><input type="text" name="empresa" required></div>
+      <div><label>Clave</label><input type="text" name="clave" required></div>
+    </div>
+    <button class="full" type="submit">Guardar empresa</button>
+  </form>
+</div>
+
+<div class="card add-card" id="importCard" style="padding:18px;">
+  <div class="imp-head"><strong>Importar claves desde un archivo</strong><span>.txt · .csv · .xml · .xlsx · .xls</span></div>
+  <p class="imp-help">
+    Sube un archivo donde cada empresa va seguida de su clave (una debajo de la otra, o en dos columnas).
+    Primero verás una <strong>vista previa</strong>: no se cambia nada hasta que pulses «Aplicar».
+  </p>
+  <div class="imp-drop" id="impDrop">
+    Arrastra el archivo aquí o elígelo<br>
+    <input type="file" id="impFile" accept=".txt,.csv,.xml,.xlsx,.xls">
+  </div>
+  <div class="imp-msg" id="impMsg"></div>
+  <div id="impResult" style="display:none;">
+    <div class="imp-chips" id="impChips"></div>
+    <div class="imp-tools">
+      <button type="button" class="secondary" id="impMarcar">Marcar todo lo que se puede</button>
+      <button type="button" class="secondary" id="impDesmarcar">Desmarcar todo</button>
+    </div>
+    <div class="imp-wrap">
+      <table class="imp-t">
+        <thead><tr><th></th><th>Empresa en el archivo</th><th>Clave nueva</th><th>Se aplica a (en la bóveda)</th><th>Estado</th></tr></thead>
+        <tbody id="impBody"></tbody>
+      </table>
+    </div>
+    <div class="imp-avisos" id="impAvisos" style="display:none;"></div>
+    <div class="imp-foot">
+      <button type="button" id="impAplicar">Aplicar cambios</button>
+      <button type="button" class="secondary" id="impCancelar">Cancelar</button>
+      <span class="nota" id="impNota"></span>
+    </div>
+  </div>
+</div>
+
+<div id="results">
+  <% companies.forEach(function(c) { %>
+  <div class="row" data-name="<%= c.empresa.toLowerCase() %>">
+    <div class="main">
+      <div class="name">
+        <span class="avatar"><%= c.empresa[0].toUpperCase() %></span>
+        <%= c.empresa %>
+      </div>
+      <div class="pw-area">
+        <span class="pw" id="pw-<%= c.id %>">••••••••••••••••</span>
+        <button type="button" class="iconbtn" title="Mostrar / ocultar" onclick="toggleReveal(<%= c.id %>)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+        </button>
+        <button type="button" class="iconbtn" title="Copiar" onclick="copyPassword(<%= c.id %>)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+        </button>
+        <button type="button" class="iconbtn" title="Editar empresa" onclick="toggleEdit(<%= c.id %>)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="edit-panel" id="edit-<%= c.id %>">
+      <form method="post" action="/empresa/<%= c.id %>/renombrar">
+        <div class="fields">
+          <div><label>Nombre de la empresa</label><input type="text" name="empresa" value="<%= c.empresa %>" required></div>
+        </div>
+        <div class="actions">
+          <button type="submit" class="secondary">Guardar nombre</button>
+        </div>
+      </form>
+      <form method="post" action="/empresa/<%= c.id %>/actualizar" style="margin-top:14px; padding-top:14px; border-top:1px dashed var(--panel-edge);">
+        <div class="fields">
+          <div><label>Clave anterior</label><input type="text" name="clave_anterior" required></div>
+          <div><label>Clave nueva</label><input type="text" name="clave_nueva" required></div>
+        </div>
+        <div class="actions">
+          <button type="submit">Guardar clave</button>
+          <button type="button" class="secondary" onclick="toggleEdit(<%= c.id %>)">Cancelar</button>
+        </div>
+      </form>
+      <form method="post" action="/empresa/<%= c.id %>/eliminar"
+            onsubmit="return confirm('¿Eliminar la empresa <%= c.empresa %> de la bóveda?');" style="margin-top:8px;">
+        <button type="submit" class="danger">Eliminar empresa</button>
+      </form>
+    </div>
+  </div>
+  <% }); %>
+  <% if (companies.length === 0) { %>
+    <div class="empty">Todavía no hay empresas guardadas. Agrega la primera arriba.</div>
+  <% } %>
+</div>
+
+<div class="foot-note">Las claves se guardan cifradas en PostgreSQL y solo se descifran cuando las pides.</div>
+
+<div class="toast" id="toast">Copiado</div>
+
+<script>
+document.getElementById('searchInput').addEventListener('input', function(e){
+  const q = e.target.value.trim().toLowerCase();
+  document.querySelectorAll('#results .row').forEach(row => {
+    row.style.display = row.dataset.name.includes(q) ? '' : 'none';
+  });
+});
+
+document.getElementById('toggleAddBtn').addEventListener('click', function(){
+  document.getElementById('addCard').classList.toggle('open');
+});
+
+/* ---------- Importar claves desde archivo ---------- */
+(function(){
+  var $ = function(id){ return document.getElementById(id); };
+  var items = [], libres = [];
+
+  function esc(t){ return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function mask(c){ return c.length > 8 ? c.slice(0,4) + '••••' + c.slice(-4) : '••••'; }
+  function msg(t, err){ var m = $('impMsg'); m.textContent = t || ''; m.className = 'imp-msg' + (err ? ' err' : ''); }
+
+  $('toggleImportBtn').addEventListener('click', function(){ $('importCard').classList.toggle('open'); });
+
+  function reset(conservarArchivo){
+    items = []; libres = []; $('impResult').style.display = 'none'; msg('');
+    if (conservarArchivo !== true) $('impFile').value = '';
+  }
+  $('impCancelar').addEventListener('click', function(){ reset(); });
+
+  async function subir(file){
+    if (!file) return;
+    reset(true); msg('Leyendo «' + file.name + '»…');
+    var fd = new FormData(); fd.append('archivo', file);
+    try {
+      var res = await fetch('/empresas/importar-claves/vista-previa', { method:'POST', body: fd });
+      var data = await res.json();
+      if (!res.ok) {
+        msg(data.error || 'No se pudo leer el archivo.', true);
+        if (data.avisos && data.avisos.length) { $('impAvisos').style.display = 'block'; $('impAvisos').innerHTML = '<ul>' + data.avisos.slice(0,10).map(function(a){ return '<li>' + esc(a) + '</li>'; }).join('') + '</ul>'; $('impResult').style.display = 'block'; $('impBody').innerHTML = ''; $('impChips').innerHTML = ''; $('impAplicar').style.display = 'none'; }
+        return;
+      }
+      $('impAplicar').style.display = '';
+      libres = data.libres || [];
+      items = data.items.map(function(it){
+        it.original = it.id;
+        it.destino = it.estado === 'ambiguo' ? 'nada' : it.id;   // null = crear, número = actualizar, 'nada' = sin elegir
+        it.marcada = (it.estado === 'cambia') && (it.nivel === 'exacta' || it.nivel === 'parecida');
+        return it;
+      });
+      msg('');
+      var av = data.avisos || [];
+      var box = $('impAvisos');
+      if (av.length) { box.style.display = 'block'; box.innerHTML = '<strong>Avisos al leer el archivo:</strong><ul>' + av.slice(0,10).map(function(a){ return '<li>' + esc(a) + '</li>'; }).join('') + '</ul>'; }
+      else box.style.display = 'none';
+      $('impResult').style.display = 'block';
+      pintar();
+    } catch (e) {
+      msg('No se pudo leer el archivo: ' + e.message, true);
+    }
+  }
+  $('impFile').addEventListener('change', function(){ subir(this.files[0]); });
+  var drop = $('impDrop');
+  ['dragenter','dragover'].forEach(function(ev){ drop.addEventListener(ev, function(e){ e.preventDefault(); drop.classList.add('drag'); }); });
+  ['dragleave','drop'].forEach(function(ev){ drop.addEventListener(ev, function(e){ e.preventDefault(); drop.classList.remove('drag'); }); });
+  drop.addEventListener('drop', function(e){ subir(e.dataTransfer.files && e.dataTransfer.files[0]); });
+
+  function estadoDe(it){
+    if (it.destino === 'nada') return { cls:'warn', txt:'Elige la empresa' };
+    if (it.destino === null) return { cls:'upd', txt:'Nueva' };
+    if (it.destino === it.original && it.estado === 'igual') return { cls:'same', txt:'Sin cambios' };
+    if (it.destino === it.original && it.nivel === 'sugerida') return { cls:'warn', txt:'Parecida · revisa' };
+    return { cls:'upd', txt:'Actualizar' };
+  }
+  function puedeMarcar(it){ return it.destino !== 'nada' && !(it.destino === it.original && it.estado === 'igual'); }
+
+  function opcionesLibres(i){
+    var usados = {};
+    items.forEach(function(o, j){ if (j !== i && typeof o.destino === 'number') usados[o.destino] = true; });
+    return libres.filter(function(l){ return !usados[l.id]; });
+  }
+
+  function pintar(){
+    var html = '';
+    items.forEach(function(it, i){
+      var est = estadoDe(it), sel = '';
+      var conSelect = it.nivel !== 'exacta';
+      if (conSelect) {
+        var opts = '';
+        if (it.estado === 'ambiguo') opts += '<option value="nada"' + (it.destino === 'nada' ? ' selected' : '') + '>— elegir empresa —</option>';
+        if (it.original && it.estado !== 'ambiguo') opts += '<option value="' + it.original + '"' + (it.destino === it.original ? ' selected' : '') + '>' + esc(it.empresaBd) + '</option>';
+        opts += '<option value=""' + (it.destino === null ? ' selected' : '') + '>➕ Crear como empresa nueva</option>';
+        opcionesLibres(i).forEach(function(l){ if (l.id !== it.original) opts += '<option value="' + l.id + '"' + (it.destino === l.id ? ' selected' : '') + '>' + esc(l.empresa) + '</option>'; });
+        sel = '<select data-i="' + i + '">' + opts + '</select>';
+      } else sel = esc(it.empresaBd);
+      var ok = puedeMarcar(it);
+      html += '<tr class="' + (ok ? '' : 'off') + '"><td><input type="checkbox" data-c="' + i + '"' + (it.marcada && ok ? ' checked' : '') + (ok ? '' : ' disabled') + '></td>' +
+        '<td>' + esc(it.empresa) + '</td><td class="k">' + esc(mask(it.clave)) + '</td><td>' + sel + '</td>' +
+        '<td><span class="imp-b ' + est.cls + '">' + est.txt + '</span></td></tr>';
+    });
+    $('impBody').innerHTML = html;
+    resumen();
+  }
+
+  function resumen(){
+    var upd = 0, igual = 0, nuevas = 0, revisar = 0, marcadas = 0, mUpd = 0, mNew = 0;
+    items.forEach(function(it){
+      var e = estadoDe(it);
+      if (e.txt === 'Sin cambios') igual++;
+      else if (it.destino === null) nuevas++;
+      else if (e.cls === 'warn') revisar++;
+      else upd++;
+      if (it.marcada && puedeMarcar(it)) { marcadas++; if (it.destino === null) mNew++; else mUpd++; }
+    });
+    $('impChips').innerHTML =
+      '<span class="imp-chip mute">' + items.length + ' en el archivo</span>' +
+      '<span class="imp-chip">' + upd + ' por actualizar</span>' +
+      (revisar ? '<span class="imp-chip warn">' + revisar + ' para revisar</span>' : '') +
+      (nuevas ? '<span class="imp-chip">' + nuevas + ' nuevas</span>' : '') +
+      '<span class="imp-chip mute">' + igual + ' sin cambios</span>';
+    var b = $('impAplicar');
+    b.disabled = marcadas === 0;
+    b.textContent = marcadas ? 'Aplicar ' + marcadas + (marcadas === 1 ? ' cambio' : ' cambios') : 'Aplicar cambios';
+    $('impNota').textContent = marcadas ? (mUpd + ' a actualizar' + (mNew ? ', ' + mNew + ' a crear' : '') + '. No se puede deshacer.') : 'Marca las filas que quieras aplicar.';
+  }
+
+  $('impBody').addEventListener('change', function(e){
+    var t = e.target, i;
+    if (t.matches('input[data-c]')) { i = +t.getAttribute('data-c'); items[i].marcada = t.checked; resumen(); }
+    else if (t.matches('select[data-i]')) {
+      i = +t.getAttribute('data-i');
+      items[i].destino = t.value === 'nada' ? 'nada' : (t.value === '' ? null : Number(t.value));
+      items[i].marcada = items[i].destino !== 'nada';
+      pintar();
+    }
+  });
+  $('impMarcar').addEventListener('click', function(){ items.forEach(function(it){ it.marcada = puedeMarcar(it); }); pintar(); });
+  $('impDesmarcar').addEventListener('click', function(){ items.forEach(function(it){ it.marcada = false; }); pintar(); });
+
+  $('impAplicar').addEventListener('click', async function(){
+    var envio = items.filter(function(it){ return it.marcada && puedeMarcar(it); }).map(function(it){
+      return { id: it.destino, empresa: it.empresa, clave: it.clave };
+    });
+    if (!envio.length) return;
+    if (!confirm('Se van a guardar ' + envio.length + ' cambios de clave. Las claves anteriores no se pueden recuperar. ¿Continuar?')) return;
+    this.disabled = true; msg('Guardando…');
+    try {
+      var res = await fetch('/empresas/importar-claves/aplicar', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ items: envio }) });
+      var data = await res.json();
+      if (!res.ok) { msg(data.error || 'No se pudo aplicar.', true); this.disabled = false; return; }
+      window.location.href = '/';
+    } catch (e) { msg('Error: ' + e.message, true); this.disabled = false; }
+  });
+})();
+
+const revealedState = {};
+
+async function toggleReveal(id){
+  const el = document.getElementById('pw-' + id);
+  if (revealedState[id] && revealedState[id].value){
+    el.textContent = '••••••••••••••••';
+    el.classList.remove('revealed');
+    revealedState[id].value = null;
+    return;
+  }
+  const res = await fetch('/empresa/' + id + '/clave');
+  if (!res.ok) return;
+  const data = await res.json();
+  el.textContent = data.clave;
+  el.classList.add('revealed');
+  revealedState[id] = { value: data.clave };
+}
+
+async function copyPassword(id){
+  let clave = revealedState[id] && revealedState[id].value;
+  if (!clave){
+    const res = await fetch('/empresa/' + id + '/clave');
+    if (!res.ok) return;
+    const data = await res.json();
+    clave = data.clave;
+  }
+  try{
+    await navigator.clipboard.writeText(clave);
+  }catch(e){
+    const ta = document.createElement('textarea');
+    ta.value = clave;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+  }
+  showToast();
+}
+
+function toggleEdit(id){
+  document.getElementById('edit-' + id).classList.toggle('open');
+}
+
+let toastTimer;
+function showToast(){
+  const t = document.getElementById('toast');
+  t.textContent = 'Copiado';
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 1400);
+}
+</script>

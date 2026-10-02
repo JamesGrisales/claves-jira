@@ -1,0 +1,86 @@
+<style>
+  .top{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:6px; }
+  .top h1{ margin:0; }
+  .top .count{ color:var(--accent-dark); background:var(--accent-soft); font-size:12px; font-weight:700; padding:4px 11px; border-radius:999px; }
+  .pap-acciones{ display:flex; gap:8px; align-items:center; }
+  .item{ background:var(--panel); border:1px solid var(--panel-edge); border-radius:12px; padding:14px 16px; box-shadow:var(--shadow); margin-bottom:8px; display:flex; gap:14px; align-items:flex-start; justify-content:space-between; }
+  .item .info{ min-width:0; flex:1; }
+  .item .badges{ display:flex; gap:6px; flex-wrap:wrap; margin-bottom:5px; }
+  .badge-origen{ font-size:11px; font-weight:800; letter-spacing:.03em; text-transform:uppercase; color:#fff; background:linear-gradient(135deg, var(--accent), var(--accent-dark)); padding:2px 8px; border-radius:6px; }
+  .badge-origen.jaivana{ background:linear-gradient(135deg, #6b7cff, #4a58c8); }
+  .badge-cat{ font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.03em; color:var(--accent-dark); background:var(--accent-soft); padding:2px 8px; border-radius:6px; }
+  .item .titulo{ font-size:14.5px; font-weight:600; overflow-wrap:anywhere; }
+  .item .meta{ font-size:11.5px; color:var(--muted); margin-top:2px; }
+  .item pre.prev{ margin:8px 0 0; background:var(--panel-alt); border:1px solid var(--panel-edge); border-radius:8px; padding:8px 10px; font-family:var(--mono); font-size:12px; line-height:1.5; color:var(--muted); white-space:pre-wrap; word-break:break-word; max-height:96px; overflow:hidden; }
+  .item .acciones{ display:flex; flex-direction:column; gap:6px; flex-shrink:0; }
+  .item .acciones form{ display:block; }
+  .item .acciones button{ width:100%; white-space:nowrap; padding:8px 14px; font-size:13px; }
+  .vacia{ text-align:center; color:var(--muted); padding:46px 10px; }
+  .vacia .ico{ font-size:34px; margin-bottom:8px; }
+  @media (max-width:640px){ .item{ flex-direction:column; } .item .acciones{ flex-direction:row; width:100%; } }
+</style>
+
+<div class="top">
+  <h1>🗑 Papelera</h1>
+  <div class="pap-acciones">
+    <span class="count"><%= items.length %> elemento<%= items.length === 1 ? '' : 's' %></span>
+    <% if (items.length > 0) { %>
+    <form method="post" action="/papelera/restaurar-todo" style="display:inline;">
+      <button type="submit" class="secondary">↩ Restaurar todo</button>
+    </form>
+    <form method="post" action="/papelera/vaciar" id="formVaciar" style="display:inline;">
+      <button type="button" class="danger" id="btnVaciar">Vaciar papelera</button>
+    </form>
+    <% } %>
+  </div>
+</div>
+<p class="sub">Lo que eliminas en <strong>Notas</strong> y <strong>Jaivaná</strong> queda aquí. Puedes restaurarlo, o borrarlo definitivamente cuando estés seguro (eso ya no se puede deshacer).</p>
+
+<% if (items.length === 0) { %>
+  <div class="card vacia">
+    <div class="ico">🗑</div>
+    <div>La papelera está vacía.</div>
+  </div>
+<% } else { %>
+  <% items.forEach(function(i) { %>
+  <div class="item">
+    <div class="info">
+      <div class="badges">
+        <span class="badge-origen <%= i.origen %>"><%= i.origenNombre %></span>
+        <span class="badge-cat"><%= i.categoria %></span>
+      </div>
+      <div class="titulo"><%= i.titulo %></div>
+      <div class="meta">
+        Eliminado el <%= new Date(i.eliminado_en).toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short' }) %>
+        · <%= Number(i.largo).toLocaleString('es-CO') %> caracteres<% if (i.archivo_nombre) { %> · 📎 <%= i.archivo_nombre %><% } %>
+      </div>
+      <pre class="prev"><%= i.vista %></pre>
+    </div>
+    <div class="acciones">
+      <form method="post" action="/papelera/<%= i.origen %>/<%= i.id %>/restaurar">
+        <button type="submit" class="secondary">↩ Restaurar</button>
+      </form>
+      <form method="post" action="/papelera/<%= i.origen %>/<%= i.id %>/eliminar"
+            onsubmit="return confirm('¿Eliminar DEFINITIVAMENTE «<%= i.titulo.replace(/'/g, "\\'") %>»? Esto no se puede deshacer.');">
+        <button type="submit" class="danger">Eliminar definitivamente</button>
+      </form>
+    </div>
+  </div>
+  <% }); %>
+<% } %>
+
+<script>
+(function(){
+  var btn = document.getElementById('btnVaciar');
+  if (!btn) return;
+  btn.addEventListener('click', function(){
+    var r = prompt(
+      'Vas a eliminar DEFINITIVAMENTE los <%= items.length %> elementos de la papelera.\n' +
+      'Esto no se puede deshacer.\n\nEscribe ELIMINAR (en mayúsculas) para confirmar:'
+    );
+    if (r !== null && r.trim().toUpperCase() === 'ELIMINAR') {
+      document.getElementById('formVaciar').submit();
+    }
+  });
+})();
+</script>

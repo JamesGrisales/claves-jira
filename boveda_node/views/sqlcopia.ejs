@@ -1,0 +1,456 @@
+<style>
+  .top{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:6px; }
+  .top h1{ margin:0; }
+  .chip{ display:inline-block; font-size:12px; font-weight:700; padding:4px 11px; border-radius:999px; color:var(--accent-dark); background:var(--accent-soft); }
+  .chip.bad{ color:var(--danger); background:var(--danger-soft); }
+  .chip.info{ color:var(--muted); background:var(--panel-alt); border:1px solid var(--panel-edge); font-weight:600; }
+
+  .q-opts{ display:flex; gap:14px 18px; flex-wrap:wrap; align-items:flex-end; margin-bottom:12px; }
+  .q-opt{ display:flex; flex-direction:column; gap:5px; }
+  .q-opt > span{ font-size:11px; font-weight:700; color:var(--muted); letter-spacing:.03em; text-transform:uppercase; }
+  .q-opt input[type=number], .q-opt select{
+    background:var(--panel-alt); border:1px solid var(--panel-edge); color:var(--text); font-family:var(--sans);
+    font-size:13px; padding:7px 10px; border-radius:8px; outline:none; height:34px;
+  }
+  .q-opt input[type=number]{ width:74px; }
+  .q-opt input:focus, .q-opt select:focus{ border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft); }
+
+  .v-toolbar{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:10px; }
+  .v-toolbar .sp{ flex:1; }
+  .v-toolbar button, .v-toolbar label.btn{ padding:8px 13px; font-size:13px; }
+  label.btn{ display:inline-flex; align-items:center; gap:6px; cursor:pointer; margin:0; text-transform:none; letter-spacing:0; }
+  .seg{ display:inline-flex; background:var(--panel-alt); border:1px solid var(--panel-edge); border-radius:999px; padding:3px; }
+  .seg button{ background:transparent; color:var(--muted); box-shadow:none; border:none; padding:6px 13px; font-size:12.5px; border-radius:999px; transform:none; }
+  .seg button:hover{ color:var(--accent-dark); transform:none; box-shadow:none; filter:none; }
+  .seg button.active{ background:linear-gradient(135deg, var(--accent), var(--accent-dark)); color:#fff; }
+
+  #entrada{
+    width:100%; min-height:200px; max-height:60vh; resize:vertical; background:var(--panel-alt); border:1px solid var(--panel-edge);
+    color:var(--text); font-family:var(--mono); font-size:13px; line-height:1.5; padding:12px 14px; border-radius:10px; outline:none;
+    white-space:pre; overflow:auto; tab-size:4; transition:border-color .15s ease, box-shadow .15s ease;
+  }
+  #entrada:focus{ border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft); }
+  #entrada.drag{ border-color:var(--accent); background:var(--accent-soft); }
+  .hint{ font-size:12px; color:var(--muted); margin-top:6px; }
+
+  #salida{ margin-top:16px; display:none; }
+  #salida.on{ display:block; }
+  .v-status{ display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin-bottom:10px; }
+  .aviso{ font-size:12.5px; background:var(--danger-soft); color:var(--danger); border-radius:8px; padding:8px 12px; margin-bottom:10px; }
+  .aviso ul{ margin:4px 0 0; padding-left:18px; }
+
+  .code-block{ background:#1e1e1e; color:#d4d4d4; border:1px solid #2d2d2d; border-radius:9px; padding:10px 0; font-family:var(--mono); font-size:13px; line-height:1.6; margin:0; max-height:70vh; min-height:80px; overflow:auto; resize:vertical; tab-size:4; }
+  .code-line{ display:flex; min-width:max-content; }
+  .code-line:hover{ background:rgba(255,255,255,.04); }
+  .code-line .ln{ position:sticky; left:0; background:#1e1e1e; flex-shrink:0; width:52px; text-align:right; padding-right:12px; margin-right:12px; color:#6e7681; border-right:1px solid #333; user-select:none; }
+  .code-line .code-text{ white-space:pre; padding-right:16px; }
+  .tk-kw{ color:#569cd6; } .tk-st{ color:#ce9178; } .tk-nu{ color:#b5cea8; } .tk-cm{ color:#6a9955; font-style:italic; } .tk-qi{ color:#9cdcfe; }
+
+  .rp{ border:1px solid var(--panel-edge); background:var(--panel-alt); border-radius:10px; padding:10px 12px; margin-bottom:10px; display:none; }
+  .rp.on{ display:block; }
+  .rp-row{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  .rp-row + .rp-row{ margin-top:8px; }
+  .rp input[type=text]{ flex:1; min-width:140px; font-size:13px; padding:7px 10px; }
+  .rp label.chk{ display:inline-flex; align-items:center; gap:5px; margin:0; font-size:12.5px; font-weight:600; color:var(--muted); text-transform:none; letter-spacing:0; cursor:pointer; }
+  .rp button{ padding:7px 12px; font-size:12.5px; }
+  .rp .cnt{ font-size:12px; color:var(--muted); min-width:90px; }
+  .rp .presets{ font-size:12px; color:var(--muted); font-weight:600; }
+  .tk-sp{ background:rgba(255,167,38,.5); box-shadow:inset 0 -2px 0 #ffa726; border-radius:2px; }
+  .aviso.dato{ background:#fff4e0; color:#8a5300; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  :root[data-theme="dark"] .aviso.dato{ background:#3a2c12; color:#ffc46b; }
+  .aviso.dato button{ padding:6px 11px; font-size:12.5px; }
+  .rp select{ background:var(--panel); border:1px solid var(--panel-edge); color:var(--text); font-family:var(--sans); font-size:12.5px; padding:6px 8px; border-radius:8px; }
+  .more{ margin:10px 12px 2px; }
+
+  .toast{ position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(10px) scale(.96); background:linear-gradient(135deg, var(--accent), var(--accent-dark)); color:#fff; font-size:13px; font-weight:600; padding:9px 18px; border-radius:8px; opacity:0; pointer-events:none; transition:opacity .18s ease, transform .18s ease; z-index:50; }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0) scale(1); }
+</style>
+
+<div class="top">
+  <h1>Formateador SQL</h1>
+  <span class="chip info" id="chipVacio">Pega o abre un archivo</span>
+</div>
+<p class="sub">Pega tu SQL y se limpia solo: quita espacios, tabs y saltos de línea que sobran, cada cláusula queda en su línea y las listas de datos se parten en filas de máximo N datos (como en pgAdmin). Todo se procesa en tu navegador: no se guarda ni se envía nada.</p>
+
+<div class="card" style="padding:18px;">
+  <div class="q-opts">
+    <div class="q-opt">
+      <span>Palabras clave</span>
+      <div class="seg" id="segKw">
+        <button type="button" class="active" data-v="upper">MAYÚS</button>
+        <button type="button" data-v="lower">minús</button>
+        <button type="button" data-v="keep">Igual</button>
+      </div>
+    </div>
+    <div class="q-opt">
+      <span>Datos por fila</span>
+      <input type="number" id="perRow" min="1" max="1000" value="10">
+    </div>
+    <div class="q-opt">
+      <span>Columnas del SELECT</span>
+      <div class="seg" id="segSel">
+        <button type="button" class="active" data-v="one">Una por línea</button>
+        <button type="button" data-v="group">Por filas</button>
+      </div>
+    </div>
+    <div class="q-opt">
+      <span>Sangría</span>
+      <select id="indent">
+        <option value="4">4 espacios</option>
+        <option value="2">2 espacios</option>
+        <option value="tab">Tab</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="v-toolbar">
+    <button type="button" id="btnFormatear" title="Atajo: Ctrl+Shift+F">Formatear</button>
+    <button type="button" class="secondary" id="btnRP" title="Atajo: Ctrl+H">🔎 Buscar y reemplazar</button>
+    <span class="sp"></span>
+    <label class="btn secondary" for="archivo">⬆ Abrir archivo</label>
+    <input type="file" id="archivo" accept=".sql,.txt,.psql,.pgsql" style="display:none;">
+    <button type="button" class="secondary" id="btnLimpiar">Limpiar</button>
+  </div>
+  <div class="rp" id="rp">
+    <div class="rp-row">
+      <input type="text" id="rpBuscar" placeholder="Buscar…" autocomplete="off" spellcheck="false">
+      <input type="text" id="rpReemplazar" placeholder="Reemplazar por…" autocomplete="off" spellcheck="false">
+      <select id="rpAlcance" title="Dónde se busca y reemplaza">
+        <option value="todo">En todo el texto</option>
+        <option value="datos">Solo dentro de datos ('...')</option>
+        <option value="sintaxis">Solo en la sintaxis (fuera de comillas)</option>
+      </select>
+      <label class="chk"><input type="checkbox" id="rpCase"> Aa</label>
+      <label class="chk" title="Expresión regular. En 'Reemplazar por' puedes usar $1, \n, \t"><input type="checkbox" id="rpRegex"> .*</label>
+    </div>
+    <div class="rp-row">
+      <button type="button" class="secondary" id="rpSig">Siguiente</button>
+      <button type="button" id="rpTodo">Reemplazar todo</button>
+      <span class="cnt" id="rpCnt"></span>
+      <span class="sp" style="flex:1"></span>
+      <button type="button" class="secondary" id="rpUsar" title="Copia el resultado formateado a la caja de entrada para seguir editándolo">⬆ Usar resultado como entrada</button>
+    </div>
+    <div class="rp-row">
+      <span class="presets">Rápidos:</span>
+      <button type="button" class="secondary" data-p="datos" title="' 1 ' pasa a '1'">Quitar espacios de los datos (' 1 ' → '1')</button>
+      <button type="button" class="secondary" data-p="dobles">Espacios dobles → uno</button>
+      <button type="button" class="secondary" data-p="extremos">Quitar espacios al inicio/fin de línea</button>
+      <button type="button" class="secondary" data-p="guion">Espacios → _</button>
+      <button type="button" class="secondary" data-p="todos">Quitar TODOS los espacios</button>
+    </div>
+  </div>
+  <textarea id="entrada" spellcheck="false" wrap="off" placeholder="Pega aquí tu SQL…  por ejemplo:  select a,b from t where id in (1,2,3,4,5,6,7,8,9,10,11,12)"></textarea>
+  <div class="hint">También puedes arrastrar un archivo .sql sobre esta caja. Los textos entre comillas, los bloques $$…$$ / $q$…$q$ y los comentarios no se modifican. Los espacios que están dentro de un dato (por ejemplo <code>' 1 '</code>) se marcan en <span style="background:rgba(255,167,38,.5);border-radius:2px;padding:0 3px;">naranja</span> para que no los confundas con la sintaxis.</div>
+</div>
+
+<div class="card" id="salida" style="padding:18px;">
+  <div class="v-status" id="status"></div>
+  <div class="aviso" id="aviso" style="display:none;"></div>
+  <div class="aviso dato" id="avisoDatos" style="display:none;">
+    <span id="avisoDatosTxt"></span>
+    <button type="button" id="btnTrimDatos">Quitar esos espacios de los datos</button>
+  </div>
+
+  <div class="v-toolbar">
+    <div class="seg" id="segVista">
+      <button type="button" class="active" data-v="format">Formateado</button>
+      <button type="button" data-v="min">Una línea por sentencia</button>
+    </div>
+    <span class="sp"></span>
+    <button type="button" class="secondary" id="bCopiar">Copiar</button>
+    <button type="button" class="secondary" id="bDescargar">⬇ Descargar .sql</button>
+  </div>
+  <div class="code-block" id="codigo"></div>
+</div>
+
+<div class="toast" id="toast">Copiado</div>
+
+<script src="/sql-formatter.js"></script>
+<script>
+(function(){
+'use strict';
+
+var LOTE = 1500; // líneas dibujadas por bloque
+var $ = function(id){ return document.getElementById(id); };
+var entrada = $('entrada');
+var opts = { kw: 'upper', perRow: 10, indent: '4', selectMode: 'one', vista: 'format' };
+var resultado = null;   // { text, statements, warnings }
+var lineasHtml = [];    // líneas ya coloreadas
+var dibujadas = 0;
+var temporizador;
+
+/* ---------- opciones (se recuerdan en este navegador) ---------- */
+try {
+  var guardado = JSON.parse(localStorage.getItem('boveda-sql-opts') || 'null');
+  if (guardado) { for (var k in opts) if (guardado[k] !== undefined) opts[k] = guardado[k]; }
+} catch (e) {}
+function guardarOpts(){ try { localStorage.setItem('boveda-sql-opts', JSON.stringify(opts)); } catch (e) {} }
+
+function marcar(segId, valor){
+  var bs = $(segId).querySelectorAll('button');
+  for (var i = 0; i < bs.length; i++) bs[i].classList.toggle('active', bs[i].getAttribute('data-v') === valor);
+}
+function pintarOpts(){
+  marcar('segKw', opts.kw); marcar('segSel', opts.selectMode); marcar('segVista', opts.vista);
+  $('perRow').value = opts.perRow; $('indent').value = opts.indent;
+}
+pintarOpts();
+
+/* ---------- utilidades ---------- */
+function esc(t){ return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function fmtNum(n){ return Number(n).toLocaleString('es-CO'); }
+function fmtTam(n){ return n >= 1048576 ? (n/1048576).toFixed(1) + ' MB' : (n >= 1024 ? (n/1024).toFixed(1) + ' KB' : n + ' caracteres'); }
+
+var toastT;
+function toast(msg){
+  var t = $('toast'); t.textContent = msg || 'Copiado'; t.classList.add('show');
+  clearTimeout(toastT); toastT = setTimeout(function(){ t.classList.remove('show'); }, 1500);
+}
+function copiarViejo(texto){
+  var ta = document.createElement('textarea'); ta.value = texto; document.body.appendChild(ta); ta.select();
+  try { document.execCommand('copy'); } catch (e) {} document.body.removeChild(ta);
+}
+function copiar(texto, msg){
+  var fin = function(){ toast(msg || 'Copiado'); };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(texto).then(fin, function(){ copiarViejo(texto); fin(); });
+  } else { copiarViejo(texto); fin(); }
+}
+
+/* ---------- coloreado (no modifica el texto, solo lo pinta) ---------- */
+var RE_HL = /(--[^\n]*|\/\*[\s\S]*?(?:\*\/|$))|((?:[eEnNbBxX])?'(?:[^']|'')*(?:'|$)|(\$[A-Za-z_\u00C0-\u024F]*\$)[\s\S]*?(?:\3|$))|("(?:[^"]|"")*(?:"|$))|(\b\d+(?:\.\d+)?\b)|([A-Za-z_\u00C0-\u024F][\w$\u00C0-\u024F]*)|([\s\S])/g;
+function resaltar(texto){
+  var lineas = [''], m, cls, partes, j;
+  RE_HL.lastIndex = 0;
+  while ((m = RE_HL.exec(texto)) !== null) {
+    if (m[0] === '') { RE_HL.lastIndex++; continue; }
+    cls = '';
+    if (m[1]) cls = 'tk-cm';
+    else if (m[2]) cls = 'tk-st';
+    else if (m[4]) cls = 'tk-qi';
+    else if (m[5]) cls = 'tk-nu';
+    else if (m[6] && SqlFormatter.KEYWORDS[m[6].toUpperCase()]) cls = 'tk-kw';
+    partes = m[0].split('\n');
+    for (j = 0; j < partes.length; j++) {
+      if (j > 0) lineas.push('');
+      if (partes[j] !== '') {
+        var inner = esc(partes[j]);
+        if (cls === 'tk-st' && partes.length === 1) {
+          var pm = /^([eEnNbBxX]?')([ \t]*)([\s\S]*?)([ \t]*)('?)$/.exec(partes[j]);
+          if (pm && (pm[2] || pm[4])) {
+            inner = esc(pm[1]) +
+              (pm[2] ? '<span class="tk-sp" title="Espacio dentro del dato">' + esc(pm[2]) + '</span>' : '') +
+              esc(pm[3]) +
+              (pm[4] ? '<span class="tk-sp" title="Espacio dentro del dato">' + esc(pm[4]) + '</span>' : '') +
+              esc(pm[5]);
+          }
+        }
+        lineas[lineas.length - 1] += cls ? '<span class="' + cls + '">' + inner + '</span>' : inner;
+      }
+    }
+  }
+  return lineas;
+}
+
+function dibujarLote(){
+  var cont = $('codigo'), viejo = cont.querySelector('.more'), html = '', fin, i;
+  if (viejo) viejo.remove();
+  fin = Math.min(dibujadas + LOTE, lineasHtml.length);
+  for (i = dibujadas; i < fin; i++) {
+    html += '<div class="code-line"><span class="ln">' + (i + 1) + '</span><span class="code-text">' + (lineasHtml[i] || ' ') + '</span></div>';
+  }
+  cont.insertAdjacentHTML('beforeend', html);
+  dibujadas = fin;
+  if (dibujadas < lineasHtml.length) {
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'secondary more';
+    b.textContent = 'Mostrar ' + fmtNum(Math.min(LOTE, lineasHtml.length - dibujadas)) + ' líneas más (' + fmtNum(lineasHtml.length - dibujadas) + ' sin mostrar)';
+    b.addEventListener('click', dibujarLote);
+    cont.appendChild(b);
+  }
+}
+
+/* ---------- formateo ---------- */
+function procesar(){
+  var src = entrada.value;
+  if (!src.trim()) {
+    resultado = null; $('salida').classList.remove('on'); $('avisoDatos').style.display = 'none';
+    var c = $('chipVacio'); c.className = 'chip info'; c.textContent = 'Pega o abre un archivo';
+    return;
+  }
+  var r;
+  try {
+    r = opts.vista === 'min' ? SqlFormatter.minify(src, opts) : SqlFormatter.format(src, opts);
+  } catch (e) {
+    resultado = null;
+    $('salida').classList.add('on');
+    $('status').innerHTML = '<span class="chip bad">Error al formatear</span>';
+    $('aviso').style.display = 'block'; $('aviso').textContent = String(e && e.message || e);
+    $('codigo').innerHTML = '';
+    return;
+  }
+  resultado = r;
+
+  $('salida').classList.add('on');
+  var chip = $('chipVacio');
+  chip.className = 'chip' + (r.warnings.length ? ' bad' : ''); chip.textContent = r.warnings.length ? 'Revisa los avisos' : 'Listo';
+
+  var nLineas = r.text ? r.text.split('\n').length : 0;
+  var ahorro = src.length - r.text.length;
+  $('status').innerHTML =
+    '<span class="chip">' + fmtNum(r.statements) + (r.statements === 1 ? ' sentencia' : ' sentencias') + '</span>' +
+    '<span class="chip info">' + fmtNum(nLineas) + ' líneas</span>' +
+    '<span class="chip info">Entrada: ' + fmtTam(src.length) + '</span>' +
+    '<span class="chip info">Salida: ' + fmtTam(r.text.length) + '</span>';
+
+  var av = $('aviso');
+  if (r.warnings.length) {
+    av.style.display = 'block';
+    av.innerHTML = '<strong>Posibles errores en el SQL (se formateó igual):</strong><ul>' + r.warnings.map(function(w){ return '<li>' + esc(w) + '</li>'; }).join('') + '</ul>';
+  } else { av.style.display = 'none'; }
+
+  var np = SqlFormatter.paddedCount(r.text), ad = $('avisoDatos');
+  if (np) {
+    ad.style.display = 'flex';
+    $('avisoDatosTxt').textContent = np === 1
+      ? 'Hay 1 dato con espacios al inicio o al final (marcado en naranja). Se respetó tal cual.'
+      : 'Hay ' + fmtNum(np) + ' datos con espacios al inicio o al final (marcados en naranja). Se respetaron tal cual.';
+  } else { ad.style.display = 'none'; }
+
+  lineasHtml = resaltar(r.text); dibujadas = 0;
+  $('codigo').innerHTML = '';
+  dibujarLote();
+}
+
+function programar(){ clearTimeout(temporizador); temporizador = setTimeout(procesar, 250); }
+
+/* ---------- eventos ---------- */
+entrada.addEventListener('input', programar);
+$('btnFormatear').addEventListener('click', procesar);
+$('btnLimpiar').addEventListener('click', function(){ entrada.value = ''; procesar(); entrada.focus(); });
+
+function segClick(segId, clave){
+  $(segId).addEventListener('click', function(ev){
+    var b = ev.target.closest('button'); if (!b) return;
+    opts[clave] = b.getAttribute('data-v'); guardarOpts(); pintarOpts(); procesar();
+  });
+}
+segClick('segKw', 'kw'); segClick('segSel', 'selectMode'); segClick('segVista', 'vista');
+$('perRow').addEventListener('input', function(){
+  var n = parseInt(this.value, 10);
+  if (n >= 1) { opts.perRow = n; guardarOpts(); programar(); }
+});
+$('indent').addEventListener('change', function(){ opts.indent = this.value; guardarOpts(); procesar(); });
+
+$('bCopiar').addEventListener('click', function(){ if (resultado) copiar(resultado.text, 'SQL copiado'); });
+$('bDescargar').addEventListener('click', function(){
+  if (!resultado) return;
+  var blob = new Blob([resultado.text + '\n'], { type: 'text/plain;charset=utf-8' });
+  var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'consulta-formateada.sql';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(a.href); }, 1000);
+});
+
+function leerArchivo(f){
+  if (!f) return;
+  var r = new FileReader();
+  r.onload = function(){ entrada.value = String(r.result); procesar(); };
+  r.readAsText(f);
+}
+$('archivo').addEventListener('change', function(){ leerArchivo(this.files[0]); this.value = ''; });
+['dragenter','dragover'].forEach(function(ev){ entrada.addEventListener(ev, function(e){ e.preventDefault(); entrada.classList.add('drag'); }); });
+['dragleave','drop'].forEach(function(ev){ entrada.addEventListener(ev, function(e){ e.preventDefault(); entrada.classList.remove('drag'); }); });
+entrada.addEventListener('drop', function(e){ leerArchivo(e.dataTransfer.files && e.dataTransfer.files[0]); });
+
+/* ---------- buscar y reemplazar ---------- */
+function rpRegex(global){
+  var q = $('rpBuscar').value; if (q === '') return null;
+  var f = ($('rpCase').checked ? 'g' : 'gi');
+  try { return new RegExp($('rpRegex').checked ? q : q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), f); }
+  catch (e) { $('rpCnt').textContent = 'Expresión inválida'; return null; }
+}
+function rpRepl(){
+  var r = $('rpReemplazar').value;
+  if ($('rpRegex').checked) return r.replace(/\\n/g, '\n').replace(/\\t/g, '\t');
+  return function(){ return r; };
+}
+function trozos(texto){
+  var alc = $('rpAlcance').value;
+  if (alc === 'todo') return [{ text: texto, ok: true }];
+  return SqlFormatter.segments(texto).map(function(sg){
+    return { text: sg.text, ok: (alc === 'datos' && sg.kind === 'data') || (alc === 'sintaxis' && sg.kind === 'code') };
+  });
+}
+function contarEn(re, texto){
+  var c = new RegExp(re.source, re.flags), n = 0, m;
+  while ((m = c.exec(texto)) !== null) { n++; if (m[0] === '') c.lastIndex++; if (n > 1e6) break; }
+  return n;
+}
+function rpContar(){
+  var re = rpRegex(); if (!re) { if (!$('rpBuscar').value) $('rpCnt').textContent = ''; return 0; }
+  var n = 0; trozos(entrada.value).forEach(function(t){ if (t.ok) n += contarEn(re, t.text); });
+  $('rpCnt').textContent = fmtNum(n) + (n === 1 ? ' coincidencia' : ' coincidencias');
+  return n;
+}
+function aplicar(re, repl, msg){
+  var n = 0;
+  var nuevo = trozos(entrada.value).map(function(t){
+    if (!t.ok) return t.text;
+    n += contarEn(re, t.text);
+    return t.text.replace(re, repl);
+  }).join('');
+  if (!n) { toast('Sin coincidencias'); return; }
+  entrada.value = nuevo; procesar(); rpContar(); toast((msg || 'Reemplazado') + ': ' + fmtNum(n));
+}
+function quitarEspaciosDatos(){
+  var r = SqlFormatter.trimData(entrada.value);
+  if (!r.count) { toast('No hay datos con espacios al inicio/fin'); return; }
+  entrada.value = r.text; procesar(); rpContar();
+  toast(r.count === 1 ? '1 dato limpiado' : fmtNum(r.count) + ' datos limpiados');
+}
+$('btnTrimDatos').addEventListener('click', quitarEspaciosDatos);
+$('btnRP').addEventListener('click', function(){ var p = $('rp'); p.classList.toggle('on'); if (p.classList.contains('on')) { $('rpBuscar').focus(); rpContar(); } });
+['rpBuscar','rpCase','rpRegex','rpAlcance'].forEach(function(id){ $(id).addEventListener('input', rpContar); $(id).addEventListener('change', rpContar); });
+$('rpTodo').addEventListener('click', function(){
+  var re = rpRegex(); if (!re) return;
+  var r = rpRepl();
+  aplicar(re, r, 'Reemplazadas');
+});
+$('rpSig').addEventListener('click', function(){
+  var re = rpRegex(); if (!re) return;
+  re.lastIndex = entrada.selectionEnd || 0;
+  var m = re.exec(entrada.value);
+  if (!m) { re.lastIndex = 0; m = re.exec(entrada.value); }
+  if (!m) { toast('Sin coincidencias'); return; }
+  entrada.focus(); entrada.setSelectionRange(m.index, m.index + m[0].length);
+  var linea = entrada.value.slice(0, m.index).split('\n').length;
+  entrada.scrollTop = Math.max(0, (linea - 3) * 19.5);
+});
+$('rpBuscar').addEventListener('keydown', function(e){ if (e.key === 'Enter') { e.preventDefault(); $('rpSig').click(); } });
+$('rpReemplazar').addEventListener('keydown', function(e){ if (e.key === 'Enter') { e.preventDefault(); $('rpTodo').click(); } });
+$('rpUsar').addEventListener('click', function(){ if (resultado) { entrada.value = resultado.text; toast('Resultado pasado a la entrada'); rpContar(); } });
+document.querySelector('.rp-row .presets').parentNode.addEventListener('click', function(e){
+  var b = e.target.closest('button[data-p]'); if (!b) return;
+  // Trabaja sobre el resultado formateado si existe, para no tocar el texto entre comillas por error
+  var p = b.getAttribute('data-p');
+  if (p === 'datos') quitarEspaciosDatos();
+  else if (p === 'dobles') aplicar(/[ \t]{2,}/g, function(){ return ' '; }, 'Espacios dobles');
+  else if (p === 'extremos') aplicar(/^[ \t]+|[ \t]+$/gm, function(){ return ''; }, 'Líneas limpiadas');
+  else if (p === 'guion') aplicar(/[ \t]+/g, function(){ return '_'; }, 'Espacios reemplazados');
+  else if (p === 'todos') {
+    if (confirm('Esto quita TODOS los espacios, incluso los de dentro de los textos y entre palabras (SELECT a FROM t quedaría SELECTaFROMt). ¿Continuar?')) aplicar(/[ \t]+/g, function(){ return ''; }, 'Espacios quitados');
+  }
+});
+
+/* ---------- atajos de teclado ---------- */
+entrada.addEventListener('keydown', function(e){
+  var k = e.key.toLowerCase();
+  if ((e.ctrlKey || e.metaKey) && e.shiftKey && k === 'f') { e.preventDefault(); clearTimeout(temporizador); procesar(); toast('Formateado'); }
+  else if ((e.ctrlKey || e.metaKey) && !e.shiftKey && k === 'h') { e.preventDefault(); $('btnRP').click(); }
+});
+document.addEventListener('keydown', function(e){
+  if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'f' && e.target !== entrada) { e.preventDefault(); clearTimeout(temporizador); procesar(); }
+});
+
+})();
+</script>

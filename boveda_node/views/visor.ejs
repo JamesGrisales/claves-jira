@@ -1,0 +1,982 @@
+<style>
+  .top{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:6px; }
+  .top h1{ margin:0; }
+  .chip{ display:inline-block; font-size:12px; font-weight:700; padding:4px 11px; border-radius:999px; color:var(--accent-dark); background:var(--accent-soft); }
+  .chip.ok{ color:#14683a; background:#dff5e7; }
+  .chip.bad{ color:var(--danger); background:var(--danger-soft); }
+  .chip.info{ color:var(--muted); background:var(--panel-alt); border:1px solid var(--panel-edge); font-weight:600; }
+  :root[data-theme="dark"] .chip.ok{ color:#6ee7a1; background:#173a28; }
+
+  .v-toolbar{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:10px; }
+  .seg{ display:inline-flex; background:var(--panel-alt); border:1px solid var(--panel-edge); border-radius:999px; padding:3px; }
+  .seg button{ background:transparent; color:var(--muted); box-shadow:none; border:none; padding:6px 13px; font-size:12.5px; border-radius:999px; transform:none; }
+  .seg button:hover{ color:var(--accent-dark); transform:none; box-shadow:none; filter:none; }
+  .seg button.active{ background:linear-gradient(135deg, var(--accent), var(--accent-dark)); color:#fff; }
+  .v-toolbar .sp{ flex:1; }
+  .v-toolbar button, .v-toolbar label.btn{ padding:8px 13px; font-size:13px; }
+  label.btn{ display:inline-flex; align-items:center; gap:6px; cursor:pointer; margin:0; text-transform:none; letter-spacing:0; }
+  #entrada{
+    width:100%; min-height:190px; max-height:60vh; resize:vertical; background:var(--panel-alt); border:1px solid var(--panel-edge);
+    color:var(--text); font-family:var(--mono); font-size:13px; line-height:1.5; padding:12px 14px; border-radius:10px; outline:none;
+    white-space:pre; overflow:auto; tab-size:4; transition:border-color .15s ease, box-shadow .15s ease;
+  }
+  #entrada:focus{ border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft); }
+  #entrada.drag{ border-color:var(--accent); background:var(--accent-soft); }
+  .hint{ font-size:12px; color:var(--muted); margin-top:6px; }
+
+  #salida{ margin-top:16px; display:none; }
+  #salida.on{ display:block; }
+  .v-status{ display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin-bottom:10px; }
+  .aviso{ font-size:12.5px; background:var(--accent-soft); color:var(--accent-dark); border-radius:8px; padding:7px 11px; margin-bottom:10px; }
+
+  .errbox{ border:1px solid var(--danger); background:var(--danger-soft); color:var(--text); border-radius:10px; padding:12px 14px; margin-bottom:10px; }
+  .errbox .t{ color:var(--danger); font-weight:700; font-size:13.5px; margin-bottom:4px; }
+  .errbox .m{ font-size:13px; overflow-wrap:anywhere; }
+  .errbox pre{ margin:10px 0 0; background:#1e1e1e; color:#d4d4d4; border-radius:8px; padding:8px 0; font-family:var(--mono); font-size:12.5px; line-height:1.55; overflow:auto; }
+  .errbox pre .l{ display:block; padding:0 12px; white-space:pre-wrap; word-break:break-word; }
+  .errbox pre .l.bad{ background:rgba(209,72,58,.28); }
+  .errbox pre .n{ color:#6e7681; display:inline-block; width:44px; user-select:none; }
+  .errbox button{ margin-top:10px; padding:7px 12px; font-size:12.5px; }
+
+  .v-tabs{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:8px; }
+  .v-tabs .sp{ flex:1; }
+  .vsearch{ display:flex; align-items:center; gap:6px; }
+  .vsearch input{ width:220px; background:var(--panel-alt); border:1px solid var(--panel-edge); color:var(--text); font-family:var(--sans); font-size:13px; padding:7px 10px; border-radius:8px; outline:none; }
+  .vsearch input:focus{ border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft); }
+  .vsearch .cnt{ font-size:11.5px; color:var(--muted); white-space:nowrap; min-width:64px; }
+  .mini{ background:transparent; border:1px solid var(--panel-edge); color:var(--muted); width:30px; height:30px; border-radius:7px; padding:0; box-shadow:none; font-size:11px; transform:none; }
+  .mini:hover{ border-color:var(--accent); color:var(--accent-dark); background:var(--accent-soft); transform:none; box-shadow:none; filter:none; }
+
+  /* Código estilo editor */
+  .code-block{ background:#1e1e1e; color:#d4d4d4; border:1px solid #2d2d2d; border-radius:9px; padding:10px 0; font-family:var(--mono); font-size:13px; line-height:1.6; margin:0; max-height:70vh; min-height:120px; overflow:auto; resize:vertical; tab-size:4; }
+  .code-line{ display:flex; }
+  .code-line:hover{ background:rgba(255,255,255,.04); }
+  .code-line .ln{ flex-shrink:0; width:52px; text-align:right; padding-right:12px; margin-right:12px; color:#6e7681; border-right:1px solid #333; user-select:none; }
+  .code-line .code-text{ flex:1; min-width:0; white-space:pre-wrap; word-break:break-word; padding-right:14px; }
+  .tk-tg{ color:#569cd6; } .tk-an{ color:#9cdcfe; } .tk-av{ color:#ce9178; } .tk-pn{ color:#808080; } .tk-tx{ color:#d4d4d4; }
+  .tk-cd{ color:#dcdcaa; } .tk-pi{ color:#c586c0; } .tk-cm{ color:#6a9955; font-style:italic; }
+  .tk-jk{ color:#9cdcfe; } .tk-js{ color:#ce9178; } .tk-jn{ color:#b5cea8; } .tk-jb{ color:#569cd6; } .tk-jl{ color:#569cd6; font-style:italic; }
+  .code-block mark{ background:#ffd54a; color:#1e1e1e; border-radius:2px; padding:0 1px; }
+  .cur-line{ outline:1px solid #ffd54a; outline-offset:-1px; background:rgba(255,213,74,.09); }
+  .mas-lineas{ text-align:center; font-family:var(--sans); font-size:12px; color:#8b949e; padding:10px 8px 4px; }
+  .mas-lineas a{ color:#4fc1ff; }
+  .ver-mas{ color:#4fc1ff; font-style:italic; text-decoration:none; }
+
+  /* Árbol */
+  #vista-arbol{ display:none; border:1px solid var(--panel-edge); background:var(--panel-alt); border-radius:9px; padding:10px 8px; font-family:var(--mono); font-size:13px; line-height:1.55; max-height:70vh; overflow:auto; resize:vertical; }
+  .tn > .tc{ display:none; margin-left:10px; padding-left:12px; border-left:1px solid var(--panel-edge); }
+  .tn.open > .tc{ display:block; }
+  .tr{ display:flex; align-items:baseline; gap:6px; padding:1px 6px; border-radius:6px; cursor:default; }
+  .tr:hover{ background:var(--accent-soft); }
+  .tr.sel{ background:var(--accent-soft); outline:1px solid var(--accent); }
+  .tr .tg{ width:14px; flex-shrink:0; color:var(--muted); font-size:10px; text-align:center; transition:transform .12s; user-select:none; }
+  .tn.open > .tr .tg{ transform:rotate(90deg); }
+  .tn.hoja > .tr .tg{ visibility:hidden; }
+  .tn.hijos > .tr{ cursor:pointer; }
+  .tr .et{ overflow-wrap:anywhere; min-width:0; }
+  .tr .nn{ color:var(--muted); font-size:11.5px; font-family:var(--sans); margin-left:4px; }
+  #vista-arbol .tk-tg{ color:#0b5cad; } #vista-arbol .tk-an{ color:#1f6f8b; } #vista-arbol .tk-av{ color:#a3391f; } #vista-arbol .tk-pn{ color:#888; }
+  #vista-arbol .tk-tx{ color:var(--text); } #vista-arbol .tk-cd{ color:#8a6d00; } #vista-arbol .tk-cm{ color:#3c7d3c; } #vista-arbol .tk-pi{ color:#8f3fa0; }
+  #vista-arbol .tk-jk{ color:#1f6f8b; } #vista-arbol .tk-js{ color:#a3391f; } #vista-arbol .tk-jn{ color:#1b7a48; } #vista-arbol .tk-jb, #vista-arbol .tk-jl{ color:#0b5cad; }
+  :root[data-theme="dark"] #vista-arbol .tk-tg{ color:#569cd6; } :root[data-theme="dark"] #vista-arbol .tk-an{ color:#9cdcfe; } :root[data-theme="dark"] #vista-arbol .tk-av{ color:#ce9178; }
+  :root[data-theme="dark"] #vista-arbol .tk-cd{ color:#dcdcaa; } :root[data-theme="dark"] #vista-arbol .tk-cm{ color:#6a9955; } :root[data-theme="dark"] #vista-arbol .tk-pi{ color:#c586c0; }
+  :root[data-theme="dark"] #vista-arbol .tk-jk{ color:#9cdcfe; } :root[data-theme="dark"] #vista-arbol .tk-js{ color:#ce9178; } :root[data-theme="dark"] #vista-arbol .tk-jn{ color:#b5cea8; }
+  :root[data-theme="dark"] #vista-arbol .tk-jb, :root[data-theme="dark"] #vista-arbol .tk-jl{ color:#569cd6; }
+  .masbtn{ font-family:var(--sans); font-size:12px; color:var(--accent-dark); cursor:pointer; padding:2px 6px; }
+  .pathbar{ display:none; align-items:center; gap:8px; margin-top:8px; font-size:12.5px; }
+  .pathbar.on{ display:flex; }
+  .pathbar code{ flex:1; min-width:0; overflow-wrap:anywhere; background:var(--panel-alt); border:1px solid var(--panel-edge); border-radius:7px; padding:6px 9px; font-family:var(--mono); }
+  .pathbar button{ padding:6px 11px; font-size:12px; }
+  .toast{ position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(10px) scale(.96); background:linear-gradient(135deg, var(--accent), var(--accent-dark)); color:#fff; font-size:13px; font-weight:600; padding:9px 18px; border-radius:8px; opacity:0; pointer-events:none; transition:opacity .22s ease, transform .22s cubic-bezier(.34,1.56,.64,1); box-shadow:0 6px 20px rgba(20,30,45,.18); z-index:1200; }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0) scale(1); }
+
+  /* Pantalla completa (ampliar) y filtro de líneas */
+  .ed-wrap.fullscreen{ position:fixed; inset:0; z-index:900; background:var(--bg); padding:14px 20px; margin:0; display:flex; flex-direction:column; overflow:auto; }
+  .ed-wrap.fullscreen > *{ flex-shrink:0; }
+  .ed-wrap.fullscreen #entrada{ flex:1 1 0; max-height:none; min-height:0; resize:none; }
+  .ed-wrap.fullscreen .code-block, .ed-wrap.fullscreen #vista-arbol{ flex:1 1 0; min-height:0; max-height:none; resize:none; }
+  .chk{ display:inline-flex; align-items:center; gap:5px; margin:0; font-size:12.5px; font-weight:600; color:var(--muted); text-transform:none; letter-spacing:0; cursor:pointer; white-space:nowrap; }
+</style>
+
+<div class="top">
+  <h1>Visor XML / JSON</h1>
+  <span class="chip info" id="chipVacio">Pega o abre un archivo</span>
+</div>
+<p class="sub">Pega aquí un XML o un JSON (o abre / arrastra un archivo) y se muestra formateado, validado y con colores. Todo se procesa en tu navegador: no se guarda ni se envía nada.</p>
+
+<div class="card" style="padding:18px;">
+ <div class="ed-wrap" id="edEntrada">
+  <div class="v-toolbar">
+    <div class="seg" id="seg">
+      <button type="button" class="active" data-modo="auto">Auto</button>
+      <button type="button" data-modo="json">JSON</button>
+      <button type="button" data-modo="xml">XML</button>
+    </div>
+    <span class="sp"></span>
+    <label class="btn secondary" for="archivo">⬆ Abrir archivo</label>
+    <input type="file" id="archivo" accept=".xml,.json,.txt,.xsd,.xsl,.xslt,.svg,.config,.csproj,.wsdl,.html" style="display:none;">
+    <button type="button" class="secondary" id="btnAmpliarEntrada" title="Pantalla completa (Esc para salir)">⤢ Ampliar</button>
+    <button type="button" class="secondary" id="btnLimpiar">Limpiar</button>
+  </div>
+  <textarea id="entrada" spellcheck="false" wrap="off" placeholder="Pega aquí tu XML o JSON…"></textarea>
+  <div class="hint">También puedes arrastrar un archivo sobre esta caja. Los números grandes (NIT, IDs) se respetan tal cual, sin redondear.</div>
+ </div>
+</div>
+
+<div class="card" id="salida" style="padding:18px;">
+  <div class="v-status" id="status"></div>
+  <div class="aviso" id="aviso" style="display:none;"></div>
+  <div class="errbox" id="errbox" style="display:none;"></div>
+
+  <div id="resultado" class="ed-wrap">
+    <div class="v-tabs">
+      <div class="seg" id="segVista">
+        <button type="button" class="active" data-vista="codigo">Código</button>
+        <button type="button" data-vista="arbol">Árbol</button>
+      </div>
+      <span class="sp"></span>
+      <div class="vsearch" id="busqCodigo">
+        <input type="text" id="buscar" placeholder="Buscar en el resultado…" autocomplete="off">
+        <span class="cnt" id="cnt"></span>
+        <button type="button" class="mini" id="bPrev" title="Anterior (Shift+Enter)">▲</button>
+        <button type="button" class="mini" id="bNext" title="Siguiente (Enter)">▼</button>
+        <label class="chk" title="Muestra solo las líneas que contienen lo buscado"><input type="checkbox" id="soloCoinc"> Filtrar líneas</label>
+      </div>
+      <div class="vsearch" id="ctrlArbol" style="display:none;">
+        <button type="button" class="secondary" id="bExpandir" style="padding:6px 11px; font-size:12.5px;">Expandir todo</button>
+        <button type="button" class="secondary" id="bContraer" style="padding:6px 11px; font-size:12.5px;">Contraer todo</button>
+      </div>
+      <button type="button" class="secondary" id="btnAmpliarSalida" title="Pantalla completa (Esc para salir)" style="padding:6px 11px; font-size:12.5px;">⤢ Ampliar</button>
+    </div>
+    <div class="v-toolbar" style="margin:0 0 8px;">
+      <button type="button" class="secondary" id="bCopiar">Copiar formateado</button>
+      <button type="button" class="secondary" id="bCopiarMin">Copiar minificado</button>
+      <button type="button" class="secondary" id="bCopiarFiltro" style="display:none;">Copiar líneas filtradas</button>
+      <button type="button" class="secondary" id="bDescargar">⬇ Descargar</button>
+    </div>
+    <div class="code-block" id="vista-codigo"></div>
+    <div id="vista-arbol"></div>
+    <div class="pathbar" id="pathbar">
+      <span style="color:var(--muted);">Ruta:</span><code id="pathTxt"></code>
+      <button type="button" class="secondary" id="bCopiarRuta">Copiar ruta</button>
+      <button type="button" class="secondary" id="bCopiarValor">Copiar valor</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">Copiado</div>
+
+<script>
+(function(){
+'use strict';
+
+var LOTE = 2000;          // líneas dibujadas por bloque
+var MAX_LINEA = 20000;    // líneas más largas se recortan (con botón para ver completa)
+var LIMITE_NODOS_EXPANDIR = 20000;
+
+var $ = function(id){ return document.getElementById(id); };
+var entrada = $('entrada');
+var modoSel = 'auto';
+var vistaSel = 'codigo';
+var estado = null;   // resultado del último análisis
+var temporizador;
+
+function escapeHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function escapeRegExp(s){ return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+function fmtNum(n){ return Number(n).toLocaleString('es-CO'); }
+function fmtTam(n){ return n >= 1048576 ? (n/1048576).toFixed(1) + ' MB' : (n >= 1024 ? (n/1024).toFixed(1) + ' KB' : n + ' caracteres'); }
+function esc(t){ return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function escAttr(t){ return esc(t).replace(/"/g,'&quot;'); }
+
+var toastT;
+function toast(msg){
+  var t = $('toast'); t.textContent = msg || 'Copiado'; t.classList.add('show');
+  clearTimeout(toastT); toastT = setTimeout(function(){ t.classList.remove('show'); }, 1500);
+}
+function copiar(texto, msg){
+  var fin = function(){ toast(msg || 'Copiado'); };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(texto).then(fin, function(){ copiarViejo(texto); fin(); });
+  } else { copiarViejo(texto); fin(); }
+}
+function copiarViejo(texto){
+  var ta = document.createElement('textarea'); ta.value = texto; document.body.appendChild(ta); ta.select();
+  try { document.execCommand('copy'); } catch (e) {} document.body.removeChild(ta);
+}
+
+/* ======================================================================
+   JSON: se valida con JSON.parse y se formatea con un lector propio que
+   conserva los números y textos EXACTAMENTE como vienen (sin redondear).
+   ====================================================================== */
+function parseJsonRaw(s){
+  var i = 0;
+  function ws(){ while (i < s.length && (s[i] === ' ' || s[i] === '\t' || s[i] === '\n' || s[i] === '\r')) i++; }
+  function cad(){
+    var ini = i; i++;
+    while (s[i] !== '"') { if (s[i] === '\\') i++; i++; }
+    i++;
+    return s.slice(ini, i);
+  }
+  function val(){
+    ws();
+    var c = s[i];
+    if (c === '{') {
+      i++; var props = []; ws();
+      if (s[i] === '}') { i++; return { t: 'obj', props: props }; }
+      for (;;) {
+        ws(); var k = cad(); ws(); i++; var v = val(); props.push({ k: k, v: v }); ws();
+        if (s[i] === ',') { i++; continue; }
+        i++; break;
+      }
+      return { t: 'obj', props: props };
+    }
+    if (c === '[') {
+      i++; var items = []; ws();
+      if (s[i] === ']') { i++; return { t: 'arr', items: items }; }
+      for (;;) {
+        items.push(val()); ws();
+        if (s[i] === ',') { i++; continue; }
+        i++; break;
+      }
+      return { t: 'arr', items: items };
+    }
+    if (c === '"') return { t: 'str', raw: cad() };
+    var ini = i;
+    while (i < s.length && ',]} \t\n\r'.indexOf(s[i]) === -1) i++;
+    var raw = s.slice(ini, i);
+    return { t: raw === 'true' || raw === 'false' ? 'bool' : (raw === 'null' ? 'null' : 'num'), raw: raw };
+  }
+  return val();
+}
+
+function tokVal(n){
+  return { t: n.raw, c: n.t === 'str' ? 'js' : (n.t === 'num' ? 'jn' : (n.t === 'bool' ? 'jb' : 'jl')) };
+}
+
+function emitJson(n, depth, keyRaw, coma, out){
+  var pre = keyRaw !== null ? [{ t: keyRaw, c: 'jk' }, { t: ': ', c: 'pn' }] : [];
+  var com = coma ? [{ t: ',', c: 'pn' }] : [];
+  if (n.t === 'obj' || n.t === 'arr') {
+    var abre = n.t === 'obj' ? '{' : '[', cierra = n.t === 'obj' ? '}' : ']';
+    var hijos = n.t === 'obj' ? n.props : n.items;
+    if (!hijos.length) { out.push({ ind: depth, toks: pre.concat([{ t: abre + cierra, c: 'pn' }], com) }); return; }
+    out.push({ ind: depth, toks: pre.concat([{ t: abre, c: 'pn' }]) });
+    for (var j = 0; j < hijos.length; j++) {
+      var ult = j === hijos.length - 1;
+      if (n.t === 'obj') emitJson(hijos[j].v, depth + 1, hijos[j].k, !ult, out);
+      else emitJson(hijos[j], depth + 1, null, !ult, out);
+    }
+    out.push({ ind: depth, toks: [{ t: cierra, c: 'pn' }].concat(com) });
+  } else {
+    out.push({ ind: depth, toks: pre.concat([tokVal(n)], com) });
+  }
+}
+
+function serJson(n){
+  if (n.t === 'obj') return '{' + n.props.map(function(p){ return p.k + ':' + serJson(p.v); }).join(',') + '}';
+  if (n.t === 'arr') return '[' + n.items.map(serJson).join(',') + ']';
+  return n.raw;
+}
+
+function contarJson(n){
+  if (n.t === 'obj') { var c = 1; n.props.forEach(function(p){ c += contarJson(p.v); }); return c; }
+  if (n.t === 'arr') { var d = 1; n.items.forEach(function(x){ d += contarJson(x); }); return d; }
+  return 1;
+}
+
+function posALineaCol(txt, pos){
+  var antes = txt.slice(0, pos);
+  var linea = antes.split('\n').length;
+  var col = pos - antes.lastIndexOf('\n');
+  return { linea: linea, col: col };
+}
+
+function errorJson(e, txt){
+  var msg = String(e.message || e);
+  var linea = null, col = null, m;
+  if ((m = msg.match(/line (\d+) column (\d+)/i))) { linea = +m[1]; col = +m[2]; }
+  else if ((m = msg.match(/position (\d+)/i))) { var p = posALineaCol(txt, +m[1]); linea = p.linea; col = p.col; }
+  return { mensaje: msg, linea: linea, col: col };
+}
+
+function analizarJson(txt, aviso){
+  var val;
+  try { val = JSON.parse(txt); }
+  catch (e) { return { ok: false, tipo: 'json', error: errorJson(e, txt), texto: txt }; }
+
+  if (typeof val === 'string' && /^\s*[\[{<]/.test(val)) {
+    var interno = val.trim();
+    if (interno[0] === '<') {
+      var rx = analizarXml(val, 'Era un XML escrito como texto entre comillas: se quitaron las comillas y los escapes.');
+      if (rx.ok) return rx;
+    } else {
+      try { JSON.parse(interno); return analizarJson(interno, 'Era un JSON escrito como texto entre comillas: se quitaron las comillas y los escapes.'); } catch (e2) {}
+    }
+  }
+
+  var modelo = parseJsonRaw(txt);
+  var lineas = [];
+  emitJson(modelo, 0, null, false, lineas);
+  var resumen = modelo.t === 'obj' ? 'Objeto · ' + fmtNum(modelo.props.length) + ' claves'
+              : (modelo.t === 'arr' ? 'Lista · ' + fmtNum(modelo.items.length) + ' elementos' : 'Valor simple');
+  return { ok: true, tipo: 'json', lineas: lineas, modelo: modelo, aviso: aviso || null,
+           resumen: resumen + ' · ' + fmtNum(contarJson(modelo)) + ' valores',
+           minificar: function(){ return serJson(modelo); }, ext: 'json', texto: txt };
+}
+
+/* ======================================================================
+   XML: se lee con el DOMParser del navegador (valida) y se formatea con
+   sangría; el XML que viene dentro de un CDATA también se formatea.
+   ====================================================================== */
+function tokensAbre(el, vacio){
+  var toks = [{ t: '<', c: 'pn' }, { t: el.nodeName, c: 'tg' }];
+  var at = el.attributes;
+  for (var i = 0; i < at.length; i++) {
+    toks.push({ t: ' ', c: null }, { t: at[i].name, c: 'an' }, { t: '="', c: 'pn' }, { t: escAttr(at[i].value), c: 'av' }, { t: '"', c: 'pn' });
+  }
+  toks.push({ t: vacio ? '/>' : '>', c: 'pn' });
+  return toks;
+}
+function tokensCierra(el){ return [{ t: '</', c: 'pn' }, { t: el.nodeName, c: 'tg' }, { t: '>', c: 'pn' }]; }
+
+function parsearXmlFragmento(str){
+  try {
+    var d = new DOMParser().parseFromString(str, 'application/xml');
+    if (d.getElementsByTagName('parsererror').length) return null;
+    return d;
+  } catch (e) { return null; }
+}
+
+function emitXmlDoc(doc, txt, depth, out){
+  var m = txt.match(/^\s*<\?xml[^?]*\?>/);
+  if (m) out.push({ ind: depth, toks: [{ t: m[0].trim(), c: 'pi' }] });
+  var hijos = doc.childNodes;
+  for (var i = 0; i < hijos.length; i++) emitXmlNodo(hijos[i], depth, out, 0);
+}
+
+function emitXmlNodo(n, depth, out, nivelCdata){
+  var t = n.nodeType;
+  if (t === 1) {
+    var hijos = [];
+    for (var i = 0; i < n.childNodes.length; i++) {
+      var h = n.childNodes[i];
+      if (h.nodeType === 3 && !h.data.trim()) continue;
+      hijos.push(h);
+    }
+    if (!hijos.length) { out.push({ ind: depth, toks: tokensAbre(n, true) }); return; }
+    if (hijos.length === 1 && (hijos[0].nodeType === 3 || hijos[0].nodeType === 4)) {
+      var u = hijos[0];
+      var dato = u.nodeType === 3 ? u.data.trim() : u.data;
+      var anidado = u.nodeType === 4 && dato.trim().charAt(0) === '<' && nivelCdata < 4;
+      if (dato.indexOf('\n') === -1 && !anidado) {
+        var toks = tokensAbre(n, false);
+        if (u.nodeType === 3) toks.push({ t: esc(dato), c: 'tx' });
+        else toks.push({ t: '<![CDATA[', c: 'pn' }, { t: dato, c: 'cd' }, { t: ']]>', c: 'pn' });
+        toks = toks.concat(tokensCierra(n));
+        out.push({ ind: depth, toks: toks });
+        return;
+      }
+    }
+    out.push({ ind: depth, toks: tokensAbre(n, false) });
+    for (var j = 0; j < hijos.length; j++) emitXmlNodo(hijos[j], depth + 1, out, nivelCdata);
+    out.push({ ind: depth, toks: tokensCierra(n) });
+    return;
+  }
+  if (t === 3) {
+    n.data.trim().split('\n').forEach(function(l){ out.push({ ind: depth, txt: true, toks: [{ t: esc(l.trim()), c: 'tx' }] }); });
+    return;
+  }
+  if (t === 4) {
+    var data = n.data;
+    var tr = data.trim();
+    if (tr.charAt(0) === '<' && nivelCdata < 4) {
+      var d2 = parsearXmlFragmento(tr);
+      if (d2) {
+        out.push({ ind: depth, toks: [{ t: '<![CDATA[', c: 'pn' }] });
+        emitXmlDoc(d2, tr, depth + 1, out);
+        out.push({ ind: depth, toks: [{ t: ']]>', c: 'pn' }] });
+        return;
+      }
+    }
+    var ls = data.split('\n');
+    if (ls.length === 1) { out.push({ ind: depth, toks: [{ t: '<![CDATA[', c: 'pn' }, { t: data, c: 'cd' }, { t: ']]>', c: 'pn' }] }); return; }
+    out.push({ ind: depth, toks: [{ t: '<![CDATA[', c: 'pn' }] });
+    ls.forEach(function(l){ out.push({ ind: depth + 1, txt: true, toks: [{ t: l.replace(/\s+$/, ''), c: 'cd' }] }); });
+    out.push({ ind: depth, toks: [{ t: ']]>', c: 'pn' }] });
+    return;
+  }
+  if (t === 8) {
+    var cs = n.data.split('\n');
+    if (cs.length === 1) out.push({ ind: depth, toks: [{ t: '<!--' + n.data + '-->', c: 'cm' }] });
+    else {
+      out.push({ ind: depth, toks: [{ t: '<!--', c: 'cm' }] });
+      cs.forEach(function(l){ out.push({ ind: depth + 1, toks: [{ t: l.trim(), c: 'cm' }] }); });
+      out.push({ ind: depth, toks: [{ t: '-->', c: 'cm' }] });
+    }
+    return;
+  }
+  if (t === 7) { out.push({ ind: depth, toks: [{ t: '<?' + n.target + (n.data ? ' ' + n.data : '') + '?>', c: 'pi' }] }); return; }
+  if (t === 10) { out.push({ ind: depth, toks: [{ t: '<!DOCTYPE ' + n.name + '>', c: 'pi' }] }); }
+}
+
+function errorXml(msg, txt){
+  var mensaje = msg.replace(/\s+/g, ' ').trim();
+  var linea = null, col = null, m;
+  if ((m = msg.match(/error on line (\d+) at column (\d+):\s*([\s\S]*?)(?:Below is a rendering|$)/i))) {
+    linea = +m[1]; col = +m[2]; mensaje = m[3].replace(/\s+/g, ' ').trim();
+  } else if ((m = msg.match(/XML Parsing Error:\s*([^\n]+)[\s\S]*?Line Number (\d+), Column (\d+)/i))) {
+    mensaje = m[1].trim(); linea = +m[2]; col = +m[3];
+  } else if ((m = msg.match(/line (\d+)[^\d]+(\d+)/i))) { linea = +m[1]; col = +m[2]; }
+  if (mensaje.length > 300) mensaje = mensaje.slice(0, 300) + '…';
+  return { mensaje: mensaje, linea: linea, col: col };
+}
+
+function analizarXml(txt, aviso){
+  var doc;
+  try {
+    doc = new DOMParser().parseFromString(txt, 'application/xml');
+  } catch (e) {
+    return { ok: false, tipo: 'xml', error: errorXml(String(e.message || e), txt), texto: txt };
+  }
+  var pe = doc.getElementsByTagName('parsererror')[0];
+  if (pe) return { ok: false, tipo: 'xml', error: errorXml(pe.textContent || '', txt), texto: txt };
+
+  var lineas = [];
+  emitXmlDoc(doc, txt, 0, lineas);
+  var raiz = doc.documentElement ? doc.documentElement.nodeName : '';
+  var total = doc.getElementsByTagName('*').length;
+  return { ok: true, tipo: 'xml', lineas: lineas, doc: doc, aviso: aviso || null,
+           resumen: 'Raíz: <' + raiz + '> · ' + fmtNum(total) + ' elemento' + (total === 1 ? '' : 's'),
+           minificar: function(){
+             var s = '', prevTxt = false;
+             lineas.forEach(function(l){
+               var linea = l.toks.map(function(x){ return x.t; }).join('');
+               if (l.txt && prevTxt) s += ' ';
+               s += linea; prevTxt = !!l.txt;
+             });
+             return s;
+           }, ext: 'xml', texto: txt };
+}
+
+function analizar(txt, modo){
+  var t = txt.replace(/^\uFEFF/, '').trim();
+  if (!t) return null;
+  var tipo = modo;
+  if (tipo === 'auto') tipo = t.charAt(0) === '<' ? 'xml' : 'json';
+  var r = tipo === 'xml' ? analizarXml(t) : analizarJson(t);
+  r.tam = txt.length;
+  return r;
+}
+
+/* ======================================================================
+   Dibujo del resultado
+   ====================================================================== */
+function textoLinea(l){ return l.toks.map(function(x){ return x.t; }).join(''); }
+function textoFormateado(){
+  return estado.lineas.map(function(l){ return new Array(l.ind + 1).join('  ') + textoLinea(l); }).join('\n');
+}
+
+function tokensAHtml(tokens, intervalos){
+  var out = '', pos = 0, k = 0;
+  tokens.forEach(function(tk){
+    var ini = pos, fin = pos + tk.t.length, cursor = ini, html = '';
+    while (cursor < fin) {
+      while (k < intervalos.length && intervalos[k][1] <= cursor) k++;
+      var iv = intervalos[k];
+      if (!iv || iv[0] >= fin) { html += escapeHtml(tk.t.slice(cursor - ini)); cursor = fin; }
+      else if (iv[0] > cursor) { html += escapeHtml(tk.t.slice(cursor - ini, iv[0] - ini)); cursor = iv[0]; }
+      else { var hasta = Math.min(iv[1], fin); html += '<mark>' + escapeHtml(tk.t.slice(cursor - ini, hasta - ini)) + '</mark>'; cursor = hasta; }
+    }
+    out += tk.c ? '<span class="tk-' + tk.c + '">' + html + '</span>' : html;
+    pos = fin;
+  });
+  return out;
+}
+
+function intervalos(texto, regex){
+  var res = [];
+  if (!regex) return res;
+  regex.lastIndex = 0;
+  var m;
+  while ((m = regex.exec(texto)) !== null) {
+    if (m[0] === '') { regex.lastIndex++; continue; }
+    res.push([m.index, m.index + m[0].length]);
+  }
+  return res;
+}
+
+function htmlLinea(i){
+  var l = estado.lineas[i];
+  var toks = l.toks;
+  var indent = new Array(l.ind + 1).join('  ');
+  var recorte = 0;
+  var largo = 0;
+  toks.forEach(function(x){ largo += x.t.length; });
+  if (largo > MAX_LINEA && !estado.expandidas[i]) {
+    // se recorta a MAX_LINEA caracteres manteniendo los colores
+    var acum = 0, nuevos = [];
+    for (var j = 0; j < toks.length; j++) {
+      if (acum + toks[j].t.length <= MAX_LINEA) { nuevos.push(toks[j]); acum += toks[j].t.length; }
+      else { nuevos.push({ t: toks[j].t.slice(0, MAX_LINEA - acum), c: toks[j].c }); acum = MAX_LINEA; break; }
+    }
+    recorte = largo - MAX_LINEA;
+    toks = nuevos;
+  }
+  var texto = toks.map(function(x){ return x.t; }).join('');
+  var cuerpo = escapeHtml(indent) + (tokensAHtml(toks, intervalos(texto, estado.regex)) || '&nbsp;');
+  if (recorte) cuerpo += ' <a class="ver-mas" href="#" data-ver="' + i + '">… +' + fmtNum(recorte) + ' caracteres · mostrar línea completa</a>';
+  return '<div class="code-line" data-i="' + i + '"><span class="ln">' + (i + 1) + '</span><span class="code-text">' + cuerpo + '</span></div>';
+}
+
+function agregarLineas(n){
+  var cont = $('vista-codigo');
+  var vis = estado && estado.vis;
+  var total = !estado ? 0 : (vis ? vis.length : estado.lineas.length);
+  if (!estado || estado.hasta >= total) return;
+  var viejo = cont.querySelector('.mas-lineas');
+  if (viejo) viejo.remove();
+  var fin = Math.min(total, estado.hasta + n);
+  var html = '';
+  for (var p = estado.hasta; p < fin; p++) html += htmlLinea(vis ? vis[p] : p);
+  estado.hasta = fin;
+  if (fin < total) {
+    html += '<div class="mas-lineas">Mostrando ' + fmtNum(fin) + ' de ' + fmtNum(total) +
+            ' líneas — sigue bajando para cargar más · <a href="#" data-todo="1">cargar todo</a></div>';
+  }
+  cont.insertAdjacentHTML('beforeend', html);
+}
+
+function dibujarCodigo(){
+  var cont = $('vista-codigo');
+  cont.innerHTML = '';
+  estado.hasta = 0;
+  contarCoincidencias();
+  // con "Filtrar líneas" activo y una búsqueda escrita, solo se dibujan las líneas con coincidencias
+  estado.vis = (estado.soloCoinc && estado.regex) ? estado.coinc : null;
+  $('bCopiarFiltro').style.display = estado.vis ? '' : 'none';
+  if (estado.vis && !estado.vis.length) cont.innerHTML = '<div class="mas-lineas">Ninguna línea contiene «' + escapeHtml(estado.query) + '».</div>';
+  agregarLineas(LOTE);
+  if (estado.coinc.length) irACoincidencia(0, true);
+}
+
+function contarCoincidencias(){
+  estado.coinc = []; estado.idx = -1;
+  var cnt = $('cnt');
+  if (!estado.regex) { cnt.textContent = ''; return; }
+  var total = 0;
+  for (var i = 0; i < estado.lineas.length; i++) {
+    var t = textoLinea(estado.lineas[i]);
+    if (t.length < estado.query.length) continue;
+    var r = estado.regex; r.lastIndex = 0; var m, c = 0;
+    while ((m = r.exec(t)) !== null) { c++; if (m[0] === '') r.lastIndex++; }
+    if (c) { estado.coinc.push(i); total += c; }
+  }
+  cnt.textContent = total ? fmtNum(total) + (total === 1 ? ' resultado' : ' resultados') +
+    (estado.soloCoinc ? ' en ' + fmtNum(estado.coinc.length) + (estado.coinc.length === 1 ? ' línea' : ' líneas') : '') : 'Sin resultados';
+}
+
+function irACoincidencia(dir, inicial){
+  if (!estado || !estado.coinc || !estado.coinc.length) return;
+  estado.idx = inicial ? 0 : (estado.idx + dir + estado.coinc.length) % estado.coinc.length;
+  var linea = estado.coinc[estado.idx];
+  var cont = $('vista-codigo');
+  var pos = estado.vis ? estado.idx : linea;   // posición dentro de lo dibujado
+  if (pos >= estado.hasta) agregarLineas(pos - estado.hasta + LOTE);
+  Array.prototype.forEach.call(cont.querySelectorAll('.cur-line'), function(e){ e.classList.remove('cur-line'); });
+  var el = cont.querySelector('[data-i="' + linea + '"]');
+  if (el) { el.classList.add('cur-line'); el.scrollIntoView({ block: 'center' }); }
+}
+
+/* ---------------------------- Árbol ---------------------------- */
+function itemsJson(n, ruta){
+  var res = [];
+  if (n.t === 'obj') {
+    n.props.forEach(function(p){
+      var clave; try { clave = JSON.parse(p.k); } catch (e) { clave = p.k; }
+      var r = ruta + (/^[A-Za-z_$][\w$]*$/.test(clave) ? '.' + clave : '["' + clave.replace(/"/g, '\\"') + '"]');
+      res.push(itemJson(n === null ? null : p.v, p.k, r));
+    });
+  } else if (n.t === 'arr') {
+    n.items.forEach(function(x, i){ res.push(itemJson(x, null, ruta + '[' + i + ']')); });
+  }
+  return res;
+}
+function itemJson(n, keyRaw, ruta){
+  var pre = keyRaw !== null ? '<span class="tk-jk">' + escapeHtml(keyRaw) + '</span><span class="tk-pn">: </span>' : '';
+  var etiqueta, hijos = null, cuenta = '';
+  if (n.t === 'obj') { etiqueta = pre + '<span class="tk-pn">{…}</span>'; cuenta = fmtNum(n.props.length) + (n.props.length === 1 ? ' clave' : ' claves'); if (n.props.length) hijos = function(){ return itemsJson(n, ruta); }; }
+  else if (n.t === 'arr') { etiqueta = pre + '<span class="tk-pn">[…]</span>'; cuenta = fmtNum(n.items.length) + (n.items.length === 1 ? ' elemento' : ' elementos'); if (n.items.length) hijos = function(){ return itemsJson(n, ruta); }; }
+  else { var v = tokVal(n); var raw = v.t.length > 400 ? v.t.slice(0, 400) + '…' : v.t; etiqueta = pre + '<span class="tk-' + v.c + '">' + escapeHtml(raw) + '</span>'; }
+  return { etiqueta: etiqueta, cuenta: cuenta, hijos: hijos, ruta: ruta, valor: (n.t === 'obj' || n.t === 'arr') ? serJson(n) : n.raw };
+}
+
+function rutaXml(el){
+  var partes = [];
+  var n = el;
+  while (n && n.nodeType === 1) {
+    var idx = 1, total = 0;
+    var p = n.parentNode;
+    if (p) {
+      for (var i = 0; i < p.childNodes.length; i++) {
+        var h = p.childNodes[i];
+        if (h.nodeType === 1 && h.nodeName === n.nodeName) { total++; if (h === n) idx = total; }
+      }
+    }
+    partes.unshift(n.nodeName + (total > 1 ? '[' + idx + ']' : ''));
+    n = p;
+  }
+  return '/' + partes.join('/');
+}
+
+function itemXml(n){
+  var t = n.nodeType;
+  if (t === 1) {
+    var kids = [];
+    for (var i = 0; i < n.childNodes.length; i++) {
+      var h = n.childNodes[i];
+      if (h.nodeType === 3 && !h.data.trim()) continue;
+      kids.push(h);
+    }
+    var etq = tokensAbre(n, kids.length === 0).map(function(x){
+      var tx = (x.c === 'av' && x.t.length > 200) ? x.t.slice(0, 200) + '…' : x.t;
+      return x.c ? '<span class="tk-' + x.c + '">' + escapeHtml(tx) + '</span>' : escapeHtml(tx);
+    }).join('');
+    var unico = kids.length === 1 && (kids[0].nodeType === 3 || kids[0].nodeType === 4) ? kids[0] : null;
+    var valor = unico ? (unico.nodeType === 3 ? unico.data.trim() : unico.data) : '';
+    var ruta = rutaXml(n);
+    if (unico) {
+      var corto = valor.length > 300 ? valor.slice(0, 300) + '…' : valor;
+      return { etiqueta: etq.replace(/<span class="tk-pn">&gt;<\/span>$/, '') + '<span class="tk-pn">&gt;</span><span class="tk-tx">' + escapeHtml(esc(corto)) + '</span><span class="tk-pn">&lt;/</span><span class="tk-tg">' + escapeHtml(n.nodeName) + '</span><span class="tk-pn">&gt;</span>', cuenta: '', hijos: null, ruta: ruta, valor: valor };
+    }
+    return { etiqueta: etq, cuenta: kids.length ? fmtNum(kids.length) + (kids.length === 1 ? ' hijo' : ' hijos') : '', ruta: ruta,
+             hijos: kids.length ? function(){ return kids.map(itemXml); } : null, valor: kids.map(function(k){ return k.nodeType === 3 ? k.data.trim() : ''; }).join(' ').trim() };
+  }
+  if (t === 3) return { etiqueta: '<span class="tk-tx">' + escapeHtml(esc(n.data.trim())) + '</span>', cuenta: '', hijos: null, ruta: '', valor: n.data.trim() };
+  if (t === 4) return { etiqueta: '<span class="tk-pn">&lt;![CDATA[</span><span class="tk-cd">' + escapeHtml(n.data.length > 300 ? n.data.slice(0, 300) + '…' : n.data) + '</span><span class="tk-pn">]]&gt;</span>', cuenta: '', hijos: null, ruta: '', valor: n.data };
+  if (t === 8) return { etiqueta: '<span class="tk-cm">' + escapeHtml('<!--' + n.data + '-->') + '</span>', cuenta: '', hijos: null, ruta: '', valor: n.data };
+  if (t === 7) return { etiqueta: '<span class="tk-pi">' + escapeHtml('<?' + n.target + ' ' + n.data + '?>') + '</span>', cuenta: '', hijos: null, ruta: '', valor: n.data };
+  return { etiqueta: '', cuenta: '', hijos: null, ruta: '', valor: '' };
+}
+
+var seleccionado = null;
+var nodosDibujados = 0;
+
+function crearNodoArbol(item, padreRuta){
+  var nodo = document.createElement('div');
+  nodo.className = 'tn ' + (item.hijos ? 'hijos' : 'hoja');
+  var fila = document.createElement('div');
+  fila.className = 'tr';
+  fila.innerHTML = '<span class="tg">▶</span><span class="et">' + item.etiqueta + '</span>' + (item.cuenta ? '<span class="nn">' + item.cuenta + '</span>' : '');
+  var cont = document.createElement('div');
+  cont.className = 'tc';
+  nodo.appendChild(fila); nodo.appendChild(cont);
+  nodo._item = item;
+  nodosDibujados++;
+
+  fila.addEventListener('click', function(){
+    if (seleccionado) seleccionado.classList.remove('sel');
+    seleccionado = fila; fila.classList.add('sel');
+    mostrarRuta(item, padreRuta);
+    if (item.hijos) alternarNodo(nodo);
+  });
+  return nodo;
+}
+
+function llenarHijos(nodo, desde){
+  var item = nodo._item;
+  var cont = nodo.querySelector(':scope > .tc');
+  if (!nodo._hijos) nodo._hijos = item.hijos();
+  var lista = nodo._hijos;
+  var mas = cont.querySelector(':scope > .masbtn');
+  if (mas) mas.remove();
+  var fin = Math.min(lista.length, desde + 300);
+  for (var i = desde; i < fin; i++) cont.appendChild(crearNodoArbol(lista[i], item.ruta));
+  nodo._dibujados = fin;
+  if (fin < lista.length) {
+    var b = document.createElement('div');
+    b.className = 'masbtn';
+    b.textContent = '… mostrar más (' + fmtNum(lista.length - fin) + ' restantes)';
+    b.addEventListener('click', function(ev){ ev.stopPropagation(); llenarHijos(nodo, nodo._dibujados); });
+    cont.appendChild(b);
+  }
+}
+
+function alternarNodo(nodo, forzar){
+  var abrir = forzar === undefined ? !nodo.classList.contains('open') : forzar;
+  if (abrir && !nodo._dibujados && nodo._item.hijos) llenarHijos(nodo, 0);
+  nodo.classList.toggle('open', abrir);
+}
+
+function expandirTodo(nodo, tope){
+  if (!nodo._item.hijos) return;
+  alternarNodo(nodo, true);
+  var hs = nodo.querySelectorAll(':scope > .tc > .tn');
+  for (var i = 0; i < hs.length; i++) {
+    if (nodosDibujados > tope) return;
+    expandirTodo(hs[i], tope);
+  }
+}
+
+function mostrarRuta(item, padre){
+  var pb = $('pathbar');
+  pb.classList.add('on');
+  $('pathTxt').textContent = item.ruta || padre || '';
+  pb._item = item;
+}
+
+function dibujarArbol(){
+  var cont = $('vista-arbol');
+  cont.innerHTML = '';
+  seleccionado = null; nodosDibujados = 0;
+  $('pathbar').classList.remove('on');
+  var raiz;
+  if (estado.tipo === 'json') raiz = itemJson(estado.modelo, null, '$');
+  else raiz = itemXml(estado.doc.documentElement);
+  var nodo = crearNodoArbol(raiz, '');
+  cont.appendChild(nodo);
+  if (raiz.hijos) alternarNodo(nodo, true);
+}
+
+function mostrarVista(v){
+  vistaSel = v;
+  Array.prototype.forEach.call($('segVista').querySelectorAll('button'), function(b){ b.classList.toggle('active', b.dataset.vista === v); });
+  $('vista-codigo').style.display = v === 'codigo' ? '' : 'none';
+  $('vista-arbol').style.display = v === 'arbol' ? 'block' : 'none';
+  $('busqCodigo').style.display = v === 'codigo' ? '' : 'none';
+  $('ctrlArbol').style.display = v === 'arbol' ? '' : 'none';
+  if (!estado || !estado.ok) return;
+  if (v === 'arbol' && !estado.arbolListo) { dibujarArbol(); estado.arbolListo = true; }
+  if (v !== 'arbol') $('pathbar').classList.remove('on');
+}
+
+/* ---------------------------- Estado general ---------------------------- */
+function chip(txt, cls){ return '<span class="chip ' + (cls || '') + '">' + escapeHtml(txt) + '</span>'; }
+
+function contextoError(txt, linea){
+  var ls = txt.split('\n');
+  var ini = Math.max(1, linea - 2), fin = Math.min(ls.length, linea + 2);
+  var html = '';
+  for (var i = ini; i <= fin; i++) {
+    var t = ls[i - 1]; if (t.length > 300) t = t.slice(0, 300) + '…';
+    html += '<span class="l' + (i === linea ? ' bad' : '') + '"><span class="n">' + i + '</span>' + escapeHtml(t) + '</span>';
+  }
+  return html;
+}
+
+function procesar(){
+  var txt = entrada.value;
+  estado = null;
+  var r = analizar(txt, modoSel);
+  $('chipVacio').style.display = r ? 'none' : '';
+  $('salida').classList.toggle('on', !!r);
+  if (!r) return;
+
+  var st = $('status');
+  var tipoTxt = r.tipo === 'json' ? 'JSON' : 'XML';
+  var errbox = $('errbox'), aviso = $('aviso');
+
+  if (!r.ok) {
+    st.innerHTML = chip('✖ ' + tipoTxt + ' con errores', 'bad') + chip(fmtTam(r.tam), 'info');
+    aviso.style.display = 'none';
+    var e = r.error;
+    var ubic = e.linea ? 'Línea ' + fmtNum(e.linea) + (e.col ? ', columna ' + fmtNum(e.col) : '') : 'No se pudo ubicar la línea';
+    errbox.style.display = 'block';
+    errbox.innerHTML = '<div class="t">' + escapeHtml(ubic) + '</div><div class="m">' + escapeHtml(e.mensaje) + '</div>' +
+      (e.linea ? '<pre>' + contextoError(r.texto, e.linea) + '</pre><button type="button" class="secondary" id="bIrError">Ir al error en la caja</button>' : '') +
+      (modoSel === 'auto' ? '<div class="hint">Detectado automáticamente como ' + tipoTxt + '. Si es otro formato, cámbialo arriba (Auto / JSON / XML).</div>' : '');
+    $('resultado').style.display = 'none';
+    var bi = $('bIrError');
+    if (bi) bi.addEventListener('click', function(){ irAlError(e); });
+    return;
+  }
+
+  errbox.style.display = 'none';
+  $('resultado').style.display = '';
+  st.innerHTML = chip('✔ ' + tipoTxt + ' válido', 'ok') + chip(r.resumen) + chip(fmtNum(r.lineas.length) + ' líneas formateadas', 'info') + chip(fmtTam(r.tam), 'info');
+  if (r.aviso) { aviso.style.display = 'block'; aviso.textContent = r.aviso; } else aviso.style.display = 'none';
+
+  r.regex = null; r.query = ''; r.expandidas = {}; r.hasta = 0; r.coinc = []; r.idx = -1; r.arbolListo = false;
+  r.vis = null; r.soloCoinc = $('soloCoinc').checked;
+  estado = r;
+  $('buscar').value = '';
+  $('cnt').textContent = '';
+  dibujarCodigo();
+  mostrarVista(vistaSel);
+}
+
+function irAlError(e){
+  var ls = entrada.value.split('\n');
+  var off = 0;
+  for (var i = 0; i < e.linea - 1 && i < ls.length; i++) off += ls[i].length + 1;
+  var largo = (ls[e.linea - 1] || '').length;
+  entrada.focus();
+  entrada.setSelectionRange(off, off + largo);
+  var alto = parseFloat(getComputedStyle(entrada).lineHeight) || 19.5;
+  entrada.scrollTop = Math.max(0, (e.linea - 4) * alto);
+}
+
+/* ---------------------------- Archivos ---------------------------- */
+function decodificar(buf){
+  var u8 = new Uint8Array(buf);
+  if (u8.length >= 2 && u8[0] === 0xFF && u8[1] === 0xFE) return new TextDecoder('utf-16le').decode(u8.subarray(2));
+  if (u8.length >= 2 && u8[0] === 0xFE && u8[1] === 0xFF) return new TextDecoder('utf-16be').decode(u8.subarray(2));
+  if (u8.length >= 3 && u8[0] === 0xEF && u8[1] === 0xBB && u8[2] === 0xBF) return new TextDecoder('utf-8').decode(u8.subarray(3));
+  try { return new TextDecoder('utf-8', { fatal: true }).decode(u8); }
+  catch (e) {
+    var cab = new TextDecoder('latin1').decode(u8.subarray(0, 300));
+    var m = cab.match(/encoding=["']([\w\-]+)["']/i);
+    if (m) { try { return new TextDecoder(m[1]).decode(u8); } catch (e2) {} }
+    return new TextDecoder('windows-1252').decode(u8);
+  }
+}
+
+function abrirArchivo(file){
+  if (!file) return;
+  var fr = new FileReader();
+  fr.onload = function(){
+    entrada.value = decodificar(fr.result);
+    var n = file.name.toLowerCase();
+    if (/\.json$/.test(n)) fijarModo('json'); else if (/\.(xml|xsd|xsl|xslt|svg|config|csproj|wsdl)$/.test(n)) fijarModo('xml'); else fijarModo('auto');
+    procesar();
+    toast('Archivo cargado: ' + file.name);
+  };
+  fr.onerror = function(){ toast('No se pudo leer el archivo'); };
+  fr.readAsArrayBuffer(file);
+}
+
+function fijarModo(m){
+  modoSel = m;
+  Array.prototype.forEach.call($('seg').querySelectorAll('button'), function(b){ b.classList.toggle('active', b.dataset.modo === m); });
+}
+
+/* ---------------------------- Eventos ---------------------------- */
+entrada.addEventListener('input', function(){
+  clearTimeout(temporizador);
+  temporizador = setTimeout(procesar, 300);
+});
+entrada.addEventListener('paste', function(){
+  clearTimeout(temporizador);
+  temporizador = setTimeout(procesar, 60);
+});
+['dragenter', 'dragover'].forEach(function(ev){
+  entrada.addEventListener(ev, function(e){ e.preventDefault(); entrada.classList.add('drag'); });
+});
+['dragleave', 'drop'].forEach(function(ev){
+  entrada.addEventListener(ev, function(e){ e.preventDefault(); entrada.classList.remove('drag'); });
+});
+entrada.addEventListener('drop', function(e){
+  var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+  if (f) abrirArchivo(f);
+});
+$('archivo').addEventListener('change', function(e){ abrirArchivo(e.target.files[0]); e.target.value = ''; });
+$('btnLimpiar').addEventListener('click', function(){ entrada.value = ''; procesar(); entrada.focus(); });
+
+$('seg').addEventListener('click', function(e){
+  var b = e.target.closest('button'); if (!b) return;
+  fijarModo(b.dataset.modo); procesar();
+});
+$('segVista').addEventListener('click', function(e){
+  var b = e.target.closest('button'); if (!b) return;
+  mostrarVista(b.dataset.vista);
+});
+
+var tBuscar;
+$('buscar').addEventListener('input', function(e){
+  var v = e.target.value.trim();
+  clearTimeout(tBuscar);
+  tBuscar = setTimeout(function(){
+    if (!estado || !estado.ok) return;
+    estado.query = v;
+    estado.regex = v ? new RegExp(escapeRegExp(v), 'gi') : null;
+    dibujarCodigo();
+  }, 200);
+});
+$('buscar').addEventListener('keydown', function(e){
+  if (e.key === 'Enter') { e.preventDefault(); irACoincidencia(e.shiftKey ? -1 : 1); }
+});
+$('soloCoinc').addEventListener('change', function(){
+  if (!estado || !estado.ok) return;
+  estado.soloCoinc = this.checked;
+  dibujarCodigo();
+});
+$('bCopiarFiltro').addEventListener('click', function(){
+  if (!estado || !estado.vis) return;
+  copiar(estado.vis.map(function(i){ var l = estado.lineas[i]; return new Array(l.ind + 1).join('  ') + textoLinea(l); }).join('\n'), 'Líneas filtradas copiadas');
+});
+
+/* Pantalla completa (ampliar), igual que en Notas / Jaivaná. Esc para salir */
+function ampliar(wrapId, btnId){
+  var w = $(wrapId), on = !w.classList.contains('fullscreen');
+  salirAmpliado();
+  if (on) {
+    w.classList.add('fullscreen');
+    document.body.style.overflow = 'hidden';
+    $(btnId).textContent = '⤡ Salir';
+    if (wrapId === 'edEntrada') entrada.focus();
+  }
+}
+function salirAmpliado(){
+  Array.prototype.forEach.call(document.querySelectorAll('.ed-wrap.fullscreen'), function(w){ w.classList.remove('fullscreen'); });
+  document.body.style.overflow = '';
+  $('btnAmpliarEntrada').textContent = '⤢ Ampliar';
+  $('btnAmpliarSalida').textContent = '⤢ Ampliar';
+}
+$('btnAmpliarEntrada').addEventListener('click', function(){ ampliar('edEntrada', 'btnAmpliarEntrada'); });
+$('btnAmpliarSalida').addEventListener('click', function(){ ampliar('resultado', 'btnAmpliarSalida'); });
+document.addEventListener('keydown', function(e){ if (e.key === 'Escape') salirAmpliado(); });
+
+$('bPrev').addEventListener('click', function(){ irACoincidencia(-1); });
+$('bNext').addEventListener('click', function(){ irACoincidencia(1); });
+
+$('vista-codigo').addEventListener('scroll', function(){
+  var c = $('vista-codigo');
+  if (c.scrollTop + c.clientHeight > c.scrollHeight - 800) agregarLineas(LOTE);
+});
+$('vista-codigo').addEventListener('click', function(e){
+  var a = e.target.closest('a');
+  if (!a) return;
+  e.preventDefault();
+  if (a.dataset.todo) { agregarLineas((estado.vis ? estado.vis.length : estado.lineas.length) - estado.hasta); return; }
+  if (a.dataset.ver) {
+    var i = +a.dataset.ver;
+    estado.expandidas[i] = true;
+    var fila = $('vista-codigo').querySelector('[data-i="' + i + '"]');
+    if (fila) fila.outerHTML = htmlLinea(i);
+  }
+});
+
+$('bCopiar').addEventListener('click', function(){ if (estado && estado.ok) copiar(textoFormateado(), 'Formateado copiado'); });
+$('bCopiarMin').addEventListener('click', function(){ if (estado && estado.ok) copiar(estado.minificar(), 'Minificado copiado'); });
+$('bDescargar').addEventListener('click', function(){
+  if (!estado || !estado.ok) return;
+  var blob = new Blob([textoFormateado()], { type: 'text/plain;charset=utf-8' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'formateado.' + estado.ext;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(a.href); }, 2000);
+});
+
+$('bExpandir').addEventListener('click', function(){
+  var raiz = $('vista-arbol').querySelector('.tn');
+  if (!raiz) return;
+  if (estado.tipo === 'json' && contarJson(estado.modelo) > LIMITE_NODOS_EXPANDIR && !confirm('El documento es muy grande; expandir todo puede tardar. ¿Continuar?')) return;
+  nodosDibujados = 0;
+  expandirTodo(raiz, LIMITE_NODOS_EXPANDIR * 2);
+});
+$('bContraer').addEventListener('click', function(){
+  var raiz = $('vista-arbol').querySelector('.tn');
+  if (!raiz) return;
+  Array.prototype.forEach.call($('vista-arbol').querySelectorAll('.tn.open'), function(n){ n.classList.remove('open'); });
+  raiz.classList.add('open');
+});
+$('bCopiarRuta').addEventListener('click', function(){ var t = $('pathTxt').textContent; if (t) copiar(t, 'Ruta copiada'); });
+$('bCopiarValor').addEventListener('click', function(){
+  var it = $('pathbar')._item;
+  if (it && it.valor !== undefined) copiar(String(it.valor), 'Valor copiado');
+});
+
+// Para pruebas / uso avanzado
+window.__visor = { analizar: analizar, procesar: procesar, fijarModo: fijarModo, mostrarVista: mostrarVista, get estado(){ return estado; } };
+})();
+</script>
