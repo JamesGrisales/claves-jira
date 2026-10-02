@@ -1,0 +1,232 @@
+<style>
+  .top{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:6px; }
+  .top h1{ margin:0; }
+  .chip{ display:inline-block; font-size:12px; font-weight:700; padding:4px 11px; border-radius:999px; color:var(--accent-dark); background:var(--accent-soft); }
+  .sub{ color:var(--muted); font-size:13.5px; margin:0 0 14px; }
+
+  .l-opts{ display:flex; gap:14px 20px; flex-wrap:wrap; align-items:flex-end; margin-bottom:12px; }
+  .l-opt{ display:flex; flex-direction:column; gap:5px; }
+  .l-opt > span{ font-size:11px; font-weight:700; color:var(--muted); letter-spacing:.03em; text-transform:uppercase; }
+  .l-opt select{
+    background:var(--panel-alt); border:1px solid var(--panel-edge); color:var(--text); font-family:var(--sans);
+    font-size:13px; padding:7px 10px; border-radius:8px; outline:none; height:34px;
+  }
+  .l-opt select:focus{ border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft); }
+  .l-checks{ display:flex; gap:6px 18px; flex-wrap:wrap; margin-bottom:12px; }
+  .l-checks label{ display:inline-flex; align-items:center; gap:6px; margin:0; font-size:13px; font-weight:600; color:var(--text); text-transform:none; letter-spacing:0; cursor:pointer; }
+
+  .l-grid{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  @media (max-width:820px){ .l-grid{ grid-template-columns:1fr; } }
+  .l-col h3{ margin:0 0 6px; font-size:12px; font-weight:700; color:var(--muted); letter-spacing:.03em; text-transform:uppercase; display:flex; justify-content:space-between; align-items:center; gap:8px; }
+  .l-col textarea{
+    width:100%; height:340px; resize:vertical; background:var(--panel-alt); border:1px solid var(--panel-edge);
+    color:var(--text); font-family:var(--mono); font-size:13px; line-height:1.5; padding:12px 14px; border-radius:10px; outline:none;
+    white-space:pre; overflow:auto;
+  }
+  .l-col textarea:focus{ border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft); }
+  #salida{ background:#1e1e1e; color:#d4d4d4; border-color:#2d2d2d; }
+  .l-bar{ display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+  .l-bar button{ padding:8px 13px; font-size:13px; }
+  .hint{ font-size:12px; color:var(--muted); margin-top:8px; }
+  .toast{ position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(10px) scale(.96); background:linear-gradient(135deg, var(--accent), var(--accent-dark)); color:#fff; font-size:13px; font-weight:600; padding:9px 18px; border-radius:8px; opacity:0; pointer-events:none; transition:opacity .18s ease, transform .18s ease; z-index:50; }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0) scale(1); }
+</style>
+
+<div class="top">
+  <h1>Listas con comillas y paréntesis</h1>
+  <span class="chip" id="chipCant">0 datos</span>
+</div>
+<p class="sub">Pega una columna de la base de datos o de Excel, y la convierto en <code>('a','b','c')</code> lista para un <code>IN (...)</code> o un <code>VALUES</code>. Todo se hace en tu navegador.</p>
+
+<div class="card" style="padding:18px;">
+  <div class="l-opts">
+    <div class="l-opt">
+      <span>Los datos vienen separados por</span>
+      <select id="sep">
+        <option value="auto">Automático (líneas, comas, ; o tab)</option>
+        <option value="lineas">Solo saltos de línea</option>
+        <option value="comas">Solo comas</option>
+        <option value="pcoma">Solo punto y coma</option>
+        <option value="espacios">Espacios</option>
+      </select>
+    </div>
+    <div class="l-opt">
+      <span>Comillas</span>
+      <select id="comillas">
+        <option value="'">Simples ' '</option>
+        <option value="&quot;">Dobles " "</option>
+        <option value="">Ninguna</option>
+      </select>
+    </div>
+    <div class="l-opt">
+      <span>Paréntesis</span>
+      <select id="parent">
+        <option value="todo">Uno solo: (a,b,c)</option>
+        <option value="cada">Cada dato: (a),(b),(c)</option>
+        <option value="filas">Cada fila de Excel: (a,b),(c,d)</option>
+        <option value="no">Sin paréntesis</option>
+      </select>
+    </div>
+    <div class="l-opt">
+      <span>Unir con</span>
+      <select id="union">
+        <option value=",">Coma (a,b,c)</option>
+        <option value=", ">Coma y espacio (a, b, c)</option>
+        <option value=",\n">Coma y salto de línea</option>
+        <option value="\n">Solo salto de línea</option>
+      </select>
+    </div>
+    <div class="l-opt">
+      <span>Datos por línea (opcional)</span>
+      <select id="porLinea">
+        <option value="0">Todos seguidos</option>
+        <option value="5">5</option>
+        <option value="10">10</option>
+        <option value="20">20</option>
+        <option value="50">50</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="l-checks">
+    <label><input type="checkbox" id="trim" checked> Quitar espacios al inicio y fin</label>
+    <label><input type="checkbox" id="vacios" checked> Ignorar vacíos</label>
+    <label><input type="checkbox" id="dups"> Quitar repetidos</label>
+    <label><input type="checkbox" id="nums"> No poner comillas a los números</label>
+    <label><input type="checkbox" id="mayus"> Pasar a MAYÚSCULAS</label>
+    <label><input type="checkbox" id="orden"> Ordenar</label>
+  </div>
+
+  <div class="l-grid">
+    <div class="l-col">
+      <h3>Entrada <span id="infoEntrada" style="font-weight:600;"></span></h3>
+      <textarea id="entrada" spellcheck="false" wrap="off" placeholder="Pega aquí tu columna…&#10;1001&#10;1002&#10;ABC-33"></textarea>
+    </div>
+    <div class="l-col">
+      <h3>Resultado</h3>
+      <textarea id="salida" spellcheck="false" wrap="off" readonly placeholder="('1001','1002','ABC-33')"></textarea>
+    </div>
+  </div>
+
+  <div class="l-bar">
+    <button type="button" id="bCopiar">Copiar resultado</button>
+    <button type="button" class="secondary" id="bLimpiar">Limpiar</button>
+    <button type="button" class="secondary" id="bSql" title="Copia: IN (...) con el resultado">Copiar como IN (…)</button>
+  </div>
+  <div class="hint">Las comillas simples que traiga un dato se duplican (<code>O'Brien</code> → <code>'O''Brien'</code>) para que el SQL no se rompa. Si pegas varias columnas desde Excel, elige "Cada fila de Excel".</div>
+</div>
+
+<div class="toast" id="toast">Copiado</div>
+
+<script>
+(function(){
+  var $ = function(id){ return document.getElementById(id); };
+  var entrada = $('entrada'), salida = $('salida');
+  var ids = ['sep','comillas','parent','union','porLinea','trim','vacios','dups','nums','mayus','orden'];
+
+  function esNumero(s){ return /^-?\d+(\.\d+)?$/.test(s) && !/^0\d/.test(s); }
+
+  function dividir(texto, modo){
+    var re = { auto:/[\r\n,;\t]+/, lineas:/\r?\n/, comas:/,/, pcoma:/;/, espacios:/\s+/ }[modo];
+    return texto.split(re);
+  }
+
+  function limpiar(lista, o){
+    if (o.trim) lista = lista.map(function(x){ return x.trim(); });
+    if (o.vacios) lista = lista.filter(function(x){ return x !== ''; });
+    if (o.mayus) lista = lista.map(function(x){ return x.toUpperCase(); });
+    if (o.dups) lista = lista.filter(function(x, i){ return lista.indexOf(x) === i; });
+    if (o.orden) lista = lista.slice().sort(function(a,b){
+      return a.localeCompare(b, undefined, { numeric:true });
+    });
+    return lista;
+  }
+
+  function envolver(x, o){
+    if (o.comillas === '' || (o.nums && esNumero(x))) return x;
+    var q = o.comillas;
+    // comilla simple -> ''   |   comilla doble -> ""
+    return q + x.split(q).join(q + q) + q;
+  }
+
+  function generar(){
+    var o = {
+      sep: $('sep').value, comillas: $('comillas').value, parent: $('parent').value,
+      union: $('union').value.replace(/\\n/g, '\n'), porLinea: Number($('porLinea').value),
+      trim: $('trim').checked, vacios: $('vacios').checked, dups: $('dups').checked,
+      nums: $('nums').checked, mayus: $('mayus').checked, orden: $('orden').checked
+    };
+    var texto = entrada.value;
+    if (!texto.trim()) { salida.value = ''; $('chipCant').textContent = '0 datos'; $('infoEntrada').textContent = ''; return; }
+
+    var out, total;
+
+    if (o.parent === 'filas') {
+      // Cada línea de Excel = una fila; las columnas vienen separadas por tabulador
+      var filas = texto.split(/\r?\n/).filter(function(l){ return o.vacios ? l.trim() !== '' : true; });
+      if (o.dups) filas = filas.filter(function(x, i){ return filas.indexOf(x) === i; });
+      var grupos = filas.map(function(f){
+        var cols = f.split('\t');
+        if (o.trim) cols = cols.map(function(c){ return c.trim(); });
+        if (o.mayus) cols = cols.map(function(c){ return c.toUpperCase(); });
+        return '(' + cols.map(function(c){ return envolver(c, o); }).join(',') + ')';
+      });
+      if (o.orden) grupos.sort(function(a,b){ return a.localeCompare(b, undefined, { numeric:true }); });
+      total = grupos.length;
+      out = juntar(grupos, o);
+    } else {
+      var datos = limpiar(dividir(texto, o.sep), o);
+      total = datos.length;
+      var items = datos.map(function(x){ return envolver(x, o); });
+      if (o.parent === 'cada') {
+        out = juntar(items.map(function(x){ return '(' + x + ')'; }), o);
+      } else if (o.parent === 'todo') {
+        out = '(' + juntar(items, o) + ')';
+      } else {
+        out = juntar(items, o);
+      }
+    }
+
+    salida.value = out;
+    $('chipCant').textContent = total + (total === 1 ? ' dato' : ' datos');
+    $('infoEntrada').textContent = texto.split(/\r?\n/).length + ' líneas';
+  }
+
+  function juntar(arr, o){
+    if (!o.porLinea || o.porLinea < 1) return arr.join(o.union);
+    // Dentro de cada línea los datos van separados por coma (o por lo que elegiste,
+    // si no incluye salto de línea); entre líneas se pone coma + salto de línea.
+    var interno = o.union.indexOf('\n') !== -1 ? ',' : o.union;
+    var lineas = [];
+    for (var i = 0; i < arr.length; i += o.porLinea) {
+      lineas.push(arr.slice(i, i + o.porLinea).join(interno));
+    }
+    return lineas.join(interno.replace(/\s+$/, '') + '\n');
+  }
+
+  function toast(msg){
+    var t = $('toast'); t.textContent = msg; t.classList.add('show');
+    setTimeout(function(){ t.classList.remove('show'); }, 1400);
+  }
+
+  function copiar(texto){
+    if (!texto) return toast('No hay nada que copiar');
+    var ok = function(){ toast('Copiado'); };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(texto).then(ok, function(){ salida.select(); document.execCommand('copy'); ok(); });
+    } else { salida.select(); document.execCommand('copy'); ok(); }
+  }
+
+  ids.forEach(function(id){ $(id).addEventListener('input', generar); $(id).addEventListener('change', generar); });
+  entrada.addEventListener('input', generar);
+  $('bCopiar').addEventListener('click', function(){ copiar(salida.value); });
+  $('bSql').addEventListener('click', function(){
+    var v = salida.value;
+    if (!v) return toast('No hay nada que copiar');
+    copiar($('parent').value === 'todo' ? 'IN ' + v : 'IN (' + v + ')');
+  });
+  $('bLimpiar').addEventListener('click', function(){ entrada.value = ''; generar(); entrada.focus(); });
+
+  generar();
+})();
+</script>

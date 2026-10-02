@@ -1,0 +1,1172 @@
+<style>
+  .top{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:6px; }
+  .top h1{ margin:0; }
+  .chip{ display:inline-block; font-size:12px; font-weight:700; padding:4px 11px; border-radius:999px; color:var(--accent-dark); background:var(--accent-soft); }
+  .chip.bad{ color:var(--danger); background:var(--danger-soft); }
+  .chip.info{ color:var(--muted); background:var(--panel-alt); border:1px solid var(--panel-edge); font-weight:600; }
+
+  .q-opts{ display:flex; gap:14px 18px; flex-wrap:wrap; align-items:flex-end; margin-bottom:12px; }
+  .q-opt{ display:flex; flex-direction:column; gap:5px; }
+  .q-opt > span{ font-size:11px; font-weight:700; color:var(--muted); letter-spacing:.03em; text-transform:uppercase; }
+  .q-opt input[type=number], .q-opt select{
+    background:var(--panel-alt); border:1px solid var(--panel-edge); color:var(--text); font-family:var(--sans);
+    font-size:13px; padding:7px 10px; border-radius:8px; outline:none; height:34px;
+  }
+  .q-opt input[type=number]{ width:74px; }
+  .q-opt input:focus, .q-opt select:focus{ border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft); }
+
+  .v-toolbar{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:10px; }
+  .v-toolbar .sp{ flex:1; }
+  .v-toolbar button, .v-toolbar label.btn{ padding:8px 13px; font-size:13px; }
+  label.btn{ display:inline-flex; align-items:center; gap:6px; cursor:pointer; margin:0; text-transform:none; letter-spacing:0; }
+  .seg{ display:inline-flex; background:var(--panel-alt); border:1px solid var(--panel-edge); border-radius:999px; padding:3px; }
+  .seg button{ background:transparent; color:var(--muted); box-shadow:none; border:none; padding:6px 13px; font-size:12.5px; border-radius:999px; transform:none; }
+  .seg button:hover{ color:var(--accent-dark); transform:none; box-shadow:none; filter:none; }
+  .seg button.active{ background:linear-gradient(135deg, var(--accent), var(--accent-dark)); color:#fff; }
+
+  #entrada{
+    width:100%; min-height:200px; max-height:60vh; resize:vertical; background:var(--panel-alt); border:1px solid var(--panel-edge);
+    color:var(--text); font-family:var(--mono); font-size:13px; line-height:1.5; padding:12px 14px; border-radius:10px; outline:none;
+    white-space:pre; overflow:auto; tab-size:4; transition:border-color .15s ease, box-shadow .15s ease;
+  }
+  #entrada:focus{ border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft); }
+  #entrada.drag{ border-color:var(--accent); background:var(--accent-soft); }
+  .hint{ font-size:12px; color:var(--muted); margin-top:6px; }
+
+  #salida{ margin-top:16px; display:none; }
+  #salida.on{ display:block; }
+  .v-status{ display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin-bottom:10px; }
+  .aviso{ font-size:12.5px; background:var(--danger-soft); color:var(--danger); border-radius:8px; padding:8px 12px; margin-bottom:10px; }
+  .aviso ul{ margin:4px 0 0; padding-left:18px; }
+
+  .code-block{ background:#1e1e1e; color:#d4d4d4; border:1px solid #2d2d2d; border-radius:9px; padding:10px 0; font-family:var(--mono); font-size:13px; line-height:1.6; margin:0; max-height:70vh; min-height:80px; overflow:auto; resize:vertical; tab-size:4; }
+  .code-line{ display:flex; min-width:max-content; }
+  .code-line:hover{ background:rgba(255,255,255,.04); }
+  .code-line .ln{ position:sticky; left:0; background:#1e1e1e; flex-shrink:0; width:52px; text-align:right; padding-right:12px; margin-right:12px; color:#6e7681; border-right:1px solid #333; user-select:none; }
+  .code-line .code-text{ white-space:pre; padding-right:16px; }
+  .tk-kw{ color:#569cd6; } .tk-st{ color:#ce9178; } .tk-nu{ color:#b5cea8; } .tk-cm{ color:#6a9955; font-style:italic; } .tk-qi{ color:#9cdcfe; }
+
+  .rp{ border:1px solid var(--panel-edge); background:var(--panel-alt); border-radius:10px; padding:10px 12px; margin-bottom:10px; display:none; }
+  .rp.on{ display:block; }
+  .rp-row{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  .rp-row + .rp-row{ margin-top:8px; }
+  .rp input[type=text]{ flex:1; min-width:140px; font-size:13px; padding:7px 10px; }
+  .rp label.chk{ display:inline-flex; align-items:center; gap:5px; margin:0; font-size:12.5px; font-weight:600; color:var(--muted); text-transform:none; letter-spacing:0; cursor:pointer; }
+  .rp button{ padding:7px 12px; font-size:12.5px; }
+  .rp .cnt{ font-size:12px; color:var(--muted); min-width:90px; }
+  .rp .presets{ font-size:12px; color:var(--muted); font-weight:600; }
+  .tk-sp{ background:rgba(255,167,38,.5); box-shadow:inset 0 -2px 0 #ffa726; border-radius:2px; }
+  .aviso.dato{ background:#fff4e0; color:#8a5300; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  :root[data-theme="dark"] .aviso.dato{ background:#3a2c12; color:#ffc46b; }
+  .aviso.dato button{ padding:6px 11px; font-size:12.5px; }
+  .rp select{ background:var(--panel); border:1px solid var(--panel-edge); color:var(--text); font-family:var(--sans); font-size:12.5px; padding:6px 8px; border-radius:8px; }
+  .more{ margin:10px 12px 2px; }
+
+  #lsEntrada{
+    width:100%; height:110px; resize:vertical; background:var(--panel); border:1px solid var(--panel-edge);
+    color:var(--text); font-family:var(--mono); font-size:13px; line-height:1.5; padding:9px 12px; border-radius:8px; outline:none;
+    white-space:pre; overflow:auto;
+  }
+  #lsEntrada:focus{ border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft); }
+  .ls-prev{ flex:1; min-width:200px; font-family:var(--mono); font-size:12px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .ls-hint{ font-size:12px; color:var(--muted); margin-top:8px; }
+  .ls-hint code{ background:var(--panel); border:1px solid var(--panel-edge); border-radius:4px; padding:0 4px; }
+  .toast{ position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(10px) scale(.96); background:linear-gradient(135deg, var(--accent), var(--accent-dark)); color:#fff; font-size:13px; font-weight:600; padding:9px 18px; border-radius:8px; opacity:0; pointer-events:none; transition:opacity .18s ease, transform .18s ease; z-index:1200; }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0) scale(1); }
+
+  /* Pantalla completa (ampliar) y filtro de líneas */
+  .ed-wrap.fullscreen{ position:fixed; inset:0; z-index:900; background:var(--bg); padding:14px 20px; margin:0; display:flex; flex-direction:column; overflow:auto; }
+  .ed-wrap.fullscreen > *{ flex-shrink:0; }
+  .ed-wrap.fullscreen #entrada{ flex:1 1 0; max-height:none; min-height:0; resize:none; }
+  .ed-wrap.fullscreen .code-block{ flex:1 1 0; min-height:0; max-height:none; resize:none; }
+  .f-input{ flex:1; min-width:180px; background:var(--panel-alt); border:1px solid var(--panel-edge); color:var(--text); font-family:var(--sans); font-size:13px; padding:7px 10px; border-radius:8px; outline:none; }
+  .f-input:focus{ border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft); }
+  .f-cnt{ font-size:12px; color:var(--muted); white-space:nowrap; }
+  .code-block mark{ background:#ffd54a; color:#1e1e1e; border-radius:2px; padding:0 1px; }
+  .sin-res{ padding:14px 16px; color:#8b949e; font-family:var(--sans); font-size:13px; }
+
+  /* =====================================================================
+     EDITOR ESTILO pgAdmin: colores, números de línea, sugerencias y sentencias
+     ===================================================================== */
+  .ed-frame, .code-block, .sn-prev{
+    --ed-bg:#ffffff; --ed-fg:#1e293b; --ed-gut-bg:#f3f6fc; --ed-gut-fg:#9aa8c4; --ed-gut-edge:#dfe7f5;
+    --ed-cur:rgba(37,99,235,.07); --ed-sel:rgba(37,99,235,.26);
+    --ed-brk:rgba(37,99,235,.16); --ed-brk-line:rgba(37,99,235,.7); --ed-brk-mal:rgba(225,29,72,.16); --ed-brk-mal-line:rgba(225,29,72,.75);
+    --ed-ph:rgba(245,158,11,.20); --ed-ph-line:rgba(217,119,6,.75); --ed-mark:#fde68a; --ed-mark-fg:#1e293b;
+    --t-kw:#1d4ed8; --t-ty:#0e7490; --t-fn:#a21caf; --t-st:#b91c1c; --t-nu:#047857; --t-cm:#15803d; --t-qi:#6d28d9; --t-pa:#c2410c;
+  }
+  :root[data-theme="dark"] .ed-frame, :root[data-theme="dark"] .code-block, :root[data-theme="dark"] .sn-prev{
+    --ed-bg:#0a1124; --ed-fg:#d6e0f5; --ed-gut-bg:#080e1d; --ed-gut-fg:#4d6190; --ed-gut-edge:#17244a;
+    --ed-cur:rgba(79,143,247,.09); --ed-sel:rgba(79,143,247,.34);
+    --ed-brk:rgba(79,143,247,.22); --ed-brk-line:rgba(120,170,255,.85); --ed-brk-mal:rgba(251,113,133,.2); --ed-brk-mal-line:rgba(251,113,133,.85);
+    --ed-ph:rgba(251,191,36,.18); --ed-ph-line:rgba(251,191,36,.7); --ed-mark:#a16207; --ed-mark-fg:#fff;
+    --t-kw:#6cb0ff; --t-ty:#4ec9b0; --t-fn:#e5c07b; --t-st:#ce9178; --t-nu:#b5cea8; --t-cm:#6a9955; --t-qi:#9cdcfe; --t-pa:#fb923c;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]) .ed-frame, :root:not([data-theme="light"]) .code-block, :root:not([data-theme="light"]) .sn-prev{
+      --ed-bg:#0a1124; --ed-fg:#d6e0f5; --ed-gut-bg:#080e1d; --ed-gut-fg:#4d6190; --ed-gut-edge:#17244a;
+      --ed-cur:rgba(79,143,247,.09); --ed-sel:rgba(79,143,247,.34);
+      --ed-brk:rgba(79,143,247,.22); --ed-brk-line:rgba(120,170,255,.85); --ed-brk-mal:rgba(251,113,133,.2); --ed-brk-mal-line:rgba(251,113,133,.85);
+      --ed-ph:rgba(251,191,36,.18); --ed-ph-line:rgba(251,191,36,.7); --ed-mark:#a16207; --ed-mark-fg:#fff;
+      --t-kw:#6cb0ff; --t-ty:#4ec9b0; --t-fn:#e5c07b; --t-st:#ce9178; --t-nu:#b5cea8; --t-cm:#6a9955; --t-qi:#9cdcfe; --t-pa:#fb923c;
+    }
+  }
+  .tk-kw{ color:var(--t-kw); font-weight:600; } .tk-ty{ color:var(--t-ty); } .tk-fn{ color:var(--t-fn); }
+  .tk-st{ color:var(--t-st); } .tk-nu{ color:var(--t-nu); } .tk-cm{ color:var(--t-cm); font-style:italic; }
+  .tk-qi{ color:var(--t-qi); } .tk-pa{ color:var(--t-pa); }
+
+  /* marco del editor */
+  .ed-frame{ border:1px solid var(--panel-edge); border-radius:14px; overflow:hidden; background:var(--ed-bg); display:flex; flex-direction:column;
+    transition:border-color .2s ease, box-shadow .2s ease; }
+  .ed-frame:focus-within{ border-color:var(--accent); box-shadow:0 0 0 4px rgba(var(--accent-rgb),.14); }
+  .ed-box{ display:flex; position:relative; background:var(--ed-bg); }
+  .ed-code{ position:relative; flex:1; min-width:0; background:var(--ed-bg); }
+  .gut{ position:relative; overflow:hidden; flex-shrink:0; background:var(--ed-gut-bg); border-right:1px solid var(--ed-gut-edge); color:var(--ed-gut-fg); user-select:none; }
+  .gut-in{ position:absolute; left:0; right:0; top:0; padding:12px 10px 28px 8px; text-align:right; white-space:pre; font-family:var(--mono); font-size:13px; line-height:1.5; will-change:transform; }
+  #capa{ position:absolute; inset:0; margin:0; padding:12px 28px 28px 14px; overflow:hidden; pointer-events:none; color:var(--ed-fg);
+    font-family:var(--mono); font-size:13px; line-height:1.5; tab-size:4; white-space:pre; letter-spacing:normal; word-spacing:normal; background:transparent; border:0; box-sizing:border-box; }
+  #entrada{ position:relative; z-index:2; display:block; width:100%; min-height:240px; max-height:60vh; resize:vertical; overflow:auto; margin:0;
+    background:transparent; color:transparent; caret-color:var(--ed-fg); border:0; border-radius:0; box-shadow:none; outline:none;
+    padding:12px 14px; font-family:var(--mono); font-size:13px; line-height:1.5; tab-size:4; white-space:pre; letter-spacing:normal; word-spacing:normal; box-sizing:border-box; }
+  #entrada:focus{ border:0; box-shadow:none; background:transparent; }
+  #entrada.drag{ background:rgba(var(--accent-rgb),.10); }
+  #entrada::placeholder{ color:var(--ed-gut-fg); }
+  #entrada::selection{ background:var(--ed-sel); color:transparent; }
+  .ed-box.plain #entrada{ color:var(--ed-fg); } .ed-box.plain #capa{ display:none; }
+  .curline{ position:absolute; left:0; right:0; z-index:0; background:var(--ed-cur); pointer-events:none; display:none; }
+  .brk, .ph{ position:absolute; z-index:1; pointer-events:none; border-radius:3px; display:none; }
+  .brk{ background:var(--ed-brk); box-shadow:inset 0 0 0 1px var(--ed-brk-line); } .brk.mal{ background:var(--ed-brk-mal); box-shadow:inset 0 0 0 1px var(--ed-brk-mal-line); }
+  .ph{ background:var(--ed-ph); box-shadow:inset 0 0 0 1px var(--ed-ph-line); }
+  .ed-estado{ display:flex; justify-content:space-between; gap:6px 16px; flex-wrap:wrap; padding:6px 12px; font-size:11.5px; color:var(--muted); background:var(--ed-gut-bg); border-top:1px solid var(--ed-gut-edge); }
+  .ed-estado b{ color:var(--text); font-weight:700; } .ed-estado kbd{ font-family:var(--mono); font-size:10.5px; padding:0 5px; border-radius:4px; border:1px solid var(--panel-edge); background:var(--panel); color:var(--text); }
+
+  /* salida con los mismos colores */
+  .code-block{ background:var(--ed-bg); color:var(--ed-fg); border:1px solid var(--panel-edge); border-radius:14px; }
+  .code-line:hover{ background:var(--ed-cur); }
+  .code-line .ln{ background:var(--ed-gut-bg); color:var(--ed-gut-fg); border-right:1px solid var(--ed-gut-edge); }
+  .code-block mark{ background:var(--ed-mark); color:var(--ed-mark-fg); }
+  .sin-res{ color:var(--muted); }
+
+  /* pantalla completa con el nuevo editor */
+  .ed-wrap.fullscreen .ed-frame{ flex:1 1 0; min-height:0; }
+  .ed-wrap.fullscreen .ed-box{ flex:1 1 0; min-height:0; }
+  .ed-wrap.fullscreen #entrada{ height:100%; max-height:none; min-height:0; resize:none; }
+  .ed-wrap.fullscreen .ed-code{ display:flex; }
+
+  /* sugerencias al escribir (como pgAdmin) */
+  .ac{ position:absolute; z-index:6; display:none; min-width:250px; max-width:440px; max-height:236px; overflow:auto; padding:4px; background:var(--panel); border:1px solid var(--panel-edge);
+    border-radius:12px; box-shadow:var(--shadow-lg); font-family:var(--mono); font-size:12.5px; animation:panelIn .12s ease; }
+  .ac-it{ display:flex; align-items:center; gap:9px; padding:5px 8px; border-radius:8px; cursor:pointer; color:var(--text); }
+  .ac-it.sel{ background:var(--accent-soft); box-shadow:inset 0 0 0 1px rgba(var(--accent-rgb),.35); }
+  .ac-it:hover{ background:var(--accent-soft); }
+  .ac-k{ width:22px; height:22px; border-radius:6px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-family:var(--sans); font-size:11px; font-weight:800; color:#fff; }
+  .ac-k.kw{ background:#2563eb; } .ac-k.ty{ background:#0e7490; } .ac-k.fn{ background:#a21caf; } .ac-k.sn{ background:#f59e0b; } .ac-k.id{ background:#64748b; }
+  .ac-t{ font-weight:700; white-space:nowrap; } .ac-d{ margin-left:auto; padding-left:12px; color:var(--muted); font-family:var(--sans); font-size:11.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:190px; }
+  .ac-pie{ padding:5px 8px 3px; font-family:var(--sans); font-size:10.5px; color:var(--muted); border-top:1px solid var(--panel-edge); margin-top:3px; }
+
+  /* panel de sentencias */
+  .sn-head{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+  .sn-head .f-input{ flex:1; min-width:220px; }
+  .sn-cats{ display:flex; gap:6px; flex-wrap:wrap; margin:10px 0; }
+  .sn-chip{ padding:5px 11px !important; font-size:12px !important; border-radius:999px !important; box-shadow:none !important; background:var(--panel) !important; color:var(--muted) !important; border:1px solid var(--panel-edge) !important; transform:none !important; }
+  .sn-chip:hover{ color:var(--accent-dark) !important; border-color:var(--accent) !important; }
+  .sn-chip.on{ background:var(--grad) !important; color:#fff !important; border-color:transparent !important; box-shadow:0 6px 14px -6px rgba(var(--accent-rgb),.7) !important; }
+  .sn-chip small{ opacity:.75; margin-left:4px; font-weight:700; }
+  .sn-body{ display:grid; grid-template-columns:minmax(0,1fr) 380px; gap:12px; align-items:start; }
+  .sn-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(205px, 1fr)); gap:8px; max-height:312px; overflow:auto; padding:2px 4px 2px 2px; align-content:start; }
+  .sn-card{ text-align:left !important; display:flex !important; flex-direction:column; gap:3px; padding:9px 11px !important; border-radius:11px !important; background:var(--panel) !important; color:var(--text) !important;
+    border:1px solid var(--panel-edge) !important; box-shadow:0 1px 2px rgba(15,35,80,.05) !important; font-weight:400 !important; transition:transform .18s var(--ease), border-color .18s ease, box-shadow .18s ease !important; }
+  .sn-card:hover, .sn-card:focus-visible{ transform:translateY(-2px) !important; border-color:var(--accent) !important; box-shadow:0 10px 20px -12px rgba(var(--accent-rgb),.65) !important; }
+  .sn-card b{ font-size:12.8px; font-family:var(--mono); font-weight:700; color:var(--accent-dark); line-height:1.25; }
+  .sn-card span{ font-size:11.6px; color:var(--muted); line-height:1.3; white-space:normal; }
+  .sn-card .tag{ align-self:flex-start; margin-top:2px; font-size:10px; font-weight:700; padding:1px 7px; border-radius:99px; background:var(--accent-soft); color:var(--accent-dark); }
+  .sn-prev{ position:sticky; top:0; border:1px solid var(--panel-edge); border-radius:12px; background:var(--ed-bg); overflow:hidden; display:flex; flex-direction:column; min-height:120px; }
+  .sn-prev h4{ margin:0; padding:9px 12px; font-size:12.5px; background:var(--ed-gut-bg); border-bottom:1px solid var(--ed-gut-edge); display:flex; align-items:center; justify-content:space-between; gap:8px; color:var(--text); }
+  .sn-prev h4 em{ font-style:normal; font-weight:500; color:var(--muted); font-size:11.5px; }
+  .sn-prev pre{ margin:0; padding:10px 12px; max-height:220px; overflow:auto; font-family:var(--mono); font-size:12px; line-height:1.55; color:var(--ed-fg); white-space:pre; }
+  .sn-prev pre u{ text-decoration:none; background:var(--ed-ph); box-shadow:inset 0 0 0 1px var(--ed-ph-line); border-radius:3px; padding:0 2px; }
+  .sn-prev .vacio{ padding:16px 14px; font-size:12.5px; color:var(--muted); line-height:1.5; }
+  .sn-prev .acc{ display:flex; gap:8px; padding:8px 10px; border-top:1px solid var(--ed-gut-edge); background:var(--ed-gut-bg); }
+  .sn-prev .acc button{ padding:6px 11px; font-size:12px; }
+  .sn-vacio{ grid-column:1/-1; padding:22px 10px; text-align:center; color:var(--muted); font-size:13px; }
+  .sn-tip{ margin-top:8px; font-size:12px; color:var(--muted); }
+  @media (max-width:1050px){ .sn-body{ grid-template-columns:1fr; } .sn-prev{ position:static; } }
+</style>
+
+<div class="top">
+  <h1>Formateador SQL</h1>
+  <span class="chip info" id="chipVacio">Pega o abre un archivo</span>
+</div>
+<p class="sub">Pega tu SQL y se limpia solo: quita espacios, tabs y saltos de línea que sobran, cada cláusula queda en su línea y las listas de datos se parten en filas de máximo N datos (como en pgAdmin). Todo se procesa en tu navegador: no se guarda ni se envía nada.</p>
+
+<div class="card" style="padding:18px;">
+  <div class="q-opts">
+    <div class="q-opt">
+      <span>Palabras clave</span>
+      <div class="seg" id="segKw">
+        <button type="button" class="active" data-v="upper">MAYÚS</button>
+        <button type="button" data-v="lower">minús</button>
+        <button type="button" data-v="keep">Igual</button>
+      </div>
+    </div>
+    <div class="q-opt">
+      <span>Datos por fila</span>
+      <input type="number" id="perRow" min="1" max="1000" value="10">
+    </div>
+    <div class="q-opt">
+      <span>Columnas del SELECT</span>
+      <div class="seg" id="segSel">
+        <button type="button" class="active" data-v="one">Una por línea</button>
+        <button type="button" data-v="group">Por filas</button>
+      </div>
+    </div>
+    <div class="q-opt">
+      <span>Sangría</span>
+      <select id="indent">
+        <option value="4">4 espacios</option>
+        <option value="2">2 espacios</option>
+        <option value="tab">Tab</option>
+      </select>
+    </div>
+  </div>
+
+ <div class="ed-wrap" id="edEntrada">
+  <div class="v-toolbar">
+    <button type="button" id="btnFormatear" title="Atajo: Ctrl+Shift+F">Formatear</button>
+    <button type="button" class="secondary" id="btnRP" title="Atajo: Ctrl+H">🔎 Buscar y reemplazar</button>
+    <button type="button" class="secondary" id="btnLS" title="Convierte una columna de datos en ('a','b','c') y la mete en tu SQL">📋 Lista de datos</button>
+    <button type="button" class="secondary" id="btnSN" title="Todas las sentencias de SQL listas para insertar (Ctrl+J)">🧩 Sentencias SQL</button>
+    <span class="sp"></span>
+    <label class="btn secondary" for="archivo">⬆ Abrir archivo</label>
+    <input type="file" id="archivo" accept=".sql,.txt,.psql,.pgsql" style="display:none;">
+    <button type="button" class="secondary" id="btnAmpliarEntrada" title="Pantalla completa (Esc para salir)">⤢ Ampliar</button>
+    <button type="button" class="secondary" id="btnLimpiar">Limpiar</button>
+  </div>
+  <div class="rp" id="rp">
+    <div class="rp-row">
+      <input type="text" id="rpBuscar" placeholder="Buscar…" autocomplete="off" spellcheck="false">
+      <input type="text" id="rpReemplazar" placeholder="Reemplazar por…" autocomplete="off" spellcheck="false">
+      <select id="rpAlcance" title="Dónde se busca y reemplaza">
+        <option value="todo">En todo el texto</option>
+        <option value="datos">Solo dentro de datos ('...')</option>
+        <option value="sintaxis">Solo en la sintaxis (fuera de comillas)</option>
+      </select>
+      <label class="chk"><input type="checkbox" id="rpCase"> Aa</label>
+      <label class="chk" title="Expresión regular. En 'Reemplazar por' puedes usar $1, \n, \t"><input type="checkbox" id="rpRegex"> .*</label>
+    </div>
+    <div class="rp-row">
+      <button type="button" class="secondary" id="rpSig">Siguiente</button>
+      <button type="button" id="rpTodo">Reemplazar todo</button>
+      <span class="cnt" id="rpCnt"></span>
+      <span class="sp" style="flex:1"></span>
+      <button type="button" class="secondary" id="rpUsar" title="Copia el resultado formateado a la caja de entrada para seguir editándolo">⬆ Usar resultado como entrada</button>
+    </div>
+    <div class="rp-row">
+      <span class="presets">Rápidos:</span>
+      <button type="button" class="secondary" data-p="datos" title="' 1 ' pasa a '1'">Quitar espacios de los datos (' 1 ' → '1')</button>
+      <button type="button" class="secondary" data-p="dobles">Espacios dobles → uno</button>
+      <button type="button" class="secondary" data-p="extremos">Quitar espacios al inicio/fin de línea</button>
+      <button type="button" class="secondary" data-p="guion">Espacios → _</button>
+      <button type="button" class="secondary" data-p="todos">Quitar TODOS los espacios</button>
+    </div>
+  </div>
+  <div class="rp" id="ls">
+    <div class="rp-row">
+      <textarea id="lsEntrada" spellcheck="false" wrap="off" placeholder="Pega aquí la columna de datos (de la base de datos o de Excel)…&#10;1001&#10;1002&#10;ABC-33"></textarea>
+    </div>
+    <div class="rp-row">
+      <span class="presets">Separados por</span>
+      <select id="lsSep">
+        <option value="auto">Automático (línea, coma, ; o tab)</option>
+        <option value="lineas">Solo saltos de línea</option>
+      </select>
+      <span class="presets">Comillas</span>
+      <select id="lsComillas">
+        <option value="'">Simples ' '</option>
+        <option value="&quot;">Dobles " "</option>
+        <option value="">Ninguna</option>
+      </select>
+      <span class="presets">Paréntesis</span>
+      <select id="lsParent">
+        <option value="todo">Uno solo: (a,b,c)</option>
+        <option value="cada">Cada dato: (a),(b),(c)</option>
+        <option value="filas">Cada fila de Excel: (a,b),(c,d)</option>
+        <option value="no">Sin paréntesis</option>
+      </select>
+    </div>
+    <div class="rp-row">
+      <label class="chk"><input type="checkbox" id="lsDups"> Quitar repetidos</label>
+      <label class="chk"><input type="checkbox" id="lsNums"> Números sin comillas</label>
+      <label class="chk"><input type="checkbox" id="lsMayus"> MAYÚSCULAS</label>
+      <label class="chk"><input type="checkbox" id="lsOrden"> Ordenar</label>
+    </div>
+    <div class="rp-row">
+      <button type="button" id="lsInsertar" title="Se inserta donde tengas el cursor en el SQL, o reemplaza {LISTA}">⬇ Insertar en el SQL</button>
+      <button type="button" class="secondary" id="lsCopiar">Copiar lista</button>
+      <button type="button" class="secondary" id="lsLimpiar">Limpiar</button>
+      <span class="cnt" id="lsCnt"></span>
+      <span class="ls-prev" id="lsPrev"></span>
+    </div>
+    <div class="ls-hint">Haz clic en el SQL donde va la lista y pulsa <strong>Insertar</strong>, o escribe <code>{LISTA}</code> en tu consulta (por ejemplo <code>where id in {LISTA}</code>) y se reemplaza solo. Si el cursor está dentro de un <code>IN ( )</code> no duplica los paréntesis. Una comilla simple dentro de un dato se duplica (<code>O'Brien</code> → <code>'O''Brien'</code>).</div>
+  </div>
+  <div class="rp" id="sn">
+    <div class="sn-head">
+      <input type="text" id="snBuscar" class="f-input" placeholder="Buscar sentencia o función…  ej: insert, join, fecha, duplicados, crear tabla" autocomplete="off" spellcheck="false">
+      <span class="f-cnt" id="snCnt"></span>
+    </div>
+    <div class="sn-cats" id="snCats"></div>
+    <div class="sn-body">
+      <div class="sn-grid" id="snGrid"></div>
+      <div class="sn-prev" id="snPrev"></div>
+    </div>
+    <div class="sn-tip">Haz clic en una sentencia para insertarla donde tengas el cursor; con <b>Tab</b> saltas entre los campos amarillos. También puedes escribir <b>sel</b>, <b>ins</b>, <b>upd</b>, <b>del</b>, <b>crt</b>… y elegirla en las sugerencias.</div>
+  </div>
+  <div class="ed-frame" id="edFrame">
+    <div class="ed-box" id="edBox">
+      <div class="gut" id="gut" aria-hidden="true"><div class="gut-in" id="gutIn"></div></div>
+      <div class="ed-code" id="edCode">
+        <div class="curline" id="curline"></div>
+        <div id="phs"></div>
+        <div class="brk" id="brk1"></div><div class="brk" id="brk2"></div>
+        <pre id="capa" aria-hidden="true"></pre>
+        <textarea id="entrada" spellcheck="false" wrap="off" placeholder="Pega aquí tu SQL…  por ejemplo:  select a,b from t where id in (1,2,3,4,5,6,7,8,9,10,11,12)"></textarea>
+        <div class="ac" id="ac"></div>
+      </div>
+    </div>
+    <div class="ed-estado"><span id="edEstadoPos"></span><span><kbd>Ctrl</kbd>+<kbd>Espacio</kbd> sugerencias · <kbd>Tab</kbd> siguiente campo · <kbd>Ctrl</kbd>+<kbd>/</kbd> comentar · <kbd>Ctrl</kbd>+<kbd>J</kbd> sentencias</span></div>
+  </div>
+  <div class="hint">También puedes arrastrar un archivo .sql sobre esta caja. Los textos entre comillas, los bloques $$…$$ / $q$…$q$ y los comentarios no se modifican. Los espacios que están dentro de un dato (por ejemplo <code>' 1 '</code>) se marcan en <span style="background:rgba(255,167,38,.5);border-radius:2px;padding:0 3px;">naranja</span> para que no los confundas con la sintaxis.</div>
+ </div>
+</div>
+
+<div class="card" id="salida" style="padding:18px;">
+  <div class="v-status" id="status"></div>
+  <div class="aviso" id="aviso" style="display:none;"></div>
+  <div class="aviso dato" id="avisoDatos" style="display:none;">
+    <span id="avisoDatosTxt"></span>
+    <button type="button" id="btnTrimDatos">Quitar esos espacios de los datos</button>
+  </div>
+
+ <div class="ed-wrap" id="edSalida">
+  <div class="v-toolbar">
+    <div class="seg" id="segVista">
+      <button type="button" class="active" data-v="format">Formateado</button>
+      <button type="button" data-v="min">Una línea por sentencia</button>
+    </div>
+    <span class="sp"></span>
+    <button type="button" class="secondary" id="bCopiar">Copiar</button>
+    <button type="button" class="secondary" id="bCopiarFiltro" style="display:none;">Copiar líneas filtradas</button>
+    <button type="button" class="secondary" id="bDescargar">⬇ Descargar .sql</button>
+  </div>
+  <div class="v-toolbar" style="margin:0 0 8px;">
+    <input type="text" id="filtro" class="f-input" placeholder="Filtrar líneas: muestra solo las que contengan…" autocomplete="off" spellcheck="false">
+    <span class="f-cnt" id="filtroCnt"></span>
+    <button type="button" class="secondary" id="btnAmpliarSalida" title="Pantalla completa (Esc para salir)">⤢ Ampliar</button>
+  </div>
+  <div class="code-block" id="codigo"></div>
+ </div>
+</div>
+
+<div class="toast" id="toast">Copiado</div>
+
+<script src="/sql-formatter.js"></script>
+<script src="/sql-sentencias.js"></script>
+<script>
+(function(){
+'use strict';
+
+var LOTE = 1500; // líneas dibujadas por bloque
+var $ = function(id){ return document.getElementById(id); };
+var entrada = $('entrada');
+var opts = { kw: 'upper', perRow: 10, indent: '4', selectMode: 'one', vista: 'format' };
+var resultado = null;   // { text, statements, warnings }
+var lineasHtml = [];    // líneas ya coloreadas
+var dibujadas = 0;
+var lineasTxt = [];     // texto plano de cada línea (para filtrar)
+var visibles = null;    // null = todas las líneas; si no, índices de las que pasan el filtro
+var filtroRe = null;    // para marcar lo encontrado
+var temporizador;
+
+/* ---------- opciones (se recuerdan en este navegador) ---------- */
+try {
+  var guardado = JSON.parse(localStorage.getItem('boveda-sql-opts') || 'null');
+  if (guardado) { for (var k in opts) if (guardado[k] !== undefined) opts[k] = guardado[k]; }
+} catch (e) {}
+function guardarOpts(){ try { localStorage.setItem('boveda-sql-opts', JSON.stringify(opts)); } catch (e) {} }
+
+function marcar(segId, valor){
+  var bs = $(segId).querySelectorAll('button');
+  for (var i = 0; i < bs.length; i++) bs[i].classList.toggle('active', bs[i].getAttribute('data-v') === valor);
+}
+function pintarOpts(){
+  marcar('segKw', opts.kw); marcar('segSel', opts.selectMode); marcar('segVista', opts.vista);
+  $('perRow').value = opts.perRow; $('indent').value = opts.indent;
+}
+pintarOpts();
+
+/* ---------- utilidades ---------- */
+function esc(t){ return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function fmtNum(n){ return Number(n).toLocaleString('es-CO'); }
+function fmtTam(n){ return n >= 1048576 ? (n/1048576).toFixed(1) + ' MB' : (n >= 1024 ? (n/1024).toFixed(1) + ' KB' : n + ' caracteres'); }
+
+var toastT;
+function toast(msg){
+  var t = $('toast'); t.textContent = msg || 'Copiado'; t.classList.add('show');
+  clearTimeout(toastT); toastT = setTimeout(function(){ t.classList.remove('show'); }, 1500);
+}
+function copiarViejo(texto){
+  var ta = document.createElement('textarea'); ta.value = texto; document.body.appendChild(ta); ta.select();
+  try { document.execCommand('copy'); } catch (e) {} document.body.removeChild(ta);
+}
+function copiar(texto, msg){
+  var fin = function(){ toast(msg || 'Copiado'); };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(texto).then(fin, function(){ copiarViejo(texto); fin(); });
+  } else { copiarViejo(texto); fin(); }
+}
+
+/* ---------- coloreado (no modifica el texto, solo lo pinta) ---------- */
+var SS = window.SqlSentencias || null; // catálogo (public/sql-sentencias.js)
+var RE_HL = /(--[^\n]*|\/\*[\s\S]*?(?:\*\/|$))|((?:[eEnNbBxX])?'(?:[^']|'')*(?:'|$)|(\$[A-Za-z_\u00C0-\u024F]*\$)[\s\S]*?(?:\3|$))|("(?:[^"]|"")*(?:"|$))|(::)|(\$\d+)|(\d+(?:\.\d+)?(?:[eE][+-]?\d+)?\b|\.\d+\b)|([A-Za-z_\u00C0-\u024F][\w$\u00C0-\u024F]*)|([\s\S])/g;
+function resaltar(texto){
+  var lineas = [''], m, cls, partes, j, prev = '', prevCh = '';
+  RE_HL.lastIndex = 0;
+  while ((m = RE_HL.exec(texto)) !== null) {
+    if (m[0] === '') { RE_HL.lastIndex++; continue; }
+    cls = '';
+    if (m[1]) cls = 'tk-cm';
+    else if (m[2]) cls = 'tk-st';
+    else if (m[4]) cls = 'tk-qi';
+    else if (m[6]) cls = 'tk-pa';
+    else if (m[7]) cls = 'tk-nu';
+    else if (m[8] && prevCh !== '.') {
+      if (SS) {
+        var c = SS.clasificar(m[8], /^\s*\(/.test(texto.substr(RE_HL.lastIndex, 24)), prev === '::');
+        if (c) cls = 'tk-' + c;
+      } else if (SqlFormatter.KEYWORDS[m[8].toUpperCase()]) cls = 'tk-kw';
+    }
+    if (!m[1] && m[0].trim() !== '') { prev = m[0]; prevCh = m[0].charAt(m[0].length - 1); }
+    partes = m[0].split('\n');
+    for (j = 0; j < partes.length; j++) {
+      if (j > 0) lineas.push('');
+      if (partes[j] !== '') {
+        var inner = esc(partes[j]);
+        if (cls === 'tk-st' && partes.length === 1) {
+          var pm = /^([eEnNbBxX]?')([ \t]*)([\s\S]*?)([ \t]*)('?)$/.exec(partes[j]);
+          if (pm && (pm[2] || pm[4])) {
+            inner = esc(pm[1]) +
+              (pm[2] ? '<span class="tk-sp" title="Espacio dentro del dato">' + esc(pm[2]) + '</span>' : '') +
+              esc(pm[3]) +
+              (pm[4] ? '<span class="tk-sp" title="Espacio dentro del dato">' + esc(pm[4]) + '</span>' : '') +
+              esc(pm[5]);
+          }
+        }
+        lineas[lineas.length - 1] += cls ? '<span class="' + cls + '">' + inner + '</span>' : inner;
+      }
+    }
+  }
+  return lineas;
+}
+
+function decod(t){ return t.replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&'); }
+// marca lo filtrado solo en el texto (no dentro de las etiquetas de color)
+function marcarHtml(html){
+  return html.split(/(<[^>]*>)/).map(function(p){
+    if (p.charAt(0) === '<' || !p) return p;
+    var t = decod(p), out = '', ult = 0, m;
+    filtroRe.lastIndex = 0;
+    while ((m = filtroRe.exec(t)) !== null) {
+      if (m[0] === '') { filtroRe.lastIndex++; continue; }
+      out += esc(t.slice(ult, m.index)) + '<mark>' + esc(m[0]) + '</mark>';
+      ult = m.index + m[0].length;
+    }
+    return out + esc(t.slice(ult));
+  }).join('');
+}
+
+function dibujarLote(){
+  var cont = $('codigo'), viejo = cont.querySelector('.more'), html = '', fin, i, li;
+  var total = visibles ? visibles.length : lineasHtml.length;
+  if (viejo) viejo.remove();
+  fin = Math.min(dibujadas + LOTE, total);
+  for (i = dibujadas; i < fin; i++) {
+    li = visibles ? visibles[i] : i;
+    html += '<div class="code-line"><span class="ln">' + (li + 1) + '</span><span class="code-text">' + ((filtroRe ? marcarHtml(lineasHtml[li]) : lineasHtml[li]) || ' ') + '</span></div>';
+  }
+  cont.insertAdjacentHTML('beforeend', html);
+  dibujadas = fin;
+  if (dibujadas < total) {
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'secondary more';
+    b.textContent = 'Mostrar ' + fmtNum(Math.min(LOTE, total - dibujadas)) + ' líneas más (' + fmtNum(total - dibujadas) + ' sin mostrar)';
+    b.addEventListener('click', dibujarLote);
+    cont.appendChild(b);
+  }
+}
+
+/* ---------- filtro de líneas ---------- */
+function aplicarFiltro(){
+  var q = $('filtro').value, cnt = $('filtroCnt'), cont = $('codigo');
+  filtroRe = null; visibles = null;
+  if (q.trim() && lineasTxt.length) {
+    var ql = q.toLowerCase();
+    filtroRe = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+    visibles = [];
+    for (var i = 0; i < lineasTxt.length; i++) if (lineasTxt[i].toLowerCase().indexOf(ql) !== -1) visibles.push(i);
+    cnt.textContent = visibles.length ? fmtNum(visibles.length) + ' de ' + fmtNum(lineasTxt.length) + ' líneas' : 'Sin resultados';
+  } else { cnt.textContent = ''; }
+  $('bCopiarFiltro').style.display = visibles ? '' : 'none';
+  dibujadas = 0;
+  cont.innerHTML = '';
+  if (visibles && !visibles.length) { cont.innerHTML = '<div class="sin-res">Ninguna línea contiene «' + esc(q) + '».</div>'; return; }
+  dibujarLote();
+}
+
+/* ---------- formateo ---------- */
+function procesar(){
+  pintarCapa();
+  var src = entrada.value;
+  if (!src.trim()) {
+    resultado = null; $('salida').classList.remove('on'); $('avisoDatos').style.display = 'none';
+    var c = $('chipVacio'); c.className = 'chip info'; c.textContent = 'Pega o abre un archivo';
+    return;
+  }
+  var r;
+  try {
+    r = opts.vista === 'min' ? SqlFormatter.minify(src, opts) : SqlFormatter.format(src, opts);
+  } catch (e) {
+    resultado = null;
+    $('salida').classList.add('on');
+    $('status').innerHTML = '<span class="chip bad">Error al formatear</span>';
+    $('aviso').style.display = 'block'; $('aviso').textContent = String(e && e.message || e);
+    $('codigo').innerHTML = '';
+    return;
+  }
+  resultado = r;
+
+  $('salida').classList.add('on');
+  var chip = $('chipVacio');
+  chip.className = 'chip' + (r.warnings.length ? ' bad' : ''); chip.textContent = r.warnings.length ? 'Revisa los avisos' : 'Listo';
+
+  var nLineas = r.text ? r.text.split('\n').length : 0;
+  var ahorro = src.length - r.text.length;
+  $('status').innerHTML =
+    '<span class="chip">' + fmtNum(r.statements) + (r.statements === 1 ? ' sentencia' : ' sentencias') + '</span>' +
+    '<span class="chip info">' + fmtNum(nLineas) + ' líneas</span>' +
+    '<span class="chip info">Entrada: ' + fmtTam(src.length) + '</span>' +
+    '<span class="chip info">Salida: ' + fmtTam(r.text.length) + '</span>';
+
+  var av = $('aviso');
+  if (r.warnings.length) {
+    av.style.display = 'block';
+    av.innerHTML = '<strong>Avisos sobre el SQL (se formateó igual):</strong><ul>' + r.warnings.map(function(w){ return '<li>' + esc(w) + '</li>'; }).join('') + '</ul>';
+  } else { av.style.display = 'none'; }
+
+  var np = SqlFormatter.paddedCount(r.text), ad = $('avisoDatos');
+  if (np) {
+    ad.style.display = 'flex';
+    $('avisoDatosTxt').textContent = np === 1
+      ? 'Hay 1 dato con espacios al inicio o al final (marcado en naranja). Se respetó tal cual.'
+      : 'Hay ' + fmtNum(np) + ' datos con espacios al inicio o al final (marcados en naranja). Se respetaron tal cual.';
+  } else { ad.style.display = 'none'; }
+
+  lineasHtml = resaltar(r.text);
+  lineasTxt = r.text.split('\n');
+  aplicarFiltro();
+}
+
+function programar(){ clearTimeout(temporizador); temporizador = setTimeout(procesar, entrada.value.length > 100000 ? 900 : 250); } // con textos grandes espera más para no trabar al escribir
+
+/* ---------- eventos ---------- */
+entrada.addEventListener('input', programar);
+$('btnFormatear').addEventListener('click', procesar);
+$('btnLimpiar').addEventListener('click', function(){ entrada.value = ''; procesar(); entrada.focus(); });
+
+function segClick(segId, clave){
+  $(segId).addEventListener('click', function(ev){
+    var b = ev.target.closest('button'); if (!b) return;
+    opts[clave] = b.getAttribute('data-v'); guardarOpts(); pintarOpts(); procesar();
+  });
+}
+segClick('segKw', 'kw'); segClick('segSel', 'selectMode'); segClick('segVista', 'vista');
+$('perRow').addEventListener('input', function(){
+  var n = parseInt(this.value, 10);
+  if (n >= 1) { opts.perRow = n; guardarOpts(); programar(); }
+});
+$('indent').addEventListener('change', function(){ opts.indent = this.value; guardarOpts(); procesar(); });
+
+$('bCopiar').addEventListener('click', function(){ if (resultado) copiar(resultado.text, 'SQL copiado'); });
+$('bDescargar').addEventListener('click', function(){
+  if (!resultado) return;
+  var blob = new Blob([resultado.text + '\n'], { type: 'text/plain;charset=utf-8' });
+  var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'consulta-formateada.sql';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(a.href); }, 1000);
+});
+
+function leerArchivo(f){
+  if (!f) return;
+  var r = new FileReader();
+  r.onload = function(){ entrada.value = String(r.result); procesar(); };
+  r.readAsText(f);
+}
+$('archivo').addEventListener('change', function(){ leerArchivo(this.files[0]); this.value = ''; });
+['dragenter','dragover'].forEach(function(ev){ entrada.addEventListener(ev, function(e){ e.preventDefault(); entrada.classList.add('drag'); }); });
+['dragleave','drop'].forEach(function(ev){ entrada.addEventListener(ev, function(e){ e.preventDefault(); entrada.classList.remove('drag'); }); });
+entrada.addEventListener('drop', function(e){ leerArchivo(e.dataTransfer.files && e.dataTransfer.files[0]); });
+
+/* ---------- buscar y reemplazar ---------- */
+function rpRegex(global){
+  var q = $('rpBuscar').value; if (q === '') return null;
+  var f = ($('rpCase').checked ? 'g' : 'gi');
+  try { return new RegExp($('rpRegex').checked ? q : q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), f); }
+  catch (e) { $('rpCnt').textContent = 'Expresión inválida'; return null; }
+}
+function rpRepl(){
+  var r = $('rpReemplazar').value;
+  if ($('rpRegex').checked) return r.replace(/\\n/g, '\n').replace(/\\t/g, '\t');
+  return function(){ return r; };
+}
+function trozos(texto){
+  var alc = $('rpAlcance').value;
+  if (alc === 'todo') return [{ text: texto, ok: true }];
+  return SqlFormatter.segments(texto).map(function(sg){
+    return { text: sg.text, ok: (alc === 'datos' && sg.kind === 'data') || (alc === 'sintaxis' && sg.kind === 'code') };
+  });
+}
+function contarEn(re, texto){
+  var c = new RegExp(re.source, re.flags), n = 0, m;
+  while ((m = c.exec(texto)) !== null) { n++; if (m[0] === '') c.lastIndex++; if (n > 1e6) break; }
+  return n;
+}
+function rpContar(){
+  var re = rpRegex(); if (!re) { if (!$('rpBuscar').value) $('rpCnt').textContent = ''; return 0; }
+  var n = 0; trozos(entrada.value).forEach(function(t){ if (t.ok) n += contarEn(re, t.text); });
+  $('rpCnt').textContent = fmtNum(n) + (n === 1 ? ' coincidencia' : ' coincidencias');
+  return n;
+}
+function aplicar(re, repl, msg){
+  var n = 0;
+  var nuevo = trozos(entrada.value).map(function(t){
+    if (!t.ok) return t.text;
+    n += contarEn(re, t.text);
+    return t.text.replace(re, repl);
+  }).join('');
+  if (!n) { toast('Sin coincidencias'); return; }
+  entrada.value = nuevo; procesar(); rpContar(); toast((msg || 'Reemplazado') + ': ' + fmtNum(n));
+}
+function quitarEspaciosDatos(){
+  var r = SqlFormatter.trimData(entrada.value);
+  if (!r.count) { toast('No hay datos con espacios al inicio/fin'); return; }
+  entrada.value = r.text; procesar(); rpContar();
+  toast(r.count === 1 ? '1 dato limpiado' : fmtNum(r.count) + ' datos limpiados');
+}
+$('btnTrimDatos').addEventListener('click', quitarEspaciosDatos);
+$('btnRP').addEventListener('click', function(){ var p = $('rp'); p.classList.toggle('on'); if (p.classList.contains('on')) { $('rpBuscar').focus(); rpContar(); } });
+['rpBuscar','rpCase','rpRegex','rpAlcance'].forEach(function(id){ $(id).addEventListener('input', rpContar); $(id).addEventListener('change', rpContar); });
+$('rpTodo').addEventListener('click', function(){
+  var re = rpRegex(); if (!re) return;
+  var r = rpRepl();
+  aplicar(re, r, 'Reemplazadas');
+});
+$('rpSig').addEventListener('click', function(){
+  var re = rpRegex(); if (!re) return;
+  re.lastIndex = entrada.selectionEnd || 0;
+  var m = re.exec(entrada.value);
+  if (!m) { re.lastIndex = 0; m = re.exec(entrada.value); }
+  if (!m) { toast('Sin coincidencias'); return; }
+  entrada.focus(); entrada.setSelectionRange(m.index, m.index + m[0].length);
+  var linea = entrada.value.slice(0, m.index).split('\n').length;
+  entrada.scrollTop = Math.max(0, (linea - 3) * 19.5);
+});
+$('rpBuscar').addEventListener('keydown', function(e){ if (e.key === 'Enter') { e.preventDefault(); $('rpSig').click(); } });
+$('rpReemplazar').addEventListener('keydown', function(e){ if (e.key === 'Enter') { e.preventDefault(); $('rpTodo').click(); } });
+$('rpUsar').addEventListener('click', function(){ if (resultado) { entrada.value = resultado.text; pintarCapa(); toast('Resultado pasado a la entrada'); rpContar(); } });
+document.querySelector('.rp-row .presets').parentNode.addEventListener('click', function(e){
+  var b = e.target.closest('button[data-p]'); if (!b) return;
+  // Trabaja sobre el resultado formateado si existe, para no tocar el texto entre comillas por error
+  var p = b.getAttribute('data-p');
+  if (p === 'datos') quitarEspaciosDatos();
+  else if (p === 'dobles') aplicar(/[ \t]{2,}/g, function(){ return ' '; }, 'Espacios dobles');
+  else if (p === 'extremos') aplicar(/^[ \t]+|[ \t]+$/gm, function(){ return ''; }, 'Líneas limpiadas');
+  else if (p === 'guion') aplicar(/[ \t]+/g, function(){ return '_'; }, 'Espacios reemplazados');
+  else if (p === 'todos') {
+    if (confirm('Esto quita TODOS los espacios, incluso los de dentro de los textos y entre palabras (SELECT a FROM t quedaría SELECTaFROMt). ¿Continuar?')) aplicar(/[ \t]+/g, function(){ return ''; }, 'Espacios quitados');
+  }
+});
+
+/* ---------- lista de datos (comillas y paréntesis) ---------- */
+var lsEnt = $('lsEntrada');
+var cursorListo = false; // el usuario ya hizo clic en el SQL
+entrada.addEventListener('focus', function(){ cursorListo = true; });
+
+function lsEsNum(s){ return /^-?\d+(\.\d+)?$/.test(s) && !/^0\d/.test(s); }
+function lsEnvolver(x, q, nums){
+  if (q === '' || (nums && lsEsNum(x))) return x;
+  return q + x.split(q).join(q + q) + q; // ' -> ''   |   " -> ""
+}
+function lsOrdenar(a, b){ return a.localeCompare(b, undefined, { numeric: true }); }
+function lsUnicos(arr){ var vistos = {}; return arr.filter(function(x){ if (vistos.hasOwnProperty(x)) return false; vistos[x] = 1; return true; }); }
+
+function lsGenerar(){
+  var texto = lsEnt.value, modo = $('lsParent').value, q = $('lsComillas').value,
+      nums = $('lsNums').checked, mayus = $('lsMayus').checked;
+  if (!texto.trim()) return { text: '', total: 0 };
+  var items;
+  if (modo === 'filas') {
+    // cada línea de Excel es una fila; las columnas vienen separadas por tabulador
+    items = texto.split(/\r?\n/).filter(function(l){ return l.trim() !== ''; }).map(function(f){
+      return '(' + f.split('\t').map(function(c){
+        c = c.trim(); if (mayus) c = c.toUpperCase();
+        return lsEnvolver(c, q, nums);
+      }).join(',') + ')';
+    });
+    if ($('lsDups').checked) items = lsUnicos(items);
+    if ($('lsOrden').checked) items.sort(lsOrden);
+    return { text: items.join(','), total: items.length };
+  }
+  var datos = texto.split($('lsSep').value === 'lineas' ? /\r?\n/ : /[\r\n,;\t]+/)
+    .map(function(x){ return x.trim(); }).filter(function(x){ return x !== ''; });
+  if (mayus) datos = datos.map(function(x){ return x.toUpperCase(); });
+  if ($('lsDups').checked) datos = lsUnicos(datos);
+  if ($('lsOrden').checked) datos.sort(lsOrden);
+  items = datos.map(function(x){ return lsEnvolver(x, q, nums); });
+  var out;
+  if (modo === 'cada') out = items.map(function(x){ return '(' + x + ')'; }).join(',');
+  else if (modo === 'todo') out = '(' + items.join(',') + ')';
+  else out = items.join(',');
+  return { text: out, total: datos.length };
+}
+
+// Si el cursor ya está dentro de un ( ) no se duplican los paréntesis
+function lsAjustar(valor, antes, despues){
+  if ($('lsParent').value === 'todo' && /\(\s*$/.test(antes) && /^\s*\)/.test(despues) &&
+      valor.charAt(0) === '(' && valor.charAt(valor.length - 1) === ')') return valor.slice(1, -1);
+  return valor;
+}
+
+function lsActualizar(){
+  var r = lsGenerar();
+  $('lsCnt').textContent = r.total ? fmtNum(r.total) + (r.total === 1 ? ' dato' : ' datos') : '';
+  $('lsPrev').textContent = r.text.length > 160 ? r.text.slice(0, 160) + '…' : r.text;
+  $('lsPrev').title = r.text.length > 160 ? 'Vista previa (recortada)' : '';
+}
+
+function lsInsertar(){
+  var r = lsGenerar();
+  if (!r.text) { toast('Pega primero los datos de la lista'); return; }
+  var v = entrada.value, nuevo, n = 0;
+  if (/\{LISTA\}/i.test(v)) {
+    nuevo = v.replace(/\{LISTA\}/gi, function(m, off, str){
+      n++; return lsAjustar(r.text, str.slice(0, off), str.slice(off + m.length));
+    });
+    toast(n === 1 ? 'Lista puesta en {LISTA}' : 'Lista puesta en ' + n + ' marcadores {LISTA}');
+  } else if (v.trim() === '') {
+    nuevo = r.text; toast('Lista insertada');
+  } else if (!cursorListo) {
+    toast('Haz clic en el SQL donde va la lista, o escribe {LISTA}'); return;
+  } else {
+    var a = entrada.selectionStart, b = entrada.selectionEnd;
+    var val = lsAjustar(r.text, v.slice(0, a), v.slice(b));
+    nuevo = v.slice(0, a) + val + v.slice(b);
+    entrada.value = nuevo; entrada.setSelectionRange(a + val.length, a + val.length);
+    clearTimeout(temporizador); procesar(); toast('Lista insertada en el cursor'); return;
+  }
+  entrada.value = nuevo; clearTimeout(temporizador); procesar();
+}
+
+$('btnLS').addEventListener('click', function(){ var p = $('ls'); p.classList.toggle('on'); if (p.classList.contains('on')) lsEnt.focus(); });
+['lsEntrada','lsSep','lsComillas','lsParent','lsDups','lsNums','lsMayus','lsOrden'].forEach(function(id){
+  $(id).addEventListener('input', lsActualizar); $(id).addEventListener('change', lsActualizar);
+});
+$('lsInsertar').addEventListener('click', lsInsertar);
+$('lsCopiar').addEventListener('click', function(){ var r = lsGenerar(); if (r.text) copiar(r.text, 'Lista copiada'); else toast('Pega primero los datos de la lista'); });
+$('lsLimpiar').addEventListener('click', function(){ lsEnt.value = ''; lsActualizar(); lsEnt.focus(); });
+
+/* ---------- filtro y pantalla completa ---------- */
+var tFiltro;
+$('filtro').addEventListener('input', function(){ clearTimeout(tFiltro); tFiltro = setTimeout(aplicarFiltro, 150); });
+$('bCopiarFiltro').addEventListener('click', function(){
+  if (!visibles) return;
+  copiar(visibles.map(function(i){ return lineasTxt[i]; }).join('\n'), 'Líneas filtradas copiadas');
+});
+
+// Pantalla completa (ampliar), igual que en Notas / Jaivaná. Esc para salir
+function ampliar(wrapId, btnId){
+  var w = $(wrapId), on = !w.classList.contains('fullscreen');
+  salirAmpliado();
+  if (on) {
+    w.classList.add('fullscreen');
+    document.body.style.overflow = 'hidden';
+    $(btnId).textContent = '⤡ Salir';
+    if (wrapId === 'edEntrada') entrada.focus();
+  }
+}
+function salirAmpliado(){
+  Array.prototype.forEach.call(document.querySelectorAll('.ed-wrap.fullscreen'), function(w){ w.classList.remove('fullscreen'); });
+  document.body.style.overflow = '';
+  $('btnAmpliarEntrada').textContent = '⤢ Ampliar';
+  $('btnAmpliarSalida').textContent = '⤢ Ampliar';
+}
+$('btnAmpliarEntrada').addEventListener('click', function(){ ampliar('edEntrada', 'btnAmpliarEntrada'); });
+$('btnAmpliarSalida').addEventListener('click', function(){ ampliar('edSalida', 'btnAmpliarSalida'); });
+document.addEventListener('keydown', function(e){ if (e.key === 'Escape') salirAmpliado(); });
+
+/* ---------- editor estilo pgAdmin ---------- */
+var capa = $('capa'), gut = $('gut'), gutIn = $('gutIn'), curl = $('curline'), brk1 = $('brk1'), brk2 = $('brk2'), phs = $('phs'), acBox = $('ac'), edEstado = $('edEstadoPos'), edBox = $('edBox');
+var capaTexto = null, rafCapa = 0, rafDec = 0, LIMITE_CAPA = 120000, gutLineas = 0, met = null;
+var ses = null;                                  // sesión de plantilla (huecos con Tab)
+var ac = { abierto: false, items: [], idx: 0, inicio: 0, navegado: false };
+var sinAuto = false;
+
+function metricas(){
+  if (met && met.cw > 1) return met;
+  var cs = getComputedStyle(entrada), sp = document.createElement('span');
+  sp.style.cssText = 'position:absolute;visibility:hidden;white-space:pre;font-family:' + cs.fontFamily + ';font-size:' + cs.fontSize + ';letter-spacing:' + cs.letterSpacing;
+  sp.textContent = new Array(81).join('M'); document.body.appendChild(sp);
+  var cw = sp.getBoundingClientRect().width / 80; document.body.removeChild(sp);
+  met = { cw: cw, lh: parseFloat(cs.lineHeight) || 19.5, pl: parseFloat(cs.paddingLeft) || 14, pt: parseFloat(cs.paddingTop) || 12 };
+  return met;
+}
+function colVisual(txt){ var c = 0, i; for (i = 0; i < txt.length; i++) c += txt.charCodeAt(i) === 9 ? 4 - (c % 4) : 1; return c; }
+function lineaCol(v, idx){
+  var antes = v.slice(0, idx), n = 0, i = -1;
+  while ((i = antes.indexOf('\n', i + 1)) >= 0) n++;
+  var ini = antes.lastIndexOf('\n') + 1;
+  return { linea: n, texto: antes.slice(ini) };
+}
+function xyDe(v, idx){
+  var m = metricas(), p = lineaCol(v, idx);
+  return { x: m.pl + colVisual(p.texto) * m.cw - entrada.scrollLeft, y: m.pt + p.linea * m.lh - entrada.scrollTop };
+}
+
+/* números de línea + colores detrás del texto */
+function pintarCapa(){
+  var v = entrada.value;
+  if (v === capaTexto) return;
+  capaTexto = v;
+  var n = 1, i = -1; while ((i = v.indexOf('\n', i + 1)) >= 0) n++;
+  if (n !== gutLineas) {
+    gutLineas = n; var a = new Array(n), k;
+    for (k = 0; k < n; k++) a[k] = k + 1;
+    gutIn.textContent = a.join('\n');
+    gut.style.width = (Math.max(2, String(n).length) * metricas().cw + 26) + 'px';
+  }
+  if (v.length > LIMITE_CAPA) { edBox.classList.add('plain'); sincronizarEditor(); return; }
+  edBox.classList.remove('plain');
+  capa.innerHTML = resaltar(v).join('\n') + ' ';
+  sincronizarEditor();
+}
+function sincronizarEditor(){
+  capa.scrollTop = entrada.scrollTop; capa.scrollLeft = entrada.scrollLeft;
+  gutIn.style.transform = 'translateY(' + (-entrada.scrollTop) + 'px)';
+  decorar();
+}
+function pintarCapaRapido(){ if (!rafCapa) rafCapa = requestAnimationFrame(function(){ rafCapa = 0; pintarCapa(); }); }
+function decorarRapido(){ if (!rafDec) rafDec = requestAnimationFrame(function(){ rafDec = 0; decorar(); }); }
+
+/* línea actual, paréntesis que se corresponden y huecos de la plantilla */
+var APERT = { '(': ')', '[': ']' }, CIERRA = { ')': '(', ']': '[' };
+function buscarPar(v, pos){
+  var ch = v.charAt(pos), dir = APERT[ch] ? 1 : -1, objetivo = dir === 1 ? APERT[ch] : CIERRA[ch], prof = 0, i, k = 0, c;
+  for (i = pos; i >= 0 && i < v.length && k < 20000; i += dir, k++) {
+    c = v.charAt(i);
+    if (c === ch) prof++; else if (c === objetivo) { prof--; if (prof === 0) return i; }
+  }
+  return -1;
+}
+function caja(el, x, y, w){ var m = metricas(); el.style.display = 'block'; el.style.left = x + 'px'; el.style.top = y + 'px'; el.style.width = w + 'px'; el.style.height = m.lh + 'px'; }
+function decorar(){
+  var m = metricas(), v = entrada.value, s = entrada.selectionStart, e = entrada.selectionEnd, p = lineaCol(v, s), enfocado = document.activeElement === entrada;
+  edEstado.innerHTML = 'Ln <b>' + (p.linea + 1) + '</b>, Col <b>' + (p.texto.length + 1) + '</b>' + (e > s ? ' · <b>' + (e - s) + '</b> seleccionados' : '') + ' · ' + fmtNum(gutLineas) + ' líneas · ' + fmtNum(v.length) + ' caracteres';
+  var y = m.pt + p.linea * m.lh - entrada.scrollTop;
+  if (enfocado && s === e) { curl.style.display = 'block'; curl.style.top = y + 'px'; curl.style.height = m.lh + 'px'; } else curl.style.display = 'none';
+  brk1.style.display = brk2.style.display = 'none';
+  if (enfocado && s === e && v.length < 400000) {
+    var pos = -1;
+    if (CIERRA[v.charAt(s - 1)] || APERT[v.charAt(s - 1)]) pos = s - 1; else if (CIERRA[v.charAt(s)] || APERT[v.charAt(s)]) pos = s;
+    if (pos >= 0) {
+      var otro = buscarPar(v, pos), a1 = xyDe(v, pos);
+      caja(brk1, a1.x, a1.y, m.cw); brk1.className = 'brk' + (otro < 0 ? ' mal' : '');
+      if (otro >= 0) { var a2 = xyDe(v, otro); caja(brk2, a2.x, a2.y, m.cw); brk2.className = 'brk'; }
+    }
+  }
+  // huecos pendientes de la plantilla
+  var cajas = phs.children, i, r, xy, ancho;
+  for (i = 0; i < cajas.length; i++) cajas[i].style.display = 'none';
+  if (ses) {
+    for (i = 0; i < ses.rangos.length; i++) {
+      r = ses.rangos[i];
+      if (i === ses.idx || r.b <= r.a) continue;
+      while (phs.children.length <= i) { var d = document.createElement('div'); d.className = 'ph'; phs.appendChild(d); }
+      xy = xyDe(v, r.a); ancho = colVisual(v.slice(r.a, r.b)) * m.cw;
+      caja(phs.children[i], xy.x, xy.y, ancho);
+    }
+  }
+}
+
+/* escribir con soporte de deshacer (Ctrl+Z) */
+function insertarTexto(t){
+  entrada.focus({ preventScroll: true });
+  var ok = false;
+  try { ok = document.execCommand('insertText', false, t); } catch (x) {}
+  if (!ok || entrada.value.indexOf(t) < 0) {
+    if (!ok) { var s = entrada.selectionStart, e = entrada.selectionEnd; entrada.setRangeText(t, s, e, 'end'); entrada.dispatchEvent(new Event('input', { bubbles: true })); }
+  }
+}
+function borrarSeleccion(){
+  entrada.focus({ preventScroll: true });
+  var ok = false; try { ok = document.execCommand('delete'); } catch (x) {}
+  if (!ok) { entrada.setRangeText('', entrada.selectionStart, entrada.selectionEnd, 'end'); entrada.dispatchEvent(new Event('input', { bubbles: true })); }
+}
+
+/* ---------- plantillas con huecos ({{campo}}) ---------- */
+function insertarSnippet(code, frag, reemplazar){
+  var v = entrada.value, a, b, prefijo = '';
+  if (reemplazar) { a = reemplazar[0]; b = reemplazar[1]; }
+  else if (v.trim() !== '' && !cursorListo) { a = b = v.length; prefijo = /\n\s*$/.test(v) ? (/\n\s*\n\s*$/.test(v) ? '' : '\n') : '\n\n'; }
+  else { a = entrada.selectionStart; b = entrada.selectionEnd; }
+  var antes = v.slice(0, a), iniLinea = antes.lastIndexOf('\n') + 1, tramo = antes.slice(iniLinea), ind = /^[ \t]*/.exec(tramo)[0];
+  if (!frag && !prefijo && tramo.trim() !== '') { prefijo = '\n\n'; ind = ''; }
+  var texto = prefijo + code.split('\n').join('\n' + ind), res = '', pos = 0, rangos = [];
+  texto.replace(/\{\{([^{}]*)\}\}/g, function(mm, nombre, off){
+    res += texto.slice(pos, off); var ini = res.length; res += nombre; rangos.push({ a: ini, b: ini + nombre.length }); pos = off + mm.length; return mm;
+  });
+  res += texto.slice(pos);
+  sinAuto = true; cerrarAuto();
+  entrada.setSelectionRange(a, b); insertarTexto(res);
+  sinAuto = false;
+  rangos = rangos.map(function(r){ return { a: a + r.a, b: a + r.b }; });
+  if (rangos.length) {
+    ses = { rangos: rangos, idx: 0, fin: a + res.length, len: entrada.value.length };
+    entrada.setSelectionRange(rangos[0].a, rangos[0].b);
+  } else { ses = null; entrada.setSelectionRange(a + res.length, a + res.length); }
+  decorar();
+}
+function saltarHueco(dir){
+  if (!ses) return;
+  var n = ses.idx + dir;
+  if (n < 0) n = 0;
+  if (n >= ses.rangos.length) { var f = ses.fin; ses = null; entrada.setSelectionRange(f, f); decorar(); return; }
+  ses.idx = n; entrada.setSelectionRange(ses.rangos[n].a, ses.rangos[n].b); decorar();
+}
+function ajustarSesion(){
+  if (!ses) return;
+  var d = entrada.value.length - ses.len; ses.len = entrada.value.length;
+  if (d === 0) return;
+  var r = ses.rangos[ses.idx], c = entrada.selectionStart;
+  if (c < r.a || c > r.b + d) { ses = null; return; }
+  var viejoB = r.b; r.b += d;
+  ses.rangos.forEach(function(x, i){ if (i !== ses.idx && x.a >= viejoB) { x.a += d; x.b += d; } });
+  if (ses.fin >= viejoB) ses.fin += d;
+}
+
+/* ---------- sugerencias mientras escribes ---------- */
+function dentroDeTextoOComentario(linea){
+  var q = 0, i, c;
+  for (i = 0; i < linea.length; i++) { c = linea.charAt(i); if (c === "'") q ^= 1; else if (!q && c === '-' && linea.charAt(i + 1) === '-') return true; }
+  return q === 1;
+}
+function palabraAntesCursor(){
+  var v = entrada.value, s = entrada.selectionStart;
+  if (entrada.selectionEnd !== s) return null;
+  var m = /[A-Za-z_\u00C0-\u024F][\w$\u00C0-\u024F]*$/.exec(v.slice(Math.max(0, s - 60), s));
+  if (!m) return null;
+  var ini = v.lastIndexOf('\n', s - 1) + 1;
+  if (dentroDeTextoOComentario(v.slice(ini, s))) return null;
+  return { texto: m[0], inicio: s - m[0].length, trasPunto: v.charAt(s - m[0].length - 1) === '.' };
+}
+function palabrasDelTexto(){
+  var v = entrada.value; if (v.length > 200000) return [];
+  var vistos = {}, out = [], m, re = /[A-Za-z_\u00C0-\u024F][\w$\u00C0-\u024F]{2,}/g;
+  while ((m = re.exec(v)) !== null && out.length < 3000) { if (!vistos[m[0]]) { vistos[m[0]] = 1; out.push(m[0]); } }
+  return out;
+}
+function pintarAuto(){
+  acBox.innerHTML = '';
+  var marca = { kw: 'K', ty: 'T', fn: 'ƒ', sn: '▤', id: 'Id' }, i;
+  ac.items.forEach(function(it, i){
+    var d = document.createElement('div'); d.className = 'ac-it' + (i === ac.idx ? ' sel' : '');
+    var k = document.createElement('span'); k.className = 'ac-k ' + it.tipo; k.textContent = marca[it.tipo];
+    var t = document.createElement('span'); t.className = 'ac-t'; t.textContent = it.texto;
+    var de = document.createElement('span'); de.className = 'ac-d'; de.textContent = it.desc;
+    d.appendChild(k); d.appendChild(t); d.appendChild(de);
+    d.addEventListener('mousedown', function(ev){ ev.preventDefault(); aceptarAuto(i); });
+    acBox.appendChild(d);
+  });
+  var pie = document.createElement('div'); pie.className = 'ac-pie'; pie.innerHTML = '<b>Tab</b> aceptar · <b>↑ ↓</b> elegir · <b>Esc</b> cerrar';
+  acBox.appendChild(pie);
+}
+function posicionarAuto(){
+  var v = entrada.value, m = metricas(), xy = xyDe(v, ac.inicio), anchoCaja = entrada.clientWidth;
+  acBox.style.display = 'block';
+  var w = acBox.offsetWidth, h = acBox.offsetHeight, x = Math.max(4, Math.min(xy.x, anchoCaja - w - 8)), y = xy.y + m.lh + 2;
+  if (y + h > entrada.clientHeight + 4 && xy.y - h - 2 > 0) y = xy.y - h - 2;
+  acBox.style.left = x + 'px'; acBox.style.top = y + 'px';
+}
+function marcarAuto(){
+  var its = acBox.querySelectorAll('.ac-it'), i;
+  for (i = 0; i < its.length; i++) its[i].classList.toggle('sel', i === ac.idx);
+  if (its[ac.idx] && its[ac.idx].scrollIntoView) its[ac.idx].scrollIntoView({ block: 'nearest' });
+}
+function cerrarAuto(){ ac.abierto = false; acBox.style.display = 'none'; }
+function abrirAuto(forzar){
+  if (!SS) return;
+  var w = palabraAntesCursor();
+  if (!w || (!forzar && w.texto.length < 2)) { cerrarAuto(); return; }
+  var items = SS.sugerencias(w.texto, palabrasDelTexto(), 9);
+  if (w.trasPunto) items = items.filter(function(i){ return i.tipo === 'id'; });
+  if (!items.length) { cerrarAuto(); return; }
+  ac.items = items; ac.idx = 0; ac.navegado = false; ac.inicio = w.inicio; ac.abierto = true;
+  pintarAuto(); posicionarAuto();
+}
+function caseKw(t){ return opts.kw === 'lower' ? t.toLowerCase() : t; }
+function aceptarAuto(i){
+  var it = ac.items[i]; if (!it) return;
+  var s = entrada.selectionStart, ini = ac.inicio;
+  cerrarAuto();
+  if (it.tipo === 'sn') { insertarSnippet(it.code, it.frag, [ini, s]); return; }
+  sinAuto = true;
+  entrada.setSelectionRange(ini, s);
+  if (it.tipo === 'fn') { insertarTexto(caseKw(it.texto) + '()'); entrada.setSelectionRange(ini + it.texto.length + 1, ini + it.texto.length + 1); }
+  else if (it.tipo === 'id') insertarTexto(it.texto);
+  else insertarTexto(caseKw(it.texto) + ' ');
+  sinAuto = false; decorar();
+}
+
+/* ---------- comentar líneas (Ctrl+/) ---------- */
+function comentarLineas(){
+  var v = entrada.value, s = entrada.selectionStart, e = entrada.selectionEnd;
+  var ini = v.lastIndexOf('\n', s - 1) + 1, finBusq = (e > s && v.charAt(e - 1) === '\n') ? e - 1 : e, fin = v.indexOf('\n', finBusq);
+  if (fin < 0) fin = v.length;
+  var lineas = v.slice(ini, fin).split('\n');
+  var todas = lineas.every(function(l){ return !l.trim() || /^\s*--/.test(l); });
+  var nuevo = lineas.map(function(l){ return !l.trim() ? l : (todas ? l.replace(/^(\s*)--\s?/, '$1') : l.replace(/^(\s*)/, '$1-- ')); }).join('\n');
+  entrada.setSelectionRange(ini, fin); insertarTexto(nuevo); entrada.setSelectionRange(ini, ini + nuevo.length);
+}
+
+/* ---------- teclado del editor ---------- */
+var PARES = { '(': ')', '[': ']', "'": "'", '"': '"' };
+entrada.addEventListener('keydown', function(e){
+  var k = e.key, ctrl = e.ctrlKey || e.metaKey, v = entrada.value, s = entrada.selectionStart, f = entrada.selectionEnd;
+  if (ac.abierto) {
+    if (k === 'ArrowDown' || k === 'ArrowUp') { e.preventDefault(); ac.idx = (ac.idx + (k === 'ArrowDown' ? 1 : ac.items.length - 1)) % ac.items.length; ac.navegado = true; marcarAuto(); return; }
+    if (k === 'Tab' || (k === 'Enter' && ac.navegado)) { e.preventDefault(); aceptarAuto(ac.idx); return; }
+    if (k === 'Escape') { e.preventDefault(); e.stopPropagation(); cerrarAuto(); return; }
+    if (k === 'ArrowLeft' || k === 'ArrowRight' || k === 'Home' || k === 'End' || k === 'PageUp' || k === 'PageDown') cerrarAuto();
+  }
+  if (ses) {
+    if (k === 'Tab') { e.preventDefault(); saltarHueco(e.shiftKey ? -1 : 1); return; }
+    if (k === 'Escape') { e.preventDefault(); e.stopPropagation(); ses = null; decorar(); return; }
+  }
+  if (ctrl && (k === ' ' || k === 'Spacebar')) { e.preventDefault(); abrirAuto(true); return; }
+  if (ctrl && k === '/') { e.preventDefault(); comentarLineas(); return; }
+  if (ctrl && k.toLowerCase() === 'j') { e.preventDefault(); $('btnSN').click(); return; }
+  if (ctrl || e.altKey) return;
+
+  // cerrar paréntesis y comillas solos
+  if (PARES[k] && !e.isComposing) {
+    if (s !== f) { if (ses) return; e.preventDefault(); var sel = v.slice(s, f); insertarTexto(k + sel + PARES[k]); entrada.setSelectionRange(s + 1, s + 1 + sel.length); return; }
+    var sig = v.charAt(s), ant = v.charAt(s - 1);
+    if (k === "'" || k === '"') {
+      if (sig === k) { e.preventDefault(); entrada.setSelectionRange(s + 1, s + 1); return; }
+      if (/[\w$]/.test(ant)) return;
+      if (k === "'" && dentroDeTextoOComentario(v.slice(v.lastIndexOf('\n', s - 1) + 1, s))) return;
+    }
+    e.preventDefault(); insertarTexto(k + PARES[k]); entrada.setSelectionRange(s + 1, s + 1); return;
+  }
+  if ((k === ')' || k === ']') && s === f && v.charAt(s) === k) { e.preventDefault(); entrada.setSelectionRange(s + 1, s + 1); return; }
+  if (k === 'Backspace' && s === f && s > 0 && PARES[v.charAt(s - 1)] && PARES[v.charAt(s - 1)] === v.charAt(s)) {
+    e.preventDefault(); entrada.setSelectionRange(s - 1, s + 1); borrarSeleccion(); return;
+  }
+  if (k === 'Enter' && !e.shiftKey) {
+    var ini = v.lastIndexOf('\n', s - 1) + 1, ind = /^[ \t]*/.exec(v.slice(ini, s))[0];
+    if (v.charAt(s - 1) === '(' && v.charAt(s) === ')') {
+      e.preventDefault(); insertarTexto('\n' + ind + '    \n' + ind); var np = s + 1 + ind.length + 4; entrada.setSelectionRange(np, np); return;
+    }
+    var extra = /[(\[]\s*$/.test(v.slice(ini, s)) ? '    ' : '';
+    if (ind || extra) { e.preventDefault(); insertarTexto('\n' + ind + extra); return; }
+  }
+});
+entrada.addEventListener('input', function(e){
+  ajustarSesion();
+  pintarCapaRapido();
+  if (sinAuto) return;
+  var t = e.inputType || '';
+  if (t === 'insertText' || t === 'deleteContentBackward' || t === 'insertCompositionText') { var tx = e.data || ''; if (t === 'insertText' && !/[\w$\u00C0-\u024F]/.test(tx)) cerrarAuto(); else abrirAuto(false); }
+  else cerrarAuto();
+});
+entrada.addEventListener('scroll', function(){ sincronizarEditor(); if (ac.abierto) posicionarAuto(); });
+['keyup', 'click', 'focus', 'select', 'mouseup'].forEach(function(ev){ entrada.addEventListener(ev, decorarRapido); });
+entrada.addEventListener('click', function(){ cerrarAuto(); });
+entrada.addEventListener('blur', function(){ setTimeout(function(){ cerrarAuto(); decorar(); }, 120); });
+if (window.ResizeObserver) new ResizeObserver(function(){ met = null; sincronizarEditor(); }).observe(entrada);
+window.addEventListener('resize', function(){ met = null; sincronizarEditor(); });
+['btnAmpliarEntrada'].forEach(function(id){ $(id).addEventListener('click', function(){ setTimeout(function(){ met = null; sincronizarEditor(); }, 60); }); });
+pintarCapa();
+
+/* ---------- panel de sentencias SQL ---------- */
+var snCat = 'todas', snLista = [], snActual = null;
+function snConPlaceholders(code){ return code.replace(/\{\{([^{}]*)\}\}/g, '\u2039$1\u203A'); }
+function snPreview(c){
+  var p = $('snPrev');
+  if (!c) { p.innerHTML = '<div class="vacio"><b>Pasa el cursor</b> por una sentencia para ver cómo queda.<br>Haz <b>clic</b> para insertarla donde tengas el cursor. Los huecos <u style="text-decoration:none;background:var(--ed-ph);border-radius:3px;padding:0 3px">en amarillo</u> se llenan saltando con <b>Tab</b>.</div>'; return; }
+  var html = resaltar(snConPlaceholders(c.code)).join('\n').replace(/\u2039([^\u203A]*)\u203A/g, '<u>$1</u>');
+  p.innerHTML = '<h4><span>' + esc(c.nombre) + '</span><em>' + (c.frag ? 'fragmento' : 'sentencia completa') + '</em></h4><pre>' + html + '</pre>' +
+    '<div class="acc"><button type="button" data-a="ins">⬇ Insertar</button><button type="button" class="secondary" data-a="cop">Copiar</button></div>';
+}
+function snPintar(){
+  if (!SS) return;
+  var q = $('snBuscar').value;
+  snLista = SS.buscar(q, snCat);
+  var grid = $('snGrid'), html = '', MAX = 150;
+  snLista.slice(0, MAX).forEach(function(c){
+    html += '<button type="button" class="sn-card" data-i="' + c.i + '"><b>' + esc(c.nombre) + '</b><span>' + esc(c.desc) + '</span>' + (c.frag ? '<span class="tag">fragmento</span>' : '') + '</button>';
+  });
+  if (!snLista.length) html = '<div class="sn-vacio">Nada coincide con «' + esc(q) + '». Prueba con otra palabra: insert, join, fecha, duplicados…</div>';
+  else if (snLista.length > MAX) html += '<div class="sn-vacio">Hay ' + (snLista.length - MAX) + ' más: escribe en el buscador para afinar.</div>';
+  grid.innerHTML = html;
+  $('snCnt').textContent = snLista.length + (snLista.length === 1 ? ' resultado' : ' resultados');
+  var cuentas = {}; SS.buscar(q, 'todas').forEach(function(c){ cuentas[c.cat] = (cuentas[c.cat] || 0) + 1; });
+  var chips = $('snCats').children, i;
+  for (i = 0; i < chips.length; i++) { var id = chips[i].getAttribute('data-c'); chips[i].classList.toggle('on', id === snCat); chips[i].querySelector('small').textContent = id === 'todas' ? SS.buscar(q, 'todas').length : (cuentas[id] || 0); }
+}
+function snIniciar(){
+  if (!SS) return;
+  var h = '';
+  SS.CATS.forEach(function(c){ h += '<button type="button" class="sn-chip" data-c="' + c.id + '">' + c.ico + ' ' + esc(c.nombre) + '<small>0</small></button>'; });
+  $('snCats').innerHTML = h; snPreview(null); snPintar();
+}
+function snInsertar(c){ if (!c) return; insertarSnippet(c.code, c.frag); toast('«' + c.nombre + '» insertada'); }
+$('btnSN').addEventListener('click', function(){
+  if (!SS) { toast('Falta el archivo public/sql-sentencias.js'); return; }
+  var p = $('sn'); p.classList.toggle('on');
+  if (p.classList.contains('on')) { if (!$('snGrid').children.length) snIniciar(); $('snBuscar').focus(); $('snBuscar').select(); }
+});
+$('snBuscar').addEventListener('input', snPintar);
+$('snBuscar').addEventListener('keydown', function(e){
+  if (e.key === 'Enter' && snLista.length) { e.preventDefault(); snInsertar(snLista[0]); }
+  else if (e.key === 'Escape') { e.stopPropagation(); $('sn').classList.remove('on'); entrada.focus(); }
+});
+$('snCats').addEventListener('click', function(e){ var b = e.target.closest('.sn-chip'); if (!b) return; snCat = b.getAttribute('data-c'); snPintar(); });
+$('snGrid').addEventListener('mouseover', function(e){ var b = e.target.closest('.sn-card'); if (!b) return; snActual = SS.CATALOGO[+b.getAttribute('data-i')]; snPreview(snActual); });
+$('snGrid').addEventListener('focusin', function(e){ var b = e.target.closest('.sn-card'); if (!b) return; snActual = SS.CATALOGO[+b.getAttribute('data-i')]; snPreview(snActual); });
+$('snGrid').addEventListener('click', function(e){ var b = e.target.closest('.sn-card'); if (!b) return; snInsertar(SS.CATALOGO[+b.getAttribute('data-i')]); });
+$('snPrev').addEventListener('click', function(e){
+  var b = e.target.closest('button[data-a]'); if (!b || !snActual) return;
+  if (b.getAttribute('data-a') === 'ins') snInsertar(snActual); else copiar(snActual.code.replace(/\{\{([^{}]*)\}\}/g, '$1'), 'Sentencia copiada');
+});
+
+
+/* ---------- atajos de teclado ---------- */
+entrada.addEventListener('keydown', function(e){
+  var k = e.key.toLowerCase();
+  if ((e.ctrlKey || e.metaKey) && e.shiftKey && k === 'f') { e.preventDefault(); clearTimeout(temporizador); procesar(); toast('Formateado'); }
+  else if ((e.ctrlKey || e.metaKey) && !e.shiftKey && k === 'h') { e.preventDefault(); $('btnRP').click(); }
+});
+document.addEventListener('keydown', function(e){
+  if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'f' && e.target !== entrada) { e.preventDefault(); clearTimeout(temporizador); procesar(); }
+});
+
+})();
+</script>
