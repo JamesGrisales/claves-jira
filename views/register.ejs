@@ -1,3 +1,42 @@
+<style>
+  body.guest {
+    background-color: #f8fafc;
+    background-image: 
+      radial-gradient(at 0% 0%, hsla(210, 100%, 80%, 0.6) 0px, transparent 60%),
+      radial-gradient(at 100% 0%, hsla(280, 100%, 80%, 0.6) 0px, transparent 60%),
+      radial-gradient(at 100% 100%, hsla(35, 100%, 75%, 0.6) 0px, transparent 60%),
+      radial-gradient(at 0% 100%, hsla(340, 100%, 80%, 0.6) 0px, transparent 60%);
+    background-attachment: fixed;
+  }
+  body.guest::before { display: none !important; }
+
+  :root[data-theme="dark"] body.guest {
+    background-color: #0b1120;
+    background-image: 
+      radial-gradient(at 0% 0%, hsla(210, 100%, 45%, 0.2) 0px, transparent 60%),
+      radial-gradient(at 100% 0%, hsla(280, 100%, 45%, 0.2) 0px, transparent 60%),
+      radial-gradient(at 100% 100%, hsla(35, 100%, 45%, 0.2) 0px, transparent 60%),
+      radial-gradient(at 0% 100%, hsla(340, 100%, 45%, 0.2) 0px, transparent 60%);
+  }
+
+  .auth {
+    border: none !important;
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.02) !important;
+    transform: translateY(0);
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.4s ease;
+  }
+  .auth:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 30px 60px -15px rgba(0,0,0,0.2), 0 0 0 1px rgba(0,0,0,0.02) !important;
+  }
+  :root[data-theme="dark"] .auth {
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.05) !important;
+  }
+  :root[data-theme="dark"] .auth:hover {
+    box-shadow: 0 30px 60px -15px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.08) !important;
+  }
+</style>
+
 <div class="auth">
   <aside class="auth-side">
     <div class="auth-brand"><span class="badge">🔐</span> Bóveda Jira</div>

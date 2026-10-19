@@ -49,6 +49,9 @@
 
   /* Código estilo editor */
   .code-block{ background:#1e1e1e; color:#d4d4d4; border:1px solid #2d2d2d; border-radius:9px; padding:10px 0; font-family:var(--mono); font-size:13px; line-height:1.6; margin:0; max-height:70vh; min-height:120px; overflow:auto; resize:vertical; tab-size:4; }
+  :root[data-theme="oled"] .code-block{ background:#050608; border-color:rgba(255,255,255,0.08); color:#f1f5f9; }
+  :root[data-theme="oled"] .code-line .ln{ border-right-color:rgba(255,255,255,0.08); color:#475569; }
+  :root[data-theme="oled"] #entrada{ background:#050608; border-color:rgba(255,255,255,0.08); color:#f8fafc; }
   .code-line{ display:flex; }
   .code-line:hover{ background:rgba(255,255,255,.04); }
   .code-line .ln{ flex-shrink:0; width:52px; text-align:right; padding-right:12px; margin-right:12px; color:#6e7681; border-right:1px solid #333; user-select:none; }
@@ -56,6 +59,8 @@
   .tk-tg{ color:#569cd6; } .tk-an{ color:#9cdcfe; } .tk-av{ color:#ce9178; } .tk-pn{ color:#808080; } .tk-tx{ color:#d4d4d4; }
   .tk-cd{ color:#dcdcaa; } .tk-pi{ color:#c586c0; } .tk-cm{ color:#6a9955; font-style:italic; }
   .tk-jk{ color:#9cdcfe; } .tk-js{ color:#ce9178; } .tk-jn{ color:#b5cea8; } .tk-jb{ color:#569cd6; } .tk-jl{ color:#569cd6; font-style:italic; }
+  :root[data-theme="oled"] .tk-tg{ color:#a3e635; } :root[data-theme="oled"] .tk-an{ color:#38bdf8; } :root[data-theme="oled"] .tk-jk{ color:#38bdf8; }
+  :root[data-theme="oled"] .tk-js{ color:#fb923c; } :root[data-theme="oled"] .tk-jn{ color:#4ade80; } :root[data-theme="oled"] .tk-jb{ color:#a3e635; }
   .code-block mark{ background:#ffd54a; color:#1e1e1e; border-radius:2px; padding:0 1px; }
   .cur-line{ outline:1px solid #ffd54a; outline-offset:-1px; background:rgba(255,213,74,.09); }
   .mas-lineas{ text-align:center; font-family:var(--sans); font-size:12px; color:#8b949e; padding:10px 8px 4px; }
@@ -96,6 +101,28 @@
   .ed-wrap.fullscreen #entrada{ flex:1 1 0; max-height:none; min-height:0; resize:none; }
   .ed-wrap.fullscreen .code-block, .ed-wrap.fullscreen #vista-arbol{ flex:1 1 0; min-height:0; max-height:none; resize:none; }
   .chk{ display:inline-flex; align-items:center; gap:5px; margin:0; font-size:12.5px; font-weight:600; color:var(--muted); text-transform:none; letter-spacing:0; cursor:pointer; white-space:nowrap; }
+  .chk-highlight{ color:#38bdf8 !important; font-weight:700 !important; }
+  .chk-highlight input{ accent-color:#0284c7; }
+  .vsearch-modes{ display:inline-flex; align-items:center; gap:8px; margin-left:6px; padding-left:8px; border-left:1px solid var(--panel-edge); }
+
+  /* Bloque JSON contenedor destacado */
+  .json-block-banner{ display:flex; align-items:center; gap:8px; margin:7px 0 2px 0; padding:6px 12px; background:linear-gradient(90deg, rgba(56,189,248,0.18) 0%, rgba(56,189,248,0.03) 100%); border-top:1px solid rgba(56,189,248,0.35); border-bottom:1px solid rgba(56,189,248,0.2); border-left:4px solid #38bdf8; border-radius:0 6px 6px 0; font-family:var(--sans); font-size:11.5px; color:#e2e8f0; user-select:none; }
+  :root[data-theme="oled"] .json-block-banner{ background:linear-gradient(90deg, rgba(56,189,248,0.25) 0%, rgba(56,189,248,0.05) 100%); border-top-color:rgba(56,189,248,0.45); border-bottom-color:rgba(56,189,248,0.25); }
+  .json-block-banner .jbb-pill{ background:#0284c7; color:#fff; font-weight:800; font-size:10px; letter-spacing:0.5px; padding:2px 7px; border-radius:4px; text-transform:uppercase; display:inline-flex; align-items:center; gap:4px; box-shadow:0 0 8px rgba(56,189,248,0.4); }
+  .json-block-banner .jbb-title{ font-weight:700; color:#38bdf8; font-family:var(--mono); font-size:12px; }
+  .json-block-banner .jbb-count{ color:#94a3b8; font-size:11.5px; }
+  .json-block-banner .jbb-copy{ margin-left:auto; background:rgba(56,189,248,0.15); border:1px solid rgba(56,189,248,0.4); color:#38bdf8; padding:3px 9px; border-radius:5px; font-size:11px; font-weight:600; cursor:pointer; transition:all 0.15s ease; }
+  .json-block-banner .jbb-copy:hover{ background:#0284c7; color:#fff; border-color:#38bdf8; box-shadow:0 0 10px rgba(56,189,248,0.5); transform:translateY(-1px); }
+
+  .code-line.json-block-matched{ background:rgba(56,189,248,0.07) !important; border-left:3px solid #38bdf8 !important; }
+  :root[data-theme="oled"] .code-line.json-block-matched{ background:rgba(56,189,248,0.11) !important; border-left:3px solid #38bdf8 !important; }
+  .code-line.json-block-matched:hover{ background:rgba(56,189,248,0.15) !important; }
+  .code-line.json-block-first{ border-top:1px solid rgba(56,189,248,0.25); }
+  .code-line.json-block-last{ border-bottom:1px solid rgba(56,189,248,0.25); margin-bottom:5px; }
+  .code-line.json-block-dimmed{ opacity:0.35; filter:grayscale(60%); transition:opacity 0.2s ease, filter 0.2s ease; }
+  .code-line.json-block-dimmed:hover{ opacity:0.95; filter:none; }
+  .code-line.cur-line{ outline:2px solid #ffd54a !important; outline-offset:-2px; background:rgba(255,213,74,0.22) !important; }
+  .code-line.cur-line .ln{ color:#ffd54a !important; font-weight:700; }
 </style>
 
 <div class="top">
@@ -115,6 +142,7 @@
     <span class="sp"></span>
     <label class="btn secondary" for="archivo">⬆ Abrir archivo</label>
     <input type="file" id="archivo" accept=".xml,.json,.txt,.xsd,.xsl,.xslt,.svg,.config,.csproj,.wsdl,.html" style="display:none;">
+    <button type="button" class="secondary" id="btnMinificar" title="Quita todos los espacios (Minificar) para un curl o db">Minificar</button>
     <button type="button" class="secondary" id="btnAmpliarEntrada" title="Pantalla completa (Esc para salir)">⤢ Ampliar</button>
     <button type="button" class="secondary" id="btnLimpiar">Limpiar</button>
   </div>
@@ -136,11 +164,16 @@
       </div>
       <span class="sp"></span>
       <div class="vsearch" id="busqCodigo">
-        <input type="text" id="buscar" placeholder="Buscar en el resultado…" autocomplete="off">
+        <input type="text" id="buscar" placeholder="Buscar número, ID, texto…" autocomplete="off">
         <span class="cnt" id="cnt"></span>
-        <button type="button" class="mini" id="bPrev" title="Anterior (Shift+Enter)">▲</button>
-        <button type="button" class="mini" id="bNext" title="Siguiente (Enter)">▼</button>
-        <label class="chk" title="Muestra solo las líneas que contienen lo buscado"><input type="checkbox" id="soloCoinc"> Filtrar líneas</label>
+        <button type="button" class="mini" id="bPrevBloque" title="JSON anterior con coincidencia">⏮</button>
+        <button type="button" class="mini" id="bPrev" title="Coincidencia anterior (Shift+Enter)">▲</button>
+        <button type="button" class="mini" id="bNext" title="Coincidencia siguiente (Enter)">▼</button>
+        <button type="button" class="mini" id="bNextBloque" title="JSON siguiente con coincidencia">⏭</button>
+        <div class="vsearch-modes">
+          <label class="chk chk-highlight" title="Muestra el bloque JSON completo que contiene lo buscado y oculta los demás"><input type="checkbox" id="filtroJson" checked> Filtrar por JSON</label>
+          <label class="chk" title="Muestra únicamente las líneas que contienen lo buscado"><input type="checkbox" id="soloCoinc"> Solo líneas</label>
+        </div>
       </div>
       <div class="vsearch" id="ctrlArbol" style="display:none;">
         <button type="button" class="secondary" id="bExpandir" style="padding:6px 11px; font-size:12.5px;">Expandir todo</button>
@@ -253,22 +286,23 @@ function tokVal(n){
   return { t: n.raw, c: n.t === 'str' ? 'js' : (n.t === 'num' ? 'jn' : (n.t === 'bool' ? 'jb' : 'jl')) };
 }
 
-function emitJson(n, depth, keyRaw, coma, out){
+function emitJson(n, depth, keyRaw, coma, out, bIdx){
   var pre = keyRaw !== null ? [{ t: keyRaw, c: 'jk' }, { t: ': ', c: 'pn' }] : [];
   var com = coma ? [{ t: ',', c: 'pn' }] : [];
+  var bTag = bIdx !== undefined ? bIdx : 0;
   if (n.t === 'obj' || n.t === 'arr') {
     var abre = n.t === 'obj' ? '{' : '[', cierra = n.t === 'obj' ? '}' : ']';
     var hijos = n.t === 'obj' ? n.props : n.items;
-    if (!hijos.length) { out.push({ ind: depth, toks: pre.concat([{ t: abre + cierra, c: 'pn' }], com) }); return; }
-    out.push({ ind: depth, toks: pre.concat([{ t: abre, c: 'pn' }]) });
+    if (!hijos.length) { out.push({ ind: depth, toks: pre.concat([{ t: abre + cierra, c: 'pn' }], com), bloqueId: bTag }); return; }
+    out.push({ ind: depth, toks: pre.concat([{ t: abre, c: 'pn' }]), bloqueId: bTag });
     for (var j = 0; j < hijos.length; j++) {
       var ult = j === hijos.length - 1;
-      if (n.t === 'obj') emitJson(hijos[j].v, depth + 1, hijos[j].k, !ult, out);
-      else emitJson(hijos[j], depth + 1, null, !ult, out);
+      if (n.t === 'obj') emitJson(hijos[j].v, depth + 1, hijos[j].k, !ult, out, bTag);
+      else emitJson(hijos[j], depth + 1, null, !ult, out, bTag);
     }
-    out.push({ ind: depth, toks: [{ t: cierra, c: 'pn' }].concat(com) });
+    out.push({ ind: depth, toks: [{ t: cierra, c: 'pn' }].concat(com), bloqueId: bTag });
   } else {
-    out.push({ ind: depth, toks: pre.concat([tokVal(n)], com) });
+    out.push({ ind: depth, toks: pre.concat([tokVal(n)], com), bloqueId: bTag });
   }
 }
 
@@ -299,10 +333,75 @@ function errorJson(e, txt){
   return { mensaje: msg, linea: linea, col: col };
 }
 
+/* ----------------------------------------------------------------------
+   Si el texto NO es un único JSON (logs con prefijo tipo «appResponse:{…}»,
+   varios JSON uno por línea, líneas de texto/SQL mezcladas), se lee línea
+   por línea: cada línea con JSON se formatea y las demás se muestran tal cual.
+   ---------------------------------------------------------------------- */
+function jsonEnLinea(t){
+  var rx = /[\[{]/g, m, intentos = 0;
+  while ((m = rx.exec(t)) !== null && intentos++ < 8) {
+    var pre = t.slice(0, m.index);
+    if (pre.indexOf('"') !== -1) return null;                 // es parte de un JSON roto, no un prefijo
+    if (pre.trim() && !/[:=>]\s*$/.test(pre)) continue;       // el prefijo debe terminar en  :  =  o  >
+    var etq = pre.replace(/[\s:=>]+$/, '').trim(), cand = t.slice(m.index);
+    try { JSON.parse(cand); return { etiqueta: etq, json: cand }; } catch (e) {}
+    var fin = Math.max(cand.lastIndexOf('}'), cand.lastIndexOf(']'));
+    if (fin > 0) { var c2 = cand.slice(0, fin + 1); try { JSON.parse(c2); return { etiqueta: etq, json: c2 }; } catch (e2) {} }
+  }
+  return null;
+}
+
+function analizarLineas(txt){
+  var bloques = [], nJson = 0, nTexto = 0;
+  txt.split(/\r?\n/).forEach(function(l, i){
+    var t = l.trim(); if (!t) return;
+    var r = jsonEnLinea(t);
+    if (r) { nJson++; bloques.push({ linea: i + 1, etiqueta: r.etiqueta, modelo: parseJsonRaw(r.json), jsonRaw: r.json }); }
+    else { nTexto++; bloques.push({ linea: i + 1, texto: t }); }
+  });
+  if (!nJson) return null;
+  var lineas = [], modelo, uno = bloques.length === 1;
+  function titulo(b){ return 'Línea ' + b.linea + (b.modelo ? (b.etiqueta ? ' · ' + b.etiqueta : ' · JSON') : ' · texto'); }
+  var listaBloques = [];
+  if (uno) {
+    modelo = bloques[0].modelo;
+    var ini = lineas.length;
+    emitJson(modelo, 0, null, false, lineas, 0);
+    var fin = lineas.length - 1;
+    for (var k = ini; k <= fin; k++) lineas[k].bloqueId = 0;
+    listaBloques.push({ id: 0, linea: bloques[0].linea, titulo: titulo(bloques[0]), inicio: ini, fin: fin, modelo: modelo, tipo: 'json' });
+  } else {
+    bloques.forEach(function(b, bIdx){
+      var ini = lineas.length;
+      lineas.push({ ind: 0, toks: [{ t: '// ' + titulo(b), c: 'cm' }], bloqueId: bIdx });
+      if (b.modelo) emitJson(b.modelo, 0, null, false, lineas, bIdx);
+      else lineas.push({ ind: 0, txt: true, toks: [{ t: b.texto, c: 'tx' }], bloqueId: bIdx });
+      var fin = lineas.length - 1;
+      for (var k = ini; k <= fin; k++) lineas[k].bloqueId = bIdx;
+      b.id = bIdx;
+      b.inicio = ini;
+      b.fin = fin;
+      b.titulo = titulo(b);
+      b.tipo = b.modelo ? 'json' : 'texto';
+      listaBloques.push(b);
+    });
+    modelo = { t: 'obj', props: bloques.map(function(b){ return { k: JSON.stringify(titulo(b)), v: b.modelo || { t: 'str', raw: JSON.stringify(b.texto) } }; }) };
+  }
+  var aviso = uno ? 'Se ignoró el texto que había antes del JSON' + (bloques[0].etiqueta ? ' («' + bloques[0].etiqueta + '»)' : '') + '.'
+                  : 'El texto no es un único JSON, así que se leyó línea por línea: ' + fmtNum(nJson) + ' con JSON' + (nTexto ? ' y ' + fmtNum(nTexto) + ' de texto normal (SQL, mensajes…)' : '') + '.';
+  var resumen = uno ? (modelo.t === 'obj' ? 'Objeto · ' + fmtNum(modelo.props.length) + ' claves' : (modelo.t === 'arr' ? 'Lista · ' + fmtNum(modelo.items.length) + ' elementos' : 'Valor simple'))
+                    : fmtNum(bloques.length) + ' líneas · ' + fmtNum(nJson) + ' JSON';
+  return { ok: true, tipo: 'json', lineas: lineas, modelo: modelo, bloques: listaBloques, aviso: aviso,
+           resumen: resumen + ' · ' + fmtNum(contarJson(modelo)) + ' valores',
+           minificar: function(){ return bloques.map(function(b){ return b.modelo ? serJson(b.modelo) : b.texto; }).join('\n'); },
+           ext: uno ? 'json' : 'txt', texto: txt };
+}
+
 function analizarJson(txt, aviso){
   var val;
   try { val = JSON.parse(txt); }
-  catch (e) { return { ok: false, tipo: 'json', error: errorJson(e, txt), texto: txt }; }
+  catch (e) { var alt = analizarLineas(txt); if (alt) return alt; return { ok: false, tipo: 'json', error: errorJson(e, txt), texto: txt }; }
 
   if (typeof val === 'string' && /^\s*[\[{<]/.test(val)) {
     var interno = val.trim();
@@ -316,10 +415,40 @@ function analizarJson(txt, aviso){
 
   var modelo = parseJsonRaw(txt);
   var lineas = [];
-  emitJson(modelo, 0, null, false, lineas);
+  var listaBloques = [];
+  if (modelo.t === 'arr' && modelo.items.length > 1) {
+    lineas.push({ ind: 0, toks: [{ t: '[', c: 'pn' }], bloqueId: 0 });
+    modelo.items.forEach(function(item, idx){
+      var ini = lineas.length;
+      var ult = idx === modelo.items.length - 1;
+      emitJson(item, 1, null, !ult, lineas, idx);
+      var fin = lineas.length - 1;
+      for (var k = ini; k <= fin; k++) lineas[k].bloqueId = idx;
+      listaBloques.push({ id: idx, titulo: 'Elemento [' + idx + ']', inicio: ini, fin: fin, modelo: item, tipo: 'json' });
+    });
+    lineas.push({ ind: 0, toks: [{ t: ']', c: 'pn' }], bloqueId: modelo.items.length - 1 });
+  } else if (modelo.t === 'obj' && modelo.props.length > 1) {
+    lineas.push({ ind: 0, toks: [{ t: '{', c: 'pn' }], bloqueId: 0 });
+    modelo.props.forEach(function(prop, idx){
+      var ini = lineas.length;
+      var ult = idx === modelo.props.length - 1;
+      emitJson(prop.v, 1, prop.k, !ult, lineas, idx);
+      var fin = lineas.length - 1;
+      for (var k = ini; k <= fin; k++) lineas[k].bloqueId = idx;
+      var claveClean = prop.k;
+      try { claveClean = JSON.parse(prop.k); } catch(e){}
+      listaBloques.push({ id: idx, titulo: claveClean, inicio: ini, fin: fin, modelo: prop.v, tipo: 'json' });
+    });
+    lineas.push({ ind: 0, toks: [{ t: '}', c: 'pn' }], bloqueId: modelo.props.length - 1 });
+  } else {
+    emitJson(modelo, 0, null, false, lineas, 0);
+    var fin = lineas.length - 1;
+    for (var k = 0; k <= fin; k++) lineas[k].bloqueId = 0;
+    listaBloques.push({ id: 0, titulo: 'Documento JSON', inicio: 0, fin: fin, modelo: modelo, tipo: 'json' });
+  }
   var resumen = modelo.t === 'obj' ? 'Objeto · ' + fmtNum(modelo.props.length) + ' claves'
               : (modelo.t === 'arr' ? 'Lista · ' + fmtNum(modelo.items.length) + ' elementos' : 'Valor simple');
-  return { ok: true, tipo: 'json', lineas: lineas, modelo: modelo, aviso: aviso || null,
+  return { ok: true, tipo: 'json', lineas: lineas, modelo: modelo, bloques: listaBloques, aviso: aviso || null,
            resumen: resumen + ' · ' + fmtNum(contarJson(modelo)) + ' valores',
            minificar: function(){ return serJson(modelo); }, ext: 'json', texto: txt };
 }
@@ -431,7 +560,7 @@ function errorXml(msg, txt){
   return { mensaje: mensaje, linea: linea, col: col };
 }
 
-function analizarXml(txt, aviso){
+function analizarXml(txt, aviso, reparado){
   var doc;
   try {
     doc = new DOMParser().parseFromString(txt, 'application/xml');
@@ -439,13 +568,29 @@ function analizarXml(txt, aviso){
     return { ok: false, tipo: 'xml', error: errorXml(String(e.message || e), txt), texto: txt };
   }
   var pe = doc.getElementsByTagName('parsererror')[0];
-  if (pe) return { ok: false, tipo: 'xml', error: errorXml(pe.textContent || '', txt), texto: txt };
+  if (pe) {
+    // Algunos XML (p. ej. facturas/notas DIAN) traen un xmlns con espacios en su dirección,
+    // como xmlns:schemaLocation="urn:... http://...xsd". El navegador lo rechaza por ser una URI
+    // inválida aunque el resto del XML esté bien. Se reintenta cambiando esos espacios por %20.
+    if (!reparado) {
+      var rep = txt.replace(/(xmlns(?::[\w.\-]+)?\s*=\s*")([^"]*)(")/g, function(m, a, v, c){
+        return /\s/.test(v) ? a + v.trim().replace(/\s+/g, '%20') + c : m;
+      });
+      if (rep !== txt) {
+        var r2 = analizarXml(rep, 'Un namespace (xmlns) tenía espacios en su dirección y el navegador no lo acepta; se muestra con «%20» en lugar del espacio. El resto del XML no se modificó.', true);
+        if (r2.ok) return r2;
+      }
+    }
+    return { ok: false, tipo: 'xml', error: errorXml(pe.textContent || '', txt), texto: txt };
+  }
 
   var lineas = [];
   emitXmlDoc(doc, txt, 0, lineas);
-  var raiz = doc.documentElement ? doc.documentElement.nodeName : '';
+  for (var k = 0; k < lineas.length; k++) lineas[k].bloqueId = 0;
+  var raiz = doc.documentElement ? doc.documentElement.nodeName : 'xml';
+  var listaBloques = [{ id: 0, titulo: '<' + raiz + '>', inicio: 0, fin: lineas.length - 1, tipo: 'xml' }];
   var total = doc.getElementsByTagName('*').length;
-  return { ok: true, tipo: 'xml', lineas: lineas, doc: doc, aviso: aviso || null,
+  return { ok: true, tipo: 'xml', lineas: lineas, doc: doc, bloques: listaBloques, aviso: aviso || null,
            resumen: 'Raíz: <' + raiz + '> · ' + fmtNum(total) + ' elemento' + (total === 1 ? '' : 's'),
            minificar: function(){
              var s = '', prevTxt = false;
@@ -507,13 +652,48 @@ function intervalos(texto, regex){
 
 function htmlLinea(i){
   var l = estado.lineas[i];
+  var bId = l.bloqueId;
+  var b = (bId !== undefined && estado.bloquesMap) ? estado.bloquesMap[bId] : null;
+  var tieneMatch = b && b.coincidencias > 0;
+  var hayBusqueda = !!(estado.regex && estado.query);
+
+  var bannerHtml = '';
+  var esPrimerLineaVis = false;
+  if (hayBusqueda && tieneMatch) {
+    if (estado.vis) {
+      var p = estado.vis.indexOf(i);
+      esPrimerLineaVis = (p === 0 || estado.lineas[estado.vis[p - 1]].bloqueId !== bId);
+    } else {
+      esPrimerLineaVis = (i === b.inicio);
+    }
+  }
+
+  if (esPrimerLineaVis) {
+    bannerHtml = '<div class="json-block-banner" data-bid="' + b.id + '">' +
+      '<span class="jbb-pill">⚡ JSON COINCIDENTE</span>' +
+      '<span class="jbb-title">' + escapeHtml(b.titulo || ('JSON #' + (b.id + 1))) + '</span>' +
+      '<span class="jbb-count">' + fmtNum(b.coincidencias) + (b.coincidencias === 1 ? ' coincidencia' : ' coincidencias') + '</span>' +
+      '<button type="button" class="jbb-copy" data-bcopy="' + b.id + '" title="Copiar este JSON formateado">📋 Copiar este JSON</button>' +
+    '</div>';
+  }
+
+  var extraCls = '';
+  if (hayBusqueda) {
+    if (tieneMatch) {
+      extraCls += ' json-block-matched';
+      if (i === b.inicio) extraCls += ' json-block-first';
+      if (i === b.fin) extraCls += ' json-block-last';
+    } else if (!estado.vis) {
+      extraCls += ' json-block-dimmed';
+    }
+  }
+
   var toks = l.toks;
   var indent = new Array(l.ind + 1).join('  ');
   var recorte = 0;
   var largo = 0;
   toks.forEach(function(x){ largo += x.t.length; });
   if (largo > MAX_LINEA && !estado.expandidas[i]) {
-    // se recorta a MAX_LINEA caracteres manteniendo los colores
     var acum = 0, nuevos = [];
     for (var j = 0; j < toks.length; j++) {
       if (acum + toks[j].t.length <= MAX_LINEA) { nuevos.push(toks[j]); acum += toks[j].t.length; }
@@ -525,7 +705,7 @@ function htmlLinea(i){
   var texto = toks.map(function(x){ return x.t; }).join('');
   var cuerpo = escapeHtml(indent) + (tokensAHtml(toks, intervalos(texto, estado.regex)) || '&nbsp;');
   if (recorte) cuerpo += ' <a class="ver-mas" href="#" data-ver="' + i + '">… +' + fmtNum(recorte) + ' caracteres · mostrar línea completa</a>';
-  return '<div class="code-line" data-i="' + i + '"><span class="ln">' + (i + 1) + '</span><span class="code-text">' + cuerpo + '</span></div>';
+  return bannerHtml + '<div class="code-line' + extraCls + '" data-i="' + i + '"><span class="ln">' + (i + 1) + '</span><span class="code-text">' + cuerpo + '</span></div>';
 }
 
 function agregarLineas(n){
@@ -551,28 +731,88 @@ function dibujarCodigo(){
   cont.innerHTML = '';
   estado.hasta = 0;
   contarCoincidencias();
-  // con "Filtrar líneas" activo y una búsqueda escrita, solo se dibujan las líneas con coincidencias
-  estado.vis = (estado.soloCoinc && estado.regex) ? estado.coinc : null;
-  $('bCopiarFiltro').style.display = estado.vis ? '' : 'none';
-  if (estado.vis && !estado.vis.length) cont.innerHTML = '<div class="mas-lineas">Ninguna línea contiene «' + escapeHtml(estado.query) + '».</div>';
+
+  var bloquesConMatch = estado.bloques ? estado.bloques.filter(function(b){ return b.coincidencias > 0; }) : [];
+
+  if (estado.regex && estado.query) {
+    if (estado.modoFiltro === 'json') {
+      var visLineas = [];
+      var lineasAgregadas = {};
+      bloquesConMatch.forEach(function(b){
+        for (var k = b.inicio; k <= b.fin; k++) {
+          if (!lineasAgregadas[k]) {
+            visLineas.push(k);
+            lineasAgregadas[k] = true;
+          }
+        }
+      });
+      estado.vis = visLineas;
+      $('bCopiarFiltro').style.display = '';
+      $('bCopiarFiltro').textContent = 'Copiar JSONs filtrados (' + fmtNum(bloquesConMatch.length) + ')';
+    } else if (estado.modoFiltro === 'lineas') {
+      estado.vis = estado.coinc;
+      $('bCopiarFiltro').style.display = '';
+      $('bCopiarFiltro').textContent = 'Copiar líneas filtradas';
+    } else {
+      estado.vis = null;
+      $('bCopiarFiltro').style.display = 'none';
+    }
+  } else {
+    estado.vis = null;
+    $('bCopiarFiltro').style.display = 'none';
+  }
+
+  if (estado.vis && !estado.vis.length) {
+    var msg = (estado.modoFiltro === 'json')
+      ? 'Ningún JSON contiene «' + escapeHtml(estado.query) + '».'
+      : 'Ninguna línea contiene «' + escapeHtml(estado.query) + '».';
+    cont.innerHTML = '<div class="mas-lineas">' + msg + '</div>';
+  }
+
   agregarLineas(LOTE);
   if (estado.coinc.length) irACoincidencia(0, true);
 }
 
 function contarCoincidencias(){
   estado.coinc = []; estado.idx = -1;
+  if (estado.bloques) {
+    estado.bloques.forEach(function(b){ b.coincidencias = 0; });
+  }
   var cnt = $('cnt');
-  if (!estado.regex) { cnt.textContent = ''; return; }
+  if (!estado.regex || !estado.query) { cnt.textContent = ''; return; }
   var total = 0;
   for (var i = 0; i < estado.lineas.length; i++) {
     var t = textoLinea(estado.lineas[i]);
     if (t.length < estado.query.length) continue;
     var r = estado.regex; r.lastIndex = 0; var m, c = 0;
     while ((m = r.exec(t)) !== null) { c++; if (m[0] === '') r.lastIndex++; }
-    if (c) { estado.coinc.push(i); total += c; }
+    if (c) {
+      estado.coinc.push(i);
+      total += c;
+      var bId = estado.lineas[i].bloqueId;
+      if (bId !== undefined && estado.bloquesMap && estado.bloquesMap[bId]) {
+        estado.bloquesMap[bId].coincidencias += c;
+      }
+    }
   }
-  cnt.textContent = total ? fmtNum(total) + (total === 1 ? ' resultado' : ' resultados') +
-    (estado.soloCoinc ? ' en ' + fmtNum(estado.coinc.length) + (estado.coinc.length === 1 ? ' línea' : ' líneas') : '') : 'Sin resultados';
+
+  var bloquesConMatch = estado.bloques ? estado.bloques.filter(function(b){ return b.coincidencias > 0; }) : [];
+
+  if (!total) {
+    cnt.textContent = 'Sin resultados';
+    return;
+  }
+
+  if (estado.modoFiltro === 'json') {
+    cnt.textContent = fmtNum(total) + (total === 1 ? ' resultado' : ' resultados') +
+      ' en ' + fmtNum(bloquesConMatch.length) + (bloquesConMatch.length === 1 ? ' JSON' : ' JSONs');
+  } else if (estado.modoFiltro === 'lineas') {
+    cnt.textContent = fmtNum(total) + (total === 1 ? ' resultado' : ' resultados') +
+      ' en ' + fmtNum(estado.coinc.length) + (estado.coinc.length === 1 ? ' línea' : ' líneas');
+  } else {
+    cnt.textContent = fmtNum(total) + (total === 1 ? ' resultado' : ' resultados') +
+      (bloquesConMatch.length ? ' · ' + fmtNum(bloquesConMatch.length) + ' JSON' + (bloquesConMatch.length === 1 ? ' resaltado' : 's resaltados') : '');
+  }
 }
 
 function irACoincidencia(dir, inicial){
@@ -580,11 +820,65 @@ function irACoincidencia(dir, inicial){
   estado.idx = inicial ? 0 : (estado.idx + dir + estado.coinc.length) % estado.coinc.length;
   var linea = estado.coinc[estado.idx];
   var cont = $('vista-codigo');
-  var pos = estado.vis ? estado.idx : linea;   // posición dentro de lo dibujado
+  var pos = estado.vis ? estado.vis.indexOf(linea) : linea;
+  if (pos === -1 && estado.vis) return;
   if (pos >= estado.hasta) agregarLineas(pos - estado.hasta + LOTE);
   Array.prototype.forEach.call(cont.querySelectorAll('.cur-line'), function(e){ e.classList.remove('cur-line'); });
   var el = cont.querySelector('[data-i="' + linea + '"]');
-  if (el) { el.classList.add('cur-line'); el.scrollIntoView({ block: 'center' }); }
+  if (el) {
+    el.classList.add('cur-line');
+    el.scrollIntoView({ block: 'center' });
+  }
+
+  var cnt = $('cnt');
+  if (cnt && estado.coinc.length) {
+    var bId = estado.lineas[linea].bloqueId;
+    var bloquesConMatch = estado.bloques ? estado.bloques.filter(function(b){ return b.coincidencias > 0; }) : [];
+    var bIdx = -1;
+    for (var bi = 0; bi < bloquesConMatch.length; bi++) {
+      if (bloquesConMatch[bi].id === bId) { bIdx = bi + 1; break; }
+    }
+    var infoBloque = (bIdx > 0 && bloquesConMatch.length > 1) ? ' (JSON ' + bIdx + ' de ' + bloquesConMatch.length + ')' : '';
+    cnt.textContent = (estado.idx + 1) + ' / ' + fmtNum(estado.coinc.length) + infoBloque;
+  }
+}
+
+function irABloque(dir){
+  if (!estado || !estado.coinc || !estado.coinc.length) return;
+  var bloquesConMatch = estado.bloques ? estado.bloques.filter(function(b){ return b.coincidencias > 0; }) : [];
+  if (bloquesConMatch.length <= 1) { irACoincidencia(dir); return; }
+  var curLinea = estado.coinc[Math.max(0, estado.idx)];
+  var curBId = estado.lineas[curLinea].bloqueId;
+  var curBIdx = 0;
+  for (var i = 0; i < bloquesConMatch.length; i++) {
+    if (bloquesConMatch[i].id === curBId) { curBIdx = i; break; }
+  }
+  var sigBIdx = (curBIdx + dir + bloquesConMatch.length) % bloquesConMatch.length;
+  var targetB = bloquesConMatch[sigBIdx];
+  for (var c = 0; c < estado.coinc.length; c++) {
+    var lIdx = estado.coinc[c];
+    if (lIdx >= targetB.inicio && lIdx <= targetB.fin) {
+      estado.idx = c;
+      irACoincidencia(0);
+      return;
+    }
+  }
+}
+
+function copiarBloque(bid){
+  if (!estado || !estado.bloquesMap) return;
+  var b = estado.bloquesMap[bid];
+  if (!b) return;
+  var start = b.inicio;
+  if (start < b.fin && estado.lineas[start].toks && estado.lineas[start].toks[0] && estado.lineas[start].toks[0].c === 'cm') {
+    start++;
+  }
+  var txt = '';
+  for (var k = start; k <= b.fin; k++) {
+    var l = estado.lineas[k];
+    txt += new Array(l.ind + 1).join('  ') + textoLinea(l) + '\n';
+  }
+  copiar(txt.trim(), (b.titulo || 'JSON') + ' copiado');
 }
 
 /* ---------------------------- Árbol ---------------------------- */
@@ -796,7 +1090,12 @@ function procesar(){
   if (r.aviso) { aviso.style.display = 'block'; aviso.textContent = r.aviso; } else aviso.style.display = 'none';
 
   r.regex = null; r.query = ''; r.expandidas = {}; r.hasta = 0; r.coinc = []; r.idx = -1; r.arbolListo = false;
-  r.vis = null; r.soloCoinc = $('soloCoinc').checked;
+  r.bloques = r.bloques || [];
+  r.bloquesMap = {};
+  r.bloques.forEach(function(b){ r.bloquesMap[b.id] = b; b.coincidencias = 0; });
+  var fj = $('filtroJson'), sc = $('soloCoinc');
+  r.modoFiltro = (fj && fj.checked) ? 'json' : ((sc && sc.checked) ? 'lineas' : 'todo');
+  r.vis = null;
   estado = r;
   $('buscar').value = '';
   $('cnt').textContent = '';
@@ -871,6 +1170,21 @@ entrada.addEventListener('drop', function(e){
 $('archivo').addEventListener('change', function(e){ abrirArchivo(e.target.files[0]); e.target.value = ''; });
 $('btnLimpiar').addEventListener('click', function(){ entrada.value = ''; procesar(); entrada.focus(); });
 
+$('btnMinificar').addEventListener('click', function(){
+  var val = entrada.value.trim();
+  if(!val) return;
+  try {
+    if (val.startsWith('{') || val.startsWith('[')) {
+      entrada.value = JSON.stringify(JSON.parse(val));
+    } else if (val.startsWith('<')) {
+      entrada.value = val.replace(/>\s+</g, '><').trim();
+    }
+    procesar();
+  } catch(e) {
+    alert('El código debe ser válido para minificarlo.');
+  }
+});
+
 $('seg').addEventListener('click', function(e){
   var b = e.target.closest('button'); if (!b) return;
   fijarModo(b.dataset.modo); procesar();
@@ -894,21 +1208,40 @@ $('buscar').addEventListener('input', function(e){
 $('buscar').addEventListener('keydown', function(e){
   if (e.key === 'Enter') { e.preventDefault(); irACoincidencia(e.shiftKey ? -1 : 1); }
 });
+$('filtroJson').addEventListener('change', function(){
+  if (!estado || !estado.ok) return;
+  if (this.checked) {
+    $('soloCoinc').checked = false;
+    estado.modoFiltro = 'json';
+  } else {
+    estado.modoFiltro = $('soloCoinc').checked ? 'lineas' : 'todo';
+  }
+  dibujarCodigo();
+});
 $('soloCoinc').addEventListener('change', function(){
   if (!estado || !estado.ok) return;
-  estado.soloCoinc = this.checked;
+  if (this.checked) {
+    $('filtroJson').checked = false;
+    estado.modoFiltro = 'lineas';
+  } else {
+    estado.modoFiltro = $('filtroJson').checked ? 'json' : 'todo';
+  }
   dibujarCodigo();
 });
 $('bCopiarFiltro').addEventListener('click', function(){
   if (!estado || !estado.vis) return;
-  copiar(estado.vis.map(function(i){ var l = estado.lineas[i]; return new Array(l.ind + 1).join('  ') + textoLinea(l); }).join('\n'), 'Líneas filtradas copiadas');
+  copiar(estado.vis.map(function(i){ var l = estado.lineas[i]; return new Array(l.ind + 1).join('  ') + textoLinea(l); }).join('\n'), (estado.modoFiltro === 'json' ? 'JSONs filtrados copiados' : 'Líneas filtradas copiadas'));
 });
 
 /* Pantalla completa (ampliar), igual que en Notas / Jaivaná. Esc para salir */
+var nodosOrig = {};
 function ampliar(wrapId, btnId){
   var w = $(wrapId), on = !w.classList.contains('fullscreen');
   salirAmpliado();
   if (on) {
+    nodosOrig[wrapId] = { padre: w.parentNode, hermano: w.nextSibling };
+    document.body.appendChild(w);
+    
     w.classList.add('fullscreen');
     document.body.style.overflow = 'hidden';
     $(btnId).textContent = '⤡ Salir';
@@ -916,7 +1249,12 @@ function ampliar(wrapId, btnId){
   }
 }
 function salirAmpliado(){
-  Array.prototype.forEach.call(document.querySelectorAll('.ed-wrap.fullscreen'), function(w){ w.classList.remove('fullscreen'); });
+  Array.prototype.forEach.call(document.querySelectorAll('.ed-wrap.fullscreen'), function(w){ 
+    w.classList.remove('fullscreen'); 
+    if (nodosOrig[w.id] && nodosOrig[w.id].padre) {
+      nodosOrig[w.id].padre.insertBefore(w, nodosOrig[w.id].hermano);
+    }
+  });
   document.body.style.overflow = '';
   $('btnAmpliarEntrada').textContent = '⤢ Ampliar';
   $('btnAmpliarSalida').textContent = '⤢ Ampliar';
@@ -925,14 +1263,23 @@ $('btnAmpliarEntrada').addEventListener('click', function(){ ampliar('edEntrada'
 $('btnAmpliarSalida').addEventListener('click', function(){ ampliar('resultado', 'btnAmpliarSalida'); });
 document.addEventListener('keydown', function(e){ if (e.key === 'Escape') salirAmpliado(); });
 
+$('bPrevBloque').addEventListener('click', function(){ irABloque(-1); });
 $('bPrev').addEventListener('click', function(){ irACoincidencia(-1); });
 $('bNext').addEventListener('click', function(){ irACoincidencia(1); });
+$('bNextBloque').addEventListener('click', function(){ irABloque(1); });
 
 $('vista-codigo').addEventListener('scroll', function(){
   var c = $('vista-codigo');
   if (c.scrollTop + c.clientHeight > c.scrollHeight - 800) agregarLineas(LOTE);
 });
 $('vista-codigo').addEventListener('click', function(e){
+  var btnCopy = e.target.closest('.jbb-copy');
+  if (btnCopy) {
+    e.preventDefault();
+    e.stopPropagation();
+    copiarBloque(+btnCopy.dataset.bcopy);
+    return;
+  }
   var a = e.target.closest('a');
   if (!a) return;
   e.preventDefault();

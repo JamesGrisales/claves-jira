@@ -1,6 +1,7 @@
 require("dotenv").config();
 
 const express = require("express");
+const compression = require("compression");
 const session = require("express-session");
 const pgSession = require("connect-pg-simple")(session);
 const expressLayouts = require("express-ejs-layouts");
@@ -15,8 +16,11 @@ const { encryptValue, decryptValue } = require("./crypto-vault");
 const multer = require("multer");
 const { procesarArchivo } = require("./procesar-archivo");
 const { leerArchivoClaves, compararConBd, normalizar } = require("./importar-claves");
+const { esExcel, leerLibro, hojasATexto } = require("./excel-hoja");
+const biometria = require("./biometria-service");
 
-const EXTENSIONES_PERMITIDAS = [".txt", ".sql", ".docx", ".pdf"];
+// Excel (.xlsx, .xlsm, .xls, .csv) se guarda y se muestra como hoja de cálculo
+const EXTENSIONES_PERMITIDAS = [".txt", ".sql", ".docx", ".pdf", ".xlsx", ".xlsm", ".xls", ".csv"];
 
 // Tamaño máximo por archivo (en MB). Se puede cambiar en el archivo .env con
 // MAX_UPLOAD_MB=200, por ejemplo.
@@ -62,25 +66,50 @@ const SQL_SEÑALES_SUELTAS = [
 ];
 
 function pareceSql(nota) {
-  if ((nota.archivo_tipo || "").toLowerCase() === "sql") return true;
+  const tipo = (nota.archivo_tipo || "").toLowerCase();
+  if (tipo === "sql") return true;
+
+  // Si fue marcado o subido explícitamente como archivo de texto (.txt sin palabras de sql)
+  if (tipo === "txt" && !/\bsql\b/i.test(nota.titulo || "") && !/\bsql\b/i.test(nota.categoria || "")) {
+    return false;
+  }
 
   if (/\bsql\b/i.test(nota.categoria || "") || /\bsql\b/i.test(nota.titulo || "")) {
     return true;
   }
 
-  const texto = nota.contenido || "";
+  // Las notas y apuntes manuales (sin archivo adjunto) se visualizan con resaltado de código/colores por defecto
+  if (!nota.archivo_tipo && !nota.archivo_nombre) {
+    return true;
+  }
 
+  const texto = nota.contenido || "";
   if (SQL_INICIO_DE_LINEA.test(texto)) return true;
 
   const señales = SQL_SEÑALES_SUELTAS.filter((p) => p.test(texto)).length;
-  return señales >= 2;
+  return señales >= 1;
 }
 
 const app = express();
 const PORT = process.env.PORT || 5050;
 
+// Siempre forzar acceso con localhost (requerido para WebAuthn y Sensor de Huella de Windows Hello)
+app.use((req, res, next) => {
+  if (req.hostname === "127.0.0.1" || req.hostname === "::1") {
+    const host = req.headers.host || "";
+    const portSuffix = host.includes(":") ? `:${host.split(":")[1]}` : (PORT === 80 ? "" : `:${PORT}`);
+    return res.redirect(301, `http://localhost${portSuffix}${req.originalUrl}`);
+  }
+  next();
+});
+
+// Compresión Gzip/Deflate para acelerar transferencias HTML, CSS, JS y JSON
+app.use(compression({ level: 6 }));
+
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
+// Cache de plantillas compiladas en memoria (evita leer y compilar disco en cada petición)
+app.set("view cache", true);
 
 app.use(expressLayouts);
 app.set("layout", "layout");
@@ -92,7 +121,19 @@ app.use(
     parameterLimit: 10000,
   })
 );
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.json());
+
+// Archivos estáticos con cache HTTP en el navegador
+app.use(express.static(path.join(__dirname, "public"), {
+  maxAge: "7d",
+  etag: true,
+}));
+
+// Librería de Excel para el navegador (con cabeceras de cache inmutable)
+app.get("/xlsx.min.js", (req, res) => {
+  res.setHeader("Cache-Control", "public, max-age=604800, immutable");
+  res.sendFile(require.resolve("xlsx/dist/xlsx.full.min.js"));
+});
 
 app.use(
   session({
@@ -109,31 +150,48 @@ app.use(
   })
 );
 
+// Cache en memoria para conteo de papelera (evita 2 subconsultas SQL pesadas en cada navegación o polling)
+const papeleraCache = { count: 0, expiresAt: 0 };
+function invalidarPapeleraCache() {
+  papeleraCache.expiresAt = 0;
+}
+
 // Usuario y mensajes flash disponibles en todas las vistas
 app.use(async (req, res, next) => {
   res.locals.currentUser = req.session.user || null;
   res.locals.flashes = req.session.flashes || [];
   res.locals.currentPath = req.path;
-  res.locals.papeleraCount = 0;
+  res.locals.papeleraCount = papeleraCache.count;
 
   req.session.flashes = [];
 
   // Cantidad de elementos en la papelera (para el menú de arriba)
+  // Se ignora para llamadas a API, imágenes o descargas para no saturar la base de datos
+  const p = req.path;
   if (
     req.session.user &&
     req.method === "GET" &&
-    !req.path.includes("/imagen/") &&
-    !req.path.endsWith("/archivo")
+    !p.startsWith("/api/") &&
+    !p.includes("/api/") &&
+    !p.includes("/imagen/") &&
+    !p.endsWith("/archivo") &&
+    !p.endsWith("/contenido") &&
+    !p.endsWith("/buscar")
   ) {
-    try {
-      const { rows } = await pool.query(
-        `SELECT (SELECT COUNT(*) FROM notas WHERE eliminado_en IS NOT NULL)
-              + (SELECT COUNT(*) FROM jaivana_notas WHERE eliminado_en IS NOT NULL) AS total`
-      );
-      res.locals.papeleraCount = Number(rows[0].total) || 0;
-    } catch (error) {
-      // si falla el conteo no debe romper la página
+    const ahora = Date.now();
+    if (ahora >= papeleraCache.expiresAt) {
+      try {
+        const { rows } = await pool.query(
+          `SELECT (SELECT COUNT(*) FROM notas WHERE eliminado_en IS NOT NULL)
+                + (SELECT COUNT(*) FROM jaivana_notas WHERE eliminado_en IS NOT NULL) AS total`
+        );
+        papeleraCache.count = Number(rows[0].total) || 0;
+        papeleraCache.expiresAt = ahora + 15000; // 15 segundos de cache
+      } catch (error) {
+        // si falla el conteo no debe romper la página
+      }
     }
+    res.locals.papeleraCount = papeleraCache.count;
   }
 
   next();
@@ -272,6 +330,7 @@ app.get("/login", async (req, res) => {
 app.post("/login", async (req, res) => {
   const username = (req.body.username || "").trim();
   const password = req.body.password || "";
+  const isAjax = req.xhr || (req.headers["accept"] && req.headers["accept"].includes("application/json")) || req.body.ajax === "1" || req.headers["x-requested-with"] === "XMLHttpRequest";
 
   const { rows } = await pool.query(
     "SELECT * FROM users WHERE username = $1",
@@ -292,7 +351,16 @@ app.post("/login", async (req, res) => {
       username: user.username,
     };
 
+    flash(req, "ok", `¡Bienvenido de nuevo, ${user.username}!`);
+
+    if (isAjax) {
+      return res.json({ ok: true, redirect: "/" });
+    }
     return res.redirect("/");
+  }
+
+  if (isAjax) {
+    return res.json({ ok: false, error: "Usuario o contraseña incorrectos." });
   }
 
   flash(
@@ -310,9 +378,17 @@ app.get("/logout", (req, res) => {
   });
 });
 
+// --- RUTAS DE AUTENTICACIÓN BIOMÉTRICA (WEBAUTHN / WINDOWS HELLO / HUELLA) ---
+app.get("/api/biometria/registro-challenge", requireLogin, biometria.registroChallenge);
+app.post("/api/biometria/registro-verificar", requireLogin, biometria.registroGuardar);
+app.get("/api/biometria/login-challenge", biometria.loginChallenge);
+app.post("/api/biometria/login-verificar", biometria.loginVerificar);
+app.get("/api/biometria/estado", biometria.estadoBiometria);
+app.delete("/api/biometria/:id?", requireLogin, biometria.eliminarHuella);
+
 app.get("/cambiar-clave", requireLogin, (req, res) => {
   res.render("change_password", {
-    title: "Cambiar mi contraseña",
+    title: "Mi contraseña y huella digital",
   });
 });
 
@@ -430,6 +506,97 @@ app.get("/empresa/:id/clave", requireLogin, async (req, res) => {
         "No se pudo descifrar la clave almacenada. " +
         "Es posible que el registro tenga un formato antiguo o esté dañado.",
     });
+  }
+});
+
+app.get("/api/seguridad/auditoria", requireLogin, async (req, res) => {
+  try {
+    const { rows } = await pool.query(
+      'SELECT id, empresa, clave_cifrada, updated_at FROM companies ORDER BY empresa COLLATE "C" ASC'
+    );
+    const ahora = Date.now();
+    const meses6 = 180 * 24 * 60 * 60 * 1000;
+
+    function evaluarClave(pw) {
+      if (!pw) return { debil: true, motivos: ["Clave vacía"], score: 0 };
+      const len = pw.length;
+      const motivos = [];
+      let score = 0;
+      if (len < 8) motivos.push("Menos de 8 caracteres");
+      else if (len >= 14) score += 2;
+      else score += 1;
+
+      if (!/[A-Z]/.test(pw)) motivos.push("Sin mayúsculas");
+      else score++;
+      if (!/[0-9]/.test(pw)) motivos.push("Sin números");
+      else score++;
+      if (!/[^A-Za-z0-9]/.test(pw)) motivos.push("Sin símbolos especiales");
+      else score++;
+
+      if (/(.)\1{2,}/.test(pw)) motivos.push("Caracteres repetidos seguidos");
+      if (/1234|abcd|qwerty|admin|password/i.test(pw)) motivos.push("Patrón predecible");
+
+      return {
+        debil: len < 8 || motivos.length >= 2,
+        motivos,
+        score: Math.min(5, score)
+      };
+    }
+
+    const mapaClaves = new Map();
+    const duplicadas = [];
+    const debiles = [];
+    const desactualizadas = [];
+
+    for (const r of rows) {
+      let clave = "";
+      try {
+        clave = decryptValue(r.clave_cifrada);
+      } catch (e) {
+        clave = "";
+      }
+      const evalClave = evaluarClave(clave);
+      const fechaMod = r.updated_at ? new Date(r.updated_at).getTime() : 0;
+      const dias = fechaMod > 0 ? Math.floor((ahora - fechaMod) / (24 * 60 * 60 * 1000)) : null;
+      const esAntigua = fechaMod > 0 ? (ahora - fechaMod > meses6) : false;
+
+      if (clave) {
+        if (!mapaClaves.has(clave)) mapaClaves.set(clave, []);
+        mapaClaves.get(clave).push({ id: r.id, empresa: r.empresa, fecha: r.updated_at, dias });
+      }
+
+      if (evalClave.debil) {
+        debiles.push({ id: r.id, empresa: r.empresa, motivos: evalClave.motivos, fecha: r.updated_at, dias });
+      }
+
+      if (esAntigua) {
+        desactualizadas.push({ id: r.id, empresa: r.empresa, dias, fecha: r.updated_at });
+      }
+    }
+
+    for (const [clave, empList] of mapaClaves.entries()) {
+      if (empList.length > 1) {
+        duplicadas.push({
+          empresas: empList,
+          cantidad: empList.length
+        });
+      }
+    }
+
+    const total = rows.length;
+    const fallas = duplicadas.reduce((a, b) => a + b.cantidad, 0) * 1.5 + debiles.length * 1.2 + desactualizadas.length * 0.5;
+    const salud = total > 0 ? Math.max(10, Math.min(100, Math.round(100 - (fallas / total) * 100))) : 100;
+
+    res.json({
+      total,
+      salud,
+      duplicadas,
+      debiles,
+      desactualizadas
+    });
+  } catch (error) {
+    console.error("Error en auditoría:", error);
+    res.status(500).json({ error: "No se pudo realizar la auditoría de la bóveda." });
   }
 });
 
@@ -846,31 +1013,39 @@ app.post("/empresa/:id/eliminar", requireLogin, async (req, res) => {
 
 function crearRutasDeListado({ base, tabla, vista, titulo, cfg }) {
   app.get(base, requireLogin, async (req, res) => {
-    const { rows } = await pool.query(
-      `SELECT id, categoria, titulo, updated_at, archivo_nombre, archivo_tipo,
-              LEFT(contenido, 20000) AS muestra,
-              LENGTH(contenido) AS largo,
-              (LENGTH(contenido) - LENGTH(REPLACE(contenido, chr(10), '')) + 1) AS lineas
-       FROM ${tabla}
-       WHERE eliminado_en IS NULL
-       ORDER BY categoria COLLATE "C" ASC, titulo COLLATE "C" ASC`
-    );
+    // Consultas en paralelo para reducir latencia a la mitad
+    const [notasRes, catRes] = await Promise.all([
+      pool.query(
+        `SELECT id, categoria, titulo, updated_at, archivo_nombre, archivo_tipo,
+                LEFT(contenido, 2500) AS muestra,
+                LENGTH(contenido) AS largo,
+                (LENGTH(contenido) - LENGTH(REPLACE(contenido, chr(10), '')) + 1) AS lineas
+         FROM ${tabla}
+         WHERE eliminado_en IS NULL
+         ORDER BY categoria COLLATE "C" ASC, titulo COLLATE "C" ASC`
+      ),
+      pool.query(
+        `SELECT DISTINCT categoria FROM ${tabla} WHERE eliminado_en IS NULL ORDER BY 1 ASC`
+      ),
+    ]);
+
+    const rows = notasRes.rows;
+    const catRows = catRes.rows;
 
     rows.forEach((r) => {
-      r.es_sql = pareceSql({
-        contenido: r.muestra,
-        archivo_tipo: r.archivo_tipo,
-        categoria: r.categoria,
-        titulo: r.titulo,
-      });
+      r.es_excel = esExcel(r.archivo_tipo);
+      r.es_sql =
+        !r.es_excel &&
+        pareceSql({
+          contenido: r.muestra,
+          archivo_tipo: r.archivo_tipo,
+          categoria: r.categoria,
+          titulo: r.titulo,
+        });
       r.largo = Number(r.largo);
       r.lineas = Number(r.lineas);
       delete r.muestra;
     });
-
-    const { rows: catRows } = await pool.query(
-      `SELECT DISTINCT categoria FROM ${tabla} WHERE eliminado_en IS NULL ORDER BY 1 ASC`
-    );
 
     res.render(vista, {
       title: titulo,
@@ -1002,9 +1177,14 @@ async function guardarArchivoComoNota({ file, categoria, titulo, tabla, tablaImg
   let texto = "";
   let imagenes = [];
   try {
-    const r = await procesarArchivo({ originalname: nombreOriginal, buffer: contenidoBinario });
-    texto = r.texto;
-    imagenes = r.imagenes;
+    if (esExcel(ext)) {
+      // Hojas de cálculo: se guarda el texto (para buscar/copiar) y el archivo original
+      texto = hojasATexto(leerLibro(contenidoBinario, ext));
+    } else {
+      const r = await procesarArchivo({ originalname: nombreOriginal, buffer: contenidoBinario });
+      texto = r.texto;
+      imagenes = r.imagenes;
+    }
   } catch (error) {
     console.error("Error procesando archivo:", nombreOriginal, error.message);
   }
@@ -1057,8 +1237,8 @@ function crearRutasDeSubida({ base, tabla, tablaImg }) {
             req,
             "error",
             rechazados.length
-              ? `Ningún archivo válido. No permitidos: ${rechazados.join(", ")} (solo .txt, .sql, .docx y .pdf).`
-              : "Selecciona al menos un archivo (.txt, .sql, .docx o .pdf)."
+              ? `Ningún archivo válido. No permitidos: ${rechazados.join(", ")} (solo .txt, .sql, .docx, .pdf, .xlsx, .xls y .csv).`
+              : "Selecciona al menos un archivo (.txt, .sql, .docx, .pdf, .xlsx, .xls o .csv)."
           );
           return res.redirect(base);
         }
@@ -1117,6 +1297,30 @@ function crearRutasDeSubida({ base, tabla, tablaImg }) {
       }
     }
   );
+
+  // Hojas de cálculo: devuelve todas las hojas del Excel para dibujarlas como cuadrícula
+  app.get(base + "/:id/hoja", requireLogin, async (req, res) => {
+    try {
+      if (!/^\d+$/.test(req.params.id)) return res.status(400).json({ error: "Id inválido." });
+
+      const { rows } = await pool.query(
+        `SELECT archivo_tipo, archivo_datos FROM ${tabla} WHERE id = $1`,
+        [req.params.id]
+      );
+
+      const row = rows[0];
+
+      if (!row || !row.archivo_datos || !esExcel(row.archivo_tipo)) {
+        return res.status(404).json({ error: "Esta nota no tiene una hoja de cálculo." });
+      }
+
+      res.setHeader("Cache-Control", "no-store");
+      res.json({ hojas: leerLibro(row.archivo_datos, row.archivo_tipo) });
+    } catch (error) {
+      console.error("Error leyendo hoja de cálculo:", error.message);
+      res.status(500).json({ error: "No fue posible leer la hoja de cálculo." });
+    }
+  });
 
   app.get(base + "/:id/imagen/:orden", requireLogin, async (req, res) => {
     try {
@@ -1207,6 +1411,8 @@ app.post("/notas/eliminar-todo", requireLogin, async (req, res) => {
       "UPDATE notas SET eliminado_en = NOW() WHERE eliminado_en IS NULL"
     );
 
+    invalidarPapeleraCache();
+
     flash(
       req,
       "ok",
@@ -1230,6 +1436,8 @@ app.post("/notas/agregar", requireLogin, async (req, res) => {
     const categoria = (req.body.categoria || "").trim();
     const titulo = (req.body.titulo || "").trim();
     const contenido = (req.body.contenido || "").trim();
+    const formato = (req.body.formato || "sql").trim();
+    const archivoTipo = formato === "texto" ? "txt" : "sql";
 
     if (!categoria || !titulo || !contenido) {
       flash(
@@ -1242,8 +1450,8 @@ app.post("/notas/agregar", requireLogin, async (req, res) => {
     }
 
     await pool.query(
-      "INSERT INTO notas (categoria, titulo, contenido) VALUES ($1, $2, $3)",
-      [categoria, titulo, contenido]
+      "INSERT INTO notas (categoria, titulo, contenido, archivo_tipo) VALUES ($1, $2, $3, $4)",
+      [categoria, titulo, contenido, archivoTipo]
     );
 
     flash(req, "ok", `Nota «${titulo}» agregada en «${categoria}».`);
@@ -1303,6 +1511,8 @@ app.post("/notas/:id/eliminar", requireLogin, async (req, res) => {
       "UPDATE notas SET eliminado_en = NOW() WHERE id = $1 AND eliminado_en IS NULL RETURNING titulo",
       [req.params.id]
     );
+
+    invalidarPapeleraCache();
 
     if (rows[0]) {
       flash(req, "ok", `Nota «${rows[0].titulo}» movida a la papelera.`);
@@ -1388,6 +1598,8 @@ app.post("/jaivana/eliminar-todo", requireLogin, async (req, res) => {
       "UPDATE jaivana_notas SET eliminado_en = NOW() WHERE eliminado_en IS NULL"
     );
 
+    invalidarPapeleraCache();
+
     flash(
       req,
       "ok",
@@ -1411,6 +1623,8 @@ app.post("/jaivana/agregar", requireLogin, async (req, res) => {
     const categoria = (req.body.categoria || "").trim();
     const titulo = (req.body.titulo || "").trim();
     const contenido = (req.body.contenido || "").trim();
+    const formato = (req.body.formato || "sql").trim();
+    const archivoTipo = formato === "texto" ? "txt" : "sql";
 
     if (!categoria || !titulo || !contenido) {
       flash(
@@ -1423,8 +1637,8 @@ app.post("/jaivana/agregar", requireLogin, async (req, res) => {
     }
 
     await pool.query(
-      "INSERT INTO jaivana_notas (categoria, titulo, contenido) VALUES ($1, $2, $3)",
-      [categoria, titulo, contenido]
+      "INSERT INTO jaivana_notas (categoria, titulo, contenido, archivo_tipo) VALUES ($1, $2, $3, $4)",
+      [categoria, titulo, contenido, archivoTipo]
     );
 
     flash(req, "ok", `Apunte «${titulo}» agregado en «${categoria}».`);
@@ -1485,6 +1699,8 @@ app.post("/jaivana/:id/eliminar", requireLogin, async (req, res) => {
       [req.params.id]
     );
 
+    invalidarPapeleraCache();
+
     if (rows[0]) {
       flash(req, "ok", `Apunte «${rows[0].titulo}» movido a la papelera.`);
     }
@@ -1538,6 +1754,7 @@ app.post("/papelera/restaurar-todo", requireLogin, async (req, res) => {
       );
       total += rowCount;
     }
+    invalidarPapeleraCache();
     flash(req, "ok", total ? `Se restauraron ${total} elementos.` : "La papelera ya estaba vacía.");
   } catch (error) {
     console.error("Error restaurando todo:", error.message);
@@ -1555,6 +1772,7 @@ app.post("/papelera/vaciar", requireLogin, async (req, res) => {
       );
       total += rowCount;
     }
+    invalidarPapeleraCache();
     flash(req, "ok", total ? `Se eliminaron definitivamente ${total} elementos.` : "La papelera ya estaba vacía.");
   } catch (error) {
     console.error("Error vaciando papelera:", error.message);
@@ -1573,6 +1791,8 @@ app.post("/papelera/:origen/:id/restaurar", requireLogin, async (req, res) => {
        WHERE id = $1 AND eliminado_en IS NOT NULL RETURNING titulo`,
       [req.params.id]
     );
+
+    invalidarPapeleraCache();
 
     if (rows[0]) {
       flash(req, "ok", `«${rows[0].titulo}» restaurado en ${cfg.nombre}.`);
@@ -1594,6 +1814,8 @@ app.post("/papelera/:origen/:id/eliminar", requireLogin, async (req, res) => {
        WHERE id = $1 AND eliminado_en IS NOT NULL RETURNING titulo`,
       [req.params.id]
     );
+
+    invalidarPapeleraCache();
 
     if (rows[0]) {
       flash(req, "ok", `«${rows[0].titulo}» eliminado definitivamente.`);
@@ -1622,6 +1844,15 @@ app.get("/sql", requireLogin, (req, res) => {
 });
 
 // ---------------------------------------------------------------------------
+// Visor de Excel (.xlsx / .xls): el archivo se lee en el navegador con /xlsx.min.js,
+// no se sube ni se guarda nada en el servidor.
+// ---------------------------------------------------------------------------
+
+app.get("/excel", requireLogin, (req, res) => {
+  res.render("excel", { title: "Visor de Excel" });
+});
+
+// ---------------------------------------------------------------------------
 // Listas: convierte datos pegados en ('a','b','c') (todo ocurre en el navegador)
 // ---------------------------------------------------------------------------
 
@@ -1633,6 +1864,64 @@ app.get("/listas", requireLogin, (req, res) => {
 // Aceptados: pegas la tabla del dashboard de Jaivaná y calcula los totales
 // (todo ocurre en el navegador)
 // ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// Revisor de logs (todo se procesa en el navegador)
+// ---------------------------------------------------------------------------
+
+app.get("/logs", requireLogin, (req, res) => {
+  res.render("logs", { title: "Logs" });
+});
+
+// Enlaces guardados (nombre, ícono, color, grupo)
+require("./enlaces-routes")(app, { pool, requireLogin });
+
+// Vendedores (código + nombre) para el panel "Procesar query" de /sql
+require("./vendedores-routes")(app, { pool, requireLogin });
+
+// Asistente de IA (chat flotante con agente)
+require("./asistente-routes")(app, { pool, requireLogin });
+
+// Calendario: fechas especiales, reuniones y alertas a la hora del evento
+require("./calendario-routes")(app, { pool, requireLogin });
+
+// Manual desde video: capturas automáticas + PDF con membrete
+require("./manual-video")(app, { requireLogin });
+
+// ---------------------------------------------------------------------------
+// Datos pequeños compartidos entre pestañas y navegadores
+// ---------------------------------------------------------------------------
+
+const KV_PERMITIDAS = new Set(["aceptados-resumen"]);
+
+app.get("/api/kv/:k", requireLogin, async (req, res) => {
+  if (!KV_PERMITIDAS.has(req.params.k)) return res.status(404).json({ v: null });
+  try {
+    const { rows } = await pool.query("SELECT v, updated_at FROM kv_store WHERE k = $1", [req.params.k]);
+    res.json(rows[0] ? { v: rows[0].v, updated_at: rows[0].updated_at } : { v: null });
+  } catch (error) {
+    res.status(500).json({ v: null });
+  }
+});
+
+app.put("/api/kv/:k", requireLogin, express.json({ limit: "64kb" }), async (req, res) => {
+  if (!KV_PERMITIDAS.has(req.params.k)) return res.status(404).json({ ok: false });
+  try {
+    const v = req.body && req.body.v !== undefined ? req.body.v : null;
+    if (v === null) {
+      await pool.query("DELETE FROM kv_store WHERE k = $1", [req.params.k]);
+    } else {
+      await pool.query(
+        `INSERT INTO kv_store (k, v, updated_at) VALUES ($1, $2::jsonb, NOW())
+         ON CONFLICT (k) DO UPDATE SET v = EXCLUDED.v, updated_at = NOW()`,
+        [req.params.k, JSON.stringify(v)]
+      );
+    }
+    res.json({ ok: true });
+  } catch (error) {
+    res.status(500).json({ ok: false });
+  }
+});
 
 app.get("/aceptados", requireLogin, (req, res) => {
   res.render("aceptados", { title: "Aceptados" });
@@ -1699,6 +1988,36 @@ app.post("/informe/pdf", requireLogin, express.json({ limit: "512kb" }), async (
 });
 
 // ---------------------------------------------------------------------------
+// Viáticos: solicitud de anticipo y legalización de gastos de viaje (formulario + PDF)
+// Los PDF se arman en viaticos-pdf.js con el mismo formato de los Excel originales.
+// ---------------------------------------------------------------------------
+
+app.get("/viaticos", requireLogin, (req, res) => {
+  res.render("viaticos", { title: "Viáticos" });
+});
+
+function crearRutaPdfViaticos(ruta, nombreFuncion, etiqueta) {
+  app.post(ruta, requireLogin, express.json({ limit: "256kb" }), async (req, res) => {
+    try {
+      const generador = require("./viaticos-pdf");
+      const { buffer, filename } = await generador[nombreFuncion](req.body || {});
+      res.set({
+        "Content-Type": "application/pdf",
+        "Content-Disposition": `${req.query.descargar ? "attachment" : "inline"}; filename="${filename}"`,
+        "Cache-Control": "no-store",
+      });
+      res.send(buffer);
+    } catch (err) {
+      console.error(`Error generando el PDF de ${etiqueta}:`, err);
+      res.status(500).json({ error: "No se pudo generar el PDF." });
+    }
+  });
+}
+
+crearRutaPdfViaticos("/viaticos/anticipo/pdf", "generarSolicitudPdf", "la solicitud de anticipo");
+crearRutaPdfViaticos("/viaticos/legalizacion/pdf", "generarLegalizacionPdf", "la legalización de gastos");
+
+// ---------------------------------------------------------------------------
 // Manejo de errores de subida de archivos (multer y validaciones propias)
 // ---------------------------------------------------------------------------
 
@@ -1742,9 +2061,9 @@ app.use((err, req, res, next) => {
 
 initDb()
   .then(() => {
-    const servidor = app.listen(PORT, "127.0.0.1", () => {
+    const servidor = app.listen(PORT, "0.0.0.0", () => {
       console.log(
-        `Bóveda de claves corriendo en http://127.0.0.1:${PORT}` +
+        `Bóveda de claves corriendo en http://localhost:${PORT}` +
           ` (archivos de hasta ${MAX_UPLOAD_MB} MB)`
       );
     });

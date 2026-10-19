@@ -91,14 +91,16 @@
   .toast.show{ opacity:1; transform:translateX(-50%) translateY(0) scale(1); }
 </style>
 
-<div class="top">
-  <h1>Informe diario</h1>
-  <div class="acciones">
-    <button type="button" class="secondary" id="btnEjemplo" title="Vuelve a los datos del informe de ejemplo">Restablecer</button>
-    <button type="button" id="btnDescargar">⬇ Descargar PDF</button>
+<div>
+  <div class="top">
+    <h1>Informe diario</h1>
+    <div class="acciones">
+      <button type="button" class="secondary" id="btnEjemplo" title="Vuelve a los datos del informe de ejemplo">Restablecer</button>
+      <button type="button" id="btnDescargar">⬇ Descargar PDF</button>
+    </div>
   </div>
+  <p class="sub" style="margin-bottom:0;">Formato diario de reporte de envío de documentos electrónicos. Cambia la fecha, la hora y los demás campos; la vista previa es el PDF real y se descarga idéntica al formato del Word.</p>
 </div>
-<p class="sub">Formato diario de reporte de envío de documentos electrónicos. Cambia la fecha, la hora y los demás campos; la vista previa es el PDF real y se descarga idéntica al formato del Word.</p>
 
 <div class="inf-grid">
   <div>
@@ -159,6 +161,7 @@
       <div class="campo"><span>Total de documentos aceptadas</span>
         <input type="text" id="r_aceptados" maxlength="40">
         <label class="auto"><input type="checkbox" id="a_aceptados" checked> Automático (desde Aceptados)</label>
+        <button type="button" class="secondary" id="btnTraer" style="margin-top:6px;padding:5px 11px;font-size:12px;" title="Vuelve a traer los totales de la pestaña Aceptados">↻ Traer ahora</button>
       </div>
       <p class="auto-info" id="autoInfo"></p>
       <label class="campo"><span>Total de documentos pendientes</span><input type="text" id="r_pendientes" maxlength="40"></label>
@@ -315,9 +318,13 @@ window.addEventListener('scroll', function(e){ if (e.target !== panel && panel.s
 
 /* ---------- totales automáticos desde la pestaña Aceptados ---------- */
 var KEY_ACEPT = 'boveda-aceptados-resumen';
+var resumenMemoria = null;   // respaldo si el navegador no deja guardar (almacenamiento lleno o bloqueado)
 function leerAceptados(){
-  try { var r = JSON.parse(localStorage.getItem(KEY_ACEPT) || 'null'); return r && typeof r === 'object' ? r : null; }
-  catch (e) { return null; }
+  var r = null;
+  try { r = JSON.parse(localStorage.getItem(KEY_ACEPT) || 'null'); } catch (e) { r = null; }
+  if (!r || typeof r !== 'object') r = null;
+  if (resumenMemoria && (!r || (resumenMemoria.actualizado || 0) > (r.actualizado || 0))) return resumenMemoria;
+  return r;
 }
 function hace(ms){
   var min = Math.max(0, Math.round((Date.now() - ms) / 60000));
@@ -328,7 +335,16 @@ function hace(ms){
   return 'hace ' + Math.floor(h / 24) + ' días';
 }
 function aplicarAuto(){
-  var r = leerAceptados(), info = $('autoInfo');
+  var r = leerAceptados(), info = $('autoInfo'), reactivado = false;
+  // Si pegaste datos nuevos en Aceptados, «Automático» se vuelve a marcar solo
+  // (antes, si lo habías desmarcado alguna vez, se quedaba sin llenar para siempre)
+  if (r && r.pegado) {
+    var visto = null; try { visto = localStorage.getItem('boveda-informe-visto'); } catch (e) {}
+    if (String(r.pegado) !== visto) {
+      ['empresas', 'aceptados'].forEach(function(k){ if (!$('a_' + k).checked) { $('a_' + k).checked = true; reactivado = true; } });
+      try { localStorage.setItem('boveda-informe-visto', String(r.pegado)); } catch (e) {}
+    }
+  }
   ['empresas', 'aceptados'].forEach(function(k){
     var cb = $('a_' + k), inp = $('r_' + k);
     cb.disabled = !r;
@@ -345,6 +361,46 @@ function aplicarAuto(){
   info.innerHTML = 'Desde <a href="/aceptados">Aceptados</a>: <strong>' + r.empresas + '</strong> empresas · <strong>' +
     Number(r.aceptados).toLocaleString('es-CO') + '</strong> ' + String(r.columna || 'aceptados').toLowerCase().replace(/[<>&]/g, '') +
     ' · pegado ' + hace(r.pegado || Date.now()) + (viejo ? ' ⚠ parecen datos de otro día: vuelve a pegar la tabla en Aceptados.' : '.');
+  if (reactivado) { try { cambio(); } catch (e) {} }
+}
+// El resumen también vive en el servidor: se trae si es más nuevo que el de este navegador
+function sincronizarServidor(){
+  try {
+    fetch('/api/kv/aceptados-resumen', { credentials: 'same-origin' })
+      .then(function(x){ return x.ok ? x.json() : null; })
+      .then(function(d){
+        if (!d || !d.v) return;
+        var loc = leerAceptados();
+        if (!loc || (d.v.actualizado || 0) > (loc.actualizado || 0)) {
+          resumenMemoria = d.v;
+          try { localStorage.setItem(KEY_ACEPT, JSON.stringify(d.v)); } catch (e) {}
+          refrescarAuto();
+        }
+        if (typeof alTraer === 'function') alTraer('servidor');
+      }).catch(function(){ if (typeof alTraer === 'function') alTraer('error'); });
+  } catch (e) {}
+}
+// Botón «Traer ahora»: vuelve a marcar Automático, trae lo último y dice qué encontró
+var alTraer = null;
+function traerAhora(){
+  var info = $('autoInfo');
+  info.className = 'auto-info'; info.textContent = 'Buscando lo último que pegaste en Aceptados…';
+  ['empresas', 'aceptados'].forEach(function(k){ $('a_' + k).checked = true; });
+  alTraer = function(origen){
+    alTraer = null;
+    var r = leerAceptados();
+    if (!r) {
+      info.className = 'auto-info viejo';
+      info.innerHTML = origen === 'error'
+        ? 'No pude consultar el servidor. Revisa que la bóveda esté corriendo y vuelve a intentar.'
+        : 'Aceptados todavía no ha enviado datos. Ve a <a href="/aceptados">Aceptados</a>, pega la tabla y vuelve aquí.';
+      return;
+    }
+    refrescarAuto(); cambio();
+  };
+  aplicarAuto();
+  sincronizarServidor();
+  setTimeout(function(){ if (alTraer) { var f = alTraer; f('timeout'); } }, 4000);
 }
 function refrescarAuto(){
   var antes = $('r_empresas').value + '|' + $('r_aceptados').value;
@@ -593,11 +649,14 @@ $('abrirNueva').addEventListener('click', function(ev){
   if (urlActual) window.open(urlActual, '_blank'); else toast('Espera a que se genere la vista previa');
 });
 
+$('btnTraer').addEventListener('click', traerAhora);
 $('a_empresas').addEventListener('change', aplicarAuto);
 $('a_aceptados').addEventListener('change', aplicarAuto);
 window.addEventListener('storage', function(e){ if (e.key === KEY_ACEPT) refrescarAuto(); });
-window.addEventListener('focus', refrescarAuto);
-document.addEventListener('visibilitychange', function(){ if (!document.hidden) refrescarAuto(); });
+window.addEventListener('focus', function(){ refrescarAuto(); sincronizarServidor(); });
+document.addEventListener('visibilitychange', function(){ if (!document.hidden) { refrescarAuto(); sincronizarServidor(); } });
+sincronizarServidor();
+setInterval(sincronizarServidor, 15000);
 
 /* ---------- arranque ---------- */
 var inicial = ejemplo();
