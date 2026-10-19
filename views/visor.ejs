@@ -171,7 +171,7 @@
         <button type="button" class="mini" id="bNext" title="Coincidencia siguiente (Enter)">▼</button>
         <button type="button" class="mini" id="bNextBloque" title="JSON siguiente con coincidencia">⏭</button>
         <div class="vsearch-modes">
-          <label class="chk chk-highlight" title="Muestra el bloque JSON completo que contiene lo buscado y oculta los demás"><input type="checkbox" id="filtroJson" checked> Filtrar por JSON</label>
+          <label class="chk chk-highlight" title="Muestra el bloque completo (JSON, XML o SQL) que contiene lo buscado y oculta los demás"><input type="checkbox" id="filtroJson" checked> Filtrar por bloque</label>
           <label class="chk" title="Muestra únicamente las líneas que contienen lo buscado"><input type="checkbox" id="soloCoinc"> Solo líneas</label>
         </div>
       </div>
@@ -199,6 +199,7 @@
 
 <div class="toast" id="toast">Copiado</div>
 
+<script src="/sql-formatter.js"></script>
 <script>
 (function(){
 'use strict';
@@ -352,50 +353,172 @@ function jsonEnLinea(t){
   return null;
 }
 
+function xmlEnLinea(t){
+  var idx = t.indexOf('<');
+  if (idx === -1) return null;
+  var fin = t.lastIndexOf('>');
+  if (fin <= idx) return null;
+  var cand = t.slice(idx, fin + 1).trim();
+  if (!/^<\??[a-zA-Z_][\w:\.-]*/.test(cand)) return null;
+  var doc = parsearXmlFragmento(cand);
+  if (doc) {
+    var pre = t.slice(0, idx).trim();
+    var etq = pre.replace(/[\s:=>]+$/, '').trim();
+    return { etiqueta: etq, xml: cand, doc: doc };
+  }
+  return null;
+}
+
+function sqlEnLinea(t){
+  var rx = /\b(SELECT\s+[\s\S]+?\bFROM\b|INSERT\s+INTO\b[\s\S]+?\bVALUES\b|UPDATE\s+[\s\S]+?\bSET\b|DELETE\s+FROM\b|WITH\s+[\w\s,]+?\bAS\s*\(|CREATE\s+TABLE\b|ALTER\s+TABLE\b|EXEC\s+\w+|CALL\s+\w+)/i;
+  var m = t.match(rx);
+  if (!m) return null;
+  var idx = m.index;
+  var pre = t.slice(0, idx).trim();
+  if (pre.indexOf('"') !== -1 && !/[:=>]\s*$/.test(pre)) return null;
+  var etq = pre.replace(/[\s:=>]+$/, '').trim();
+  var sql = t.slice(idx).trim();
+  return { etiqueta: etq, sql: sql };
+}
+
+function emitSql(sqlStr, depth, out, bIdx){
+  var formatted = sqlStr;
+  if (typeof SqlFormatter !== 'undefined' && SqlFormatter && SqlFormatter.format) {
+    try {
+      var res = SqlFormatter.format(sqlStr);
+      if (res && res.text) formatted = res.text;
+    } catch(e){}
+  }
+  var kwRegex = /\b(SELECT|FROM|WHERE|AND|OR|NOT|IN|IS|NULL|LIKE|ILIKE|BETWEEN|AS|ON|JOIN|INNER|LEFT|RIGHT|FULL|OUTER|CROSS|NATURAL|USING|GROUP\s+BY|ORDER\s+BY|HAVING|LIMIT|OFFSET|UNION\s+ALL|UNION|INTERSECT|EXCEPT|DISTINCT|INSERT\s+INTO|INSERT|INTO|VALUES|UPDATE|SET|DELETE|RETURNING|WITH\s+RECURSIVE|WITH|CASE|WHEN|THEN|ELSE|END|ASC|DESC|NULLS|EXISTS|ANY|SOME|CREATE\s+TABLE|ALTER\s+TABLE|DROP\s+TABLE|CREATE|ALTER|DROP|TABLE|INDEX|EXEC|CALL)\b/gi;
+
+  formatted.split('\n').forEach(function(l){
+    var toks = [];
+    var lineTrim = l.replace(/\s+$/, '');
+    var tokenRx = /('([^'\\]|\\.)*'|--[^\n]*|\b\d+(?:\.\d+)?\b|\b[A-Za-z_][\w$]*\b|[(),;=<>!+*\/%])/g;
+    var lastIdx = 0, m;
+    while ((m = tokenRx.exec(lineTrim)) !== null) {
+      if (m.index > lastIdx) {
+        toks.push({ t: lineTrim.slice(lastIdx, m.index), c: null });
+      }
+      var tVal = m[0];
+      if (tVal.charAt(0) === "'") toks.push({ t: tVal, c: 'js' });
+      else if (tVal.indexOf('--') === 0) toks.push({ t: tVal, c: 'cm' });
+      else if (/^\d/.test(tVal)) toks.push({ t: tVal, c: 'jn' });
+      else if (kwRegex.test(tVal)) toks.push({ t: tVal, c: 'tg' });
+      else toks.push({ t: tVal, c: 'tx' });
+      lastIdx = m.index + tVal.length;
+    }
+    if (lastIdx < lineTrim.length) {
+      toks.push({ t: lineTrim.slice(lastIdx), c: null });
+    }
+    out.push({ ind: depth, toks: toks.length ? toks : [{ t: ' ', c: null }], bloqueId: bIdx, tipo: 'sql' });
+  });
+}
+
 function analizarLineas(txt){
-  var bloques = [], nJson = 0, nTexto = 0;
+  var bloques = [], nJson = 0, nXml = 0, nSql = 0, nIgnorados = 0;
   txt.split(/\r?\n/).forEach(function(l, i){
     var t = l.trim(); if (!t) return;
-    var r = jsonEnLinea(t);
-    if (r) { nJson++; bloques.push({ linea: i + 1, etiqueta: r.etiqueta, modelo: parseJsonRaw(r.json), jsonRaw: r.json }); }
-    else { nTexto++; bloques.push({ linea: i + 1, texto: t }); }
+    var rJson = jsonEnLinea(t);
+    if (rJson) {
+      nJson++;
+      bloques.push({ tipo: 'json', linea: i + 1, etiqueta: rJson.etiqueta, modelo: parseJsonRaw(rJson.json), raw: rJson.json });
+      return;
+    }
+    var rXml = xmlEnLinea(t);
+    if (rXml) {
+      nXml++;
+      bloques.push({ tipo: 'xml', linea: i + 1, etiqueta: rXml.etiqueta, doc: rXml.doc, raw: rXml.xml });
+      return;
+    }
+    var rSql = sqlEnLinea(t);
+    if (rSql) {
+      nSql++;
+      bloques.push({ tipo: 'sql', linea: i + 1, etiqueta: rSql.etiqueta, sql: rSql.sql, raw: rSql.sql });
+      return;
+    }
+    // Si no es JSON, ni XML, ni SQL: se descarta el texto o ruido de log
+    nIgnorados++;
   });
-  if (!nJson) return null;
-  var lineas = [], modelo, uno = bloques.length === 1;
-  function titulo(b){ return 'Línea ' + b.linea + (b.modelo ? (b.etiqueta ? ' · ' + b.etiqueta : ' · JSON') : ' · texto'); }
+
+  if (!bloques.length) return null;
+
+  var lineas = [], uno = bloques.length === 1;
+  function titulo(b){
+    var tNom = b.tipo === 'json' ? 'JSON' : (b.tipo === 'xml' ? 'XML' : 'SQL');
+    return 'Línea ' + b.linea + (b.etiqueta ? ' · ' + b.etiqueta : ' · ' + tNom);
+  }
+
   var listaBloques = [];
   if (uno) {
-    modelo = bloques[0].modelo;
-    var ini = lineas.length;
-    emitJson(modelo, 0, null, false, lineas, 0);
-    var fin = lineas.length - 1;
-    for (var k = ini; k <= fin; k++) lineas[k].bloqueId = 0;
-    listaBloques.push({ id: 0, linea: bloques[0].linea, titulo: titulo(bloques[0]), inicio: ini, fin: fin, modelo: modelo, tipo: 'json' });
+    var b0 = bloques[0];
+    b0.id = 0;
+    b0.inicio = 0;
+    b0.titulo = titulo(b0);
+    if (b0.tipo === 'json') emitJson(b0.modelo, 0, null, false, lineas, 0);
+    else if (b0.tipo === 'xml') emitXmlDoc(b0.doc, b0.raw, 0, lineas);
+    else emitSql(b0.sql, 0, lineas, 0);
+    b0.fin = lineas.length - 1;
+    for (var k = 0; k < lineas.length; k++) lineas[k].bloqueId = 0;
+    listaBloques.push(b0);
   } else {
     bloques.forEach(function(b, bIdx){
       var ini = lineas.length;
       lineas.push({ ind: 0, toks: [{ t: '// ' + titulo(b), c: 'cm' }], bloqueId: bIdx });
-      if (b.modelo) emitJson(b.modelo, 0, null, false, lineas, bIdx);
-      else lineas.push({ ind: 0, txt: true, toks: [{ t: b.texto, c: 'tx' }], bloqueId: bIdx });
+      if (b.tipo === 'json') emitJson(b.modelo, 0, null, false, lineas, bIdx);
+      else if (b.tipo === 'xml') {
+        var startXml = lineas.length;
+        emitXmlDoc(b.doc, b.raw, 0, lineas);
+        for (var x = startXml; x < lineas.length; x++) lineas[x].bloqueId = bIdx;
+      } else {
+        emitSql(b.sql, 0, lineas, bIdx);
+      }
       var fin = lineas.length - 1;
       for (var k = ini; k <= fin; k++) lineas[k].bloqueId = bIdx;
       b.id = bIdx;
       b.inicio = ini;
       b.fin = fin;
       b.titulo = titulo(b);
-      b.tipo = b.modelo ? 'json' : 'texto';
       listaBloques.push(b);
     });
-    modelo = { t: 'obj', props: bloques.map(function(b){ return { k: JSON.stringify(titulo(b)), v: b.modelo || { t: 'str', raw: JSON.stringify(b.texto) } }; }) };
   }
-  var aviso = uno ? 'Se ignoró el texto que había antes del JSON' + (bloques[0].etiqueta ? ' («' + bloques[0].etiqueta + '»)' : '') + '.'
-                  : 'El texto no es un único JSON, así que se leyó línea por línea: ' + fmtNum(nJson) + ' con JSON' + (nTexto ? ' y ' + fmtNum(nTexto) + ' de texto normal (SQL, mensajes…)' : '') + '.';
-  var resumen = uno ? (modelo.t === 'obj' ? 'Objeto · ' + fmtNum(modelo.props.length) + ' claves' : (modelo.t === 'arr' ? 'Lista · ' + fmtNum(modelo.items.length) + ' elementos' : 'Valor simple'))
-                    : fmtNum(bloques.length) + ' líneas · ' + fmtNum(nJson) + ' JSON';
-  return { ok: true, tipo: 'json', lineas: lineas, modelo: modelo, bloques: listaBloques, aviso: aviso,
-           resumen: resumen + ' · ' + fmtNum(contarJson(modelo)) + ' valores',
-           minificar: function(){ return bloques.map(function(b){ return b.modelo ? serJson(b.modelo) : b.texto; }).join('\n'); },
-           ext: uno ? 'json' : 'txt', texto: txt };
+
+  var modelo = {
+    t: 'obj',
+    props: bloques.map(function(b){
+      return {
+        k: JSON.stringify(titulo(b)),
+        v: b.tipo === 'json' ? b.modelo : { t: 'str', raw: JSON.stringify(b.raw) }
+      };
+    })
+  };
+
+  var resumenPartes = [];
+  if (nJson) resumenPartes.push(fmtNum(nJson) + ' JSON');
+  if (nSql) resumenPartes.push(fmtNum(nSql) + ' SQL');
+  if (nXml) resumenPartes.push(fmtNum(nXml) + ' XML');
+
+  var aviso = 'Se formatearon ' + fmtNum(bloques.length) + ' bloques estructurados (' + resumenPartes.join(', ') + ')' +
+              (nIgnorados ? ' y se eliminaron ' + fmtNum(nIgnorados) + ' líneas de ruido/logs sin formato.' : '.');
+
+  return {
+    ok: true,
+    tipo: 'json',
+    lineas: lineas,
+    modelo: modelo,
+    bloques: listaBloques,
+    aviso: aviso,
+    resumen: fmtNum(bloques.length) + ' bloques (' + resumenPartes.join(', ') + ')' + (nIgnorados ? ' · ' + fmtNum(nIgnorados) + ' líneas de ruido descartadas' : ''),
+    minificar: function(){
+      return bloques.map(function(b){
+        if (b.tipo === 'json') return serJson(b.modelo);
+        if (b.tipo === 'xml') return b.raw.replace(/>\s+</g, '><').trim();
+        return b.sql.replace(/\s+/g, ' ').trim();
+      }).join('\n');
+    },
+    ext: uno ? (bloques[0].tipo === 'json' ? 'json' : (bloques[0].tipo === 'xml' ? 'xml' : 'sql')) : 'txt',
+    texto: txt
+  };
 }
 
 function analizarJson(txt, aviso){
@@ -669,11 +792,12 @@ function htmlLinea(i){
   }
 
   if (esPrimerLineaVis) {
+    var bTipo = b.tipo ? b.tipo.toUpperCase() : 'BLOQUE';
     bannerHtml = '<div class="json-block-banner" data-bid="' + b.id + '">' +
-      '<span class="jbb-pill">⚡ JSON COINCIDENTE</span>' +
-      '<span class="jbb-title">' + escapeHtml(b.titulo || ('JSON #' + (b.id + 1))) + '</span>' +
+      '<span class="jbb-pill">⚡ ' + bTipo + ' COINCIDENTE</span>' +
+      '<span class="jbb-title">' + escapeHtml(b.titulo || (bTipo + ' #' + (b.id + 1))) + '</span>' +
       '<span class="jbb-count">' + fmtNum(b.coincidencias) + (b.coincidencias === 1 ? ' coincidencia' : ' coincidencias') + '</span>' +
-      '<button type="button" class="jbb-copy" data-bcopy="' + b.id + '" title="Copiar este JSON formateado">📋 Copiar este JSON</button>' +
+      '<button type="button" class="jbb-copy" data-bcopy="' + b.id + '" title="Copiar este ' + bTipo + ' formateado">📋 Copiar este ' + bTipo + '</button>' +
     '</div>';
   }
 
@@ -805,13 +929,13 @@ function contarCoincidencias(){
 
   if (estado.modoFiltro === 'json') {
     cnt.textContent = fmtNum(total) + (total === 1 ? ' resultado' : ' resultados') +
-      ' en ' + fmtNum(bloquesConMatch.length) + (bloquesConMatch.length === 1 ? ' JSON' : ' JSONs');
+      ' en ' + fmtNum(bloquesConMatch.length) + (bloquesConMatch.length === 1 ? ' bloque' : ' bloques');
   } else if (estado.modoFiltro === 'lineas') {
     cnt.textContent = fmtNum(total) + (total === 1 ? ' resultado' : ' resultados') +
       ' en ' + fmtNum(estado.coinc.length) + (estado.coinc.length === 1 ? ' línea' : ' líneas');
   } else {
     cnt.textContent = fmtNum(total) + (total === 1 ? ' resultado' : ' resultados') +
-      (bloquesConMatch.length ? ' · ' + fmtNum(bloquesConMatch.length) + ' JSON' + (bloquesConMatch.length === 1 ? ' resaltado' : 's resaltados') : '');
+      (bloquesConMatch.length ? ' · ' + fmtNum(bloquesConMatch.length) + (bloquesConMatch.length === 1 ? ' bloque' : ' bloques') : '');
   }
 }
 
@@ -838,7 +962,7 @@ function irACoincidencia(dir, inicial){
     for (var bi = 0; bi < bloquesConMatch.length; bi++) {
       if (bloquesConMatch[bi].id === bId) { bIdx = bi + 1; break; }
     }
-    var infoBloque = (bIdx > 0 && bloquesConMatch.length > 1) ? ' (JSON ' + bIdx + ' de ' + bloquesConMatch.length + ')' : '';
+    var infoBloque = (bIdx > 0 && bloquesConMatch.length > 1) ? ' (Bloque ' + bIdx + ' de ' + bloquesConMatch.length + ')' : '';
     cnt.textContent = (estado.idx + 1) + ' / ' + fmtNum(estado.coinc.length) + infoBloque;
   }
 }
@@ -878,7 +1002,8 @@ function copiarBloque(bid){
     var l = estado.lineas[k];
     txt += new Array(l.ind + 1).join('  ') + textoLinea(l) + '\n';
   }
-  copiar(txt.trim(), (b.titulo || 'JSON') + ' copiado');
+  var tNom = b.tipo ? b.tipo.toUpperCase() : 'Bloque';
+  copiar(txt.trim(), tNom + ' (' + (b.titulo || 'bloque') + ') copiado');
 }
 
 /* ---------------------------- Árbol ---------------------------- */
