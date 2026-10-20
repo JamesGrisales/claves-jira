@@ -1592,7 +1592,7 @@ body.guest .clock{ background:rgba(6, 10, 20, 0.55); border:none !important; box
 body.guest .clock-date{ border-left:none !important; padding-left:8px; opacity:0.8; font-size:11px; }
 body.guest .theme-toggle{ background:rgba(6, 10, 20, 0.55); border:none !important; box-shadow:0 6px 18px -3px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.2); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border-radius:12px; }
 body.guest .theme-toggle:hover{ background:rgba(var(--accent-rgb), 0.25); }
-body.guest .wrap{ width:100%; height:100vh; height:100dvh; max-width:none; margin:0; padding:0; position:relative; overflow:hidden; }
+body.guest .wrap{ width:100%; height:100vh; height:100dvh; max-width:none; margin:0; padding:0; position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center; }
 .hero{ display:none; }
 .auth{ display:grid; grid-template-columns:1.08fr 1fr; width:min(1140px, 94vw); max-width:1140px; margin:auto; flex:0 1 auto; max-height:calc(100vh - 78px); position:relative; overflow:hidden; background:rgba(18,22,34,0.45); backdrop-filter:blur(32px) saturate(180%); -webkit-backdrop-filter:blur(32px) saturate(180%); border:none !important; border-radius:26px; box-shadow:0 30px 80px -15px rgba(0,0,0,0.75), 0 0 45px -5px rgba(var(--accent-rgb), 0.28), inset 0 1px 1px rgba(255,255,255,0.18); animation:pageIn .55s var(--ease) backwards; }
 .auth.single{ grid-template-columns:1fr; max-width:540px; margin:auto; }

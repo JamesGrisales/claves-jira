@@ -231,34 +231,15 @@ async function anyUserExists() {
 app.get("/registro", async (req, res) => {
   const primero = !(await anyUserExists());
 
-  if (!primero && !req.session.user) {
-    flash(
-      req,
-      "error",
-      "Inicia sesión para poder crear un nuevo usuario."
-    );
-
-    return res.redirect("/login");
-  }
-
   res.render("register", {
     primero,
-    title: "Crear usuario",
+    title: primero ? "Crear primer usuario" : "Crear usuario",
   });
 });
 
 app.post("/registro", async (req, res) => {
   const primero = !(await anyUserExists());
-
-  if (!primero && !req.session.user) {
-    flash(
-      req,
-      "error",
-      "Inicia sesión para poder crear un nuevo usuario."
-    );
-
-    return res.redirect("/login");
-  }
+  const estaLogueado = !!req.session.user;
 
   const username = (req.body.username || "").trim();
   const password = req.body.password || "";
@@ -297,20 +278,36 @@ app.post("/registro", async (req, res) => {
     } else {
       const hash = await bcrypt.hash(password, 12);
 
-      await pool.query(
-        "INSERT INTO users (username, password_hash) VALUES ($1, $2)",
+      const result = await pool.query(
+        "INSERT INTO users (username, password_hash) VALUES ($1, $2) RETURNING id, username",
         [username, hash]
       );
+
+      const nuevoUsuario = result.rows[0];
+
+      // Si ya estaba logueado con otra cuenta, notificar y regresar a la bóveda
+      if (estaLogueado) {
+        flash(
+          req,
+          "ok",
+          `Usuario "${nuevoUsuario.username}" creado correctamente.`
+        );
+        return res.redirect("/");
+      }
+
+      // Si se registró desde el login o es el primer usuario, iniciar sesión automáticamente
+      req.session.user = {
+        id: nuevoUsuario.id,
+        username: nuevoUsuario.username,
+      };
 
       flash(
         req,
         "ok",
-        "Usuario creado correctamente."
+        `¡Bienvenido, ${nuevoUsuario.username}! Tu cuenta ha sido creada exitosamente.`
       );
 
-      return res.redirect(
-        primero ? "/login" : "/"
-      );
+      return res.redirect("/");
     }
   }
 
