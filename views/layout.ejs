@@ -2521,7 +2521,7 @@ button:hover, .btn:hover, .iconbtn:hover, .acc-btn:hover {
       { h:'/manual',    t:'Manual',        desc:'Cómo usar el sistema', i:S('<polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/>') },
       { h:'/papelera',  t:'Papelera',      desc:'Cosas eliminadas', i:S('<polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>'), badge:true }
     ];
-    var clockBox = '<div class="clock" id="clock" role="timer" aria-label="Hora y fecha actual"><svg class="face" viewBox="0 0 44 44" aria-hidden="true"><circle class="ring" cx="22" cy="22" r="20"/><line class="tick" x1="22" y1="4.5" x2="22" y2="7.5"/><line class="tick" x1="39.5" y1="22" x2="36.5" y2="22"/><line class="tick" x1="22" y1="39.5" x2="22" y2="36.5"/><line class="tick" x1="4.5" y1="22" x2="7.5" y2="22"/><line class="hand h" id="ckHh" x1="22" y1="22" x2="22" y2="12" stroke-width="2.6"/><line class="hand m" id="ckHm" x1="22" y1="22" x2="22" y2="8" stroke-width="1.8"/><line class="hand s" id="ckHs" x1="22" y1="25" x2="22" y2="6.5"/><circle class="pin" cx="22" cy="22" r="1.9"/></svg><div class="clock-txt"><div class="clock-time"><span id="ckH">--</span><i>:</i><span id="ckM">--</span><small id="ckA"></small></div><div class="clock-date" id="ckD"></div></div></div>';
+    var clockBox = '<div class="clock" id="clock" role="timer" aria-label="Hora y fecha actual"><svg class="face" viewBox="0 0 44 44" aria-hidden="true"><circle class="ring" cx="22" cy="22" r="20"/><line class="tick" x1="22" y1="4.5" x2="22" y2="7.5"/><line class="tick" x1="39.5" y1="22" x2="36.5" y2="22"/><line class="tick" x1="22" y1="39.5" x2="22" y2="36.5"/><line class="tick" x1="4.5" y1="22" x2="7.5" y2="22"/><line class="hand h" id="ckHh" x1="22" y1="22" x2="22" y2="12" stroke-width="2.6"/><line class="hand m" id="ckHm" x1="22" y1="22" x2="22" y2="8" stroke-width="1.8"/><line class="hand s" id="ckHs" x1="22" y1="25" x2="22" y2="6.5"/><circle class="pin" cx="22" cy="22" r="1.9"/></svg><div class="clock-txt"><div class="clock-time"><span id="ckH">--</span><i>:</i><span id="ckM">--</span><i>:</i><span id="ckS">--</span><small id="ckA" style="display:none;"></small></div><div class="clock-date" id="ckD"></div></div></div>';
     var themeBtn = '<button type="button" class="theme-toggle" id="themeToggle" title="Alternar claro / oscuro" aria-label="Alternar tema claro/oscuro"><svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path></svg><svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"></path></svg></button>';
     var palBtn = '<button type="button" class="theme-toggle" id="palBtn" title="Cambiar colores y apariencia" aria-label="Cambiar paleta de colores" aria-haspopup="dialog"><span class="pal-dot"></span></button>';
   %>
@@ -2989,16 +2989,19 @@ button:hover, .btn:hover, .iconbtn:hover, .acc-btn:hover {
 
     /* ----- Reloj y fecha ----- */
     (function(){
-      var H = $('ckH'), M = $('ckM'), A = $('ckA'), D = $('ckD'), hh = $('ckHh'), hm = $('ckHm'), hs = $('ckHs');
+      var H = $('ckH'), M = $('ckM'), S = $('ckS'), A = $('ckA'), D = $('ckD'), hh = $('ckHh'), hm = $('ckHm'), hs = $('ckHs');
       if (!H) return;
       var fecha = new Intl.DateTimeFormat('es-CO', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
       var ultimaFecha = '';
       function tick(){
         var d = new Date(), h = d.getHours(), m = d.getMinutes(), s = d.getSeconds();
-        H.textContent = (h % 12 || 12); M.textContent = (m < 10 ? '0' : '') + m; A.textContent = h < 12 ? 'a. m.' : 'p. m.';
-        hh.setAttribute('transform', 'rotate(' + (((h % 12) + m / 60) * 30) + ' 22 22)');
-        hm.setAttribute('transform', 'rotate(' + ((m + s / 60) * 6) + ' 22 22)');
-        hs.setAttribute('transform', 'rotate(' + (s * 6) + ' 22 22)');
+        H.textContent = (h < 10 ? '0' : '') + h;
+        M.textContent = (m < 10 ? '0' : '') + m;
+        if (S) S.textContent = (s < 10 ? '0' : '') + s;
+        if (A) A.textContent = '';
+        if (hh) hh.setAttribute('transform', 'rotate(' + (((h % 12) + m / 60) * 30) + ' 22 22)');
+        if (hm) hm.setAttribute('transform', 'rotate(' + ((m + s / 60) * 6) + ' 22 22)');
+        if (hs) hs.setAttribute('transform', 'rotate(' + (s * 6) + ' 22 22)');
         var f = fecha.format(d); if (f !== ultimaFecha) { ultimaFecha = f; D.textContent = f.charAt(0).toUpperCase() + f.slice(1); }
       }
       tick(); setInterval(tick, 1000);
