@@ -328,9 +328,9 @@
 
 <div>
   <div class="top">
-    <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+    <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
       <h1><%= C.titulo %></h1>
-      <span class="db-badge db-badge-xs db-badge-pg" title="Notas almacenadas en PostgreSQL">🐘 PostgreSQL</span>
+      <span class="db-orb db-orb-pg" title="Notas almacenadas en PostgreSQL">🐘</span>
     </div>
     <div style="display:flex; align-items:center; gap:10px;">
       <span class="count"><%= notas.length %> <%= C.plural %></span>
@@ -391,7 +391,7 @@
       <div style="flex:0 0 230px; min-width:180px;">
         <label style="display:flex; justify-content:space-between; align-items:center;">
           Formato / Resaltado
-          <span class="db-badge db-badge-xs db-badge-pg">🐘 PG / SQL</span>
+          <span class="db-orb db-orb-sm db-orb-pg" title="Sintaxis PostgreSQL / SQL">🐘</span>
         </label>
         <select name="formato" style="font-family:var(--sans); font-size:13px;">
           <option value="sql" selected>🎨 Código / SQL / Comandos (en color)</option>
