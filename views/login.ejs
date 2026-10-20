@@ -759,12 +759,12 @@
     <!-- Selector interactivo de planetas por día de la semana -->
     <div class="hud-planets-bar" id="hudPlanetsBar" title="Haz clic en cualquier día para explorar su planeta">
       <button type="button" class="planet-tab" data-day="1" title="Lunes: Mercurio">LUN</button>
-      <button type="button" class="planet-tab" data-day="2" title="Martes: Marte">MAR</button>
+      <button type="button" class="planet-tab" data-day="2" title="Martes: Venus">MAR</button>
       <button type="button" class="planet-tab" data-day="3" title="Miércoles: Tierra">MIÉ</button>
-      <button type="button" class="planet-tab" data-day="4" title="Jueves: Júpiter">JUE</button>
-      <button type="button" class="planet-tab" data-day="5" title="Viernes: Venus">VIE</button>
+      <button type="button" class="planet-tab" data-day="4" title="Jueves: Marte">JUE</button>
+      <button type="button" class="planet-tab" data-day="5" title="Viernes: Júpiter">VIE</button>
       <button type="button" class="planet-tab" data-day="6" title="Sábado: Saturno">SÁB</button>
-      <button type="button" class="planet-tab" data-day="0" title="Domingo: Neptuno">DOM</button>
+      <button type="button" class="planet-tab" data-day="0" title="Domingo: Urano">DOM</button>
       <button type="button" class="planet-tab auto-tab" id="btnAutoDay" title="Modo Automático: Volver al día de hoy">HOY</button>
       <button type="button" class="planet-tab meteor-tab" id="btnToggleMeteoritos" title="Activar / Desactivar Cinturón de Meteoritos 3D">☄️ METEORITOS</button>
     </div>
@@ -941,6 +941,19 @@
     } else if (tipo === 'venus') {
       ctx.fillStyle = '#d4a237';
       ctx.fillRect(0, 0, 1024, 512);
+    } else if (tipo === 'urano') {
+      var gradU = ctx.createLinearGradient(0, 0, 0, 512);
+      gradU.addColorStop(0, '#5eead4');
+      gradU.addColorStop(0.3, '#38bdf8');
+      gradU.addColorStop(0.5, '#4ef2d2');
+      gradU.addColorStop(0.7, '#2dd4bf');
+      gradU.addColorStop(1, '#0284c7');
+      ctx.fillStyle = gradU;
+      ctx.fillRect(0, 0, 1024, 512);
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
+      for (var u = 0; u < 512; u += 24) {
+        ctx.fillRect(0, u, 1024, 12);
+      }
     } else {
       ctx.fillStyle = '#103982';
       ctx.fillRect(0, 0, 1024, 512);
@@ -1083,11 +1096,12 @@
 
   var TEXTURAS_FOTO = {
     'mercurio': cargarFotoPlanetaConRelieve('mercurio', '/planets/mercury_texture.jpg?v=2026', 1.4),
-    'marte': cargarFotoPlanetaConRelieve('marte', '/planets/mars_texture.jpg?v=2026', 1.2),
-    'tierra': cargarFotoPlaneta('/planets/earth_texture.jpg?v=2026'),
-    'jupiter': cargarFotoPlanetaConRelieve('jupiter', '/planets/jupiter_texture.jpg?v=2026', 0.6),
     'venus': cargarFotoPlanetaConRelieve('venus', '/planets/venus_texture.jpg?v=2026', 0.7),
+    'tierra': cargarFotoPlaneta('/planets/earth_texture.jpg?v=2026'),
+    'marte': cargarFotoPlanetaConRelieve('marte', '/planets/mars_texture.jpg?v=2026', 1.2),
+    'jupiter': cargarFotoPlanetaConRelieve('jupiter', '/planets/jupiter_texture.jpg?v=2026', 0.6),
     'saturno': cargarFotoPlanetaConRelieve('saturno', '/planets/saturn_texture.jpg?v=2026', 0.5),
+    'urano': cargarFotoPlanetaConRelieve('urano', '/planets/uranus_texture.jpg?v=2026', 0.5),
     'neptuno': cargarFotoPlanetaConRelieve('neptuno', '/planets/neptune_texture.jpg?v=2026', 0.6)
   };
 
@@ -1542,19 +1556,19 @@
   // --- CATÁLOGO DE PLANETAS POR DÍA ---
   var CONFIG_PLANETAS = {
     1: { id: 'mercurio', dia: 'LUNES', nombre: 'MERCURIO - SECTOR ROCOSO', sub: 'CRÁTERES DE IMPACTO & CUENCA CALORIS', colorHex: '#94a3b8', colorThree: 0x94a3b8, bgGlow1: 'rgba(148, 163, 184, 0.16)', bgGlow2: 'rgba(217, 119, 6, 0.08)', radio: 2.10, vel: 0.0048, saturn: false, roughness: 0.60, metalness: 0.06, normalScale: 0.55 },
-    2: { id: 'marte', dia: 'MARTES', nombre: 'MARTE - PROTOCOLO DEFENSA', sub: 'VALLES MARINERIS & OLYMPUS MONS', colorHex: '#ff3b30', colorThree: 0xff3b30, bgGlow1: 'rgba(255, 59, 48, 0.20)', bgGlow2: 'rgba(255, 149, 0, 0.10)', radio: 2.30, vel: 0.0036, saturn: false, roughness: 0.52, metalness: 0.04, normalScale: 0.45 },
+    2: { id: 'venus', dia: 'MARTES', nombre: 'VENUS - LUCERO DEL ALBA', sub: 'ATMÓSFERA VOLUMÉTRICA & SUPER-ROTACIÓN 3D', colorHex: '#ffd700', colorThree: 0xffd700, bgGlow1: 'rgba(255, 215, 0, 0.16)', bgGlow2: 'rgba(251, 146, 60, 0.10)', radio: 2.22, vel: 0.0028, saturn: false, roughness: 0.48, metalness: 0.02, normalScale: 0.32 },
     3: { id: 'tierra', dia: 'MIÉRCOLES', nombre: 'TIERRA - BÓVEDA SHIELD', sub: 'CORDILLERAS GLOBALES & HIDROSFERA ACTIVA', colorHex: '#00f5ff', colorThree: 0x00f5ff, bgGlow1: 'rgba(0, 245, 255, 0.18)', bgGlow2: 'rgba(255, 0, 85, 0.10)', radio: 2.30, vel: 0.0032, saturn: false, roughness: 0.44, metalness: 0.03, normalScale: 0.70 },
-    4: { id: 'jupiter', dia: 'JUEVES', nombre: 'JÚPITER - BARRERA GRAVITACIONAL', sub: 'ESTRATIFICACIÓN TROPOSFÉRICA & GRAN MANCHA ROJA', colorHex: '#f59e0b', colorThree: 0xf59e0b, bgGlow1: 'rgba(245, 158, 11, 0.18)', bgGlow2: 'rgba(217, 119, 6, 0.10)', radio: 2.65, vel: 0.0022, saturn: false, roughness: 0.46, metalness: 0.02, normalScale: 0.30 },
-    5: { id: 'venus', dia: 'VIERNES', nombre: 'VENUS - LUCERO DEL ALBA', sub: 'ATMÓSFERA VOLUMÉTRICA & SUPER-ROTACIÓN 3D', colorHex: '#ffd700', colorThree: 0xffd700, bgGlow1: 'rgba(255, 215, 0, 0.16)', bgGlow2: 'rgba(251, 146, 60, 0.10)', radio: 2.22, vel: 0.0028, saturn: false, roughness: 0.48, metalness: 0.02, normalScale: 0.32 },
+    4: { id: 'marte', dia: 'JUEVES', nombre: 'MARTE - PROTOCOLO DEFENSA', sub: 'VALLES MARINERIS & OLYMPUS MONS', colorHex: '#ff3b30', colorThree: 0xff3b30, bgGlow1: 'rgba(255, 59, 48, 0.20)', bgGlow2: 'rgba(255, 149, 0, 0.10)', radio: 2.30, vel: 0.0036, saturn: false, roughness: 0.52, metalness: 0.04, normalScale: 0.45 },
+    5: { id: 'jupiter', dia: 'VIERNES', nombre: 'JÚPITER - BARRERA GRAVITACIONAL', sub: 'ESTRATIFICACIÓN TROPOSFÉRICA & GRAN MANCHA ROJA', colorHex: '#f59e0b', colorThree: 0xf59e0b, bgGlow1: 'rgba(245, 158, 11, 0.18)', bgGlow2: 'rgba(217, 119, 6, 0.10)', radio: 2.65, vel: 0.0022, saturn: false, roughness: 0.46, metalness: 0.02, normalScale: 0.30 },
     6: { id: 'saturno', dia: 'SÁBADO', nombre: 'SATURNO - ANILLOS DE PRIVACIDAD', sub: 'CINTURÓN DE METEORITOS 3D · 2,200 ASTEROIDES EN ÓRBITA', colorHex: '#e0c580', colorThree: 0xe0c580, bgGlow1: 'rgba(224, 197, 128, 0.20)', bgGlow2: 'rgba(139, 92, 246, 0.10)', radio: 2.26, vel: 0.0025, saturn: true, roughness: 0.48, metalness: 0.02, normalScale: 0.28 },
-    0: { id: 'neptuno', dia: 'DOMINGO', nombre: 'NEPTUNO - SECTOR GÉLIDO', sub: 'METANO VOLUMÉTRICO & CIRROS DE ALTA ALTITUD', colorHex: '#00b4d8', colorThree: 0x00b4d8, bgGlow1: 'rgba(0, 180, 216, 0.18)', bgGlow2: 'rgba(99, 102, 241, 0.10)', radio: 2.25, vel: 0.0030, saturn: false, roughness: 0.42, metalness: 0.02, normalScale: 0.25 }
+    0: { id: 'urano', dia: 'DOMINGO', nombre: 'URANO - GIGANTE DE HIELO', sub: 'METANO TURQUESA & ANILLOS POLARES INCLINADOS', colorHex: '#4ef2d2', colorThree: 0x4ef2d2, bgGlow1: 'rgba(78, 242, 210, 0.18)', bgGlow2: 'rgba(56, 189, 248, 0.10)', radio: 2.25, vel: 0.0030, saturn: false, roughness: 0.42, metalness: 0.02, normalScale: 0.25 }
   };
 
   var planetaActual = null;
   var forzarCinturonMeteoritos = false;
 
   function aplicarPlaneta(diaNum) {
-    var p = CONFIG_PLANETAS[diaNum] || CONFIG_PLANETAS[2];
+    var p = CONFIG_PLANETAS[diaNum] !== undefined ? CONFIG_PLANETAS[diaNum] : (CONFIG_PLANETAS[new Date().getDay()] || CONFIG_PLANETAS[2]);
     planetaActual = p;
 
     var tex = TEXTURAS_FOTO[p.id] || generarTexturaPlaneta(p.id);
@@ -1582,7 +1596,7 @@
       planetMat.bumpMap = null;
       if (earthCloudsMesh) earthCloudsMesh.visible = false;
       if (venusCloudsMesh) venusCloudsMesh.visible = (p.id === 'venus');
-      if (neptuneCloudsMesh) neptuneCloudsMesh.visible = (p.id === 'neptuno');
+      if (neptuneCloudsMesh) neptuneCloudsMesh.visible = (p.id === 'urano' || p.id === 'neptuno');
     }
 
     planetMat.roughness = p.roughness;

@@ -16,12 +16,12 @@
     function rgb(h){ h = h.replace('#',''); if (h.length === 3) h = h.replace(/./g, '$&$&'); var n = parseInt(h, 16); return (n >> 16) + ',' + ((n >> 8) & 255) + ',' + (n & 255); }
     window.PLANETAS_SISTEMA = {
       1: { id: 'mercurio', dia: 'Lunes', nombre: 'Mercurio', c1: '#94a3b8', c2: '#475569', icon: '🌑', desc: 'Gris Titanio Espacial' },
-      2: { id: 'marte', dia: 'Martes', nombre: 'Marte', c1: '#ff3b30', c2: '#b91c1c', icon: '🔴', desc: 'Rojo Táctico' },
+      2: { id: 'venus', dia: 'Martes', nombre: 'Venus', c1: '#ffd700', c2: '#d97706', icon: '✨', desc: 'Oro y Ámbar Atmosférico' },
       3: { id: 'tierra', dia: 'Miércoles', nombre: 'Tierra', c1: '#00f5ff', c2: '#0284c7', icon: '🌍', desc: 'Azul Bóveda Shield' },
-      4: { id: 'jupiter', dia: 'Jueves', nombre: 'Júpiter', c1: '#f59e0b', c2: '#b45309', icon: '🟠', desc: 'Ámbar Gravitacional' },
-      5: { id: 'venus', dia: 'Viernes', nombre: 'Venus', c1: '#ffd700', c2: '#d97706', icon: '🟡', desc: 'Oro Lucero' },
+      4: { id: 'marte', dia: 'Jueves', nombre: 'Marte', c1: '#ff3b30', c2: '#b91c1c', icon: '🔴', desc: 'Rojo Táctico' },
+      5: { id: 'jupiter', dia: 'Viernes', nombre: 'Júpiter', c1: '#f59e0b', c2: '#b45309', icon: '🟠', desc: 'Terracota Joviano' },
       6: { id: 'saturno', dia: 'Sábado', nombre: 'Saturno', c1: '#e0c580', c2: '#92400e', icon: '🪐', desc: 'Dorado Anillos 3D' },
-      0: { id: 'neptuno', dia: 'Domingo', nombre: 'Neptuno', c1: '#00b4d8', c2: '#1e40af', icon: '🔵', desc: 'Azul Centinela Gélido' }
+      0: { id: 'urano', dia: 'Domingo', nombre: 'Urano', c1: '#4ef2d2', c2: '#0284c7', icon: '💎', desc: 'Turquesa Gélido Cósmico' }
     };
     try {
       var navStyle = localStorage.getItem('boveda-nav-style') || 'oculto';
@@ -57,14 +57,14 @@
    ===================================================================== */
 
 /* ---------- 1) PALETAS (cada una define 2 colores + su RGB) ---------- */
-:root[data-palette="planeta-dia"]       { --p1:#ff3b30; --p2:#b91c1c; --accent-rgb:255,59,48; }
-:root[data-palette="marte"]             { --p1:#ff3b30; --p2:#b91c1c; --accent-rgb:255,59,48; }
-:root[data-palette="tierra"]            { --p1:#00f5ff; --p2:#0284c7; --accent-rgb:0,245,255; }
+:root[data-palette="planeta-dia"]       { --p1:#ffd700; --p2:#d97706; --accent-rgb:255,215,0; }
 :root[data-palette="mercurio"]          { --p1:#94a3b8; --p2:#475569; --accent-rgb:148,163,184; }
-:root[data-palette="jupiter"]           { --p1:#f59e0b; --p2:#b45309; --accent-rgb:245,158,11; }
 :root[data-palette="venus"]             { --p1:#ffd700; --p2:#d97706; --accent-rgb:255,215,0; }
+:root[data-palette="tierra"]            { --p1:#00f5ff; --p2:#0284c7; --accent-rgb:0,245,255; }
+:root[data-palette="marte"]             { --p1:#ff3b30; --p2:#b91c1c; --accent-rgb:255,59,48; }
+:root[data-palette="jupiter"]           { --p1:#f59e0b; --p2:#b45309; --accent-rgb:245,158,11; }
 :root[data-palette="saturno"]           { --p1:#e0c580; --p2:#92400e; --accent-rgb:224,197,128; }
-:root[data-palette="neptuno"]           { --p1:#00b4d8; --p2:#1e40af; --accent-rgb:0,180,216; }
+:root[data-palette="urano"], :root[data-palette="neptuno"] { --p1:#4ef2d2; --p2:#0284c7; --accent-rgb:78,242,210; }
 :root, :root[data-palette="cyber"]      { --p1:#00f5ff; --p2:#ff0055; --accent-rgb:0,245,255; }
 :root[data-palette="azul"]              { --p1:#2563eb; --p2:#4f46e5; --accent-rgb:37,99,235; }
 :root[data-palette="cobalto"]          { --p1:#38bdf8; --p2:#1d4ed8; --accent-rgb:56,189,248; }
@@ -2684,12 +2684,12 @@ button:hover, .btn:hover, .iconbtn:hover, .acc-btn:hover {
     <div class="swatches" id="swatchesPlanets">
       <% [
         ['mercurio','Mercurio (Lunes)','#94a3b8','#475569'],
-        ['marte','Marte (Martes)','#ff3b30','#b91c1c'],
+        ['venus','Venus (Martes)','#ffd700','#d97706'],
         ['tierra','Tierra (Miércoles)','#00f5ff','#0284c7'],
-        ['jupiter','Júpiter (Jueves)','#f59e0b','#b45309'],
-        ['venus','Venus (Viernes)','#ffd700','#d97706'],
+        ['marte','Marte (Jueves)','#ff3b30','#b91c1c'],
+        ['jupiter','Júpiter (Viernes)','#f59e0b','#b45309'],
         ['saturno','Saturno (Sábado)','#e0c580','#92400e'],
-        ['neptuno','Neptuno (Domingo)','#00b4d8','#1e40af']
+        ['urano','Urano (Domingo)','#4ef2d2','#0284c7']
       ].forEach(function(p){ %>
       <button type="button" class="plain sw" data-pal="<%= p[0] %>" style="--a:<%= p[2] %>;--b:<%= p[3] %>" title="<%= p[1] %>"><span class="dot"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span><%= p[1] %></button>
       <% }); %>
