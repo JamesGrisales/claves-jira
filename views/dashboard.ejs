@@ -191,7 +191,10 @@
 <div>
   <div class="page-head">
     <div>
-      <h1>Claves Jira por empresa</h1>
+      <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+        <h1 style="margin:0;">Claves Jira por empresa</h1>
+        <span class="db-badge db-badge-sm db-badge-pg" title="Almacén de claves cifradas en PostgreSQL v16">🐘 PostgreSQL 16</span>
+      </div>
       <p class="sub">Busca una empresa, revela su clave con <b>Ver</b> o cópiala con un clic en <b>Copiar</b>.</p>
     </div>
     <span class="count" id="countBadge"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg><span id="countTxt"><%= companies.length %> empresas</span></span>
@@ -241,7 +244,13 @@
   <p class="sub" style="margin-bottom:14px">Escribe el nombre y la clave. La clave se guardará cifrada.</p>
   <form method="post" action="/empresa/agregar">
     <div class="fields">
-      <div><label>Nombre de la empresa</label><input type="text" name="empresa" required autocomplete="off"></div>
+      <div>
+        <label style="display:flex; justify-content:space-between; align-items:center;">
+          Nombre de la empresa
+          <span class="db-badge db-badge-xs db-badge-pg" title="Base de datos destino">🐘 PostgreSQL</span>
+        </label>
+        <input type="text" name="empresa" required autocomplete="off" placeholder="Ej: COMERCIALIZADORA SAS">
+      </div>
       <div>
         <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px;">
           <label style="margin:0;">Clave</label>
@@ -266,7 +275,10 @@
 </div>
 
 <div class="card add-card" id="importCard" style="padding:18px;">
-  <div class="card-title"><span class="ico"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg></span>Importar claves desde un archivo</div>
+  <div class="card-title" style="display:flex; justify-content:space-between; align-items:center;">
+    <span style="display:inline-flex; align-items:center; gap:8px;"><span class="ico"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg></span>Importar claves desde un archivo</span>
+    <span class="db-badge db-badge-xs db-badge-pg">🐘 PostgreSQL Import</span>
+  </div>
   <div class="imp-head" style="margin-top:2px"><span>.txt · .csv · .xml · .xlsx · .xls</span></div>
   <p class="imp-help">
     Sube un archivo donde cada empresa va seguida de su clave (una debajo de la otra, o en dos columnas).
@@ -312,6 +324,7 @@
         </button>
         <span class="avatar" style="--hue: <%= hue %>"><%= c.empresa[0].toUpperCase() %></span>
         <span><%= c.empresa %></span>
+        <span class="db-badge db-badge-xs db-badge-pg" style="margin-left:6px;" title="Registro activo en PostgreSQL">🐘 PG</span>
       </div>
       <div class="pw-area">
         <div class="pw" id="pw-<%= c.id %>" title="Clave oculta">
@@ -335,7 +348,7 @@
 
     <div class="edit-panel" id="edit-<%= c.id %>">
       <div class="ep-sec">
-        <h5><svg viewBox="0 0 24 24"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>Cambiar nombre</h5>
+        <h5><svg viewBox="0 0 24 24"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>Cambiar nombre <span class="db-badge db-badge-xs db-badge-pg" style="margin-left:auto;">🐘 Postgres</span></h5>
         <form method="post" action="/empresa/<%= c.id %>/renombrar">
           <div class="fields">
             <div><label>Nombre de la empresa</label><input type="text" name="empresa" value="<%= c.empresa %>" required></div>
@@ -344,7 +357,7 @@
         </form>
       </div>
       <div class="ep-sec">
-        <h5><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>Cambiar clave</h5>
+        <h5><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>Cambiar clave <span class="db-badge db-badge-xs db-badge-pg" style="margin-left:auto;">🔒 AES-256</span></h5>
         <form method="post" action="/empresa/<%= c.id %>/actualizar">
           <div class="fields">
             <div><label>Clave anterior</label><input type="text" name="clave_anterior" required autocomplete="off"></div>

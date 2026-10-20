@@ -1261,8 +1261,11 @@
 
     <button type="button" id="btnToggleOpciones" style="display:none;"></button>
 
-    <!-- Lado Derecho: Indicador de Modo en la esquina -->
-    <div class="v-tb-right">
+    <!-- Lado Derecho: Indicador de Motor e Indicador de Modo en la esquina -->
+    <div class="v-tb-right" style="display:flex; align-items:center; gap:8px;">
+      <div style="display:flex; align-items:center; gap:5px;">
+        <span class="db-badge db-badge-sm db-badge-pg" title="Dialecto activo: PostgreSQL 16">🐘 PostgreSQL</span>
+      </div>
       <div class="v-mode-badge" id="vModeBadge">
         <span class="v-mode-dot"></span>
         <span class="v-mode-txt" id="vModeTxt">Modo: Editor SQL</span>
@@ -1406,6 +1409,15 @@
     <div class="ls-hint">Haz clic en el SQL donde va la lista y pulsa <strong>Insertar</strong>, o escribe <code>{LISTA}</code> en tu consulta (por ejemplo <code>where id in {LISTA}</code>) y se reemplaza solo. Si el cursor está dentro de un <code>IN ( )</code> no duplica los paréntesis. Una comilla simple dentro de un dato se duplica (<code>O'Brien</code> → <code>'O''Brien'</code>).</div>
   </div>
   <div class="rp" id="sn">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; padding:0 4px; flex-wrap:wrap; gap:8px;">
+      <span style="font-size:12.5px; font-weight:700; color:var(--text);">Catálogo de Sentencias SQL</span>
+      <div style="display:inline-flex; align-items:center; gap:5px;">
+        <span class="db-badge db-badge-xs db-badge-pg">🐘 PostgreSQL</span>
+        <span class="db-badge db-badge-xs db-badge-ora">🏛️ Oracle</span>
+        <span class="db-badge db-badge-xs db-badge-sql">🟦 SQL Server</span>
+        <span class="db-badge db-badge-xs db-badge-my">🐬 MySQL</span>
+      </div>
+    </div>
     <div class="sn-head">
       <input type="text" id="snBuscar" class="f-input" placeholder="Buscar sentencia o función…  ej: insert, join, fecha, duplicados, crear tabla" autocomplete="off" spellcheck="false">
       <span class="f-cnt" id="snCnt"></span>
@@ -1561,7 +1573,10 @@
       <div class="rv-title-area">
         <div class="rv-icon">🔍</div>
         <div>
-          <h3 class="rv-title">Revisor y Auditor de Errores SQL</h3>
+          <h3 class="rv-title" style="display:flex; align-items:center; gap:8px;">
+            Revisor y Auditor de Errores SQL
+            <span class="db-badge db-badge-xs db-badge-pg">🐘 PostgreSQL v16</span>
+          </h3>
           <p class="rv-desc">Analiza tu SQL y te dice exactamente qué errores hay: si en un <code>INSERT</code> pusiste 5 campos y 4 valores en <code>VALUES</code> te indica cuál falta, alerta si un <code>UPDATE</code> o <code>DELETE</code> no tiene <code>WHERE</code>, y señala comas o paréntesis sin cerrar.</p>
         </div>
       </div>

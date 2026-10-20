@@ -328,7 +328,10 @@
 
 <div>
   <div class="top">
-    <h1><%= C.titulo %></h1>
+    <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+      <h1><%= C.titulo %></h1>
+      <span class="db-badge db-badge-xs db-badge-pg" title="Notas almacenadas en PostgreSQL">🐘 PostgreSQL</span>
+    </div>
     <div style="display:flex; align-items:center; gap:10px;">
       <span class="count"><%= notas.length %> <%= C.plural %></span>
       <% if (notas.length > 0) { %>
@@ -386,7 +389,10 @@
       </div>
       <div><label>Título</label><input type="text" name="titulo" placeholder="<%= C.placeTit %>" required></div>
       <div style="flex:0 0 230px; min-width:180px;">
-        <label>Formato / Resaltado</label>
+        <label style="display:flex; justify-content:space-between; align-items:center;">
+          Formato / Resaltado
+          <span class="db-badge db-badge-xs db-badge-pg">🐘 PG / SQL</span>
+        </label>
         <select name="formato" style="font-family:var(--sans); font-size:13px;">
           <option value="sql" selected>🎨 Código / SQL / Comandos (en color)</option>
           <option value="texto">📄 Texto plano</option>

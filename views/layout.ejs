@@ -2499,6 +2499,124 @@ button:hover, .btn:hover, .iconbtn:hover, .acc-btn:hover {
   background:rgba(255,255,255,0.15);
   color:#fff;
 }
+
+/* ==========================================================================
+   INSIGNIAS Y MICRO-ICONOS 3D DE MOTORES DE BASES DE DATOS (SISTEMA GLOBAL)
+   ========================================================================== */
+.db-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  vertical-align: middle;
+  border: 1px solid transparent;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+  user-select: none;
+}
+.db-badge-sm {
+  font-size: 10.5px;
+  padding: 2px 7px;
+  border-radius: 5px;
+  gap: 4px;
+}
+.db-badge-xs {
+  font-size: 9.5px;
+  padding: 1.5px 5px;
+  border-radius: 4px;
+  gap: 3px;
+}
+
+/* PostgreSQL */
+.db-badge-pg {
+  background: linear-gradient(135deg, rgba(2, 132, 199, 0.22), rgba(0, 245, 255, 0.10));
+  border-color: rgba(0, 245, 255, 0.42);
+  color: #38bdf8;
+}
+.db-badge-pg:hover {
+  border-color: #00f5ff;
+  box-shadow: 0 0 12px rgba(0, 245, 255, 0.38);
+  transform: translateY(-1px);
+}
+
+/* Oracle */
+.db-badge-ora {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.22), rgba(217, 119, 6, 0.10));
+  border-color: rgba(245, 158, 11, 0.45);
+  color: #fbbf24;
+}
+.db-badge-ora:hover {
+  border-color: #f59e0b;
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.38);
+  transform: translateY(-1px);
+}
+
+/* SQL Server */
+.db-badge-sql {
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.22), rgba(59, 130, 246, 0.10));
+  border-color: rgba(59, 130, 246, 0.45);
+  color: #60a5fa;
+}
+.db-badge-sql:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.38);
+  transform: translateY(-1px);
+}
+
+/* MySQL / MariaDB */
+.db-badge-my {
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.22), rgba(14, 165, 233, 0.10));
+  border-color: rgba(6, 182, 212, 0.45);
+  color: #22d3ee;
+}
+.db-badge-my:hover {
+  border-color: #06b6d4;
+  box-shadow: 0 0 12px rgba(6, 182, 212, 0.38);
+  transform: translateY(-1px);
+}
+
+/* MongoDB */
+.db-badge-mg {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.22), rgba(5, 150, 105, 0.10));
+  border-color: rgba(16, 185, 129, 0.45);
+  color: #34d399;
+}
+.db-badge-mg:hover {
+  border-color: #10b981;
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.38);
+  transform: translateY(-1px);
+}
+
+/* Redis */
+.db-badge-rd {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.22), rgba(220, 38, 38, 0.10));
+  border-color: rgba(239, 68, 68, 0.45);
+  color: #f87171;
+}
+.db-badge-rd:hover {
+  border-color: #ef4444;
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.38);
+  transform: translateY(-1px);
+}
+
+/* Decoración en campos de formulario (inputs) */
+.field-db-addon {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  z-index: 3;
+}
 </style>
 </head>
 <body class="<%= currentUser ? '' : 'guest' %>" data-user="<%= currentUser ? currentUser.username : '' %>">
@@ -2506,16 +2624,16 @@ button:hover, .btn:hover, .iconbtn:hover, .acc-btn:hover {
     var cp = (typeof currentPath !== 'undefined' && currentPath) ? currentPath : '';
     var S = function(d){ return '<svg viewBox="0 0 24 24" aria-hidden="true">' + d + '</svg>'; };
     var navItems = [
-      { h:'/',          t:'Empresas',      desc:'Contraseñas de clientes', i:S('<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>') },
+      { h:'/',          t:'Empresas',      desc:'Contraseñas de clientes', i:S('<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>'), badgeTxt:'🐘 PG', badgeCls:'db-badge-pg' },
       { h:'/notas',     t:'Notas',         desc:'Tus apuntes rápidos', i:S('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>') },
-      { h:'/jaivana',   t:'Jaivaná',       desc:'Datos del proyecto', i:S('<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>') },
-      { h:'/visor',     t:'Visor XML/JSON',desc:'Previsualizar archivos', i:S('<polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>') },
-      { h:'/sql',       t:'SQL',           desc:'Formateador y Revisor SQL', i:S('<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>') },
-      { h:'/listas',    t:'Listas',        desc:'Tareas pendientes', i:S('<line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>') },
+      { h:'/jaivana',   t:'Jaivaná',       desc:'Datos del proyecto', i:S('<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>'), badgeTxt:'🐘 PG', badgeCls:'db-badge-pg' },
+      { h:'/visor',     t:'Visor XML/JSON',desc:'Previsualizar archivos', i:S('<polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>'), badgeTxt:'🍃 JSON', badgeCls:'db-badge-mg' },
+      { h:'/sql',       t:'SQL',           desc:'Formateador y Revisor SQL', i:S('<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>'), badgeTxt:'🐘 SQL', badgeCls:'db-badge-pg' },
+      { h:'/listas',    t:'Listas',        desc:'Tareas pendientes', i:S('<line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>'), badgeTxt:'🏛️ IN()', badgeCls:'db-badge-ora' },
       { h:'/aceptados', t:'Aceptados',     desc:'Elementos validados', i:S('<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>') },
       { h:'/informe',   t:'Informe',       desc:'Reportes generados', i:S('<path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/>') },
       { h:'/viaticos',  t:'Viáticos',      desc:'Gastos de viajes', i:S('<path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/>') },
-      { h:'/logs',      t:'Logs',          desc:'Registro de actividad', i:S('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="14" y2="17"/>') },
+      { h:'/logs',      t:'Logs',          desc:'Registro de actividad', i:S('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="14" y2="17"/>'), badgeTxt:'⚡ LOG', badgeCls:'db-badge-rd' },
       { h:'/enlaces',   t:'Enlaces',       desc:'Accesos directos', i:S('<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>') },
       { h:'/calendario', t:'Calendario',   desc:'Fechas importantes', i:S('<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>') },
       { h:'/manual',    t:'Manual',        desc:'Cómo usar el sistema', i:S('<polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/>') },
@@ -2610,7 +2728,7 @@ button:hover, .btn:hover, .iconbtn:hover, .acc-btn:hover {
     <button type="button" class="plain cmd-trigger" id="cmdOpen" title="Buscar… (Ctrl K)" aria-haspopup="dialog" aria-label="Abrir buscador rápido"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><span>Buscar…</span><kbd class="kbd">Ctrl K</kbd></button>
     <nav class="nav-tabs" id="navTabs">
       <% navItems.forEach(function(n, idx){ var on = n.h === '/' ? cp === '/' : cp.indexOf(n.h) === 0; %>
-      <a href="<%= n.h %>" title="<%= n.t %>" data-title="<%= n.t %>" data-desc="<%= n.desc %>" style="--i:<%= idx %>" class="<%= on ? 'active' : '' %>"<%- on ? ' aria-current="page"' : '' %>><span class="nav-ic"><%- n.i %></span><span class="nav-txt"><%= n.t %><span class="nav-sub"><%= n.desc %></span></span><% if (n.badge && typeof papeleraCount !== 'undefined' && papeleraCount > 0) { %> <span class="tab-count"><%= papeleraCount %></span><% } %></a>
+      <a href="<%= n.h %>" title="<%= n.t %>" data-title="<%= n.t %>" data-desc="<%= n.desc %>" style="--i:<%= idx %>" class="<%= on ? 'active' : '' %>"<%- on ? ' aria-current="page"' : '' %>><span class="nav-ic"><%- n.i %></span><span class="nav-txt"><%= n.t %><% if (n.badgeTxt) { %> <span class="db-badge db-badge-xs <%= n.badgeCls %>" style="margin-left:4px; font-size:8px; padding:1px 4px;"><%= n.badgeTxt %></span><% } %><span class="nav-sub"><%= n.desc %></span></span><% if (n.badge && typeof papeleraCount !== 'undefined' && papeleraCount > 0) { %> <span class="tab-count"><%= papeleraCount %></span><% } %></a>
       <% }); %>
     </nav>
     <div class="nav-account">
@@ -2741,7 +2859,8 @@ button:hover, .btn:hover, .iconbtn:hover, .acc-btn:hover {
         <svg class="bnm-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="6 9 12 15 18 9"/></svg>
       </button>
     </div>
-    <div class="topbar-right">
+    <div class="topbar-right" style="display:flex; align-items:center; gap:10px;">
+      <span class="db-badge db-badge-sm db-badge-pg" title="Base de Datos Activa: PostgreSQL v16">🐘 PostgreSQL 16</span>
       <%- clockBox %>
     </div>
   </div>
