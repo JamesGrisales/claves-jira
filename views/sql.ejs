@@ -4893,6 +4893,46 @@ function irALinea(numLinea, pos) {
   toast('Línea ' + numLinea + ' seleccionada');
 }
 
+function irADatoFaltante(d) {
+  if (!d) return;
+  var det = d.details || {};
+  var pos = det.insertionPos != null ? det.insertionPos : d.tokenPos;
+  if (pos == null) {
+    if (d.line) irALinea(d.line, d.tokenPos);
+    return;
+  }
+
+  var txt = entrada.value;
+  var colName = (det.missingColumns && det.missingColumns[0]) ? det.missingColumns[0] : 'columna';
+  var posNum = (det.valuesCount || 0) + 1;
+
+  // Si antes de la posición de inserción hay un valor y no hay coma, agregamos una coma y espacio para que el usuario escriba directamente
+  var before = txt.slice(0, pos);
+  var trimmedBefore = before.replace(/\s+$/, '');
+  var needsComma = trimmedBefore.length > 0 && !trimmedBefore.endsWith(',') && !trimmedBefore.endsWith('(');
+
+  if (needsComma) {
+    var insertText = ', ';
+    entrada.value = before + insertText + txt.slice(pos);
+    localStorage.setItem('boveda-sql-draft', entrada.value);
+    procesar();
+    var newPos = before.length + insertText.length;
+    entrada.focus();
+    entrada.setSelectionRange(newPos, newPos);
+  } else {
+    entrada.focus();
+    entrada.setSelectionRange(pos, pos);
+  }
+
+  var lineas = entrada.value.slice(0, pos).split('\n');
+  var numLinea = lineas.length;
+  var m = metricas();
+  entrada.scrollTop = Math.max(0, (numLinea - 3) * m.lh);
+  sincronizarEditor();
+
+  toast('🎯 Posicionado para ingresar dato #' + posNum + " ('" + colName + "'). Escribe la información requerida.");
+}
+
 var rvFiltroActivo = 'all';
 
 function revisarSqlEnVivo() {
@@ -4947,15 +4987,14 @@ function revisarSqlEnVivo() {
       var primerError = res.diagnostics.find(function(d){ return d.type === 'error'; });
       bTxt.innerHTML = '<strong>' + res.errorsCount + (res.errorsCount === 1 ? ' error detectado: ' : ' errores detectados: ') + '</strong>' + esc(primerError ? primerError.message : 'Revisa la sintaxis de tu consulta.');
       
-      if (primerError && primerError.code === 'INSERT_VALUES_MISMATCH') {
+      if (primerError && (primerError.code === 'INSERT_VALUES_MISMATCH' || primerError.code === 'INSERT_SELECT_MISMATCH')) {
         bFix.style.display = 'inline-flex';
-        bFix.textContent = '⚡ Completar ' + (primerError.details ? primerError.details.diff : 1) + ' campo(s) con NULL';
+        var det = primerError.details || {};
+        var primFaltante = (det.missingColumns && det.missingColumns[0]) ? det.missingColumns[0] : 'campo';
+        var numPos = (det.valuesCount || 0) + 1;
+        bFix.innerHTML = '🎯 Ir a donde falta el dato (#' + numPos + ": '" + esc(primFaltante) + "')";
         bFix.onclick = function() {
-          var nuevoSql = SqlValidador.autoFix(entrada.value, primerError, 'NULL');
-          entrada.value = nuevoSql;
-          localStorage.setItem('boveda-sql-draft', nuevoSql);
-          procesar();
-          toast('Valores completados con NULL');
+          irADatoFaltante(primerError);
         };
       } else {
         bFix.style.display = 'none';
@@ -5061,8 +5100,9 @@ function revisarSqlEnVivo() {
       msg.textContent = d.message;
       card.appendChild(msg);
 
-      // Si es discrepancia de columnas vs valores en INSERT, mostrar tabla interactiva
-      if ((d.code === 'INSERT_VALUES_MISMATCH' || d.code === 'INSERT_VALUES_SURPLUS') && d.details) {
+      // Si es discrepancia de columnas vs valores en INSERT (VALUES o SELECT), mostrar tabla interactiva
+      if ((d.code === 'INSERT_VALUES_MISMATCH' || d.code === 'INSERT_VALUES_SURPLUS' || d.code === 'INSERT_SELECT_MISMATCH' || d.code === 'INSERT_SELECT_SURPLUS') && d.details) {
+        var isSelectQuery = (d.code === 'INSERT_SELECT_MISMATCH' || d.code === 'INSERT_SELECT_SURPLUS');
         var prevBox = document.createElement('div');
         prevBox.className = 'rv-card-table-preview';
 
@@ -5080,18 +5120,25 @@ function revisarSqlEnVivo() {
           var ch = document.createElement('span');
           var isMissing = d.details.missingColumns && d.details.missingColumns.indexOf(colName) >= 0;
           ch.className = 'rv-chip-item' + (isMissing ? ' missing' : '');
-          ch.textContent = (cIdx + 1) + '. ' + colName + (isMissing ? ' (sin valor)' : '');
+          ch.textContent = '#' + (cIdx + 1) + ' ' + colName + (isMissing ? ' ➔ [FALTA DATO]' : ' ✅');
+          if (isMissing) {
+            ch.style.cursor = 'pointer';
+            ch.title = 'Haz clic para ir a escribir la información requerida';
+            ch.onclick = function () {
+              irADatoFaltante(d);
+            };
+          }
           chipsCols.appendChild(ch);
         });
         rowCols.appendChild(chipsCols);
         prevBox.appendChild(rowCols);
 
-        // Fila de Valores
+        // Fila de Valores o Proyecciones SELECT
         var rowVals = document.createElement('div');
         rowVals.className = 'rv-cmp-row';
         var lblVals = document.createElement('span');
         lblVals.className = 'rv-cmp-label';
-        lblVals.textContent = 'Valores Fila ' + d.details.rowNumber + ' (' + d.details.valuesCount + '):';
+        lblVals.textContent = (isSelectQuery ? 'SELECT (' : 'Valores Fila ' + (d.details.rowNumber || 1) + ' (') + d.details.valuesCount + '):';
         rowVals.appendChild(lblVals);
 
         var chipsVals = document.createElement('div');
@@ -5099,14 +5146,20 @@ function revisarSqlEnVivo() {
         d.details.values.forEach(function (valTxt, vIdx) {
           var chv = document.createElement('span');
           chv.className = 'rv-chip-item';
-          chv.textContent = (vIdx + 1) + '. ' + (valTxt.length > 20 ? valTxt.slice(0, 18) + '…' : valTxt);
+          chv.textContent = '#' + (vIdx + 1) + '. ' + (valTxt.length > 20 ? valTxt.slice(0, 18) + '…' : valTxt);
           chipsVals.appendChild(chv);
         });
-        if (d.details.diff && d.code === 'INSERT_VALUES_MISMATCH') {
+        if (d.details.diff && (d.code === 'INSERT_VALUES_MISMATCH' || d.code === 'INSERT_SELECT_MISMATCH')) {
           for (var m = 0; m < d.details.diff; m++) {
             var chm = document.createElement('span');
             chm.className = 'rv-chip-item missing';
-            chm.textContent = '❓ Falta valor #' + (d.details.valuesCount + m + 1);
+            var colFaltante = (d.details.missingColumns && d.details.missingColumns[m]) ? ' (' + d.details.missingColumns[m] + ')' : '';
+            chm.textContent = '❌ Falta dato #' + (d.details.valuesCount + m + 1) + colFaltante;
+            chm.style.cursor = 'pointer';
+            chm.title = 'Haz clic para ir a escribir la información requerida';
+            chm.onclick = function () {
+              irADatoFaltante(d);
+            };
             chipsVals.appendChild(chm);
           }
         }
@@ -5129,32 +5182,19 @@ function revisarSqlEnVivo() {
       };
       foot.appendChild(btnIr);
 
-      if (d.code === 'INSERT_VALUES_MISMATCH') {
-        var btnFixNull = document.createElement('button');
-        btnFixNull.type = 'button';
-        btnFixNull.className = 'btn-sm';
-        btnFixNull.innerHTML = '⚡ Completar con NULL';
-        btnFixNull.onclick = function () {
-          var nuevo = SqlValidador.autoFix(entrada.value, d, 'NULL');
-          entrada.value = nuevo;
-          localStorage.setItem('boveda-sql-draft', nuevo);
-          procesar();
-          toast('Valores completados con NULL');
-        };
-        foot.appendChild(btnFixNull);
+      if (d.code === 'INSERT_VALUES_MISMATCH' || d.code === 'INSERT_SELECT_MISMATCH') {
+        var det = d.details || {};
+        var colFaltante = (det.missingColumns && det.missingColumns[0]) ? det.missingColumns[0] : 'columna';
+        var posFaltante = (det.valuesCount || 0) + 1;
 
-        var btnFixDef = document.createElement('button');
-        btnFixDef.type = 'button';
-        btnFixDef.className = 'secondary btn-sm';
-        btnFixDef.innerHTML = '⚡ Con DEFAULT';
-        btnFixDef.onclick = function () {
-          var nuevo = SqlValidador.autoFix(entrada.value, d, 'DEFAULT');
-          entrada.value = nuevo;
-          localStorage.setItem('boveda-sql-draft', nuevo);
-          procesar();
-          toast('Valores completados con DEFAULT');
+        var btnIrDato = document.createElement('button');
+        btnIrDato.type = 'button';
+        btnIrDato.className = 'btn-sm';
+        btnIrDato.innerHTML = '🎯 Ir a escribir dato faltante (#' + posFaltante + ": '" + esc(colFaltante) + "')";
+        btnIrDato.onclick = function () {
+          irADatoFaltante(d);
         };
-        foot.appendChild(btnFixDef);
+        foot.appendChild(btnIrDato);
       } else if (d.code === 'SELECT_TRAILING_COMMA' || d.code === 'UPDATE_SET_TRAILING_COMMA' || d.code === 'VALUES_TRAILING_COMMA' || d.code === 'INSERT_TRAILING_COMMA_COLUMNS') {
         var btnFixComma = document.createElement('button');
         btnFixComma.type = 'button';

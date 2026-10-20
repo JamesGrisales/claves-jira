@@ -272,70 +272,16 @@
     items.forEach(function (tokList) {
       var sig = tokList.filter(function (x) { return x.t !== 'lc' && x.t !== 'bc'; });
       if (!sig.length) return;
-
-      var depth = 0;
       var curVal = '';
-      var prevEnd = false;
-
       for (var i = 0; i < sig.length; i++) {
-        var tok = sig[i];
-        if (tok.t === 'p' && tok.v === '(') {
-          if (depth === 0 && prevEnd) {
-            var isFunc = (i > 0 && (sig[i - 1].t === 'w' || sig[i - 1].t === 'qi') && !isBinaryOp(sig[i - 1]));
-            if (!isFunc) {
-              if (curVal.trim()) result.push(curVal.trim());
-              curVal = '';
-              prevEnd = false;
-            }
-          }
-          depth++;
-          curVal += tok.v;
-          continue;
-        }
-
-        if (tok.t === 'p' && tok.v === ')') {
-          if (depth > 0) depth--;
-          curVal += tok.v;
-          if (depth === 0) prevEnd = true;
-          continue;
-        }
-
-        if (depth > 0) {
-          curVal += tok.v;
-          continue;
-        }
-
-        if (isBinaryOp(tok)) {
-          prevEnd = false;
-          curVal += ' ' + tok.v + ' ';
-          continue;
-        }
-
-        var isValStart = false;
-        if (tok.t === 'num' || tok.t === 'str') isValStart = true;
-        else if (tok.t === 'op' && tok.v === '?') isValStart = true;
-        else if (tok.t === 'w') {
-          var u = tok.u;
-          if (u === 'NULL' || u === 'TRUE' || u === 'FALSE' || u === 'DEFAULT') isValStart = true;
-          else if (tok.v === '?' || (tok.v && (tok.v[0] === '$' || tok.v[0] === ':'))) isValStart = true;
-          else if (u === 'CASE') isValStart = true;
-          else if (i + 1 < sig.length && sig[i + 1].t === 'p' && sig[i + 1].v === '(') isValStart = true;
-        }
-
-        if (isValStart && prevEnd) {
-          if (curVal.trim()) result.push(curVal.trim());
-          curVal = tok.v;
-          prevEnd = (tok.t === 'num' || tok.t === 'str' || (tok.t === 'op' && tok.v === '?') || tok.t === 'w');
-        } else {
-          curVal += (curVal ? ' ' : '') + tok.v;
-          if (tok.t === 'num' || tok.t === 'str' || (tok.t === 'op' && tok.v === '?')) {
-            prevEnd = true;
-          } else if (tok.t === 'w' && (tok.u === 'NULL' || tok.u === 'TRUE' || tok.u === 'FALSE' || tok.u === 'DEFAULT')) {
-            prevEnd = true;
-          } else {
-            prevEnd = false;
+        var t = sig[i];
+        if (i > 0) {
+          var prev = sig[i - 1];
+          if (t.v !== ',' && t.v !== '.' && t.v !== ')' && prev.v !== '.' && prev.v !== '(') {
+            curVal += ' ';
           }
         }
+        curVal += t.v;
       }
       if (curVal.trim()) result.push(curVal.trim());
     });
@@ -569,6 +515,19 @@
             break;
           }
           if (tok.t === 'p' && tok.v === '(' && colParenStart === -1) {
+            // Verificar si este paréntesis es en realidad una subconsulta (SELECT ...) en vez de la lista de columnas
+            var nextSig = null;
+            for (var look = k + 1; look < stmt.length; look++) {
+              if (stmt[look].t !== 'lc' && stmt[look].t !== 'bc') {
+                nextSig = stmt[look];
+                break;
+              }
+            }
+            if (nextSig && nextSig.t === 'w' && (nextSig.u === 'SELECT' || nextSig.u === 'WITH')) {
+              // Es una subconsulta entre paréntesis, no la lista de columnas del INSERT
+              continue;
+            }
+
             colParenStart = k;
             var d = 1;
             for (var m = k + 1; m < stmt.length; m++) {
@@ -643,6 +602,26 @@
           });
         }
 
+        // Obtener columnas esperadas (definidas explícitamente o inferidas del catálogo de tablas)
+        var expectedColumns = explicitColumns.slice();
+        var usingSchemaColumns = false;
+        if (expectedColumns.length === 0) {
+          var cleanTb = tableName.toLowerCase().replace(/"/g, '').split('.').pop();
+          var colsList = null;
+          if (typeof window !== 'undefined' && window.SQL_COLUMNAS && window.SQL_COLUMNAS[cleanTb]) {
+            colsList = window.SQL_COLUMNAS[cleanTb];
+          } else if (typeof global !== 'undefined' && global.SQL_COLUMNAS && global.SQL_COLUMNAS[cleanTb]) {
+            colsList = global.SQL_COLUMNAS[cleanTb];
+          }
+          if (colsList && colsList.length > 0) {
+            expectedColumns = colsList.map(function (cObj) { return cObj.c || cObj; });
+            usingSchemaColumns = true;
+          }
+        }
+
+        // ---------------------------------------------------------------------
+        // Caso A: INSERT ... VALUES (...)
+        // ---------------------------------------------------------------------
         if (valuesKeywordIdx !== -1) {
           var vIdx = valuesKeywordIdx + 1;
           var rowCount = 0;
@@ -689,46 +668,75 @@
                   });
                 }
 
-                if (explicitColumns.length > 0) {
-                  if (tupleValues.length < explicitColumns.length) {
-                    var diff = explicitColumns.length - tupleValues.length;
-                    var missingCols = explicitColumns.slice(tupleValues.length);
+                if (expectedColumns.length > 0) {
+                  if (tupleValues.length < expectedColumns.length) {
+                    var diff = expectedColumns.length - tupleValues.length;
+                    var missingCols = expectedColumns.slice(tupleValues.length);
+                    var missingDetails = [];
+                    for (var mi = 0; mi < missingCols.length; mi++) {
+                      missingDetails.push({
+                        index: tupleValues.length + mi + 1,
+                        columnName: missingCols[mi]
+                      });
+                    }
+
+                    var insertPos = stmt[tupleEnd].s;
+                    var insertLc = getLineCol(src, insertPos);
+
+                    var faltanTexto = missingDetails.map(function (m) {
+                      return "posición #" + m.index + " ('" + m.columnName + "')";
+                    }).join(', ');
+
+                    var vMsgPrefix = usingSchemaColumns
+                      ? "En tabla '" + tableName + "': La tabla requiere " + expectedColumns.length + " campos según la base de datos pero la fila " + rowCount + " de VALUES solo tiene " + tupleValues.length + " dato(s)."
+                      : "En tabla '" + tableName + "': Se definieron " + expectedColumns.length + " campos para insertar pero la fila " + rowCount + " de VALUES solo tiene " + tupleValues.length + " dato(s).";
+                    var vMsgFaltan = " Falta ingresar la información para: " + faltanTexto + " (Línea " + insertLc.line + ", Col " + insertLc.col + ", antes de cerrar el paréntesis ')'). Debe contener información real.";
+
                     diagnostics.push({
                       type: 'error',
                       code: 'INSERT_VALUES_MISMATCH',
-                      title: 'Discrepancia en INSERT: Faltan valores',
-                      message: "En tabla '" + tableName + "': Se definieron " + explicitColumns.length + " campos pero la fila " + rowCount + " de VALUES solo tiene " + tupleValues.length + " valores. Hace falta " + diff + " valor(es) para: [" + missingCols.join(', ') + "].",
-                      line: tupleLc.line,
-                      col: tupleLc.col,
-                      tokenPos: stmt[tupleStart].s,
+                      title: 'Falta información en INSERT: campo sin dato',
+                      message: vMsgPrefix + vMsgFaltan,
+                      line: insertLc.line,
+                      col: insertLc.col,
+                      tokenPos: insertPos,
                       statementIndex: stmtIdx,
                       details: {
                         table: tableName,
-                        columns: explicitColumns,
-                        columnsCount: explicitColumns.length,
+                        columns: expectedColumns,
+                        columnsCount: expectedColumns.length,
                         values: tupleValues,
                         valuesCount: tupleValues.length,
                         diff: diff,
                         missingColumns: missingCols,
+                        missingDetails: missingDetails,
                         rowNumber: rowCount,
-                        tupleClosePos: stmt[tupleEnd].s
+                        tupleStartPos: stmt[tupleStart].s,
+                        tupleClosePos: insertPos,
+                        insertionPos: insertPos,
+                        isSelect: false
                       }
                     });
-                  } else if (tupleValues.length > explicitColumns.length) {
-                    var surplusDiff = tupleValues.length - explicitColumns.length;
+                  } else if (tupleValues.length > expectedColumns.length) {
+                    var surplusDiff = tupleValues.length - expectedColumns.length;
+                    var vSurplusPrefix = usingSchemaColumns
+                      ? "En tabla '" + tableName + "': La tabla tiene " + expectedColumns.length + " campos en la base de datos pero la fila " + rowCount + " de VALUES tiene " + tupleValues.length + " valores."
+                      : "En tabla '" + tableName + "': Se definieron " + expectedColumns.length + " campos pero la fila " + rowCount + " de VALUES tiene " + tupleValues.length + " valores.";
+                    var vSobran = " Sobran " + surplusDiff + " valor(es).";
+
                     diagnostics.push({
                       type: 'error',
                       code: 'INSERT_VALUES_SURPLUS',
                       title: 'Discrepancia en INSERT: Sobran valores',
-                      message: "En tabla '" + tableName + "': Se definieron " + explicitColumns.length + " campos pero la fila " + rowCount + " de VALUES tiene " + tupleValues.length + " valores. Sobran " + surplusDiff + " valor(es).",
+                      message: vSurplusPrefix + vSobran,
                       line: tupleLc.line,
                       col: tupleLc.col,
                       tokenPos: stmt[tupleStart].s,
                       statementIndex: stmtIdx,
                       details: {
                         table: tableName,
-                        columns: explicitColumns,
-                        columnsCount: explicitColumns.length,
+                        columns: expectedColumns,
+                        columnsCount: expectedColumns.length,
                         values: tupleValues,
                         valuesCount: tupleValues.length,
                         diff: surplusDiff,
@@ -743,6 +751,167 @@
               }
             }
             vIdx++;
+          }
+        }
+
+        // ---------------------------------------------------------------------
+        // Caso B: INSERT ... SELECT ... o INSERT ... (SELECT ...)
+        // ---------------------------------------------------------------------
+        if (selectKeywordIdx !== -1) {
+          var sProjStart = selectKeywordIdx + 1;
+          while (sProjStart < stmt.length && (stmt[sProjStart].t === 'lc' || stmt[sProjStart].t === 'bc')) sProjStart++;
+
+          // Omitir DISTINCT o ALL
+          if (sProjStart < stmt.length && stmt[sProjStart].t === 'w' && (stmt[sProjStart].u === 'DISTINCT' || stmt[sProjStart].u === 'ALL')) {
+            sProjStart++;
+            while (sProjStart < stmt.length && (stmt[sProjStart].t === 'lc' || stmt[sProjStart].t === 'bc')) sProjStart++;
+            // Soporte para DISTINCT ON (...)
+            if (sProjStart < stmt.length && stmt[sProjStart].t === 'w' && stmt[sProjStart].u === 'ON') {
+              sProjStart++;
+              while (sProjStart < stmt.length && (stmt[sProjStart].t === 'lc' || stmt[sProjStart].t === 'bc')) sProjStart++;
+              if (sProjStart < stmt.length && stmt[sProjStart].t === 'p' && stmt[sProjStart].v === '(') {
+                var onD = 1;
+                for (var onIdx = sProjStart + 1; onIdx < stmt.length; onIdx++) {
+                  if (stmt[onIdx].t === 'p' && stmt[onIdx].v === '(') onD++;
+                  else if (stmt[onIdx].t === 'p' && stmt[onIdx].v === ')') {
+                    onD--;
+                    if (onD === 0) {
+                      sProjStart = onIdx + 1;
+                      break;
+                    }
+                  }
+                }
+              }
+            }
+          }
+
+          // Encontrar el final de la proyección de columnas del SELECT
+          var sProjEnd = stmt.length;
+          var sDepth = 0;
+          var stopKeywords = ['FROM', 'WHERE', 'GROUP', 'HAVING', 'WINDOW', 'UNION', 'INTERSECT', 'EXCEPT', 'ORDER', 'LIMIT', 'OFFSET', 'FETCH', 'RETURNING', 'ON'];
+
+          for (var sp = sProjStart; sp < stmt.length; sp++) {
+            var sTok = stmt[sp];
+            if (sTok.t === 'p' && sTok.v === '(') {
+              sDepth++;
+            } else if (sTok.t === 'p' && sTok.v === ')') {
+              if (sDepth > 0) {
+                sDepth--;
+              } else {
+                sProjEnd = sp;
+                break;
+              }
+            } else if (sDepth === 0) {
+              if (sTok.t === 'w' && stopKeywords.indexOf(sTok.u) >= 0) {
+                sProjEnd = sp;
+                break;
+              }
+            }
+          }
+
+          var selectTokens = stmt.slice(sProjStart, sProjEnd);
+          var selectSplit = splitCommaDepth0(selectTokens);
+
+          if (selectSplit.trailingComma) {
+            var trailingPos = sProjEnd < stmt.length ? stmt[sProjEnd].s : stmt[stmt.length - 1].s;
+            var lcTrailing = getLineCol(src, trailingPos);
+            diagnostics.push({
+              type: 'error',
+              code: 'SELECT_TRAILING_COMMA',
+              title: 'Coma sobrante en proyección de SELECT',
+              message: "En la consulta SELECT de INSERT para '" + tableName + "': hay una coma sobrante antes de la cláusula " + (sProjEnd < stmt.length ? stmt[sProjEnd].v : 'siguiente') + ".",
+              line: lcTrailing.line,
+              col: lcTrailing.col,
+              tokenPos: trailingPos,
+              statementIndex: stmtIdx
+            });
+          }
+
+          var selectValues = [];
+          selectSplit.items.forEach(function (chunk) {
+            var sig = chunk.filter(function (x) { return x.t !== 'lc' && x.t !== 'bc'; });
+            if (!sig.length) return;
+            var exprText = sig.map(function (x) { return x.v; }).join(' ');
+            selectValues.push(exprText);
+          });
+
+          var selectLc = getLineCol(src, stmt[selectKeywordIdx].s);
+
+          if (expectedColumns.length > 0) {
+            if (selectValues.length < expectedColumns.length) {
+              var sDiff = expectedColumns.length - selectValues.length;
+              var sMissingCols = expectedColumns.slice(selectValues.length);
+              var sMissingDetails = [];
+              for (var smi = 0; smi < sMissingCols.length; smi++) {
+                sMissingDetails.push({
+                  index: selectValues.length + smi + 1,
+                  columnName: sMissingCols[smi]
+                });
+              }
+
+              var sFaltanTexto = sMissingDetails.map(function (m) {
+                return "posición #" + m.index + " ('" + m.columnName + "')";
+              }).join(', ');
+
+              var projEndPos = sProjEnd < stmt.length ? stmt[sProjEnd].s : (stmt[stmt.length - 1].e || src.length);
+              var sInsertLc = getLineCol(src, projEndPos);
+              var clauseDesc = (sProjEnd < stmt.length ? "antes de '" + stmt[sProjEnd].v + "'" : "al final del SELECT");
+
+              var sMsgPrefix = usingSchemaColumns
+                ? "En tabla '" + tableName + "': La tabla requiere " + expectedColumns.length + " columnas en la base de datos pero la consulta SELECT solo proyecta " + selectValues.length + " dato(s)."
+                : "En tabla '" + tableName + "': Se definieron " + expectedColumns.length + " campos para insertar pero la consulta SELECT solo proyecta " + selectValues.length + " dato(s).";
+              var sMsgFaltan = " Falta incluir la información para: " + sFaltanTexto + " (Línea " + sInsertLc.line + ", Col " + sInsertLc.col + ", " + clauseDesc + "). Debe contener información real.";
+
+              diagnostics.push({
+                type: 'error',
+                code: 'INSERT_SELECT_MISMATCH',
+                title: 'Falta información en INSERT: campo sin proyectar en SELECT',
+                message: sMsgPrefix + sMsgFaltan,
+                line: sInsertLc.line,
+                col: sInsertLc.col,
+                tokenPos: projEndPos,
+                statementIndex: stmtIdx,
+                details: {
+                  table: tableName,
+                  columns: expectedColumns,
+                  columnsCount: expectedColumns.length,
+                  values: selectValues,
+                  valuesCount: selectValues.length,
+                  diff: sDiff,
+                  missingColumns: sMissingCols,
+                  missingDetails: sMissingDetails,
+                  projectionEndPos: projEndPos,
+                  insertionPos: projEndPos,
+                  isSelect: true
+                }
+              });
+            } else if (selectValues.length > expectedColumns.length) {
+              var sSurplusDiff = selectValues.length - expectedColumns.length;
+              var sSurplusPrefix = usingSchemaColumns
+                ? "En tabla '" + tableName + "': La tabla tiene " + expectedColumns.length + " columnas en la base de datos, pero la consulta SELECT proyecta " + selectValues.length + " valores."
+                : "En tabla '" + tableName + "': Se definieron " + expectedColumns.length + " campos para insertar pero la consulta SELECT proyecta " + selectValues.length + " valores.";
+              var sSobran = " Sobran " + sSurplusDiff + " valor(es) en el SELECT.";
+
+              diagnostics.push({
+                type: 'error',
+                code: 'INSERT_SELECT_SURPLUS',
+                title: 'Discrepancia en INSERT ... SELECT: Sobran valores',
+                message: sSurplusPrefix + sSobran,
+                line: selectLc.line,
+                col: selectLc.col,
+                tokenPos: stmt[selectKeywordIdx].s,
+                statementIndex: stmtIdx,
+                details: {
+                  table: tableName,
+                  columns: expectedColumns,
+                  columnsCount: expectedColumns.length,
+                  values: selectValues,
+                  valuesCount: selectValues.length,
+                  diff: sSurplusDiff,
+                  isSelect: true
+                }
+              });
+            }
           }
         }
       }
@@ -944,6 +1113,15 @@
       var fillStr = '';
       for (var k = 0; k < diff; k++) fillStr += ', ' + fillValue;
       return src.slice(0, pos) + fillStr + src.slice(pos);
+    }
+
+    if (diagnostic.code === 'INSERT_SELECT_MISMATCH' && diagnostic.details && diagnostic.details.projectionEndPos != null) {
+      var posSel = diagnostic.details.projectionEndPos;
+      var diffSel = diagnostic.details.diff || 1;
+      var fillStrSel = '';
+      for (var ks = 0; ks < diffSel; ks++) fillStrSel += ', ' + fillValue;
+      var beforeSel = src.slice(0, posSel).replace(/\s+$/, '');
+      return beforeSel + fillStrSel + ' ' + src.slice(posSel).replace(/^\s*/, '');
     }
 
     if (diagnostic.code === 'MISSING_COMMA_COLUMNS' || diagnostic.code === 'MISSING_COMMA_VALUES' || diagnostic.code === 'MISSING_COMMA_UPDATE_SET') {
