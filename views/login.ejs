@@ -679,6 +679,210 @@
     color: var(--planet-accent, #ff3b30);
   }
 
+  /* --- FONDOS DE MOTORES DE BASE DE DATOS HIPERREALISTAS --- */
+  .db-theme-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    opacity: 0;
+    transform: scale(1.03);
+    transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 1.2s ease-out;
+    z-index: 1;
+    pointer-events: none;
+  }
+  .db-theme-backdrop.active {
+    opacity: 1;
+    transform: scale(1);
+  }
+  .db-vignette-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: radial-gradient(circle at 35% 50%, rgba(2, 6, 18, 0.25) 0%, rgba(2, 6, 18, 0.82) 80%, #020612 100%),
+                linear-gradient(90deg, transparent 40%, rgba(2, 6, 18, 0.95) 75%, #020612 100%);
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  /* --- TERMINAL HOLOGRÁFICO PL/SQL EN VIVO --- */
+  .hud-plsql-terminal {
+    position: absolute;
+    bottom: 78px;
+    left: 48px;
+    right: 32px;
+    max-width: 650px;
+    height: 250px;
+    background: rgba(4, 9, 20, 0.78);
+    border: 1px solid var(--planet-accent, rgba(0, 245, 255, 0.35));
+    box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.85), 0 0 24px var(--planet-accent, rgba(0, 245, 255, 0.2));
+    border-radius: 12px;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    z-index: 12;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    pointer-events: auto;
+    transition: border-color 0.35s ease, box-shadow 0.35s ease, opacity 0.4s ease;
+  }
+  .hud-term-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 14px;
+    background: rgba(255, 255, 255, 0.04);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    font-family: var(--mono);
+    font-size: 11px;
+    user-select: none;
+  }
+  .hud-term-dots {
+    display: flex;
+    gap: 6px;
+  }
+  .term-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+  }
+  .term-dot.red { background: #ef4444; box-shadow: 0 0 6px rgba(239, 68, 68, 0.5); }
+  .term-dot.yellow { background: #f59e0b; box-shadow: 0 0 6px rgba(245, 158, 11, 0.5); }
+  .term-dot.green { background: #10b981; box-shadow: 0 0 6px rgba(16, 185, 129, 0.5); }
+
+  .hud-term-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: var(--planet-accent, #00f5ff);
+    text-shadow: 0 0 12px var(--planet-accent, rgba(0, 245, 255, 0.4));
+  }
+  .hud-term-chip {
+    font-size: 9.5px;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+    border: 1px solid var(--planet-accent, rgba(0, 245, 255, 0.4));
+    letter-spacing: 0.06em;
+  }
+
+  .hud-term-body {
+    padding: 12px 14px;
+    font-family: var(--mono);
+    font-size: 12px;
+    line-height: 1.55;
+    color: #e2e8f0;
+    overflow-y: auto;
+    flex: 1;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+  }
+  .hud-code-pre {
+    margin: 0;
+    white-space: pre-wrap;
+    word-break: break-all;
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+  }
+  .hud-cursor {
+    display: inline-block;
+    color: var(--planet-accent, #00f5ff);
+    animation: cursorBlink 0.75s infinite steps(2, jump-none);
+    font-weight: 900;
+    margin-left: 1px;
+    text-shadow: 0 0 8px var(--planet-accent, rgba(0, 245, 255, 0.6));
+  }
+  @keyframes cursorBlink {
+    50% { opacity: 0; }
+  }
+
+  .hud-term-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 14px;
+    background: rgba(0, 0, 0, 0.45);
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    font-family: var(--mono);
+    font-size: 10px;
+    color: #94a3b8;
+    user-select: none;
+  }
+  .term-stat strong {
+    color: #f1f5f9;
+  }
+  .term-status-ok {
+    color: #10b981;
+    font-weight: 800;
+    text-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+  }
+
+  /* Token highlighting */
+  .plsql-kw { color: var(--planet-accent, #38bdf8); font-weight: 800; text-shadow: 0 0 8px var(--planet-accent, rgba(56, 189, 248, 0.3)); }
+  .plsql-type { color: #fbbf24; font-weight: 700; }
+  .plsql-str { color: #a7f3d0; }
+  .plsql-cm { color: #64748b; font-style: italic; }
+  .plsql-fn { color: #ec4899; font-weight: 700; }
+  .plsql-num { color: #c084fc; }
+
+  /* --- SELECTOR DE MOTORES Y TEMAS --- */
+  .hud-engine-switcher {
+    position: absolute;
+    bottom: 22px;
+    left: 48px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    z-index: 15;
+    flex-wrap: wrap;
+    pointer-events: auto;
+  }
+  .engine-tab {
+    background: rgba(8, 16, 32, 0.72);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.82);
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.22s ease;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+  .engine-tab:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.35);
+    color: #fff;
+    transform: translateY(-2px);
+  }
+  .engine-tab.active {
+    background: rgba(255, 255, 255, 0.14);
+    border-color: var(--planet-accent, #00f5ff);
+    color: #fff;
+    box-shadow: 0 0 16px var(--planet-accent, rgba(0, 245, 255, 0.4));
+  }
+  .engine-tab.auto-rotar.active {
+    border-color: #10b981;
+    box-shadow: 0 0 16px rgba(16, 185, 129, 0.45);
+  }
+
   @media (max-width: 960px) {
     body.guest {
       height: auto;
@@ -700,9 +904,24 @@
     .hud-telemetry-tl, .hud-telemetry-tr, .hud-telemetry-bl, .hud-telemetry-br {
       display: none;
     }
+    .hud-plsql-terminal {
+      left: 14px;
+      right: 14px;
+      bottom: 50px;
+      height: 170px;
+    }
+    .hud-engine-switcher {
+      left: 14px;
+      bottom: 8px;
+      gap: 4px;
+    }
+    .engine-tab {
+      padding: 4px 8px;
+      font-size: 9.5px;
+    }
     .hud-planets-bar {
       left: 16px;
-      bottom: 4px;
+      bottom: 8px;
     }
     .cyber-login-col {
       padding: 10px 18px 30px;
@@ -711,14 +930,16 @@
 </style>
 
 <div class="cyber-split-screen">
-  <!-- MITAD IZQUIERDA: HOLOGRAMA 3D CON PEDESTAL Y TELEMETRÍA -->
+  <!-- MITAD IZQUIERDA: HOLOGRAMA 3D, FONDOS DE MOTORES Y TERMINAL PL/SQL -->
   <div class="cyber-earth-col">
     <div id="earthCanvasWrap" class="earth-canvas-wrap"></div>
+    <div id="dbThemeBackdrop" class="db-theme-backdrop"></div>
+    <div class="db-vignette-overlay"></div>
     
-    <!-- Título Principal del Planeta y Protocolo -->
+    <!-- Título Principal del Planeta / Motor BD y Protocolo -->
     <div class="hud-planet-header">
       <span class="hud-bracket">[</span>
-      <span class="hud-main-title" id="hudMainTitle">MARTES · MARTE - PROTOCOLO DEFENSA</span>
+      <span class="hud-main-title" id="hudMainTitle">POSTGRESQL · NÚCLEO RELACIONAL ACID v16</span>
       <span class="hud-bracket">]</span>
     </div>
 
@@ -743,21 +964,67 @@
     <!-- Telemetría Flotante Inferior Izquierda -->
     <div class="hud-telemetry-bl">
       <div class="t-dim">ORBITAL URBICA.</div>
-      <div class="t-dim">ORBITAL DATA</div>
+      <div class="t-dim">DATABASE ENGINE CLUSTER</div>
       <div class="t-status-active" id="hudSystemStatus">SISTEMA ACTIVO</div>
     </div>
 
     <!-- Telemetría Flotante Inferior Derecha (con Gráfico de Onda) -->
     <div class="hud-telemetry-br">
       <div class="t-coords">42.6° N, 14.8° E</div>
-      <div class="t-sub">ORBITAL METRICS</div>
+      <div class="t-sub">TRANSACTION METRICS</div>
       <div class="hud-wave-box">
         <canvas id="hudWaveCanvas" width="80" height="28"></canvas>
       </div>
     </div>
 
-    <!-- Selector interactivo de planetas por día de la semana -->
-    <div class="hud-planets-bar" id="hudPlanetsBar" title="Haz clic en cualquier día para explorar su planeta">
+    <!-- Terminal Holográfico de Código PL/SQL en Vivo -->
+    <div class="hud-plsql-terminal" id="hudPlsqlTerminal">
+      <div class="hud-term-header">
+        <div class="hud-term-dots">
+          <span class="term-dot red"></span>
+          <span class="term-dot yellow"></span>
+          <span class="term-dot green"></span>
+        </div>
+        <div class="hud-term-title">
+          <span id="hudTermIcon">🐘</span>
+          <span id="hudTermEngine">POSTGRESQL PL/pgSQL COMPILER v16.2</span>
+        </div>
+        <span class="hud-term-chip" id="hudTermChip">ACID ACTIVE</span>
+      </div>
+      <div class="hud-term-body" id="hudTermBody">
+        <pre class="hud-code-pre"><code id="hudCodeContent"></code><span class="hud-cursor" id="hudCursor">▋</span></pre>
+      </div>
+      <div class="hud-term-footer">
+        <div class="term-stat">IOPS: <strong id="hudTermIops">194,520</strong></div>
+        <div class="term-stat">LATENCIA: <strong id="hudTermLatency">0.07 ms</strong></div>
+        <div class="term-stat">ESTADO: <strong class="term-status-ok" id="hudTermStatusText">● TRANSACCIÓN ACTIVA</strong></div>
+      </div>
+    </div>
+
+    <!-- Selector interactivo de Motores de Base de Datos y Modo 3D -->
+    <div class="hud-engine-switcher" id="hudEngineSwitcher">
+      <button type="button" class="engine-tab" data-engine="postgres" title="PostgreSQL: Núcleo Relacional Cyber 3D">
+        <span class="eng-icon">🐘</span> <span class="eng-txt">POSTGRESQL</span>
+      </button>
+      <button type="button" class="engine-tab" data-engine="oracle" title="Oracle: Bóveda Enterprise Cloud">
+        <span class="eng-icon">🏛️</span> <span class="eng-txt">ORACLE DB</span>
+      </button>
+      <button type="button" class="engine-tab" data-engine="sqlserver" title="SQL Server & Multi-Engine Matrix">
+        <span class="eng-icon">🌐</span> <span class="eng-txt">SQL MATRIX</span>
+      </button>
+      <button type="button" class="engine-tab" data-engine="nosql" title="MongoDB & Redis: Quantum Speed Core">
+        <span class="eng-icon">⚡</span> <span class="eng-txt">NOSQL / REDIS</span>
+      </button>
+      <button type="button" class="engine-tab" data-engine="planetas" title="Sistema Solar 3D en Tiempo Real">
+        <span class="eng-icon">🪐</span> <span class="eng-txt">PLANETAS 3D</span>
+      </button>
+      <button type="button" class="engine-tab auto-rotar" id="btnAutoRotar" title="Rotación Automática entre todos los Motores">
+        <span class="eng-icon">🔄</span> <span class="eng-txt">AUTO</span>
+      </button>
+    </div>
+
+    <!-- Selector interactivo de planetas por día de la semana (modo Planetas 3D) -->
+    <div class="hud-planets-bar" id="hudPlanetsBar" style="display:none;" title="Haz clic en cualquier día para explorar su planeta">
       <button type="button" class="planet-tab" data-day="1" title="Lunes: Mercurio">LUN</button>
       <button type="button" class="planet-tab" data-day="2" title="Martes: Venus">MAR</button>
       <button type="button" class="planet-tab" data-day="3" title="Miércoles: Tierra">MIÉ</button>
@@ -1979,5 +2246,363 @@
       }, 2500);
     }
   });
+})();
+
+// --- SISTEMA DE TEMAS DE MOTORES DE BASE DE DATOS Y TERMINAL PL/SQL EN VIVO ---
+(function() {
+  var DB_THEMES = {
+    postgres: {
+      id: 'postgres',
+      name: 'POSTGRESQL',
+      fullName: 'POSTGRESQL · NÚCLEO RELACIONAL ACID v16',
+      icon: '🐘',
+      image: '/login-themes/theme_postgresql.jpg',
+      accent: '#00f5ff',
+      accentRgb: '0, 245, 255',
+      glow: 'rgba(0, 245, 255, 0.35)',
+      chip: 'PL/pgSQL v16.2',
+      iops: '194,520',
+      latency: '0.07 ms',
+      code: [
+        "-- [POSTGRESQL v16.2 · RELATIONAL CORE]",
+        "CREATE OR REPLACE FUNCTION vault.auth_verify_node(",
+        "    p_token_hash IN BYTEA,",
+        "    p_client_ip  IN INET",
+        ") RETURNS TABLE (access_level INT, is_authorized BOOLEAN) AS $$",
+        "DECLARE",
+        "    v_active_node TEXT;",
+        "BEGIN",
+        "    -- Verificando firma criptográfica en Bóveda",
+        "    SELECT node_id INTO v_active_node",
+        "    FROM vault_clusters",
+        "    WHERE token_hash = p_token_hash AND is_active = TRUE;",
+        "    ",
+        "    IF FOUND THEN",
+        "        INSERT INTO audit_log (event, client_ip, created_at)",
+        "        VALUES ('SESSION_AUTHORIZED', p_client_ip, clock_timestamp());",
+        "        RETURN QUERY SELECT 1, TRUE;",
+        "    END IF;",
+        "END;",
+        "$$ LANGUAGE plpgsql;"
+      ]
+    },
+    oracle: {
+      id: 'oracle',
+      name: 'ORACLE DB',
+      fullName: 'ORACLE CLOUD INFRASTRUCTURE · ENTERPRISE VAULT',
+      icon: '🏛️',
+      image: '/login-themes/theme_oracle.jpg',
+      accent: '#f59e0b',
+      accentRgb: '245, 158, 11',
+      glow: 'rgba(245, 158, 11, 0.35)',
+      chip: 'PL/SQL ENTERPRISE',
+      iops: '240,110',
+      latency: '0.05 ms',
+      code: [
+        "-- [ORACLE DATABASE CLOUD · ENTERPRISE VAULT]",
+        "CREATE OR REPLACE PACKAGE BODY PKG_SECURITY_VAULT AS",
+        "  PROCEDURE VERIFY_ACID_SESSION(",
+        "    p_user_id   IN  VARCHAR2,",
+        "    p_signature IN  RAW,",
+        "    o_status    OUT NUMBER",
+        "  ) IS",
+        "    CURSOR c_auth IS",
+        "      SELECT node_state, encryption_level",
+        "      FROM sys_vault_auth",
+        "      WHERE user_hash = ORA_HASH(p_user_id)",
+        "      FOR UPDATE OF node_state;",
+        "    r_node c_auth%ROWTYPE;",
+        "  BEGIN",
+        "    OPEN c_auth;",
+        "    FETCH c_auth INTO r_node;",
+        "    IF c_auth%FOUND THEN",
+        "      DBMS_CRYPTO.VERIFY_SIGNATURE(p_signature, o_status);",
+        "      COMMIT;",
+        "    END IF;",
+        "    CLOSE c_auth;",
+        "  END VERIFY_ACID_SESSION;",
+        "END PKG_SECURITY_VAULT;",
+        "/"
+      ]
+    },
+    sqlserver: {
+      id: 'sqlserver',
+      name: 'SQL MATRIX',
+      fullName: 'SQL SERVER & CLOUD MATRIX · MULTI-ENGINE ACTIVE',
+      icon: '🌐',
+      image: '/login-themes/theme_sql_matrix.jpg',
+      accent: '#3b82f6',
+      accentRgb: '59, 130, 246',
+      glow: 'rgba(59, 130, 246, 0.35)',
+      chip: 'T-SQL MATRIX',
+      iops: '172,400',
+      latency: '0.09 ms',
+      code: [
+        "-- [SQL SERVER & MULTI-ENGINE CLOUD MATRIX]",
+        "CREATE PROCEDURE dbo.sp_AuthenticateClusterNode",
+        "    @NodeIdentifier NVARCHAR(64),",
+        "    @HashToken      VARBINARY(64),",
+        "    @IsGranted      BIT OUTPUT",
+        "AS",
+        "BEGIN",
+        "    SET NOCOUNT ON;",
+        "    BEGIN TRANSACTION WITH MARK 'AUTH_VERIFY';",
+        "    ",
+        "    SELECT @IsGranted = is_active",
+        "    FROM dbo.sys_cluster_matrix WITH (UPDLOCK, HOLDLOCK)",
+        "    WHERE node_hash = @HashToken;",
+        "    ",
+        "    INSERT INTO dbo.audit_telemetry (node_id, auth_time)",
+        "    VALUES (@NodeIdentifier, SYSUTCDATETIME());",
+        "    ",
+        "    COMMIT TRANSACTION;",
+        "END;"
+      ]
+    },
+    nosql: {
+      id: 'nosql',
+      name: 'NOSQL / REDIS',
+      fullName: 'NOSQL & IN-MEMORY CACHE · QUANTUM SPEED ENGINE',
+      icon: '⚡',
+      image: '/login-themes/theme_nosql_redis.jpg',
+      accent: '#10b981',
+      accentRgb: '16, 185, 129',
+      glow: 'rgba(16, 185, 129, 0.35)',
+      chip: 'IN-MEMORY CLUSTER',
+      iops: '890,000',
+      latency: '0.002 ms',
+      code: [
+        "// [MONGODB & REDIS - QUANTUM SPEED CORE]",
+        "db.vault_sessions.aggregate([",
+        "  { $match: { status: 'ACTIVE', latency_us: { $lte: 120 } } },",
+        "  { $lookup: { from: 'auth_shards', localField: 'shard_id', foreignField: '_id', as: 'shard' } },",
+        "  { $project: { _id: 1, node_name: 1, replication_status: 'SYNCHRONIZED' } }",
+        "]);",
+        "",
+        "// REDIS ATOMIC PIPELINE CACHE (0.002ms)",
+        "redis.multi()",
+        "  .hgetall('session:auth:token_active')",
+        "  .expire('session:auth:token_active', 3600)",
+        "  .exec();"
+      ]
+    },
+    planetas: {
+      id: 'planetas',
+      name: 'PLANETAS 3D',
+      fullName: 'SISTEMA SOLAR 3D · EXPLORADOR SEMANAL',
+      icon: '🪐',
+      accent: '#ff3b30',
+      accentRgb: '255, 59, 48',
+      glow: 'rgba(255, 59, 48, 0.35)',
+      chip: 'THREE.JS 3D',
+      iops: '60 FPS',
+      latency: 'WebGL 2.0',
+      code: []
+    }
+  };
+
+  var backdrop = document.getElementById('dbThemeBackdrop');
+  var earthWrap = document.getElementById('earthCanvasWrap');
+  var mainTitle = document.getElementById('hudMainTitle');
+  var termBox = document.getElementById('hudPlsqlTerminal');
+  var termIcon = document.getElementById('hudTermIcon');
+  var termEngine = document.getElementById('hudTermEngine');
+  var termChip = document.getElementById('hudTermChip');
+  var codeContent = document.getElementById('hudCodeContent');
+  var termBody = document.getElementById('hudTermBody');
+  var termIops = document.getElementById('hudTermIops');
+  var termLatency = document.getElementById('hudTermLatency');
+  var planetsBar = document.getElementById('hudPlanetsBar');
+  var switcher = document.getElementById('hudEngineSwitcher');
+  var btnAutoRotar = document.getElementById('btnAutoRotar');
+
+  var currentTheme = localStorage.getItem('boveda_login_theme') || 'postgres';
+  var autoRotate = localStorage.getItem('boveda_theme_autorotate') === 'true';
+  var rotateTimer = null;
+
+  // Resaltado de sintaxis
+  function highlightLine(line) {
+    if (!line) return '';
+    if (line.trim().startsWith('--') || line.trim().startsWith('//')) {
+      return '<span class="plsql-cm">' + escapeHtml(line) + '</span>';
+    }
+    var s = escapeHtml(line);
+    s = s.replace(/(['"][^'"]*['"])/g, '<span class="plsql-str">$1</span>');
+    var kwRegex = /\b(CREATE|OR|REPLACE|PACKAGE|BODY|PROCEDURE|FUNCTION|RETURNS|TABLE|DECLARE|BEGIN|END|IS|AS|IF|THEN|OPEN|FETCH|CLOSE|INTO|CURSOR|SELECT|INSERT|FROM|WHERE|FOR|UPDATE|COMMIT|RETURN|QUERY|LANGUAGE|SET|TRANSACTION|OUTPUT|NOCOUNT|WITH|ROWLOCK|UPDLOCK|HOLDLOCK|aggregate|match|lookup|project|multi|hgetall|expire|exec)\b/gi;
+    s = s.replace(kwRegex, '<span class="plsql-kw">$1</span>');
+    var typeRegex = /\b(VARCHAR2|VARCHAR|NUMBER|BOOLEAN|RAW|BYTEA|INT|INTEGER|INET|TEXT|BIT|NVARCHAR|VARBINARY|MAX|SYSUTCDATETIME|ROWTYPE)\b/gi;
+    s = s.replace(typeRegex, '<span class="plsql-type">$1</span>');
+    var fnRegex = /\b(ORA_HASH|DBMS_CRYPTO|VERIFY_SIGNATURE|clock_timestamp|db|redis)\b/gi;
+    s = s.replace(fnRegex, '<span class="plsql-fn">$1</span>');
+    return s;
+  }
+
+  function escapeHtml(t) {
+    return t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  // Motor Typewriter en vivo
+  var typeTimer = null;
+  var currentLineIdx = 0;
+  var currentCharIdx = 0;
+  var activeLines = [];
+  var renderedLines = [];
+
+  function stopTypewriter() {
+    if (typeTimer) clearTimeout(typeTimer);
+    typeTimer = null;
+  }
+
+  function startTypewriter(lines) {
+    stopTypewriter();
+    activeLines = lines || [];
+    currentLineIdx = 0;
+    currentCharIdx = 0;
+    renderedLines = [];
+    if (codeContent) codeContent.innerHTML = '';
+    if (!activeLines.length) return;
+    typeNext();
+  }
+
+  function typeNext() {
+    if (currentLineIdx >= activeLines.length) {
+      // Bloque finalizado: breve pausa y recomenzar
+      typeTimer = setTimeout(function() {
+        startTypewriter(activeLines);
+      }, 4000);
+      return;
+    }
+
+    var fullLine = activeLines[currentLineIdx];
+    currentCharIdx++;
+
+    var partialLine = fullLine.slice(0, currentCharIdx);
+    var displayHTML = renderedLines.map(function(l) { return highlightLine(l); }).join('\n');
+    if (renderedLines.length > 0) displayHTML += '\n';
+    displayHTML += highlightLine(partialLine);
+
+    if (codeContent) codeContent.innerHTML = displayHTML;
+    if (termBody) termBody.scrollTop = termBody.scrollHeight;
+
+    if (currentCharIdx >= fullLine.length) {
+      renderedLines.push(fullLine);
+      currentLineIdx++;
+      currentCharIdx = 0;
+      var lineDelay = (fullLine.trim().startsWith('--') || fullLine.trim().startsWith('//')) ? 220 : 90;
+      typeTimer = setTimeout(typeNext, lineDelay);
+    } else {
+      var charSpeed = Math.floor(Math.random() * 26) + 14;
+      typeTimer = setTimeout(typeNext, charSpeed);
+    }
+  }
+
+  // Aplicar tema seleccionado
+  function aplicarTema(themeId, persist) {
+    if (!DB_THEMES[themeId]) themeId = 'postgres';
+    var theme = DB_THEMES[themeId];
+    currentTheme = themeId;
+    if (persist) {
+      try { localStorage.setItem('boveda_login_theme', themeId); } catch(e) {}
+    }
+
+    // Actualizar botones del selector
+    if (switcher) {
+      var tabs = switcher.querySelectorAll('.engine-tab[data-engine]');
+      tabs.forEach(function(tb) {
+        tb.classList.toggle('active', tb.getAttribute('data-engine') === themeId);
+      });
+    }
+
+    // Variables de color
+    document.documentElement.style.setProperty('--planet-accent', theme.accent);
+
+    if (themeId === 'planetas') {
+      if (backdrop) backdrop.classList.remove('active');
+      if (earthWrap) {
+        earthWrap.style.opacity = '1';
+        earthWrap.style.pointerEvents = 'auto';
+      }
+      if (planetsBar) planetsBar.style.display = 'flex';
+      if (termBox) termBox.style.display = 'none';
+      stopTypewriter();
+    } else {
+      if (backdrop) {
+        backdrop.style.backgroundImage = "url('" + theme.image + "')";
+        backdrop.classList.add('active');
+      }
+      if (earthWrap) {
+        earthWrap.style.opacity = '0';
+        earthWrap.style.pointerEvents = 'none';
+      }
+      if (planetsBar) planetsBar.style.display = 'none';
+      if (termBox) {
+        termBox.style.display = 'flex';
+        if (termIcon) termIcon.textContent = theme.icon;
+        if (termEngine) termEngine.textContent = theme.fullName;
+        if (termChip) termChip.textContent = theme.chip;
+        if (termIops) termIops.textContent = theme.iops;
+        if (termLatency) termLatency.textContent = theme.latency;
+      }
+      if (mainTitle) {
+        mainTitle.textContent = theme.fullName;
+      }
+      startTypewriter(theme.code);
+    }
+  }
+
+  // Delegación de eventos del selector
+  if (switcher) {
+    switcher.addEventListener('click', function(e) {
+      var btn = e.target.closest('.engine-tab');
+      if (!btn) return;
+
+      if (btn.id === 'btnAutoRotar') {
+        autoRotate = !autoRotate;
+        try { localStorage.setItem('boveda_theme_autorotate', String(autoRotate)); } catch(e) {}
+        btn.classList.toggle('active', autoRotate);
+        if (autoRotate) {
+          iniciarAutoRotacion();
+        } else {
+          detenerAutoRotacion();
+        }
+        return;
+      }
+
+      var engineId = btn.getAttribute('data-engine');
+      if (engineId) {
+        if (autoRotate) {
+          autoRotate = false;
+          try { localStorage.setItem('boveda_theme_autorotate', 'false'); } catch(e) {}
+          if (btnAutoRotar) btnAutoRotar.classList.remove('active');
+          detenerAutoRotacion();
+        }
+        aplicarTema(engineId, true);
+      }
+    });
+  }
+
+  var engineKeys = ['postgres', 'oracle', 'sqlserver', 'nosql', 'planetas'];
+  function rotarSiguiente() {
+    var curIdx = engineKeys.indexOf(currentTheme);
+    var nextIdx = (curIdx + 1) % engineKeys.length;
+    aplicarTema(engineKeys[nextIdx], true);
+  }
+
+  function iniciarAutoRotacion() {
+    detenerAutoRotacion();
+    rotateTimer = setInterval(rotarSiguiente, 15000);
+  }
+
+  function detenerAutoRotacion() {
+    if (rotateTimer) clearInterval(rotateTimer);
+    rotateTimer = null;
+  }
+
+  // Inicializar estado guardado
+  if (btnAutoRotar && autoRotate) {
+    btnAutoRotar.classList.add('active');
+    iniciarAutoRotacion();
+  }
+  aplicarTema(currentTheme, false);
 })();
 </script>
