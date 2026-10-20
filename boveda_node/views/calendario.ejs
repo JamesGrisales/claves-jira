@@ -1,0 +1,652 @@
+<style>
+  .cal-top{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:6px; }
+  .cal-top h1{ margin:0; }
+  .cal-layout{ display:grid; grid-template-columns:minmax(0,1fr) 300px; gap:18px; align-items:start; }
+  .cal-nav{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
+  .cal-nav h2{ margin:0 8px; font-size:20px; min-width:190px; text-transform:capitalize; }
+  .cal-nav .sp{ flex:1; }
+
+  .cal-grid{ display:grid; grid-template-columns:repeat(7, minmax(0,1fr)); border:1px solid var(--panel-edge); border-radius:14px; overflow:hidden; background:var(--panel); }
+  .cal-dow{ padding:9px 6px; text-align:center; font-size:11.5px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; color:var(--muted); background:var(--panel-alt); border-bottom:1px solid var(--panel-edge); }
+  .cal-day{ min-height:104px; padding:6px 6px 4px; border-right:1px solid var(--panel-edge); border-bottom:1px solid var(--panel-edge); cursor:pointer; transition:background-color .15s ease, border-color .15s ease; min-width:0; position:relative; }
+  .cal-day:nth-child(7n){ border-right:0; }
+  .cal-day:hover{ background:color-mix(in srgb, var(--accent) 6%, var(--panel)); }
+  .cal-day.otro{ background:var(--panel-alt); }
+  .cal-day.otro .num{ opacity:.45; }
+  .cal-day-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:3px; }
+  .cal-day .num{ display:inline-flex; align-items:center; justify-content:center; min-width:24px; height:24px; padding:0 6px; border-radius:999px; font-size:12.5px; font-weight:700; }
+  .cal-day.hoy .num{ background:var(--grad); color:#fff; }
+
+  /* Casilla de día festivo en Colombia */
+  .cal-day.festivo{
+    background: color-mix(in srgb, #ef4444 8.5%, var(--panel));
+    border-color: color-mix(in srgb, #ef4444 26%, var(--panel-edge));
+  }
+  .cal-day.festivo:hover{
+    background: color-mix(in srgb, #ef4444 15%, var(--panel));
+  }
+  .cal-day.festivo.otro{
+    background: color-mix(in srgb, #ef4444 4%, var(--panel-alt));
+  }
+  .cal-day.festivo.otro .num{
+    color: rgba(239, 68, 68, 0.45);
+  }
+  .cal-day.festivo .num{
+    color: #ef4444;
+    font-weight: 800;
+  }
+  :root[data-theme="dark"] .cal-day.festivo .num,
+  :root[data-theme="oled"] .cal-day.festivo .num{
+    color: #f87171;
+  }
+  .cal-day.festivo.hoy .num{
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: #fff;
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.55);
+  }
+  .festivo-badge{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    background: rgba(239, 68, 68, 0.14);
+    border: 1px solid rgba(239, 68, 68, 0.32);
+    font-size: 13px;
+    line-height: 1;
+    cursor: default;
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .cal-day.festivo:hover .festivo-badge{
+    transform: scale(1.22) rotate(-8deg);
+  }
+  .chip.festivo{
+    background: linear-gradient(135deg, #e11d48, #ef4444);
+    color: #fff;
+    font-weight: 700;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    box-shadow: 0 2px 6px rgba(225, 29, 72, 0.28);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: default;
+  }
+  .chip.festivo:hover{
+    filter: brightness(1.1);
+  }
+  .chip.festivo .festivo-chip-ico{
+    font-size: 11px;
+    flex-shrink: 0;
+  }
+  .chip.festivo .festivo-chip-txt{
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 11px;
+  }
+  .cal-legend-festivo{
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.24);
+    padding: 3px 10px;
+    border-radius: 999px;
+    cursor: default;
+    user-select: none;
+  }
+  :root[data-theme="dark"] .cal-legend-festivo,
+  :root[data-theme="oled"] .cal-legend-festivo{
+    color: #f87171;
+    background: rgba(239, 68, 68, 0.16);
+  }
+  .prox .dot.festivo{
+    background: #ef4444;
+    box-shadow: 0 0 8px rgba(239, 68, 68, 0.6);
+  }
+  .prox.festivo-row:hover b{
+    color: #ef4444;
+  }
+
+  .chip{ display:block; width:100%; text-align:left; font-size:11.5px; font-weight:600; line-height:1.3; padding:3px 7px; margin-bottom:3px; border-radius:6px; border:0; color:#fff; cursor:pointer; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; box-shadow:none; transform:none; background:var(--accent); }
+  .chip:hover{ transform:none; filter:brightness(1.08); box-shadow:none; }
+  .chip::after{ display:none; }
+  .chip.reunion{ background:var(--accent); }
+  .chip.especial{ background:#d97706; }
+  .chip.recordatorio{ background:#059669; }
+  .chip .h{ opacity:.85; margin-right:4px; font-weight:700; }
+  .mas{ font-size:11px; color:var(--muted); font-weight:700; padding-left:4px; }
+
+  .side .card{ padding:16px; }
+  .side h3{ margin:0 0 10px; font-size:14px; }
+  .prox{ display:flex; gap:10px; align-items:flex-start; padding:9px 0; border-top:1px solid var(--panel-edge); cursor:pointer; }
+  .prox:first-of-type{ border-top:0; }
+  .prox .dot{ width:10px; height:10px; border-radius:50%; margin-top:5px; flex-shrink:0; background:var(--accent); }
+  .prox .dot.especial{ background:#d97706; } .prox .dot.recordatorio{ background:#059669; }
+  .prox b{ display:block; font-size:13.5px; overflow-wrap:anywhere; }
+  .prox small{ color:var(--muted); font-size:12px; }
+  .vacio-prox{ color:var(--muted); font-size:13px; padding:6px 0; }
+  .notif-box{ margin-top:14px; font-size:12.5px; color:var(--muted); }
+  .notif-box button{ margin-top:8px; }
+
+  /* Ventana para agregar / editar */
+  .ev-backdrop{ position:fixed; inset:0; z-index:9000; background:rgba(8,14,30,.55); backdrop-filter:blur(3px); display:none; align-items:center; justify-content:center; padding:16px; }
+  .ev-backdrop.open{ display:flex; }
+  .ev-modal{ width:min(520px,100%); max-height:92vh; overflow:auto; background:var(--panel); border:1px solid var(--panel-edge); border-radius:18px; box-shadow:var(--shadow-lg); padding:22px; }
+  .ev-modal h3{ margin:0 0 14px; font-size:18px; }
+  .ev-modal label{ display:block; font-size:12.5px; font-weight:700; color:var(--muted); margin:12px 0 5px; }
+  .ev-modal input[type=date], .ev-modal input[type=time]{ width:100%; background:var(--panel-alt); border:1px solid var(--panel-edge); color:var(--text); font-family:var(--mono); font-size:14.5px; padding:10px 12px; border-radius:10px; outline:none; color-scheme:inherit; }
+  .ev-modal input[type=date]:focus, .ev-modal input[type=time]:focus{ border-color:var(--accent); box-shadow:0 0 0 4px rgba(var(--accent-rgb), .16); }
+  .ev-2{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .ev-check{ display:flex; align-items:center; gap:8px; margin-top:12px; font-size:13.5px; }
+  .ev-check label{ margin:0; font-size:13.5px; color:var(--text); font-weight:600; }
+  .rep-box{ margin-top:12px; padding:12px; border:1px dashed var(--panel-edge); border-radius:12px; background:var(--panel-alt); }
+  .rep-box label:first-child{ margin-top:0; }
+  .dias-sem{ display:flex; gap:6px; flex-wrap:wrap; margin-top:4px; }
+  .dias-sem label{ display:inline-flex; align-items:center; gap:5px; margin:0; padding:6px 10px; border:1px solid var(--panel-edge); border-radius:999px; background:var(--panel); font-size:12.5px; font-weight:700; color:var(--text); cursor:pointer; }
+  .dias-sem label:has(input:checked){ background:var(--accent-soft); border-color:var(--accent); color:var(--accent-dark); }
+  .dias-sem input{ width:14px; height:14px; }
+  .cal-aviso{ background:var(--ok-soft); color:var(--ok); border-left:3px solid var(--ok); border-radius:10px; padding:10px 14px; font-size:13.5px; font-weight:600; margin-bottom:12px; }
+  .ev-err{ color:var(--danger); background:var(--danger-soft); border-radius:8px; padding:8px 10px; font-size:13px; margin-top:12px; display:none; }
+  .ev-btns{ display:flex; gap:8px; justify-content:flex-end; margin-top:18px; flex-wrap:wrap; }
+  .ev-btns .izq{ margin-right:auto; }
+
+  @media (max-width:980px){ .cal-layout{ grid-template-columns:1fr; } }
+  @media (max-width:640px){ .cal-day{ min-height:70px; padding:4px 3px; } .chip .h{ display:none; } .cal-nav h2{ min-width:0; font-size:17px; } }
+</style>
+
+<div class="cal-top">
+  <h1>📅 Calendario</h1>
+  <button type="button" id="btnNuevo">+ Nuevo evento</button>
+</div>
+<p class="sub">Agrega reuniones, fechas especiales o recordatorios. Los días festivos de Colombia se destacan automáticamente en color rojo con un ícono de celebración.</p>
+
+<div class="cal-layout">
+  <div>
+    <div class="cal-nav">
+      <button type="button" class="secondary btn-sm" id="prev" aria-label="Mes anterior">‹</button>
+      <button type="button" class="secondary btn-sm" id="next" aria-label="Mes siguiente">›</button>
+      <h2 id="mesTitulo"></h2>
+      <span class="sp"></span>
+      <span class="cal-legend-festivo" title="Días festivos oficiales en Colombia según la Ley Emiliani">
+        <span>🎉</span> <span>Festivos Colombia</span>
+      </span>
+      <button type="button" class="secondary btn-sm" id="hoyBtn">Hoy</button>
+    </div>
+    <div class="cal-grid" id="grid"></div>
+  </div>
+
+  <aside class="side">
+    <div class="card">
+      <h3>Próximos eventos</h3>
+      <div id="proximos"><div class="vacio-prox">Cargando…</div></div>
+      <div class="notif-box" id="notifBox" hidden>
+        Para que la alerta también salga con la pestaña en segundo plano, permite las notificaciones del navegador.
+        <br><button type="button" class="secondary btn-sm" id="btnNotif">🔔 Activar notificaciones</button>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<!-- Ventana agregar / editar -->
+<div class="ev-backdrop" id="evBack">
+  <div class="ev-modal" role="dialog" aria-modal="true" aria-labelledby="evTitulo">
+    <h3 id="evTitulo">Nuevo evento</h3>
+
+    <label for="fTitulo">Título (esto es lo que dirá la alerta)</label>
+    <input type="text" id="fTitulo" maxlength="200" placeholder="Ej: Reunión con Jaivaná" autocomplete="off">
+
+    <div class="ev-2">
+      <div>
+        <label for="fTipo">Tipo</label>
+        <select id="fTipo">
+          <option value="reunion">Reunión</option>
+          <option value="especial">Fecha especial</option>
+          <option value="recordatorio">Recordatorio</option>
+        </select>
+      </div>
+      <div>
+        <label for="fAvisar">Avisarme</label>
+        <select id="fAvisar">
+          <option value="0">A la hora exacta</option>
+          <option value="5">5 min antes</option>
+          <option value="10">10 min antes</option>
+          <option value="15">15 min antes</option>
+          <option value="30">30 min antes</option>
+          <option value="60">1 hora antes</option>
+          <option value="1440">1 día antes</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="ev-2">
+      <div><label for="fFecha">Fecha</label><input type="date" id="fFecha"></div>
+      <div><label for="fHora">Hora</label><input type="time" id="fHora" value="09:00"></div>
+    </div>
+
+    <div class="ev-check">
+      <input type="checkbox" id="fTodo"><label for="fTodo">Todo el día (avisa a las 9:00 a. m.)</label>
+    </div>
+
+    <div class="rep-box" id="repBox">
+      <label for="fRep">Repetir</label>
+      <select id="fRep">
+        <option value="no">No se repite</option>
+        <option value="semanal">Cada semana (elegir días)</option>
+        <option value="diario">Todos los días (lunes a domingo)</option>
+        <option value="laborales">Solo de lunes a viernes</option>
+        <option value="mensual">Cada mes (el mismo día)</option>
+      </select>
+      <div id="repOpc" hidden>
+        <div id="repDias">
+          <label>Los días</label>
+          <div class="dias-sem">
+            <label><input type="checkbox" class="dsem" value="1">Lun</label>
+            <label><input type="checkbox" class="dsem" value="2">Mar</label>
+            <label><input type="checkbox" class="dsem" value="3">Mié</label>
+            <label><input type="checkbox" class="dsem" value="4">Jue</label>
+            <label><input type="checkbox" class="dsem" value="5">Vie</label>
+            <label><input type="checkbox" class="dsem" value="6">Sáb</label>
+            <label><input type="checkbox" class="dsem" value="0">Dom</label>
+          </div>
+        </div>
+        <label for="fHasta">Repetir hasta</label>
+        <input type="date" id="fHasta">
+      </div>
+    </div>
+
+    <label for="fDesc">Notas (opcional)</label>
+    <textarea id="fDesc" rows="3" maxlength="2000" placeholder="Enlace de la reunión, dirección, detalles…"></textarea>
+
+    <div class="ev-err" id="evErr"></div>
+
+    <div class="ev-btns">
+      <button type="button" class="danger izq" id="btnEliminar" hidden>Eliminar</button>
+      <button type="button" class="danger" id="btnSerie" hidden>Eliminar toda la serie</button>
+      <button type="button" class="secondary" id="btnCancelar">Cancelar</button>
+      <button type="button" id="btnGuardar">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var $ = function(id){ return document.getElementById(id); };
+  var MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  var DIAS = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+  var hoy = new Date();
+  var anio = hoy.getFullYear(), mes = hoy.getMonth();
+  var eventos = [];        // eventos del rango visible
+  var editandoId = null;
+
+  function pad(n){ return (n < 10 ? '0' : '') + n; }
+  function ymd(d){ return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+  function hora12(hhmm){
+    var p = hhmm.split(':'), h = +p[0], m = p[1];
+    return (h % 12 || 12) + ':' + m + ' ' + (h < 12 ? 'a. m.' : 'p. m.');
+  }
+  function fechaLarga(f){
+    var p = f.split('-'); var d = new Date(+p[0], +p[1] - 1, +p[2]);
+    return DIAS[(d.getDay() + 6) % 7] + ' ' + d.getDate() + ' de ' + MESES[d.getMonth()];
+  }
+  function el(tag, cls, txt){ var e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; }
+
+  function api(url, opts){
+    opts = opts || {};
+    if (opts.body && typeof opts.body !== 'string') {
+      opts.body = JSON.stringify(opts.body);
+      opts.headers = { 'Content-Type': 'application/json' };
+      opts.method = opts.method || 'POST';
+    }
+    opts.credentials = 'same-origin';
+    return fetch(url, opts).then(function(r){
+      return r.json().catch(function(){ return {}; }).then(function(j){
+        if (!r.ok) throw new Error(j.error || 'Ocurrió un error.');
+        return j;
+      });
+    });
+  }
+
+  /* ----- Festivos oficiales de Colombia (Ley 51 de 1983 - Emiliani + Fijos + Pascua) ----- */
+  var festivosCache = {};
+
+  function calcularPascua(year) {
+    var a = year % 19, b = Math.floor(year / 100), c = year % 100;
+    var d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25);
+    var g = Math.floor((b - f + 1) / 3);
+    var h = (19 * a + b - d - g + 15) % 30;
+    var i = Math.floor(c / 4), k = c % 4;
+    var l = (32 + 2 * e + 2 * i - h - k) % 7;
+    var m = Math.floor((a + 11 * h + 22 * l) / 451);
+    var month = Math.floor((h + l - 7 * m + 114) / 31);
+    var day = ((h + l - 7 * m + 114) % 31) + 1;
+    return new Date(Date.UTC(year, month - 1, day));
+  }
+
+  function formatYMD(d) {
+    return d.getUTCFullYear() + '-' + pad(d.getUTCMonth() + 1) + '-' + pad(d.getUTCDate());
+  }
+
+  function siguienteLunes(d) {
+    var dow = d.getUTCDay(); // 0 = Domingo, 1 = Lunes
+    if (dow === 1) return d;
+    var diff = (8 - dow) % 7;
+    var r = new Date(d);
+    r.setUTCDate(r.getUTCDate() + (diff === 0 ? 7 : diff));
+    return r;
+  }
+
+  function sumarDias(d, n) {
+    var r = new Date(d);
+    r.setUTCDate(r.getUTCDate() + n);
+    return r;
+  }
+
+  function festivosColombia(year) {
+    if (festivosCache[year]) return festivosCache[year];
+    var pascua = calcularPascua(year);
+    var mapa = {};
+
+    function add(fecha, nombre) {
+      mapa[fecha] = { fecha: fecha, nombre: nombre };
+    }
+
+    // 1. Fijos (no se trasladan)
+    add(formatYMD(new Date(Date.UTC(year, 0, 1))), 'Año Nuevo');
+    add(formatYMD(new Date(Date.UTC(year, 4, 1))), 'Día del Trabajo');
+    add(formatYMD(new Date(Date.UTC(year, 6, 20))), 'Día de la Independencia');
+    add(formatYMD(new Date(Date.UTC(year, 7, 7))), 'Batalla de Boyacá');
+    add(formatYMD(new Date(Date.UTC(year, 11, 8))), 'Inmaculada Concepción');
+    add(formatYMD(new Date(Date.UTC(year, 11, 25))), 'Navidad');
+
+    // 2. Ley Emiliani (traslado al lunes siguiente)
+    add(formatYMD(siguienteLunes(new Date(Date.UTC(year, 0, 6)))), 'Reyes Magos');
+    add(formatYMD(siguienteLunes(new Date(Date.UTC(year, 2, 19)))), 'Día de San José');
+    add(formatYMD(siguienteLunes(new Date(Date.UTC(year, 5, 29)))), 'San Pedro y San Pablo');
+    add(formatYMD(siguienteLunes(new Date(Date.UTC(year, 7, 15)))), 'Asunción de la Virgen');
+    add(formatYMD(siguienteLunes(new Date(Date.UTC(year, 9, 12)))), 'Día de la Raza');
+    add(formatYMD(siguienteLunes(new Date(Date.UTC(year, 10, 1)))), 'Todos los Santos');
+    add(formatYMD(siguienteLunes(new Date(Date.UTC(year, 10, 11)))), 'Independencia de Cartagena');
+
+    // 3. Basados en Pascua (Semana Santa y fiestas móviles)
+    add(formatYMD(sumarDias(pascua, -3)), 'Jueves Santo');
+    add(formatYMD(sumarDias(pascua, -2)), 'Viernes Santo');
+    add(formatYMD(siguienteLunes(sumarDias(pascua, 43))), 'Ascensión del Señor');
+    add(formatYMD(siguienteLunes(sumarDias(pascua, 64))), 'Corpus Christi');
+    add(formatYMD(siguienteLunes(sumarDias(pascua, 71))), 'Sagrado Corazón de Jesús');
+
+    festivosCache[year] = mapa;
+    return mapa;
+  }
+
+  function esFestivo(f) {
+    var y = parseInt(f.slice(0, 4), 10);
+    var fMap = festivosColombia(y);
+    return fMap[f] || null;
+  }
+
+  /* ----- Cuadrícula del mes ----- */
+  function rango(){
+    var primero = new Date(anio, mes, 1);
+    var offset = (primero.getDay() + 6) % 7;           // lunes = 0
+    var inicio = new Date(anio, mes, 1 - offset);
+    var fin = new Date(inicio); fin.setDate(inicio.getDate() + 41);
+    return { inicio: inicio, fin: fin };
+  }
+
+  function cargar(){
+    var r = rango();
+    $('mesTitulo').textContent = MESES[mes] + ' ' + anio;
+    api('/calendario/api/eventos?desde=' + ymd(r.inicio) + '&hasta=' + ymd(r.fin))
+      .then(function(j){ eventos = j.eventos || []; pintar(); })
+      .catch(function(){ eventos = []; pintar(); });
+  }
+
+  function pintar(){
+    var g = $('grid'); g.textContent = '';
+    DIAS.forEach(function(d){ g.appendChild(el('div', 'cal-dow', d)); });
+
+    var r = rango(), hoyStr = ymd(new Date());
+    var porDia = {};
+    eventos.forEach(function(e){ (porDia[e.fecha] = porDia[e.fecha] || []).push(e); });
+
+    for (var i = 0; i < 42; i++) {
+      var d = new Date(r.inicio); d.setDate(r.inicio.getDate() + i);
+      var f = ymd(d);
+      var festivo = esFestivo(f);
+
+      var cCls = 'cal-day' + (d.getMonth() !== mes ? ' otro' : '') + (f === hoyStr ? ' hoy' : '');
+      if (festivo) cCls += ' festivo';
+
+      var c = el('div', cCls);
+      c.dataset.fecha = f;
+
+      var head = el('div', 'cal-day-head');
+      head.appendChild(el('span', 'num', d.getDate()));
+      if (festivo) {
+        c.title = '🇨🇴 Festivo en Colombia: ' + festivo.nombre;
+        var badge = el('span', 'festivo-badge');
+        badge.textContent = '🎉';
+        badge.title = 'Festivo: ' + festivo.nombre;
+        head.appendChild(badge);
+      }
+      c.appendChild(head);
+
+      // Si es festivo, mostramos el chip rojo con el icono de fiesta 🎉
+      if (festivo) {
+        var fChip = el('div', 'chip festivo');
+        fChip.title = '🎉 Festivo en Colombia: ' + festivo.nombre;
+        var fIco = el('span', 'festivo-chip-ico', '🎉');
+        var fTxt = el('span', 'festivo-chip-txt', festivo.nombre);
+        fChip.appendChild(fIco);
+        fChip.appendChild(fTxt);
+        c.appendChild(fChip);
+      }
+
+      var lista = porDia[f] || [];
+      var maxEv = festivo ? 2 : 3;
+      lista.slice(0, maxEv).forEach(function(e){
+        var b = el('button', 'chip ' + e.tipo);
+        b.type = 'button'; b.dataset.id = e.id;
+        b.title = e.titulo + (e.todo_el_dia ? '' : ' · ' + hora12(e.hora));
+        if (!e.todo_el_dia) b.appendChild(el('span', 'h', hora12(e.hora).replace(' a. m.', 'a').replace(' p. m.', 'p')));
+        b.appendChild(document.createTextNode(e.titulo));
+        c.appendChild(b);
+      });
+      if (lista.length > maxEv) c.appendChild(el('div', 'mas', '+' + (lista.length - maxEv) + ' más'));
+      g.appendChild(c);
+    }
+  }
+
+  $('grid').addEventListener('click', function(e){
+    var chip = e.target.closest('.chip');
+    if (chip) {
+      if (chip.classList.contains('festivo')) {
+        var dFest = chip.closest('.cal-day');
+        if (dFest) abrir(null, dFest.dataset.fecha);
+        return;
+      }
+      e.stopPropagation();
+      var ev = eventos.filter(function(x){ return String(x.id) === chip.dataset.id; })[0];
+      if (ev) abrir(ev);
+      return;
+    }
+    var dia = e.target.closest('.cal-day');
+    if (dia) abrir(null, dia.dataset.fecha);
+  });
+
+  $('prev').addEventListener('click', function(){ mes--; if (mes < 0) { mes = 11; anio--; } cargar(); });
+  $('next').addEventListener('click', function(){ mes++; if (mes > 11) { mes = 0; anio++; } cargar(); });
+  $('hoyBtn').addEventListener('click', function(){ var h = new Date(); anio = h.getFullYear(); mes = h.getMonth(); cargar(); });
+
+  /* ----- Próximos ----- */
+  function cargarProximos(){
+    api('/calendario/api/proximos').then(function(j){
+      var box = $('proximos'); box.textContent = '';
+      var hoyDate = new Date();
+      var hoyStr = ymd(hoyDate);
+      var limDate = new Date(hoyDate);
+      limDate.setDate(hoyDate.getDate() + 45);
+      var limStr = ymd(limDate);
+
+      var listaFestivos = [];
+      [hoyDate.getFullYear(), hoyDate.getFullYear() + 1].forEach(function(y){
+        var m = festivosColombia(y);
+        for (var k in m) {
+          if (k >= hoyStr && k <= limStr) {
+            listaFestivos.push({
+              id: 'festivo-' + k,
+              titulo: m[k].nombre,
+              tipo: 'festivo',
+              fecha: k,
+              todo_el_dia: true,
+              esFestivo: true
+            });
+          }
+        }
+      });
+
+      var todosProximos = (j.eventos || []).concat(listaFestivos);
+      todosProximos.sort(function(a, b){ return a.fecha.localeCompare(b.fecha); });
+      todosProximos = todosProximos.slice(0, 8);
+
+      if (!todosProximos.length) { box.appendChild(el('div', 'vacio-prox', 'No tienes eventos próximos.')); return; }
+      todosProximos.forEach(function(e){
+        var row = el('div', 'prox' + (e.esFestivo ? ' festivo-row' : ''));
+        row.dataset.id = e.id;
+        var dot = el('span', 'dot ' + e.tipo);
+        if (e.esFestivo) dot.textContent = '🎉';
+        row.appendChild(dot);
+        var t = el('div');
+        t.appendChild(el('b', null, (e.esFestivo ? '🎉 ' : '') + e.titulo));
+        t.appendChild(el('small', null, fechaLarga(e.fecha) + (e.esFestivo ? ' · Festivo Colombia' : (e.todo_el_dia ? ' · todo el día' : ' · ' + hora12(e.hora)))));
+        row.appendChild(t);
+        row.addEventListener('click', function(){
+          var p = e.fecha.split('-'); anio = +p[0]; mes = +p[1] - 1;
+          if (e.esFestivo) {
+            cargar();
+          } else {
+            api('/calendario/api/eventos?desde=' + e.fecha + '&hasta=' + e.fecha).then(function(r){
+              var ev = (r.eventos || []).filter(function(x){ return x.id === e.id; })[0];
+              cargar(); if (ev) abrir(ev);
+            });
+          }
+        });
+        box.appendChild(row);
+      });
+    }).catch(function(){ $('proximos').textContent = 'No se pudieron cargar.'; });
+  }
+
+  /* ----- Ventana agregar / editar ----- */
+  function mostrarError(m){ var b = $('evErr'); b.textContent = m || ''; b.style.display = m ? 'block' : 'none'; }
+  function sincronizarTodoDia(){ $('fHora').disabled = $('fTodo').checked; }
+
+  function diaSemana(f){ var p = f.split('-'); return new Date(+p[0], +p[1] - 1, +p[2]).getDay(); }
+  function marcarDias(solo){
+    Array.prototype.forEach.call(document.querySelectorAll('.dsem'), function(c){ c.checked = (+c.value === solo); });
+  }
+  function sincronizarRepetir(){
+    var v = $('fRep').value;
+    $('repOpc').hidden = v === 'no';
+    $('repDias').hidden = v !== 'semanal';
+    if (v !== 'no' && !$('fHasta').value && $('fFecha').value) {
+      var p = $('fFecha').value.split('-'), d = new Date(+p[0], +p[1] - 1 + 3, +p[2]);
+      $('fHasta').value = ymd(d);
+    }
+    if (v === 'semanal' && !document.querySelector('.dsem:checked') && $('fFecha').value) marcarDias(diaSemana($('fFecha').value));
+  }
+
+  function abrir(ev, fecha){
+    editandoId = ev ? ev.id : null;
+    $('evTitulo').textContent = ev ? 'Editar evento' : 'Nuevo evento';
+    $('fTitulo').value = ev ? ev.titulo : '';
+    $('fTipo').value = ev ? ev.tipo : 'reunion';
+    $('fAvisar').value = ev ? String(ev.avisar_min) : '0';
+    $('fFecha').value = ev ? ev.fecha : (fecha || ymd(new Date()));
+    $('fHora').value = ev && !ev.todo_el_dia ? ev.hora : '09:00';
+    $('fTodo').checked = ev ? !!ev.todo_el_dia : false;
+    $('fDesc').value = ev ? (ev.descripcion || '') : '';
+    $('btnEliminar').hidden = !ev;
+    $('btnSerie').hidden = !(ev && ev.serie_id);
+    $('repBox').hidden = !!ev;                 // la repetición solo se elige al crear
+    $('fRep').value = 'no'; $('fHasta').value = ''; marcarDias(-1);
+    sincronizarRepetir();
+    sincronizarTodoDia(); mostrarError('');
+    $('evBack').classList.add('open');
+    setTimeout(function(){ $('fTitulo').focus(); }, 30);
+  }
+  function cerrar(){ $('evBack').classList.remove('open'); }
+
+  $('btnNuevo').addEventListener('click', function(){ abrir(null); });
+  $('btnCancelar').addEventListener('click', cerrar);
+  $('evBack').addEventListener('mousedown', function(e){ if (e.target === $('evBack')) cerrar(); });
+  document.addEventListener('keydown', function(e){ if (e.key === 'Escape') cerrar(); });
+  $('fTodo').addEventListener('change', sincronizarTodoDia);
+  $('fRep').addEventListener('change', sincronizarRepetir);
+  $('fFecha').addEventListener('change', function(){
+    if ($('fRep').value === 'semanal' && this.value) marcarDias(diaSemana(this.value));
+  });
+  $('fTitulo').addEventListener('keydown', function(e){ if (e.key === 'Enter') $('btnGuardar').click(); });
+
+  $('btnGuardar').addEventListener('click', function(){
+    var cuerpo = {
+      titulo: $('fTitulo').value, tipo: $('fTipo').value, avisar_min: $('fAvisar').value,
+      fecha: $('fFecha').value, hora: $('fHora').value, todo_el_dia: $('fTodo').checked,
+      descripcion: $('fDesc').value
+    };
+    if (!editandoId && $('fRep').value !== 'no') {
+      cuerpo.repetir = $('fRep').value;
+      cuerpo.hasta = $('fHasta').value;
+      cuerpo.dias = Array.prototype.map.call(document.querySelectorAll('.dsem:checked'), function(c){ return c.value; });
+      if (!cuerpo.hasta) return mostrarError('Elige hasta qué fecha se repite.');
+      if (cuerpo.repetir === 'semanal' && !cuerpo.dias.length) return mostrarError('Marca al menos un día de la semana.');
+    }
+    if (!cuerpo.titulo.trim()) return mostrarError('Escribe un título para el evento.');
+    if (!cuerpo.fecha) return mostrarError('Elige una fecha.');
+    if (!cuerpo.todo_el_dia && !cuerpo.hora) return mostrarError('Elige una hora.');
+
+    var url = editandoId ? '/calendario/api/' + editandoId + '/actualizar' : '/calendario/api/agregar';
+    var btn = $('btnGuardar'); btn.disabled = true;
+    api(url, { body: cuerpo }).then(function(r){
+      cerrar();
+      if (r && r.creados > 1) {
+        var a = el('div', 'cal-aviso', '✔ Se crearon ' + r.creados + ' eventos.');
+        $('grid').parentNode.insertBefore(a, $('grid'));
+        setTimeout(function(){ a.remove(); }, 6000);
+      }
+      var p = cuerpo.fecha.split('-'); anio = +p[0]; mes = +p[1] - 1;
+      cargar(); cargarProximos();
+      if (window.recordatoriosRevisar) window.recordatoriosRevisar();
+    }).catch(function(err){ mostrarError(err.message); })
+      .then(function(){ btn.disabled = false; });
+  });
+
+  $('btnSerie').addEventListener('click', function(){
+    if (!editandoId || !confirm('¿Eliminar TODOS los eventos de esta serie (pasados y futuros)?')) return;
+    api('/calendario/api/' + editandoId + '/eliminar-serie', { method: 'POST' }).then(function(){
+      cerrar(); cargar(); cargarProximos();
+    }).catch(function(err){ mostrarError(err.message); });
+  });
+
+  $('btnEliminar').addEventListener('click', function(){
+    if (!editandoId || !confirm('¿Eliminar este evento?')) return;
+    api('/calendario/api/' + editandoId + '/eliminar', { method: 'POST' }).then(function(){
+      cerrar(); cargar(); cargarProximos();
+    }).catch(function(err){ mostrarError(err.message); });
+  });
+
+  /* ----- Permiso de notificaciones ----- */
+  if ('Notification' in window && Notification.permission === 'default') {
+    $('notifBox').hidden = false;
+    $('btnNotif').addEventListener('click', function(){
+      Notification.requestPermission().then(function(){ $('notifBox').hidden = true; });
+    });
+  }
+
+  cargar(); cargarProximos();
+})();
+</script>

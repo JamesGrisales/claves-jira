@@ -294,10 +294,36 @@
   }
 
   function wrapParen(items, base, o) {
-    var rows = chunk(items, o.perRow).map(function (r) {
-      return r.map(function (it) { return renderExpr(it, base + o.indent, o); }).join(', ');
-    });
-    return '(\n' + rows.map(function (r) { return base + o.indent + r; }).join(',\n') + '\n' + base + ')';
+    var sub = base + o.indent;
+    var rows = [];
+    var curRow = [];
+
+    for (var i = 0; i < items.length; i++) {
+      var it = items[i];
+      var rendered = renderExpr(it, sub, o, { tupleItem: true });
+      var hasSubquery = it.some(function (tok) { return tok.t === 'w' && (tok.u === 'SELECT' || tok.u === 'WITH'); });
+      var isMulti = rendered.indexOf('\n') >= 0;
+
+      // Subconsultas o elementos multilínea van en su propia línea limpia
+      if (hasSubquery || isMulti) {
+        if (curRow.length) {
+          rows.push(curRow.join(', '));
+          curRow = [];
+        }
+        rows.push(rendered);
+      } else {
+        curRow.push(rendered);
+        if (curRow.length >= o.perRow) {
+          rows.push(curRow.join(', '));
+          curRow = [];
+        }
+      }
+    }
+    if (curRow.length) {
+      rows.push(curRow.join(', '));
+    }
+
+    return '(\n' + rows.map(function (r) { return sub + r; }).join(',\n') + '\n' + base + ')';
   }
 
   function renderCase(caseTok, endTok, inner, ind, o) {
@@ -356,10 +382,22 @@
         if (o.flat) {
           piece = '(' + renderExpr(content, ind, o) + ')';
         } else if (isSub(content)) {
-          piece = '(\n' + formatStatement(content, ind + o.indent, o) + '\n' + ind + ')';
+          if (ctx && ctx.tupleItem) {
+            var flatSub = renderExpr(content, '', Object.assign({}, o, { flat: true }));
+            if (flatSub.length <= 110 && flatSub.indexOf('\n') < 0) {
+              piece = '(' + flatSub + ')';
+            } else {
+              piece = '(\n' + formatStatement(content, ind + o.indent, o) + '\n' + ind + ')';
+            }
+          } else {
+            piece = '(\n' + formatStatement(content, ind + o.indent, o) + '\n' + ind + ')';
+          }
         } else {
           var items = splitComma(content);
-          piece = items.length > o.perRow
+          var hasSubOrMulti = items.some(function(it){
+            return it.some(function(tok){ return tok.t === 'w' && (tok.u === 'SELECT' || tok.u === 'WITH'); });
+          });
+          piece = (items.length > o.perRow || hasSubOrMulti)
             ? wrapParen(items, ind, o)
             : '(' + items.map(function (it) { return renderExpr(it, ind, o); }).join(', ') + ')';
         }
@@ -475,7 +513,10 @@
     var m = matchParens(tp);
     if (tp.length >= 2 && isP(tp[0], '(') && m[0] === tp.length - 1) {
       var items = splitComma(lastLcToBc(tp.slice(1, -1)));
-      if (items.length <= o.perRow) {
+      var hasSubOrMulti = items.some(function(it){
+        return it.some(function(tok){ return tok.t === 'w' && (tok.u === 'SELECT' || tok.u === 'WITH'); });
+      });
+      if (items.length <= o.perRow && !hasSubOrMulti) {
         return '(' + items.map(function (it) { return renderExpr(it, base, o); }).join(', ') + ')';
       }
       return wrapParen(items, base, o);

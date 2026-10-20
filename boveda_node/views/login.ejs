@@ -1,38 +1,1983 @@
-<div class="auth">
-  <aside class="auth-side">
-    <div class="auth-brand"><span class="badge">🔐</span> Bóveda Jira</div>
-    <h2>Tu trabajo diario, en un solo lugar seguro.</h2>
-    <p>Entra para ver tus claves, notas e informes y usar las herramientas de SQL, JSON y XML.</p>
-    <ul class="auth-points">
-      <li><span class="ico"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span><div><b>Claves cifradas</b><span>Las contraseñas de cada empresa se guardan protegidas.</span></div></li>
-      <li><span class="ico"><svg viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg></span><div><b>Todo a la mano</b><span>Empresas, notas, listas, aceptados e informe diario.</span></div></li>
-      <li><span class="ico"><svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></span><div><b>Herramientas listas</b><span>Formatea SQL y revisa JSON o XML sin salir de aquí.</span></div></li>
-    </ul>
-  </aside>
+<style>
+  /* Fondo ambiental del espacio profundo con rejilla hexagonal ciberespacial */
+  body.guest {
+    background-color: #03060c !important;
+    background-image: 
+      radial-gradient(circle at 24% 48%, var(--planet-bg-glow1, rgba(255, 59, 48, 0.16)) 0%, transparent 60%),
+      radial-gradient(circle at 76% 52%, var(--planet-bg-glow2, rgba(0, 245, 255, 0.08)) 0%, transparent 60%),
+      radial-gradient(at 50% 0%, rgba(10, 18, 38, 0.7) 0%, transparent 80%),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='97.005' viewBox='0 0 56 97.005'%3E%3Cpath d='M28 0l28 16.168v32.335L28 64.67 0 48.503V16.168L28 0zm0 97.005l28-16.168V48.502L28 32.335 0 48.502v32.335l28 16.168z' fill='none' stroke='rgba(0,245,255,0.045)' stroke-width='1'/%3E%3C/svg%3E") !important;
+    background-attachment: fixed;
+    height: 100vh;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: stretch;
+    padding: 0;
+    box-sizing: border-box;
+    overflow: hidden;
+    font-family: var(--sans);
+    --planet-accent: #ff3b30;
+  }
 
-  <section class="auth-main">
-    <h1>Bienvenido de nuevo</h1>
-    <p class="sub">Inicia sesión con tu usuario para ver y administrar las claves de Jira de las empresas.</p>
-    <form method="post" action="/login">
-      <label for="usuario">Usuario</label>
-      <div class="field">
-        <svg class="lead" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        <input type="text" id="usuario" name="username" autocomplete="username" placeholder="Tu usuario" required autofocus>
+  :root[data-theme="oled"] body.guest {
+    background-color: #000000 !important;
+  }
+
+  /* Contenedor a pantalla completa 100% */
+  .cyber-split-screen {
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    position: relative;
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+
+  /* Lienzo 3D en toda la pantalla */
+  .earth-canvas-wrap {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    z-index: 1;
+    pointer-events: auto;
+    cursor: grab;
+  }
+  .earth-canvas-wrap:active {
+    cursor: grabbing;
+  }
+
+  /* ZONA IZQUIERDA: HOLOGRAMA Y TELEMETRÍA FLOTANTE */
+  .cyber-earth-col {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 5;
+    pointer-events: none;
+    padding: 30px;
+    box-sizing: border-box;
+  }
+
+  /* Título superior sobre el planeta */
+  .hud-planet-header {
+    position: absolute;
+    top: 36px;
+    left: 48px;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-family: var(--mono);
+    font-size: 21px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    color: var(--planet-accent, #ff3b30);
+    text-shadow: 0 0 16px var(--planet-accent, rgba(255, 59, 48, 0.7)), 0 0 32px var(--planet-accent, rgba(255, 59, 48, 0.35));
+    user-select: none;
+  }
+  .hud-planet-header .hud-bracket {
+    opacity: 0.85;
+    font-weight: 400;
+  }
+
+  /* Bloque de Telemetría: Superior Izquierda */
+  .hud-telemetry-tl {
+    position: absolute;
+    top: 86px;
+    left: 48px;
+    z-index: 10;
+    font-family: var(--mono);
+    font-size: 10px;
+    line-height: 1.6;
+    letter-spacing: 0.04em;
+    color: rgba(255, 255, 255, 0.55);
+    user-select: none;
+  }
+  .hud-telemetry-tl .t-val {
+    color: var(--planet-accent, #ff3b30);
+    font-weight: 700;
+  }
+
+  /* Bloque de Telemetría: Superior Derecha */
+  .hud-telemetry-tr {
+    position: absolute;
+    top: 86px;
+    right: 42px;
+    z-index: 10;
+    text-align: right;
+    font-family: var(--mono);
+    font-size: 10px;
+    line-height: 1.6;
+    letter-spacing: 0.04em;
+    color: rgba(255, 255, 255, 0.55);
+    user-select: none;
+  }
+  .hud-telemetry-tr .t-coords {
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--planet-accent, #ff3b30);
+    letter-spacing: 0.06em;
+  }
+  .hud-telemetry-tr .t-val {
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 600;
+  }
+  .hud-telemetry-tr .t-target-icon {
+    display: inline-block;
+    color: var(--planet-accent, #ff3b30);
+    font-size: 13px;
+    margin-left: 4px;
+    vertical-align: middle;
+  }
+
+  /* Bloque de Telemetría: Inferior Izquierda */
+  .hud-telemetry-bl {
+    position: absolute;
+    bottom: 34px;
+    left: 48px;
+    z-index: 10;
+    font-family: var(--mono);
+    user-select: none;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .hud-telemetry-bl .t-dim {
+    font-size: 9.5px;
+    letter-spacing: 0.05em;
+    color: rgba(255, 255, 255, 0.45);
+  }
+  .hud-telemetry-bl .t-status-active {
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    color: var(--planet-accent, #ff3b30);
+    text-shadow: 0 0 12px var(--planet-accent, rgba(255, 59, 48, 0.6));
+    margin-top: 4px;
+  }
+
+  /* Bloque de Telemetría: Inferior Derecha (con gráfico ECG / Wave) */
+  .hud-telemetry-br {
+    position: absolute;
+    bottom: 34px;
+    right: 42px;
+    z-index: 10;
+    text-align: right;
+    font-family: var(--mono);
+    user-select: none;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 3px;
+  }
+  .hud-telemetry-br .t-coords {
+    font-size: 10.5px;
+    font-weight: 700;
+    color: var(--planet-accent, #ff3b30);
+  }
+  .hud-telemetry-br .t-sub {
+    font-size: 9px;
+    color: rgba(255, 255, 255, 0.4);
+    letter-spacing: 0.04em;
+  }
+  .hud-wave-box {
+    width: 84px;
+    height: 32px;
+    background: rgba(4, 8, 18, 0.6);
+    border: 1px solid var(--planet-accent, rgba(255, 59, 48, 0.4));
+    border-radius: 4px;
+    padding: 2px;
+    box-sizing: border-box;
+    margin-top: 2px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5), inset 0 0 8px var(--planet-accent, rgba(255, 59, 48, 0.15));
+  }
+
+  /* Selector interactivo de planetas por día de la semana */
+  .hud-planets-bar {
+    position: absolute;
+    bottom: 8px;
+    left: 48px;
+    z-index: 15;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    pointer-events: auto;
+  }
+  .planet-tab {
+    background: rgba(10, 16, 32, 0.65);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 9.5px;
+    font-weight: 700;
+    font-family: var(--mono);
+    padding: 3px 6px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all .15s ease;
+    user-select: none;
+  }
+  .planet-tab:hover {
+    background: rgba(255, 255, 255, 0.18);
+    color: #fff;
+    transform: translateY(-1px);
+    border-color: rgba(255, 255, 255, 0.4);
+  }
+  .planet-tab.active {
+    background: var(--planet-accent, #ff3b30) !important;
+    color: #04060d !important;
+    border-color: var(--planet-accent, #ff3b30) !important;
+    box-shadow: 0 0 12px var(--planet-accent, #ff3b30);
+    font-weight: 800;
+  }
+  .planet-tab.auto-tab {
+    margin-left: 3px;
+    background: rgba(255, 255, 255, 0.10);
+    color: var(--planet-accent, #ff3b30);
+    border-color: rgba(255, 255, 255, 0.25);
+  }
+  .planet-tab.meteor-tab {
+    margin-left: 6px;
+    background: rgba(245, 158, 11, 0.18) !important;
+    color: #fbbf24 !important;
+    border-color: rgba(245, 158, 11, 0.45) !important;
+    font-weight: 800 !important;
+  }
+  .planet-tab.meteor-tab:hover {
+    background: rgba(245, 158, 11, 0.35) !important;
+    color: #fff !important;
+    border-color: #f59e0b !important;
+  }
+  .planet-tab.meteor-tab.active {
+    background: #f59e0b !important;
+    color: #030712 !important;
+    border-color: #f59e0b !important;
+    box-shadow: 0 0 14px rgba(245, 158, 11, 0.75) !important;
+  }
+
+  /* MITAD DERECHA: TARJETA DE LOGIN FUTURISTA (GLASSMORPHISM) */
+  .cyber-login-col {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 50px 30px 20px;
+    box-sizing: border-box;
+    z-index: 10;
+  }
+
+  .auth-card-glass {
+    position: relative;
+    width: 100%;
+    max-width: 440px;
+    background: rgba(11, 17, 28, 0.62) !important;
+    backdrop-filter: blur(34px) saturate(200%);
+    -webkit-backdrop-filter: blur(34px) saturate(200%);
+    border: 1px solid var(--planet-accent, rgba(255, 59, 48, 0.55)) !important;
+    border-radius: 22px !important;
+    padding: 32px 34px 28px;
+    box-shadow: 
+      0 30px 80px -15px rgba(0, 0, 0, 0.92), 
+      0 0 35px -5px var(--planet-accent, rgba(255, 59, 48, 0.35)), 
+      inset 0 1px 1px rgba(255, 255, 255, 0.25),
+      inset 0 0 20px var(--planet-accent, rgba(255, 59, 48, 0.08)) !important;
+    box-sizing: border-box;
+    overflow: hidden;
+    animation: panelIn .5s ease;
+  }
+
+  /* Brillo diagonal de cristal (*specular sheen*) */
+  .card-sheen {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 160px;
+    height: 160px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.0) 65%);
+    pointer-events: none;
+    border-top-right-radius: 22px;
+  }
+
+  /* Encabezado de la tarjeta */
+  .auth-card-top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  .auth-card-title-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .auth-shield-glow {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: rgba(255, 59, 48, 0.15);
+    border: 1px solid var(--planet-accent, rgba(255, 59, 48, 0.4));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 16px var(--planet-accent, rgba(255, 59, 48, 0.4)), inset 0 0 8px var(--planet-accent, rgba(255, 59, 48, 0.2));
+  }
+  .auth-shield-glow svg {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: var(--planet-accent, #ff3b30);
+    stroke-width: 2.2;
+    filter: drop-shadow(0 0 6px var(--planet-accent, #ff3b30));
+  }
+  .auth-card-title-group h2 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    color: #ffffff;
+    font-family: var(--mono);
+    text-transform: uppercase;
+  }
+
+  .auth-planet-badges {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .mini-planet-badge {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--planet-accent, #ff3b30);
+    box-shadow: 0 0 10px var(--planet-accent, #ff3b30);
+    display: inline-block;
+  }
+
+  /* Formulario y Campos */
+  .auth-card-glass label {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.85);
+    letter-spacing: 0.02em;
+    margin-bottom: 6px;
+    display: block;
+  }
+
+  .field {
+    position: relative;
+    margin-bottom: 16px;
+  }
+  .field > svg.lead {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.45);
+    stroke-width: 2;
+    pointer-events: none;
+    transition: stroke 0.2s ease, filter 0.2s ease;
+  }
+  .field:focus-within > svg.lead {
+    stroke: var(--planet-accent, #ff3b30);
+    filter: drop-shadow(0 0 6px var(--planet-accent, #ff3b30));
+  }
+
+  .field input[type=text], .field input[type=password] {
+    width: 100%;
+    height: 48px;
+    padding: 0 44px 0 42px;
+    font-family: var(--sans);
+    font-size: 14px;
+    border-radius: 11px;
+    background: rgba(5, 9, 18, 0.75);
+    border: 1px solid var(--planet-accent, rgba(255, 59, 48, 0.45)) !important;
+    color: #fff;
+    outline: none;
+    box-sizing: border-box;
+    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.5), 0 0 10px -2px var(--planet-accent, rgba(255, 59, 48, 0.15));
+    transition: all 0.25s ease;
+  }
+  .field input[type=text]::placeholder, .field input[type=password]::placeholder {
+    color: rgba(255, 255, 255, 0.35);
+  }
+  .field input[type=text]:focus, .field input[type=password]:focus {
+    border-color: var(--planet-accent, #ff3b30) !important;
+    box-shadow: 0 0 0 2px var(--planet-accent, #ff3b30), 0 0 24px -2px var(--planet-accent, rgba(255, 59, 48, 0.55));
+    background: rgba(10, 16, 28, 0.85);
+  }
+
+  .field .pw-toggle {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.45);
+    border: none;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .field .pw-toggle:hover {
+    color: var(--planet-accent, #ff3b30);
+  }
+  .field .pw-toggle svg {
+    width: 17px;
+    height: 17px;
+  }
+
+  /* Opciones auxiliares */
+  .auth-aux-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 4px;
+    margin-bottom: 12px;
+    font-size: 12.5px;
+  }
+  .auth-remember {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    user-select: none;
+    color: rgba(255, 255, 255, 0.65);
+    font-weight: 500;
+  }
+  .auth-remember input[type=checkbox] {
+    accent-color: var(--planet-accent, #ff3b30);
+    width: 15px;
+    height: 15px;
+    cursor: pointer;
+  }
+  .auth-remember:hover {
+    color: #fff;
+  }
+
+  .caps {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+    padding: 7px 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #fbbf24;
+    background: rgba(251, 191, 36, 0.14);
+  }
+  .caps.show { display: flex; }
+
+  /* BOTÓN ACCEDER ESTILO NEÓN ROJO */
+  #btnLogin {
+    position: relative;
+    width: 100%;
+    margin-top: 14px;
+    padding: 0 24px;
+    font-size: 15px;
+    font-weight: 800;
+    font-family: var(--mono);
+    letter-spacing: 0.08em;
+    border-radius: 11px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    color: #ffffff;
+    background: linear-gradient(90deg, #ff3b30 0%, #ff453a 50%, #d32f2f 100%);
+    border: none !important;
+    box-shadow: 0 0 28px -2px var(--planet-accent, rgba(255, 59, 48, 0.75)), inset 0 1px 1px rgba(255, 255, 255, 0.45);
+    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  #btnLogin:hover {
+    filter: brightness(1.15);
+    transform: translateY(-1px);
+    box-shadow: 0 0 38px 0 var(--planet-accent, rgba(255, 59, 48, 0.95)), inset 0 1px 1px rgba(255, 255, 255, 0.6);
+  }
+  #btnLogin .btn-pulse-wave {
+    width: 32px;
+    height: 16px;
+    stroke: #ffffff;
+    opacity: 0.9;
+  }
+  #btnLogin .btn-label {
+    flex: 1;
+    text-align: center;
+  }
+  #btnLogin .btn-arrow {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2.6;
+    transition: transform 0.2s ease;
+  }
+  #btnLogin:hover .btn-arrow {
+    transform: translateX(4px);
+  }
+
+  #btnLogin.btn-validando {
+    pointer-events: none;
+    opacity: 0.9;
+    filter: brightness(1.1);
+  }
+  #btnLogin.btn-valido {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 28px rgba(16, 185, 129, 0.85) !important;
+  }
+  #btnLogin.btn-invalido {
+    background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%) !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 28px rgba(239, 68, 68, 0.85) !important;
+    animation: btnShake 0.45s ease;
+  }
+
+  @keyframes btnShake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-8px); }
+    40%, 80% { transform: translateX(8px); }
+  }
+
+  /* Divisor Biométrico */
+  .auth-divider-biometric {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 16px 0 12px;
+    position: relative;
+  }
+  .auth-divider-biometric::before, .auth-divider-biometric::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.16);
+  }
+  .auth-divider-biometric span {
+    padding: 0 10px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: rgba(255, 255, 255, 0.45);
+    text-transform: uppercase;
+  }
+
+  /* BOTÓN HUELLA DIGITAL BIOMÉTRICA */
+  .btn-biometria {
+    width: 100%;
+    height: 46px;
+    border-radius: 11px;
+    background: rgba(10, 16, 28, 0.85);
+    border: 1px solid var(--planet-accent, #ff3b30) !important;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 0 16px -4px var(--planet-accent, rgba(255, 59, 48, 0.35));
+    transition: all 0.25s ease;
+  }
+  .btn-biometria:hover {
+    background: rgba(20, 28, 48, 0.95);
+    box-shadow: 0 0 24px -2px var(--planet-accent, rgba(255, 59, 48, 0.65));
+    transform: translateY(-1px);
+  }
+  .btn-biometria .bio-scanner-icon {
+    position: relative;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--planet-accent, #ff3b30);
+  }
+  .btn-biometria .bio-scanner-icon svg {
+    width: 22px;
+    height: 22px;
+  }
+  .btn-biometria .bio-scan-laser {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: var(--planet-accent, #ff3b30);
+    box-shadow: 0 0 8px var(--planet-accent, #ff3b30);
+    opacity: 0;
+  }
+  .btn-biometria.scanning .bio-scan-laser {
+    opacity: 1;
+    animation: scanLaser 1.1s infinite alternate ease-in-out;
+  }
+  @keyframes scanLaser {
+    0% { top: 0%; }
+    100% { top: 100%; }
+  }
+  .btn-biometria .bio-badge {
+    font-size: 9.5px;
+    font-weight: 800;
+    padding: 3px 7px;
+    border-radius: 5px;
+    background: var(--planet-accent, #ff3b30);
+    color: #fff;
+    letter-spacing: 0.08em;
+  }
+
+  /* Enlaces inferiores de la tarjeta */
+  .auth-card-links {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    margin-top: 18px;
+    font-size: 12px;
+    font-family: var(--sans);
+  }
+  .auth-card-links a.link-muted {
+    color: rgba(255, 255, 255, 0.55);
+    text-decoration: none;
+    transition: color 0.15s ease;
+  }
+  .auth-card-links a.link-muted:hover {
+    color: rgba(255, 255, 255, 0.9);
+  }
+  .auth-card-links a.link-action {
+    color: rgba(255, 255, 255, 0.75);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.15s ease;
+  }
+  .auth-card-links a.link-action:hover {
+    color: var(--planet-accent, #ff3b30);
+  }
+
+  @media (max-width: 960px) {
+    body.guest {
+      height: auto;
+      overflow-y: auto;
+    }
+    .cyber-split-screen {
+      grid-template-columns: 1fr;
+      height: auto;
+    }
+    .cyber-earth-col {
+      height: 360px;
+      padding: 16px;
+    }
+    .hud-planet-header {
+      top: 14px;
+      left: 18px;
+      font-size: 16px;
+    }
+    .hud-telemetry-tl, .hud-telemetry-tr, .hud-telemetry-bl, .hud-telemetry-br {
+      display: none;
+    }
+    .hud-planets-bar {
+      left: 16px;
+      bottom: 4px;
+    }
+    .cyber-login-col {
+      padding: 10px 18px 30px;
+    }
+  }
+</style>
+
+<div class="cyber-split-screen">
+  <!-- MITAD IZQUIERDA: HOLOGRAMA 3D CON PEDESTAL Y TELEMETRÍA -->
+  <div class="cyber-earth-col">
+    <div id="earthCanvasWrap" class="earth-canvas-wrap"></div>
+    
+    <!-- Título Principal del Planeta y Protocolo -->
+    <div class="hud-planet-header">
+      <span class="hud-bracket">[</span>
+      <span class="hud-main-title" id="hudMainTitle">MARTES · MARTE - PROTOCOLO DEFENSA</span>
+      <span class="hud-bracket">]</span>
+    </div>
+
+    <!-- Telemetría Flotante Superior Izquierda -->
+    <div class="hud-telemetry-tl">
+      <div>REAL VIDEO TIME: <span class="t-val">70.055 GNW</span></div>
+      <div>PERIODICITY: <span class="t-val">33.8 MHz</span></div>
+      <div>HEAT RISK: <span class="t-val">0.008</span></div>
+      <div>OPI: <span class="t-val">08</span></div>
+      <div>TELEMETRY: <span class="t-val">S60N</span></div>
+    </div>
+
+    <!-- Telemetría Flotante Superior Derecha -->
+    <div class="hud-telemetry-tr">
+      <div class="t-coords">42.6° N, 14.8° E</div>
+      <div>TARGET: <span class="t-val">3060759</span> <span class="t-target-icon">⨁</span></div>
+      <div>ORBITAL: <span class="t-val">0.84</span></div>
+      <div>ROTATION: <span class="t-val" id="hudLiveClock">08:31:0</span></div>
+      <div>DEFENSE: <span class="t-val">163.20</span></div>
+    </div>
+
+    <!-- Telemetría Flotante Inferior Izquierda -->
+    <div class="hud-telemetry-bl">
+      <div class="t-dim">ORBITAL URBICA.</div>
+      <div class="t-dim">ORBITAL DATA</div>
+      <div class="t-status-active" id="hudSystemStatus">SISTEMA ACTIVO</div>
+    </div>
+
+    <!-- Telemetría Flotante Inferior Derecha (con Gráfico de Onda) -->
+    <div class="hud-telemetry-br">
+      <div class="t-coords">42.6° N, 14.8° E</div>
+      <div class="t-sub">ORBITAL METRICS</div>
+      <div class="hud-wave-box">
+        <canvas id="hudWaveCanvas" width="80" height="28"></canvas>
+      </div>
+    </div>
+
+    <!-- Selector interactivo de planetas por día de la semana -->
+    <div class="hud-planets-bar" id="hudPlanetsBar" title="Haz clic en cualquier día para explorar su planeta">
+      <button type="button" class="planet-tab" data-day="1" title="Lunes: Mercurio">LUN</button>
+      <button type="button" class="planet-tab" data-day="2" title="Martes: Venus">MAR</button>
+      <button type="button" class="planet-tab" data-day="3" title="Miércoles: Tierra">MIÉ</button>
+      <button type="button" class="planet-tab" data-day="4" title="Jueves: Marte">JUE</button>
+      <button type="button" class="planet-tab" data-day="5" title="Viernes: Júpiter">VIE</button>
+      <button type="button" class="planet-tab" data-day="6" title="Sábado: Saturno">SÁB</button>
+      <button type="button" class="planet-tab" data-day="0" title="Domingo: Urano">DOM</button>
+      <button type="button" class="planet-tab auto-tab" id="btnAutoDay" title="Modo Automático: Volver al día de hoy">HOY</button>
+      <button type="button" class="planet-tab meteor-tab" id="btnToggleMeteoritos" title="Activar / Desactivar Cinturón de Meteoritos 3D">☄️ METEORITOS</button>
+    </div>
+  </div>
+
+  <!-- MITAD DERECHA: TARJETA DE LOGIN FUTURISTA -->
+  <div class="cyber-login-col">
+    <div class="auth-card-glass">
+      <div class="card-sheen"></div>
+
+      <div class="auth-card-top-bar">
+        <div class="auth-card-title-group">
+          <div class="auth-shield-glow">
+            <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <h2>ACCESO AL SISTEMA</h2>
+        </div>
+        <div class="auth-planet-badges">
+          <span style="font-size: 15px; opacity: 0.7;" title="Planeta Tierra">🌐</span>
+          <span class="mini-planet-badge" id="miniPlanetBadge" title="Planeta activo"></span>
+        </div>
       </div>
 
-      <label for="clave">Contraseña</label>
-      <div class="field">
-        <svg class="lead" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-        <input type="password" id="clave" name="password" autocomplete="current-password" placeholder="Tu contraseña" required>
-        <button type="button" class="pw-toggle" aria-label="Mostrar contraseña" title="Mostrar / ocultar contraseña">
-          <svg class="eye" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-          <svg class="eye-off" viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+      <form method="post" action="/login" id="loginForm">
+        <label for="usuario">Usuario</label>
+        <div class="field">
+          <svg class="lead" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <input type="text" id="usuario" name="username" autocomplete="username" placeholder="Nombre de usuario" required autofocus>
+        </div>
+
+        <label for="clave">Contraseña</label>
+        <div class="field">
+          <svg class="lead" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <input type="password" id="clave" name="password" autocomplete="current-password" placeholder="••••••••" required>
+          <button type="button" class="pw-toggle" aria-label="Mostrar contraseña" title="Mostrar / ocultar contraseña">
+            <svg class="eye" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            <svg class="eye-off" viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+          </button>
+        </div>
+
+        <div class="auth-aux-row">
+          <label class="auth-remember">
+            <input type="checkbox" id="chkRecordar">
+            <span>Recordar mi usuario</span>
+          </label>
+        </div>
+
+        <div class="caps"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Tienes activado Bloq Mayús</div>
+
+        <button type="submit" id="btnLogin">
+          <svg class="btn-pulse-wave" viewBox="0 0 40 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 8h10l3-6 5 12 4-8 3 4h11"/>
+          </svg>
+          <span class="btn-label">ACCEDER</span>
+          <svg class="btn-arrow" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/></svg>
         </button>
-      </div>
-      <div class="caps"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Tienes activado Bloq Mayús</div>
 
-      <button class="full" type="submit" data-loading="Entrando…"><span>Entrar</span><svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>
-    </form>
-    <p class="foot">¿No tienes usuario? <a href="/registro">Crear uno</a></p>
-  </section>
+        <div class="auth-divider-biometric" id="bioDivider" style="display:none;">
+          <span>O ACCESO BIOMÉTRICO</span>
+        </div>
+
+        <button type="button" class="btn-biometria" id="btnBiometria" style="display:none;" title="Identifícate con tu huella digital de Windows Hello">
+          <div class="bio-scan-laser"></div>
+          <svg class="bio-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2a10 10 0 0 0-6.88 17.23l.12.11"/>
+            <path d="M12 6a6 6 0 0 0-4.24 10.24l.24.23"/>
+            <path d="M12 10a2 2 0 0 0-1.42 3.41"/>
+            <path d="M12 14v4"/>
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.08"/>
+            <path d="M18.36 5.64a9 9 0 0 1 0 12.72"/>
+          </svg>
+          <span class="bio-text">
+            <span class="bio-title">INGRESAR CON HUELLA DIGITAL</span>
+            <span class="bio-sub">Windows Hello · Sensor Biométrico</span>
+          </span>
+        </button>
+      </form>
+
+      <div class="auth-card-links">
+        <a href="#" class="link-muted" onclick="alert('Comunícate con el administrador del sistema para restablecer tu clave.'); return false;">¿Olvidé mi contraseña?</a>
+        <a href="/registro" class="link-action">Crear nueva cuenta</a>
+      </div>
+    </div>
+  </div>
 </div>
+
+<!-- Three.js Local Offline Library -->
+<script src="/three.min.js"></script>
+<!-- WebAuthn Biometric Client Module -->
+<script src="/biometria.js"></script>
+
+<script>
+// --- MOTOR 3D HIPERREALISTA DE PLANETAS CON PEDESTAL Y SHADERS (THREE.JS) ---
+(function initPlanetHologram() {
+  var container = document.getElementById('earthCanvasWrap');
+  if (!container || typeof THREE === 'undefined') return;
+
+  var width = window.innerWidth;
+  var height = window.innerHeight;
+
+  // Escena, Cámara y Renderer
+  var scene = new THREE.Scene();
+  var camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+  camera.position.z = 7.0;
+
+  var renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
+  renderer.setSize(width, height);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2.0));
+  if (THREE.sRGBEncoding) renderer.outputEncoding = THREE.sRGBEncoding;
+  if (THREE.ACESFilmicToneMapping) {
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 0.88;
+  }
+  container.appendChild(renderer.domElement);
+
+  // Iluminación cinemática equilibrada (Luz solar suave + Rim sutil + Ambiente cósmico)
+  var sunLight = new THREE.DirectionalLight(0xfff5ea, 1.45);
+  sunLight.position.set(-6, 3.8, 4.5);
+  scene.add(sunLight);
+
+  var rimSunLight = new THREE.DirectionalLight(0xff453a, 1.10);
+  rimSunLight.position.set(5.5, 1.8, -2.5);
+  scene.add(rimSunLight);
+
+  var ambientLight = new THREE.AmbientLight(0x101524, 0.40);
+  scene.add(ambientLight);
+
+  // Grupo principal del holograma planetario
+  var globeGroup = new THREE.Group();
+  scene.add(globeGroup);
+
+  var GLOBE_RADIUS = 2.3;
+
+  // 1. Texturas Satelitales Oficiales de la NASA (sin relieves circulares artificiales)
+
+  // 2. Texturas Procedurales en Canvas de Respaldo (Fallback)
+  function generarTexturaPlaneta(tipo) {
+    var c = document.createElement('canvas');
+    c.width = 1024;
+    c.height = 512;
+    var ctx = c.getContext('2d');
+
+    if (tipo === 'marte') {
+      var grad = ctx.createLinearGradient(0, 0, 0, 512);
+      grad.addColorStop(0, '#752410');
+      grad.addColorStop(0.3, '#b8441f');
+      grad.addColorStop(0.5, '#cf562b');
+      grad.addColorStop(0.7, '#963618');
+      grad.addColorStop(1, '#5a190a');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 1024, 512);
+    } else if (tipo === 'tierra') {
+      ctx.fillStyle = '#0a2342';
+      ctx.fillRect(0, 0, 1024, 512);
+      ctx.fillStyle = '#1e593a';
+      for (var t = 0; t < 55; t++) {
+        ctx.beginPath();
+        ctx.arc(Math.random() * 1024, 80 + Math.random() * 350, 40 + Math.random() * 90, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    } else if (tipo === 'jupiter') {
+      for (var j = 0; j < 512; j += 16) {
+        ctx.fillStyle = (j % 32 === 0) ? '#cf822b' : ((j % 48 === 0) ? '#7a3e14' : '#e6a457');
+        ctx.fillRect(0, j, 1024, 16);
+      }
+    } else if (tipo === 'saturno') {
+      for (var s = 0; s < 512; s += 20) {
+        ctx.fillStyle = (s % 40 === 0) ? '#c2a66b' : '#dfcca1';
+        ctx.fillRect(0, s, 1024, 20);
+      }
+    } else if (tipo === 'mercurio') {
+      ctx.fillStyle = '#555f6d';
+      ctx.fillRect(0, 0, 1024, 512);
+    } else if (tipo === 'venus') {
+      ctx.fillStyle = '#d4a237';
+      ctx.fillRect(0, 0, 1024, 512);
+    } else if (tipo === 'urano') {
+      var gradU = ctx.createLinearGradient(0, 0, 0, 512);
+      gradU.addColorStop(0, '#5eead4');
+      gradU.addColorStop(0.3, '#38bdf8');
+      gradU.addColorStop(0.5, '#4ef2d2');
+      gradU.addColorStop(0.7, '#2dd4bf');
+      gradU.addColorStop(1, '#0284c7');
+      ctx.fillStyle = gradU;
+      ctx.fillRect(0, 0, 1024, 512);
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
+      for (var u = 0; u < 512; u += 24) {
+        ctx.fillRect(0, u, 1024, 12);
+      }
+    } else {
+      ctx.fillStyle = '#103982';
+      ctx.fillRect(0, 0, 1024, 512);
+    }
+    return new THREE.CanvasTexture(c);
+  }
+
+  // 3. Cargador de Texturas Fotográficas Satelitales y Generador de Relieve Normal Maps
+  var textureLoader = new THREE.TextureLoader();
+  var maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
+  var NORMAL_MAPS_CACHE = {};
+
+  // Generador de Relieve Topográfico Fotorrealista (Sobel Suavizado con Preservación de Tono Natural)
+  function crearNormalMapDeImagen(img, fuerza) {
+    if (!img) return null;
+    try {
+      var w = Math.min(img.naturalWidth || img.width || 2048, 2048);
+      var h = Math.min(img.naturalHeight || img.height || 1024, 1024);
+      var c = document.createElement('canvas');
+      c.width = w; c.height = h;
+      var ctx = c.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      var src = ctx.getImageData(0, 0, w, h);
+      var dst = ctx.createImageData(w, h);
+      var s = src.data, d = dst.data;
+      var f = fuerza || 1.4;
+
+      // 1. Extraer luminancia linealizada
+      var rawLum = new Float32Array(w * h);
+      for (var i = 0, p = 0; i < rawLum.length; i++, p += 4) {
+        rawLum[i] = (s[p] * 0.299 + s[p + 1] * 0.587 + s[p + 2] * 0.114) * 0.0039215686;
+      }
+
+      // 2. Filtro de suavizado espacial 3x3 para eliminar artefactos de compresión y micro-picos
+      var lum = new Float32Array(w * h);
+      for (var y = 0; y < h; y++) {
+        var y0 = (y > 0 ? y - 1 : 0) * w;
+        var y1 = y * w;
+        var y2 = (y < h - 1 ? y + 1 : h - 1) * w;
+        for (var x = 0; x < w; x++) {
+          var x0 = (x > 0 ? x - 1 : w - 1);
+          var x2 = (x < w - 1 ? x + 1 : 0);
+          lum[y1 + x] = (rawLum[y0 + x0] + rawLum[y0 + x] * 2.0 + rawLum[y0 + x2]
+                      + rawLum[y1 + x0] * 2.0 + rawLum[y1 + x] * 4.0 + rawLum[y1 + x2] * 2.0
+                      + rawLum[y2 + x0] + rawLum[y2 + x] * 2.0 + rawLum[y2 + x2]) * 0.0625;
+        }
+      }
+
+      // 3. Sobel con componente Z dominante perpendicular (+Z a 1.0)
+      for (var y = 0; y < h; y++) {
+        var yPrev = (y > 0 ? y - 1 : 0) * w;
+        var yCurr = y * w;
+        var yNext = (y < h - 1 ? y + 1 : h - 1) * w;
+
+        for (var x = 0; x < w; x++) {
+          var xPrev = (x > 0 ? x - 1 : w - 1);
+          var xNext = (x < w - 1 ? x + 1 : 0);
+
+          var tl = lum[yPrev + xPrev];
+          var t  = lum[yPrev + x];
+          var tr = lum[yPrev + xNext];
+          var l  = lum[yCurr + xPrev];
+          var r  = lum[yCurr + xNext];
+          var bl = lum[yNext + xPrev];
+          var b  = lum[yNext + x];
+          var br = lum[yNext + xNext];
+
+          var dX = ((tr + 2.0 * r + br) - (tl + 2.0 * l + bl)) * f;
+          var dY = ((bl + 2.0 * b + br) - (tl + 2.0 * t + tr)) * f;
+          var dZ = 1.0;
+
+          var invLen = 1.0 / Math.sqrt(dX * dX + dY * dY + dZ * dZ);
+          var nx = -dX * invLen;
+          var ny = -dY * invLen;
+          var nz = dZ * invLen;
+
+          var p = (yCurr + x) * 4;
+          d[p]     = (nx * 127.5 + 127.5) | 0;
+          d[p + 1] = (ny * 127.5 + 127.5) | 0;
+          d[p + 2] = (nz * 127.5 + 127.5) | 0;
+          d[p + 3] = 255;
+        }
+      }
+      ctx.putImageData(dst, 0, 0);
+      var nTex = new THREE.CanvasTexture(c);
+      nTex.wrapS = THREE.RepeatWrapping;
+      nTex.wrapT = THREE.ClampToEdgeWrapping;
+      nTex.anisotropy = maxAnisotropy;
+      nTex.generateMipmaps = true;
+      nTex.minFilter = THREE.LinearMipmapLinearFilter;
+      nTex.magFilter = THREE.LinearFilter;
+      return nTex;
+    } catch(err) {
+      return null;
+    }
+  }
+
+  function cargarFotoPlaneta(ruta) {
+    try {
+      var tex = textureLoader.load(ruta);
+      tex.anisotropy = maxAnisotropy;
+      tex.wrapS = THREE.RepeatWrapping;
+      tex.wrapT = THREE.ClampToEdgeWrapping;
+      tex.generateMipmaps = true;
+      tex.minFilter = THREE.LinearMipmapLinearFilter;
+      tex.magFilter = THREE.LinearFilter;
+      return tex;
+    } catch(e) {
+      return null;
+    }
+  }
+
+  function cargarFotoPlanetaConRelieve(id, ruta, fuerzaNormal) {
+    try {
+      var tex = textureLoader.load(ruta, function(loadedTex) {
+        if (id !== 'tierra') {
+          var nMap = crearNormalMapDeImagen(loadedTex.image, fuerzaNormal || 1.2);
+          if (nMap) {
+            NORMAL_MAPS_CACHE[id] = nMap;
+            if (planetaActual && planetaActual.id === id) {
+              planetMat.normalMap = nMap;
+              var ns = planetaActual.normalScale || 0.45;
+              planetMat.normalScale = new THREE.Vector2(ns, ns);
+              planetMat.needsUpdate = true;
+            }
+          }
+        }
+      });
+      tex.anisotropy = maxAnisotropy;
+      tex.wrapS = THREE.RepeatWrapping;
+      tex.wrapT = THREE.ClampToEdgeWrapping;
+      tex.generateMipmaps = true;
+      tex.minFilter = THREE.LinearMipmapLinearFilter;
+      tex.magFilter = THREE.LinearFilter;
+      return tex;
+    } catch(e) {
+      return null;
+    }
+  }
+
+  var TEXTURAS_FOTO = {
+    'mercurio': cargarFotoPlanetaConRelieve('mercurio', '/planets/mercury_texture.jpg?v=2026', 1.4),
+    'venus': cargarFotoPlanetaConRelieve('venus', '/planets/venus_texture.jpg?v=2026', 0.7),
+    'tierra': cargarFotoPlaneta('/planets/earth_texture.jpg?v=2026'),
+    'marte': cargarFotoPlanetaConRelieve('marte', '/planets/mars_texture.jpg?v=2026', 1.2),
+    'jupiter': cargarFotoPlanetaConRelieve('jupiter', '/planets/jupiter_texture.jpg?v=2026', 0.6),
+    'saturno': cargarFotoPlanetaConRelieve('saturno', '/planets/saturn_texture.jpg?v=2026', 0.5),
+    'urano': cargarFotoPlanetaConRelieve('urano', '/planets/uranus_texture.jpg?v=2026', 0.5),
+    'neptuno': cargarFotoPlanetaConRelieve('neptuno', '/planets/neptune_texture.jpg?v=2026', 0.6)
+  };
+
+  var earthNormalMap = cargarFotoPlaneta('/planets/earth_normal.jpg?v=2026');
+  var earthSpecularMap = cargarFotoPlaneta('/planets/earth_specular.jpg?v=2026');
+  var earthCloudsTexture = cargarFotoPlaneta('/planets/earth_clouds.png?v=2026');
+
+  var planetGeo = new THREE.SphereGeometry(GLOBE_RADIUS, 128, 128);
+  var planetMat = new THREE.MeshStandardMaterial({
+    map: TEXTURAS_FOTO['tierra'] || generarTexturaPlaneta('tierra'),
+    roughness: 0.45,
+    metalness: 0.05
+  });
+  var planetMesh = new THREE.Mesh(planetGeo, planetMat);
+  globeGroup.add(planetMesh);
+
+  // Capa Dinámica Tridimensional de Nubes Terrestres Fotorrealistas
+  var earthCloudsGeo = new THREE.SphereGeometry(GLOBE_RADIUS * 1.014, 128, 128);
+  var earthCloudsMat = new THREE.MeshStandardMaterial({
+    map: earthCloudsTexture,
+    transparent: true,
+    opacity: 0.88,
+    blending: THREE.AdditiveBlending,
+    side: THREE.DoubleSide
+  });
+  var earthCloudsMesh = new THREE.Mesh(earthCloudsGeo, earthCloudsMat);
+  globeGroup.add(earthCloudsMesh);
+  earthCloudsMesh.visible = false;
+
+  // Capa Dinámica Tridimensional de Atmósfera Super-Rotatoria de Venus
+  function generarTexturaNubesVenus() {
+    var c = document.createElement('canvas');
+    c.width = 1024; c.height = 512;
+    var ctx = c.getContext('2d');
+    ctx.fillStyle = '#eed690';
+    ctx.fillRect(0, 0, 1024, 512);
+    for (var y = 0; y < 512; y += 4) {
+      var vFactor = Math.sin(y * 0.045) * Math.cos(y * 0.018);
+      ctx.fillStyle = (vFactor > 0.2) ? 'rgba(255, 235, 165, 0.38)' : 'rgba(185, 140, 55, 0.30)';
+      ctx.fillRect(0, y, 1024, 4);
+    }
+    for (var i = 0; i < 35; i++) {
+      ctx.beginPath();
+      var cx = Math.random() * 1024;
+      var cy = 110 + Math.random() * 290;
+      ctx.ellipse(cx, cy, 65 + Math.random() * 140, 16 + Math.random() * 28, Math.PI / 6, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255, 245, 205, 0.26)';
+      ctx.fill();
+    }
+    var tex = new THREE.CanvasTexture(c);
+    tex.wrapS = THREE.RepeatWrapping;
+    tex.wrapT = THREE.ClampToEdgeWrapping;
+    return tex;
+  }
+  var venusCloudsGeo = new THREE.SphereGeometry(GLOBE_RADIUS * 1.012, 96, 96);
+  var venusCloudsMat = new THREE.MeshStandardMaterial({
+    map: generarTexturaNubesVenus(),
+    transparent: true,
+    opacity: 0.65,
+    roughness: 0.60,
+    blending: THREE.NormalBlending
+  });
+  var venusCloudsMesh = new THREE.Mesh(venusCloudsGeo, venusCloudsMat);
+  globeGroup.add(venusCloudsMesh);
+  venusCloudsMesh.visible = false;
+
+  // Capa Dinámica Tridimensional de Cirros de Metano de Neptuno
+  function generarTexturaNubesNeptuno() {
+    var c = document.createElement('canvas');
+    c.width = 1024; c.height = 512;
+    var ctx = c.getContext('2d');
+    ctx.clearRect(0, 0, 1024, 512);
+    for (var i = 0; i < 45; i++) {
+      var y = 130 + Math.random() * 250;
+      var x = Math.random() * 1024;
+      var w = 90 + Math.random() * 240;
+      var grad = ctx.createLinearGradient(x, y, x + w, y);
+      grad.addColorStop(0, 'rgba(255,255,255,0)');
+      grad.addColorStop(0.5, 'rgba(220,245,255,0.92)');
+      grad.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.ellipse(x + w / 2, y, w / 2, 4 + Math.random() * 9, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.beginPath();
+    ctx.ellipse(650, 310, 48, 26, -0.15, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(3, 14, 52, 0.72)';
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(668, 290, 40, 10, -0.1, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+    ctx.fill();
+    var tex = new THREE.CanvasTexture(c);
+    tex.wrapS = THREE.RepeatWrapping;
+    tex.wrapT = THREE.ClampToEdgeWrapping;
+    return tex;
+  }
+  var neptuneCloudsGeo = new THREE.SphereGeometry(GLOBE_RADIUS * 1.010, 96, 96);
+  var neptuneCloudsMat = new THREE.MeshStandardMaterial({
+    map: generarTexturaNubesNeptuno(),
+    transparent: true,
+    opacity: 0.85,
+    blending: THREE.AdditiveBlending
+  });
+  var neptuneCloudsMesh = new THREE.Mesh(neptuneCloudsGeo, neptuneCloudsMat);
+  globeGroup.add(neptuneCloudsMesh);
+  neptuneCloudsMesh.visible = false;
+
+  // 4. Capa de Resplandor Atmosférico Fresnel Cinemático
+  var atmosGeo = new THREE.SphereGeometry(GLOBE_RADIUS * 1.026, 96, 96);
+  var atmosMat = new THREE.ShaderMaterial({
+    vertexShader: [
+      'varying vec3 vNormal;',
+      'void main() {',
+      '  vNormal = normalize(normalMatrix * normal);',
+      '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
+      '}'
+    ].join('\n'),
+    fragmentShader: [
+      'varying vec3 vNormal;',
+      'uniform vec3 glowColor;',
+      'void main() {',
+      '  float intensity = pow(0.66 - dot(vNormal, vec3(0.0, 0.0, 1.0)), 3.0);',
+      '  gl_FragColor = vec4(glowColor, 1.0) * intensity * 1.15;',
+      '}'
+    ].join('\n'),
+    uniforms: {
+      glowColor: { value: new THREE.Color(0xff3b30) }
+    },
+    side: THREE.BackSide,
+    blending: THREE.AdditiveBlending,
+    transparent: true
+  });
+  var atmosMesh = new THREE.Mesh(atmosGeo, atmosMat);
+  globeGroup.add(atmosMesh);
+
+  // 5. Anillos Orbitales Holográficos con Mira Telemetría [⨁]
+  var hudRingGroup = new THREE.Group();
+  globeGroup.add(hudRingGroup);
+
+  var r1Geo = new THREE.RingGeometry(GLOBE_RADIUS + 0.35, GLOBE_RADIUS + 0.42, 64);
+  var r1Mat = new THREE.MeshBasicMaterial({ color: 0xff3b30, side: THREE.DoubleSide, transparent: true, opacity: 0.65 });
+  var r1Mesh = new THREE.Mesh(r1Geo, r1Mat);
+  hudRingGroup.add(r1Mesh);
+
+  var r2Geo = new THREE.RingGeometry(GLOBE_RADIUS + 0.52, GLOBE_RADIUS + 0.56, 64);
+  var r2Mat = new THREE.MeshBasicMaterial({ color: 0xff453a, side: THREE.DoubleSide, transparent: true, opacity: 0.42 });
+  var r2Mesh = new THREE.Mesh(r2Geo, r2Mat);
+  hudRingGroup.add(r2Mesh);
+
+  // Retículo / Mira de apuntado orbital que viaja sobre el anillo
+  var trackerGeo = new THREE.RingGeometry(0.04, 0.08, 16);
+  var trackerMat = new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide });
+  var trackerMesh = new THREE.Mesh(trackerGeo, trackerMat);
+  hudRingGroup.add(trackerMesh);
+
+  hudRingGroup.rotation.x = Math.PI / 2.3;
+  hudRingGroup.rotation.y = 0.25;
+
+  // 6. Pedestal Holográfico con Núcleo Emitter Pulsante y Haz Ascendente
+  var pedestalGroup = new THREE.Group();
+  pedestalGroup.position.y = -3.2;
+  pedestalGroup.rotation.x = -Math.PI / 2.2;
+  globeGroup.add(pedestalGroup);
+
+  var pedestalMaterials = [];
+  [0.45, 0.85, 1.35, 1.85, 2.35].forEach(function(r, idx) {
+    var pGeo = new THREE.RingGeometry(r, r + (idx === 1 ? 0.08 : 0.04), 48);
+    var pMat = new THREE.MeshBasicMaterial({
+      color: idx === 1 ? 0xff5533 : 0xff3b30,
+      side: THREE.DoubleSide,
+      transparent: true,
+      opacity: idx === 1 ? 0.85 : 0.45
+    });
+    pedestalMaterials.push(pMat);
+    var pRing = new THREE.Mesh(pGeo, pMat);
+    pedestalGroup.add(pRing);
+  });
+
+  // Núcleo central brillante del proyector en el suelo
+  var emitterCoreGeo = new THREE.CircleGeometry(0.38, 32);
+  var emitterCoreMat = new THREE.MeshBasicMaterial({ color: 0xff7755, side: THREE.DoubleSide, transparent: true, opacity: 0.95 });
+  var emitterCore = new THREE.Mesh(emitterCoreGeo, emitterCoreMat);
+  pedestalGroup.add(emitterCore);
+
+  // Luz puntual ascendente desde el pedestal
+  var pedestalLight = new THREE.PointLight(0xff3b30, 0.95, 6.5);
+  pedestalLight.position.set(0, -3.1, 0);
+  globeGroup.add(pedestalLight);
+
+  // Haz de luz cónico holográfico ascendente
+  var coneGeo = new THREE.CylinderGeometry(GLOBE_RADIUS * 0.95, 0.8, 3.2, 32, 1, true);
+  var coneMat = new THREE.ShaderMaterial({
+    vertexShader: [
+      'varying vec2 vUv;',
+      'void main() {',
+      '  vUv = uv;',
+      '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
+      '}'
+    ].join('\n'),
+    fragmentShader: [
+      'varying vec2 vUv;',
+      'uniform vec3 beamColor;',
+      'void main() {',
+      '  float alpha = smoothstep(1.0, 0.0, vUv.y) * 0.35;',
+      '  gl_FragColor = vec4(beamColor, alpha);',
+      '}'
+    ].join('\n'),
+    uniforms: {
+      beamColor: { value: new THREE.Color(0xff3b30) }
+    },
+    transparent: true,
+    side: THREE.DoubleSide,
+    blending: THREE.AdditiveBlending
+  });
+  var beamMesh = new THREE.Mesh(coneGeo, coneMat);
+  beamMesh.position.y = -1.6;
+  globeGroup.add(beamMesh);
+
+  // 7. Micro-partículas de Polvo Espacial y Destellos Orbitales
+  var dustPositions = [];
+  for (var dp = 0; dp < 180; dp++) {
+    var dPhi = Math.acos((Math.random() * 2) - 1);
+    var dTheta = Math.random() * Math.PI * 2;
+    var dRad = GLOBE_RADIUS + 0.35 + Math.random() * 1.8;
+    dustPositions.push(
+      dRad * Math.sin(dPhi) * Math.cos(dTheta),
+      dRad * Math.sin(dPhi) * Math.sin(dTheta),
+      dRad * Math.cos(dPhi)
+    );
+  }
+  var dustGeo = new THREE.BufferGeometry();
+  dustGeo.setAttribute('position', new THREE.Float32BufferAttribute(dustPositions, 3));
+  var dustMat = new THREE.PointsMaterial({
+    size: 0.045,
+    color: 0xff6b4a,
+    transparent: true,
+    opacity: 0.8,
+    blending: THREE.AdditiveBlending
+  });
+  var dustMesh = new THREE.Points(dustGeo, dustMat);
+  globeGroup.add(dustMesh);
+
+  // 8. Anillos de Saturno Fotorrealistas con División de Cassini en Alta Definición (2048x2048)
+  function generarTexturaAnillosSaturno() {
+    var c = document.createElement('canvas');
+    c.width = 2048;
+    c.height = 2048;
+    var ctx = c.getContext('2d');
+    var cx = 1024, cy = 1024;
+    ctx.clearRect(0, 0, 2048, 2048);
+
+    for (var r = 530; r <= 1016; r += 0.5) {
+      var norm = (r - 530) / (1016 - 530);
+      var alpha = 0;
+      var rColor = 'rgba(225, 205, 160, ';
+
+      if (norm < 0.16) {
+        // Anillo C (Crepe ring)
+        alpha = 0.20 + Math.sin(r * 0.2) * 0.08;
+        rColor = 'rgba(165, 145, 115, ';
+      } else if (norm >= 0.16 && norm < 0.62) {
+        // Anillo B (brillante, denso)
+        alpha = 0.88 + Math.sin(r * 0.45) * 0.10;
+        rColor = (Math.floor(r) % 4 < 2) ? 'rgba(235, 215, 168, ' : 'rgba(215, 192, 145, ';
+      } else if (norm >= 0.62 && norm < 0.70) {
+        // División de Cassini (Brecha oscura transparente)
+        alpha = 0.02;
+      } else if (norm >= 0.70 && norm < 0.94) {
+        // Anillo A
+        if (norm > 0.86 && norm < 0.885) {
+          // Brecha de Encke
+          alpha = 0.06;
+        } else {
+          alpha = 0.70 + Math.sin(r * 0.3) * 0.08;
+          rColor = 'rgba(215, 195, 150, ';
+        }
+      } else {
+        // Borde exterior difuminado (Anillo F)
+        alpha = (1.0 - (norm - 0.94) / 0.06) * 0.35;
+      }
+
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.lineWidth = 1.0;
+      ctx.strokeStyle = rColor + Math.max(0, Math.min(1, alpha)) + ')';
+      ctx.stroke();
+    }
+
+    var tex = new THREE.CanvasTexture(c);
+    tex.anisotropy = maxAnisotropy;
+    tex.generateMipmaps = true;
+    tex.minFilter = THREE.LinearMipmapLinearFilter;
+    tex.magFilter = THREE.LinearFilter;
+    return tex;
+  }
+
+  var saturnGroup = new THREE.Group();
+  globeGroup.add(saturnGroup);
+
+  // 8.1 Lámina micro-partículas de fondo con División de Cassini de alta geometría
+  var satRingGeo = new THREE.RingGeometry(GLOBE_RADIUS + 0.42, GLOBE_RADIUS + 2.35, 192);
+  var satRingMat = new THREE.MeshStandardMaterial({
+    map: generarTexturaAnillosSaturno(),
+    side: THREE.DoubleSide,
+    transparent: true,
+    opacity: 0.88,
+    roughness: 0.65,
+    metalness: 0.05
+  });
+  var satRingMesh = new THREE.Mesh(satRingGeo, satRingMat);
+  saturnGroup.add(satRingMesh);
+
+  // 8.2 CINTURÓN DE METEORITOS 3D FOTORREALISTA (2,200 ROCAS, MONOLITOS Y ASTEROIDES EN ÓRBITA)
+  function crearGeometriaAsteroide(radioBase, semilla) {
+    var geo = new THREE.DodecahedronGeometry(radioBase, 1);
+    var pos = geo.attributes.position;
+    var v = new THREE.Vector3();
+    for (var i = 0; i < pos.count; i++) {
+      v.fromBufferAttribute(pos, i);
+      var ang = Math.atan2(v.z, v.x);
+      var elev = v.y / radioBase;
+      var ruido = Math.sin(ang * 3.2 + semilla) * Math.cos(elev * 4.1 + semilla * 1.5) * 0.35
+                + Math.sin(v.x * 5.5 + v.y * 3.3) * 0.18;
+      var factor = 1.0 + ruido + (Math.sin(i * 11.3) * 0.12);
+      v.x *= 1.20;
+      v.z *= 0.85;
+      v.multiplyScalar(factor);
+      pos.setXYZ(i, v.x, v.y, v.z);
+    }
+    geo.computeVertexNormals();
+    return geo;
+  }
+
+  var NUM_METEORITOS = 2200;
+  var geoAsteroide = crearGeometriaAsteroide(1.0, 4.2);
+  var matAsteroide = new THREE.MeshStandardMaterial({
+    color: 0xffffff,
+    roughness: 0.62,
+    metalness: 0.25,
+    flatShading: true
+  });
+  var meteoritosMesh = new THREE.InstancedMesh(geoAsteroide, matAsteroide, NUM_METEORITOS);
+  meteoritosMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+  saturnGroup.add(meteoritosMesh);
+
+  var meteoritoData = [];
+  var dummyMeteor = new THREE.Object3D();
+  var colorAsteroide = new THREE.Color();
+  var paletaRocas = [
+    0xf5eee4, // Hielo reflectivo brillante
+    0xe0d4c2, // Hielo ambarino con polvo
+    0xc7b599, // Silicato arenoso dorado
+    0x96836c, // Roca basáltica meteorítica
+    0x665b50, // Chondrita carbonácea oscura
+    0x4a433c, // Hierro meteorítico oscuro
+    0xfff5ea  // Fragmento de hielo cristalino
+  ];
+
+  for (var mi = 0; mi < NUM_METEORITOS; mi++) {
+    var randZona = Math.random();
+    var r = 0;
+    if (randZona < 0.62) {
+      // Anillo B: densísimo, lleno de rocas grandes y medianas
+      r = GLOBE_RADIUS + 0.65 + Math.random() * 0.90;
+    } else if (randZona < 0.91) {
+      // Anillo A: exterior tras la división de Cassini
+      r = GLOBE_RADIUS + 1.74 + Math.random() * 0.52;
+    } else {
+      // Anillo C: tenue interior
+      r = GLOBE_RADIUS + 0.38 + Math.random() * 0.25;
+    }
+
+    var angulo = Math.random() * Math.PI * 2;
+    var yDisp = (Math.random() - 0.5) * (0.045 + Math.random() * 0.075);
+
+    var rTam = Math.random();
+    var escala = (rTam < 0.68) ? (0.022 + Math.random() * 0.034)
+               : (rTam < 0.93) ? (0.058 + Math.random() * 0.044)
+               : (0.11 + Math.random() * 0.070); // Boulders gigantes
+
+    var rx = Math.random() * Math.PI * 2;
+    var ry = Math.random() * Math.PI * 2;
+    var rz = Math.random() * Math.PI * 2;
+
+    dummyMeteor.position.set(Math.cos(angulo) * r, yDisp, Math.sin(angulo) * r);
+    dummyMeteor.rotation.set(rx, ry, rz);
+    dummyMeteor.scale.set(escala, escala * (0.8 + Math.random() * 0.4), escala * (0.8 + Math.random() * 0.4));
+    dummyMeteor.updateMatrix();
+
+    meteoritosMesh.setMatrixAt(mi, dummyMeteor.matrix);
+
+    var cHex = paletaRocas[Math.floor(Math.random() * paletaRocas.length)];
+    colorAsteroide.setHex(cHex);
+    colorAsteroide.offsetHSL(0, 0, (Math.random() - 0.5) * 0.12);
+    meteoritosMesh.setColorAt(mi, colorAsteroide);
+
+    meteoritoData.push({
+      dist: r,
+      ang: angulo,
+      y: yDisp,
+      scaleX: dummyMeteor.scale.x,
+      scaleY: dummyMeteor.scale.y,
+      scaleZ: dummyMeteor.scale.z,
+      velOrbital: (0.0078 / Math.sqrt(r / 2.3)),
+      rotX: rx,
+      rotY: ry,
+      rotZ: rz,
+      tumbleX: (Math.random() - 0.5) * 0.024,
+      tumbleY: (Math.random() - 0.5) * 0.032,
+      tumbleZ: (Math.random() - 0.5) * 0.022
+    });
+  }
+  meteoritosMesh.instanceMatrix.needsUpdate = true;
+  if (meteoritosMesh.instanceColor) meteoritosMesh.instanceColor.needsUpdate = true;
+
+  saturnGroup.rotation.x = Math.PI / 2.45;
+  saturnGroup.rotation.y = 0.22;
+  saturnGroup.visible = false;
+
+  // 9. Campo de Estrellas y Nebulosas de Fondo
+  var starPositions = [];
+  var starColors = [];
+  var starPalette = [[1.0, 0.25, 0.2], [0.0, 0.96, 1.0], [1.0, 1.0, 1.0], [0.75, 0.45, 1.0]];
+  for (var s = 0; s < 2500; s++) {
+    starPositions.push((Math.random() - 0.5) * 36, (Math.random() - 0.5) * 24, -2 - Math.random() * 24);
+    var cp = starPalette[Math.floor(Math.random() * starPalette.length)];
+    var lum = 0.4 + Math.random() * 0.6;
+    starColors.push(cp[0] * lum, cp[1] * lum, cp[2] * lum);
+  }
+  var starGeo = new THREE.BufferGeometry();
+  starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starPositions, 3));
+  starGeo.setAttribute('color', new THREE.Float32BufferAttribute(starColors, 3));
+  var stars = new THREE.Points(starGeo, new THREE.PointsMaterial({ size: 0.05, vertexColors: true, transparent: true, opacity: 0.9 }));
+  scene.add(stars);
+
+  function updateGlobePlacement() {
+    var isMobile = window.innerWidth <= 960;
+    if (isMobile) {
+      globeGroup.position.set(0, 1.3, 0);
+      globeGroup.scale.set(0.85, 0.85, 0.85);
+    } else {
+      var aspect = window.innerWidth / window.innerHeight;
+      var offsetX = -(aspect * 0.72);
+      globeGroup.position.set(offsetX, 0, 0);
+      globeGroup.scale.set(1.05, 1.05, 1.05);
+    }
+  }
+  updateGlobePlacement();
+
+  // --- CATÁLOGO DE PLANETAS POR DÍA ---
+  var CONFIG_PLANETAS = {
+    1: { id: 'mercurio', dia: 'LUNES', nombre: 'MERCURIO - SECTOR ROCOSO', sub: 'CRÁTERES DE IMPACTO & CUENCA CALORIS', colorHex: '#94a3b8', colorThree: 0x94a3b8, bgGlow1: 'rgba(148, 163, 184, 0.16)', bgGlow2: 'rgba(217, 119, 6, 0.08)', radio: 2.10, vel: 0.0048, saturn: false, roughness: 0.60, metalness: 0.06, normalScale: 0.55 },
+    2: { id: 'venus', dia: 'MARTES', nombre: 'VENUS - LUCERO DEL ALBA', sub: 'ATMÓSFERA VOLUMÉTRICA & SUPER-ROTACIÓN 3D', colorHex: '#ffd700', colorThree: 0xffd700, bgGlow1: 'rgba(255, 215, 0, 0.16)', bgGlow2: 'rgba(251, 146, 60, 0.10)', radio: 2.22, vel: 0.0028, saturn: false, roughness: 0.48, metalness: 0.02, normalScale: 0.32 },
+    3: { id: 'tierra', dia: 'MIÉRCOLES', nombre: 'TIERRA - BÓVEDA SHIELD', sub: 'CORDILLERAS GLOBALES & HIDROSFERA ACTIVA', colorHex: '#00f5ff', colorThree: 0x00f5ff, bgGlow1: 'rgba(0, 245, 255, 0.18)', bgGlow2: 'rgba(255, 0, 85, 0.10)', radio: 2.30, vel: 0.0032, saturn: false, roughness: 0.44, metalness: 0.03, normalScale: 0.70 },
+    4: { id: 'marte', dia: 'JUEVES', nombre: 'MARTE - PROTOCOLO DEFENSA', sub: 'VALLES MARINERIS & OLYMPUS MONS', colorHex: '#ff3b30', colorThree: 0xff3b30, bgGlow1: 'rgba(255, 59, 48, 0.20)', bgGlow2: 'rgba(255, 149, 0, 0.10)', radio: 2.30, vel: 0.0036, saturn: false, roughness: 0.52, metalness: 0.04, normalScale: 0.45 },
+    5: { id: 'jupiter', dia: 'VIERNES', nombre: 'JÚPITER - BARRERA GRAVITACIONAL', sub: 'ESTRATIFICACIÓN TROPOSFÉRICA & GRAN MANCHA ROJA', colorHex: '#f59e0b', colorThree: 0xf59e0b, bgGlow1: 'rgba(245, 158, 11, 0.18)', bgGlow2: 'rgba(217, 119, 6, 0.10)', radio: 2.65, vel: 0.0022, saturn: false, roughness: 0.46, metalness: 0.02, normalScale: 0.30 },
+    6: { id: 'saturno', dia: 'SÁBADO', nombre: 'SATURNO - ANILLOS DE PRIVACIDAD', sub: 'CINTURÓN DE METEORITOS 3D · 2,200 ASTEROIDES EN ÓRBITA', colorHex: '#e0c580', colorThree: 0xe0c580, bgGlow1: 'rgba(224, 197, 128, 0.20)', bgGlow2: 'rgba(139, 92, 246, 0.10)', radio: 2.26, vel: 0.0025, saturn: true, roughness: 0.48, metalness: 0.02, normalScale: 0.28 },
+    0: { id: 'urano', dia: 'DOMINGO', nombre: 'URANO - GIGANTE DE HIELO', sub: 'METANO TURQUESA & ANILLOS POLARES INCLINADOS', colorHex: '#4ef2d2', colorThree: 0x4ef2d2, bgGlow1: 'rgba(78, 242, 210, 0.18)', bgGlow2: 'rgba(56, 189, 248, 0.10)', radio: 2.25, vel: 0.0030, saturn: false, roughness: 0.42, metalness: 0.02, normalScale: 0.25 }
+  };
+
+  var planetaActual = null;
+  var forzarCinturonMeteoritos = false;
+
+  function aplicarPlaneta(diaNum) {
+    var p = CONFIG_PLANETAS[diaNum] !== undefined ? CONFIG_PLANETAS[diaNum] : (CONFIG_PLANETAS[new Date().getDay()] || CONFIG_PLANETAS[2]);
+    planetaActual = p;
+
+    var tex = TEXTURAS_FOTO[p.id] || generarTexturaPlaneta(p.id);
+    planetMat.map = tex;
+
+    // Relieves y capas atmosféricas fotorrealistas
+    if (p.id === 'tierra') {
+      planetMat.normalMap = earthNormalMap;
+      planetMat.normalScale = new THREE.Vector2(p.normalScale || 0.70, p.normalScale || 0.70);
+      planetMat.roughnessMap = earthSpecularMap;
+      planetMat.bumpMap = null;
+      if (earthCloudsMesh) earthCloudsMesh.visible = true;
+      if (venusCloudsMesh) venusCloudsMesh.visible = false;
+      if (neptuneCloudsMesh) neptuneCloudsMesh.visible = false;
+    } else {
+      var nMap = NORMAL_MAPS_CACHE[p.id];
+      if (nMap) {
+        planetMat.normalMap = nMap;
+        var ns = p.normalScale || 0.45;
+        planetMat.normalScale = new THREE.Vector2(ns, ns);
+      } else {
+        planetMat.normalMap = null;
+      }
+      planetMat.roughnessMap = null;
+      planetMat.bumpMap = null;
+      if (earthCloudsMesh) earthCloudsMesh.visible = false;
+      if (venusCloudsMesh) venusCloudsMesh.visible = (p.id === 'venus');
+      if (neptuneCloudsMesh) neptuneCloudsMesh.visible = (p.id === 'urano' || p.id === 'neptuno');
+    }
+
+    planetMat.roughness = p.roughness;
+    planetMat.metalness = p.metalness;
+    planetMat.needsUpdate = true;
+
+    var isMobile = window.innerWidth <= 960;
+    var baseScale = isMobile ? 0.85 : 1.05;
+    var s = (p.radio / 2.3) * baseScale;
+    globeGroup.scale.set(s, s, s);
+
+    atmosMat.uniforms.glowColor.value.setHex(p.colorThree);
+    coneMat.uniforms.beamColor.value.setHex(p.colorThree);
+    r1Mat.color.setHex(p.colorThree);
+    r2Mat.color.setHex(p.colorThree);
+    dustMat.color.setHex(p.colorThree);
+    pedestalLight.color.setHex(p.colorThree);
+    pedestalMaterials.forEach(function(m) { m.color.setHex(p.colorThree); });
+    if (rimSunLight) rimSunLight.color.setHex(p.colorThree);
+
+    var mostrarAnillos = p.saturn || forzarCinturonMeteoritos;
+    saturnGroup.visible = mostrarAnillos;
+    hudRingGroup.visible = !mostrarAnillos;
+
+    var btnMeteor = document.getElementById('btnToggleMeteoritos');
+    if (btnMeteor) {
+      btnMeteor.classList.toggle('active', mostrarAnillos);
+    }
+
+    document.body.style.setProperty('--planet-accent', p.colorHex);
+    document.body.style.setProperty('--planet-bg-glow1', p.bgGlow1);
+    document.body.style.setProperty('--planet-bg-glow2', p.bgGlow2);
+
+    var hudTitle = document.getElementById('hudMainTitle');
+    if (hudTitle) hudTitle.textContent = p.dia + ' · ' + p.nombre;
+
+    var miniBadge = document.getElementById('miniPlanetBadge');
+    if (miniBadge) miniBadge.style.background = p.colorHex;
+
+    var telemetrySub = document.querySelector('.hud-telemetry-tl .t-val');
+    if (telemetrySub) telemetrySub.textContent = p.sub;
+
+    document.querySelectorAll('.planet-tab[data-day]').forEach(function(btn) {
+      var d = btn.getAttribute('data-day');
+      if (d !== null && Number(d) === diaNum) btn.classList.add('active');
+      else btn.classList.remove('active');
+    });
+  }
+
+  document.querySelectorAll('.planet-tab[data-day]').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      var d = Number(this.getAttribute('data-day'));
+      aplicarPlaneta(d);
+      var today = new Date().getDay();
+      var p = CONFIG_PLANETAS[d];
+      if (p) {
+        try {
+          if (d === today) localStorage.setItem('boveda-palette', 'planeta-dia');
+          else localStorage.setItem('boveda-palette', p.id);
+        } catch(err) {}
+      }
+    });
+  });
+
+  var btnAutoDay = document.getElementById('btnAutoDay');
+  if (btnAutoDay) {
+    btnAutoDay.addEventListener('click', function(e) {
+      e.stopPropagation();
+      aplicarPlaneta(new Date().getDay());
+      try { localStorage.setItem('boveda-palette', 'planeta-dia'); } catch(err) {}
+    });
+  }
+
+  var btnToggleMeteoritos = document.getElementById('btnToggleMeteoritos');
+  if (btnToggleMeteoritos) {
+    btnToggleMeteoritos.addEventListener('click', function(e) {
+      e.stopPropagation();
+      forzarCinturonMeteoritos = !forzarCinturonMeteoritos;
+      this.classList.toggle('active', forzarCinturonMeteoritos);
+      var mostrar = (planetaActual && planetaActual.saturn) || forzarCinturonMeteoritos;
+      saturnGroup.visible = mostrar;
+      hudRingGroup.visible = !mostrar;
+    });
+  }
+
+  aplicarPlaneta(new Date().getDay());
+
+  // Rotación interactiva libre con ratón (arrastrar para girar el planeta en 360°)
+  var isDragging = false;
+  var previousMousePosition = { x: 0, y: 0 };
+  var dragVelX = 0, dragVelY = 0;
+  var mouseX = 0, mouseY = 0, targetRotX = 0.14, targetRotY = 0;
+
+  window.addEventListener('mousedown', function(e) {
+    if (e.target.closest('#earthCanvasWrap')) {
+      isDragging = true;
+      previousMousePosition = { x: e.clientX, y: e.clientY };
+    }
+  });
+
+  window.addEventListener('mousemove', function(e) {
+    if (isDragging) {
+      var deltaX = e.clientX - previousMousePosition.x;
+      var deltaY = e.clientY - previousMousePosition.y;
+      dragVelX = deltaX * 0.0055;
+      dragVelY = deltaY * 0.0055;
+      globeGroup.rotation.y += dragVelX;
+      globeGroup.rotation.x += dragVelY;
+      previousMousePosition = { x: e.clientX, y: e.clientY };
+    } else {
+      mouseX = (e.clientX / window.innerWidth) * 2 - 1;
+      mouseY = (e.clientY / window.innerHeight) * 2 - 1;
+      targetRotX = 0.14 + (mouseY * 0.12);
+      targetRotY = mouseX * 0.18;
+    }
+  });
+
+  window.addEventListener('mouseup', function() {
+    isDragging = false;
+  });
+
+  // Soporte para dispositivos táctiles (Touch)
+  window.addEventListener('touchstart', function(e) {
+    if (e.touches.length === 1 && e.target.closest('#earthCanvasWrap')) {
+      isDragging = true;
+      previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    }
+  }, { passive: true });
+
+  window.addEventListener('touchmove', function(e) {
+    if (isDragging && e.touches.length === 1) {
+      var deltaX = e.touches[0].clientX - previousMousePosition.x;
+      var deltaY = e.touches[0].clientY - previousMousePosition.y;
+      dragVelX = deltaX * 0.006;
+      dragVelY = deltaY * 0.006;
+      globeGroup.rotation.y += dragVelX;
+      globeGroup.rotation.x += dragVelY;
+      previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    }
+  }, { passive: true });
+
+  window.addEventListener('touchend', function() {
+    isDragging = false;
+  });
+
+  window.addEventListener('resize', function() {
+    var nw = window.innerWidth, nh = window.innerHeight;
+    camera.aspect = nw / nh;
+    camera.updateProjectionMatrix();
+    renderer.setSize(nw, nh);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2.5));
+    updateGlobePlacement();
+  });
+
+  var waveCanvas = document.getElementById('hudWaveCanvas');
+  var waveCtx = waveCanvas ? waveCanvas.getContext('2d') : null;
+  var waveStep = 0;
+  function dibujarOndaECG() {
+    if (!waveCtx) return;
+    waveStep += 0.08;
+    waveCtx.clearRect(0, 0, 80, 28);
+    waveCtx.beginPath();
+    waveCtx.strokeStyle = planetaActual ? planetaActual.colorHex : '#ff3b30';
+    waveCtx.lineWidth = 1.6;
+    for (var x = 0; x < 80; x++) {
+      var y = 14 + Math.sin(x * 0.18 + waveStep) * 4;
+      if (x > 32 && x < 46) {
+        y += Math.sin((x - 32) * 0.4) * 9;
+      }
+      if (x === 0) waveCtx.moveTo(x, y);
+      else waveCtx.lineTo(x, y);
+    }
+    waveCtx.stroke();
+  }
+
+  var hudClock = document.getElementById('hudLiveClock');
+  function actualizarReloj() {
+    if (!hudClock) return;
+    var d = new Date();
+    hudClock.textContent = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0') + ':' + String(d.getSeconds()).padStart(2, '0');
+  }
+  setInterval(actualizarReloj, 1000);
+  actualizarReloj();
+
+  // Bucle de animación continuo a 60fps con cálculo de rotación física
+  var trackerAngle = 0;
+  function animate() {
+    requestAnimationFrame(animate);
+
+    if (!isDragging) {
+      if (Math.abs(dragVelX) > 0.0001 || Math.abs(dragVelY) > 0.0001) {
+        globeGroup.rotation.y += dragVelX;
+        globeGroup.rotation.x += dragVelY;
+        dragVelX *= 0.93;
+        dragVelY *= 0.93;
+      }
+      globeGroup.rotation.y += (planetaActual ? planetaActual.vel : 0.0034);
+      globeGroup.rotation.x += (targetRotX - globeGroup.rotation.x) * 0.04;
+      globeGroup.rotation.z = targetRotY * 0.25;
+    }
+
+    // Rotación del retículo de telemetría a lo largo del anillo orbital
+    trackerAngle += 0.014;
+    var trackRadius = GLOBE_RADIUS + 0.48;
+    trackerMesh.position.set(Math.cos(trackerAngle) * trackRadius, Math.sin(trackerAngle) * trackRadius, 0);
+
+    // Rotación de los anillos HUD y del pedestal
+    hudRingGroup.rotation.z += 0.0035;
+    pedestalGroup.rotation.z -= 0.002;
+    dustMesh.rotation.y += 0.0018;
+
+    if (earthCloudsMesh && earthCloudsMesh.visible) {
+      earthCloudsMesh.rotation.y += 0.0006;
+    }
+    if (venusCloudsMesh && venusCloudsMesh.visible) {
+      venusCloudsMesh.rotation.y += 0.0048;
+    }
+    if (neptuneCloudsMesh && neptuneCloudsMesh.visible) {
+      neptuneCloudsMesh.rotation.y += 0.0016;
+    }
+
+    if (saturnGroup && saturnGroup.visible) {
+      saturnGroup.rotation.z += 0.0012;
+      if (meteoritosMesh && meteoritoData && meteoritoData.length) {
+        for (var mi = 0; mi < NUM_METEORITOS; mi++) {
+          var m = meteoritoData[mi];
+          m.ang += m.velOrbital;
+          m.rotX += m.tumbleX;
+          m.rotY += m.tumbleY;
+          m.rotZ += m.tumbleZ;
+          dummyMeteor.position.set(Math.cos(m.ang) * m.dist, m.y, Math.sin(m.ang) * m.dist);
+          dummyMeteor.rotation.set(m.rotX, m.rotY, m.rotZ);
+          dummyMeteor.scale.set(m.scaleX, m.scaleY, m.scaleZ);
+          dummyMeteor.updateMatrix();
+          meteoritosMesh.setMatrixAt(mi, dummyMeteor.matrix);
+        }
+        meteoritosMesh.instanceMatrix.needsUpdate = true;
+      }
+    }
+    if (stars) {
+      stars.rotation.y += 0.0002;
+    }
+
+    dibujarOndaECG();
+    renderer.render(scene, camera);
+  }
+
+  animate();
+})();
+
+// --- GESTIÓN DEL FORMULARIO DE ACCESO AJAX ---
+(function() {
+  var form = document.getElementById('loginForm');
+  var btn = document.getElementById('btnLogin');
+  var txtUser = document.getElementById('usuario');
+  var txtPass = document.getElementById('clave');
+  var chkRecordar = document.getElementById('chkRecordar');
+  if (!form || !btn) return;
+
+  var originalHTML = btn.innerHTML;
+  var animando = false;
+
+  try {
+    var savedUser = localStorage.getItem('boveda_saved_user');
+    if (savedUser && txtUser) {
+      txtUser.value = savedUser;
+      if (chkRecordar) chkRecordar.checked = true;
+      if (txtPass) setTimeout(function(){ txtPass.focus(); }, 50);
+    }
+  } catch(e) {}
+
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+    if (animando) return;
+
+    var username = (txtUser ? txtUser.value : '').trim();
+    var password = txtPass ? txtPass.value : '';
+    if (!username || !password) return;
+
+    try {
+      if (chkRecordar && chkRecordar.checked) localStorage.setItem('boveda_saved_user', username);
+      else localStorage.removeItem('boveda_saved_user');
+    } catch(e) {}
+
+    animando = true;
+    btn.disabled = true;
+    btn.classList.add('btn-validando');
+    btn.innerHTML = '<span class="btn-label">VALIDANDO ACCESO…</span><svg viewBox="0 0 24 24" style="animation: spin 0.8s linear infinite; width:18px; height:18px;"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-dasharray="32" stroke-linecap="round" fill="none"/></svg>';
+
+    fetch('/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+      body: JSON.stringify({ username: username, password: password, ajax: '1' }),
+      credentials: 'same-origin'
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data && data.ok) {
+        btn.classList.remove('btn-validando', 'btn-invalido');
+        btn.classList.add('btn-valido');
+        btn.innerHTML = '<span class="btn-label">¡AUTORIZADO!</span><svg viewBox="0 0 24 24" style="stroke-width:3.2; width:18px; height:18px;"><polyline points="20 6 9 17 4 12"/></svg>';
+        setTimeout(function() { window.location.href = data.redirect || '/'; }, 500);
+      } else {
+        mostrarError(data && data.error ? data.error : 'Credenciales inválidas');
+      }
+    })
+    .catch(function() { mostrarError('Error de enlace'); });
+  });
+
+  function mostrarError(msg) {
+    btn.classList.remove('btn-validando', 'btn-valido');
+    btn.classList.add('btn-invalido');
+    btn.innerHTML = '<span class="btn-label">' + (msg || 'DATOS INCORRECTOS') + '</span>';
+    if (txtPass) txtPass.select();
+    setTimeout(function() {
+      btn.classList.remove('btn-invalido');
+      btn.disabled = false;
+      btn.innerHTML = originalHTML;
+      animando = false;
+    }, 1800);
+  }
+})();
+
+// --- GESTIÓN DE ACCESO BIOMÉTRICO (WEBAUTHN / WINDOWS HELLO HUELLA DIGITAL) ---
+(function() {
+  var btnBio = document.getElementById('btnBiometria');
+  var divBio = document.getElementById('bioDivider');
+  var txtUser = document.getElementById('usuario');
+  if (!btnBio || typeof Biometria === 'undefined') return;
+
+  var originalBioHTML = btnBio.innerHTML;
+  var bioEscaneando = false;
+
+  Biometria.esCompatible().then(function(compatible) {
+    if (compatible) {
+      btnBio.style.display = 'flex';
+      if (divBio) divBio.style.display = 'flex';
+    }
+  }).catch(function() {});
+
+  btnBio.addEventListener('click', async function() {
+    if (bioEscaneando) return;
+    bioEscaneando = true;
+
+    var usuario = (txtUser ? txtUser.value : '').trim();
+
+    btnBio.classList.add('scanning');
+    btnBio.disabled = true;
+    var t = btnBio.querySelector('.bio-title');
+    var s = btnBio.querySelector('.bio-sub');
+    if (t) t.textContent = 'COLOCA TU DEDO EN EL SENSOR...';
+    if (s) s.textContent = 'Escaneando huella dactilar Windows Hello';
+
+    try {
+      var resultado = await Biometria.autenticar(usuario);
+      if (resultado && resultado.ok) {
+        btnBio.classList.remove('scanning');
+        btnBio.style.borderColor = '#10b981';
+        btnBio.style.background = 'rgba(16, 185, 129, 0.2)';
+        if (t) t.textContent = '¡HUELLA RECONOCIDA! BIENVENIDO';
+        if (s) s.textContent = (resultado.user ? resultado.user.username : '') + ' · Acceso concedido';
+        setTimeout(function() {
+          window.location.href = resultado.redirect || '/';
+        }, 550);
+      }
+    } catch(err) {
+      btnBio.classList.remove('scanning');
+      btnBio.style.borderColor = '#ef4444';
+      btnBio.style.background = 'rgba(239, 68, 68, 0.2)';
+      if (t) t.textContent = 'NO SE PUDO VERIFICAR HUELLA';
+      if (s) s.textContent = err.message || 'Intenta de nuevo o ingresa con tu contraseña';
+
+      setTimeout(function() {
+        btnBio.style.borderColor = '';
+        btnBio.style.background = '';
+        btnBio.innerHTML = originalBioHTML;
+        btnBio.disabled = false;
+        bioEscaneando = false;
+      }, 2500);
+    }
+  });
+})();
+</script>

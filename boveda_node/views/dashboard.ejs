@@ -1,110 +1,279 @@
 <style>
-  .top{ display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
-  .top h1{ margin:0; }
-  .top .count{ color:var(--accent-dark); background:var(--accent-soft); font-size:12px; font-weight:700; padding:4px 11px; border-radius:999px; }
-  .toolbar{ display:flex; gap:10px; margin-bottom:16px; }
-  .toolbar .search-wrap{ position:relative; flex:1; }
-  .toolbar .search-wrap input{ padding-left:38px; font-family:var(--sans); font-size:14.5px; }
-  .toolbar .search-wrap svg{ position:absolute; left:12px; top:50%; transform:translateY(-50%); width:16px; height:16px; stroke:var(--muted); pointer-events:none; }
-  .toolbar button{ white-space:nowrap; }
-  #results{ display:flex; flex-direction:column; gap:8px; }
-  .row{ background:var(--panel); border:1px solid var(--panel-edge); border-radius:12px; padding:13px 15px; box-shadow:var(--shadow); transition: border-color .18s ease, transform .18s ease, box-shadow .18s ease, background-color .2s ease; }
-  .row:hover{ border-color:var(--accent); transform:translateY(-1px); box-shadow:0 4px 14px rgba(20,30,45,.08), 0 1px 2px rgba(20,30,45,.05); }
-  .row .main{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
-  .row .name{ display:flex; align-items:center; gap:10px; font-size:14.5px; font-weight:600; }
-  .row .avatar{ width:30px; height:30px; border-radius:8px; flex-shrink:0; background:linear-gradient(135deg, var(--accent-soft), var(--accent-soft)); color:var(--accent-dark); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; transition:background .18s ease, transform .18s ease; }
-  .row:hover .avatar{ background:linear-gradient(135deg, var(--accent), var(--accent-dark)); color:#fff; transform:scale(1.05); }
-  .row .pw-area{ display:flex; align-items:center; gap:6px; }
-  .row .pw{ font-family:var(--mono); font-size:13px; color:var(--muted); letter-spacing:0.03em; min-width:140px; text-align:right; }
-  .row .pw.revealed{ color:var(--accent-dark); }
-  .iconbtn{ background:transparent; border:1px solid var(--panel-edge); color:var(--muted); width:30px; height:30px; border-radius:7px; padding:0; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:border-color .15s ease, color .15s ease, transform .12s cubic-bezier(.34,1.56,.64,1), background-color .15s ease; flex-shrink:0; }
-  .iconbtn:hover{ border-color:var(--accent); color:var(--accent-dark); background:var(--accent-soft); transform:translateY(-1px); }
-  .iconbtn:active{ transform:translateY(0) scale(.92); }
-  .iconbtn svg{ width:14px; height:14px; }
-  @keyframes panelIn{ from{ opacity:0; transform:translateY(-4px); } to{ opacity:1; transform:translateY(0); } }
-  .edit-panel{ display:none; margin-top:12px; padding-top:12px; border-top:1px dashed var(--panel-edge); }
-  .edit-panel.open{ display:block; animation:panelIn .18s ease; }
+  
+  /* ---- Cabecera ---- */
+  .page-head{ display:flex; align-items:flex-start; justify-content:space-between; gap:14px; flex-wrap:wrap; margin-bottom:6px; }
+  .page-head h1{ margin:0 0 4px; }
+  .page-head p.sub{ margin:0; }
+  .count{ display:inline-flex; align-items:center; gap:7px; color:var(--accent-dark); background:var(--accent-soft); font-size:12.5px; font-weight:700; padding:6px 13px; border-radius:999px; border:1px solid color-mix(in srgb, var(--accent) 25%, transparent); }
+  .count svg{ width:14px; height:14px; fill:none; stroke:currentColor; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
+
+  /* ---- Barra de herramientas ---- */
+  .toolbar{ display:flex; gap:12px; margin:20px 0 16px; flex-wrap:wrap; }
+  .search-wrap{ position:relative; flex:1; min-width:220px; }
+  .search-wrap input{ height:52px; padding:0 74px 0 46px; font-family:var(--sans); font-size:16px; border-radius:14px; }
+  .search-wrap > svg{ position:absolute; left:16px; top:50%; transform:translateY(-50%); width:19px; height:19px; fill:none; stroke:var(--muted); stroke-width:2; stroke-linecap:round; stroke-linejoin:round; pointer-events:none; transition:stroke .2s ease; }
+  .search-wrap:focus-within > svg{ stroke:var(--accent); }
+  .search-wrap kbd{ position:absolute; right:12px; top:50%; transform:translateY(-50%); font-family:var(--mono); font-size:12px; font-weight:700; color:var(--muted); background:var(--panel); border:1px solid var(--panel-edge); border-bottom-width:2px; border-radius:6px; padding:3px 8px; pointer-events:none; transition:opacity .15s ease; }
+  .search-wrap:focus-within kbd, .search-wrap.has-text kbd{ opacity:0; }
+  .search-clear{ position:absolute; right:10px; top:50%; transform:translateY(-50%); width:32px; height:32px; padding:0; display:none; }
+  .search-wrap.has-text .search-clear{ display:flex; }
+  .search-clear:hover{ transform:translateY(-50%); }
+  .toolbar > button{ height:52px; white-space:nowrap; font-size:14.5px; }
+
+  /* ---- Guía rápida ---- */
+  .legend{ display:flex; gap:8px 18px; flex-wrap:wrap; align-items:center; margin:0 0 16px; padding:9px 14px; font-size:12.5px; color:var(--muted); background:var(--panel-alt); border:1px dashed var(--panel-edge); border-radius:12px; }
+  .legend b{ color:var(--text); }
+  .legend span{ display:inline-flex; align-items:center; gap:6px; }
+  .legend svg{ width:14px; height:14px; fill:none; stroke:var(--accent); stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
+
+  /* ---- Lista de empresas ---- */
+  #results{ display:flex; flex-direction:column; gap:10px; }
+  .row{ position:relative; overflow:hidden; background:var(--panel); border:1px solid var(--panel-edge); border-radius:14px; padding:12px 14px; box-shadow:var(--shadow); animation:rowIn .4s var(--ease) backwards; }
+  .row::before{ content:''; position:absolute; left:-1px; top:12px; bottom:12px; width:3px; border-radius:0 3px 3px 0; background:var(--grad); opacity:0; transform:scaleY(.4); transition:opacity .2s ease, transform .25s var(--ease); z-index:2; }
+  .row:hover, .row.open{ border-color:var(--accent); box-shadow:0 0 18px -2px rgba(var(--accent-rgb), 0.35), var(--shadow-lg); }
+  .row:hover::before, .row.open::before{ opacity:1; transform:none; }
+  .row.open{ transform:none; }
+  @keyframes rowIn{ from{ opacity:0; transform:translateY(8px); } to{ opacity:1; transform:none; } }
+  .row .main{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+  .row .name{ display:flex; align-items:center; gap:12px; font-size:15px; font-weight:600; min-width:0; }
+  .row .avatar{ width:36px; height:36px; border-radius:11px; flex-shrink:0; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.12); color:var(--accent); display:flex; align-items:center; justify-content:center; font-size:14.5px; font-weight:800; box-shadow:none; transition:background .2s ease, border-color .2s ease, color .2s ease, transform .25s var(--spring); }
+  :root[data-theme="light"] .row .avatar { background:rgba(0,0,0,.04); border-color:rgba(0,0,0,.08); color:var(--accent-dark); }
+  .row:hover .avatar{ background:var(--accent-soft); border-color:var(--accent); color:var(--accent); transform:scale(1.06); box-shadow:0 0 12px -2px rgba(var(--accent-rgb),.4); }
+  .row .pw-area{ display:flex; align-items:center; gap:6px; margin-left:auto; }
+  .row .pw{ position:relative; overflow:hidden; font-family:var(--mono); font-size:13px; color:var(--muted); letter-spacing:.04em; min-width:150px; text-align:center; padding:7px 12px; border-radius:9px; background:var(--panel-alt); border:1px solid var(--panel-edge); transition:all .2s ease; user-select:all; display:flex; align-items:center; justify-content:center; }
+  .row .pw.revealed{ color:var(--accent-dark); background:var(--accent-soft); border-color:color-mix(in srgb, var(--accent) 35%, transparent); letter-spacing:.02em; font-weight:600; }
+  .row .pw.bump{ animation:bump .35s var(--spring); }
+  .row .pw.loading { animation: pulse 1s infinite alternate; letter-spacing: normal; color: var(--accent); }
+  .row .pw-timer { position:absolute; bottom:0; left:0; height:3px; background:var(--accent); width:0%; transition:width linear; opacity: 0; }
+  .row .pw.revealed .pw-timer { opacity: 1; }
+  @keyframes bump{ 40%{ transform:scale(1.06); } }
+  @keyframes pulse { from { opacity: 0.5; } to { opacity: 1; } }
+
+  .edit-panel{ display:none; margin-top:12px; padding-top:14px; border-top:1px dashed var(--panel-edge); }
+  .edit-panel.open{ display:block; animation:panelIn .2s ease; }
   .edit-panel .fields{ display:flex; gap:10px; flex-wrap:wrap; }
-  .edit-panel .fields > div{ flex:1; min-width:150px; }
+  .edit-panel .fields > div{ flex:1; min-width:160px; }
   .edit-panel label{ margin-top:0; }
-  .edit-panel .actions{ display:flex; gap:8px; margin-top:12px; }
+  .edit-panel .actions{ display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; }
   .edit-panel .actions form{ display:inline; }
-  .empty{ color:var(--muted); font-size:13.5px; text-align:center; padding:30px 0; }
-  .foot-note{ color:var(--muted); font-size:12px; text-align:center; margin-top:18px; opacity:.75; }
+  .ep-sec{ padding:14px; border:1px solid var(--panel-edge); border-radius:12px; background:var(--panel-alt); margin-bottom:10px; }
+  .ep-sec h5{ margin:0 0 10px; font-size:13px; font-weight:700; display:flex; align-items:center; gap:7px; }
+  .ep-sec h5 svg{ width:15px; height:15px; fill:none; stroke:var(--accent); stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
+  .ep-sec.danger-zone{ background:var(--danger-soft); border-color:color-mix(in srgb, var(--danger) 30%, transparent); display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:0; }
+  .ep-sec.danger-zone h5{ margin:0; color:var(--danger); } .ep-sec.danger-zone h5 svg{ stroke:var(--danger); }
+  .ep-sec.danger-zone small{ display:block; font-weight:500; color:var(--muted); margin-top:2px; }
+  .ep-sec.danger-zone form{ margin:0 !important; }
+
+  .empty{ color:var(--muted); font-size:14px; text-align:center; padding:44px 20px; border:2px dashed var(--panel-edge); border-radius:16px; background:var(--panel-alt); }
+  .empty .big{ font-size:34px; display:block; margin-bottom:8px; }
+  .empty b{ display:block; color:var(--text); font-size:15px; margin-bottom:4px; }
+  #noMatch{ display:none; }
+  .foot-note{ display:flex; align-items:center; justify-content:center; gap:7px; color:var(--muted); font-size:12px; text-align:center; margin-top:20px; opacity:.85; }
+  .foot-note svg{ width:13px; height:13px; fill:none; stroke:currentColor; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
+
+  /* ---- Tarjetas de agregar / importar ---- */
   .add-card{ margin-bottom:16px; display:none; }
-  .add-card.open{ display:block; animation:panelIn .18s ease; }
-  .add-card .fields{ display:flex; gap:10px; flex-wrap:wrap; }
-  .add-card .fields > div{ flex:1; min-width:160px; }
+  .add-card.open{ display:block; animation:panelIn .2s ease; }
+  .add-card .fields{ display:flex; gap:12px; flex-wrap:wrap; }
+  .add-card .fields > div{ flex:1; min-width:180px; }
   .add-card label{ margin-top:0; }
+  .card-title{ display:flex; align-items:center; gap:10px; margin:0 0 4px; font-size:16px; font-weight:800; }
+  .card-title .ico{ width:30px; height:30px; border-radius:9px; background:var(--accent-soft); color:var(--accent-dark); display:flex; align-items:center; justify-content:center; }
+  .card-title svg{ width:16px; height:16px; fill:none; stroke:currentColor; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
+
+  /* ---- Importar ---- */
   .imp-head{ display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:4px; }
   .imp-head span{ color:var(--muted); font-size:12.5px; }
-  .imp-help{ color:var(--muted); font-size:12.5px; margin:0 0 12px; line-height:1.5; }
-  .imp-drop{ border:2px dashed var(--panel-edge); border-radius:12px; padding:18px; text-align:center; background:var(--panel-alt); transition:border-color .15s ease, background .15s ease; }
-  .imp-drop.drag{ border-color:var(--accent); background:var(--accent-soft); }
-  .imp-drop input[type=file]{ margin-top:8px; font-size:13px; }
+  .imp-help{ color:var(--muted); font-size:12.5px; margin:0 0 12px; line-height:1.55; }
+  .imp-drop{ border:2px dashed color-mix(in srgb, var(--accent) 30%, var(--panel-edge)); border-radius:14px; padding:22px; text-align:center; font-size:13.5px; color:var(--muted); background:var(--panel-alt); transition:border-color .15s ease, background .15s ease, transform .2s var(--ease); }
+  .imp-drop:hover{ border-color:var(--accent); }
+  .imp-drop.drag{ border-color:var(--accent); background:var(--accent-soft); transform:scale(1.01); }
+  .imp-drop input[type=file]{ margin-top:10px; font-size:13px; max-width:420px; }
   .imp-msg{ margin-top:10px; font-size:13px; }
-  .imp-msg.err{ color:var(--danger); background:var(--danger-soft); border-radius:8px; padding:8px 12px; }
+  .imp-msg.err{ color:var(--danger); background:var(--danger-soft); border-radius:10px; padding:9px 13px; }
   .imp-chips{ display:flex; gap:6px; flex-wrap:wrap; margin:14px 0 10px; }
   .imp-chip{ font-size:12px; font-weight:700; padding:4px 11px; border-radius:999px; color:var(--accent-dark); background:var(--accent-soft); }
   .imp-chip.mute{ color:var(--muted); background:var(--panel-alt); border:1px solid var(--panel-edge); font-weight:600; }
-  .imp-chip.warn{ color:#8a5300; background:#fff4e0; }
-  :root[data-theme="dark"] .imp-chip.warn{ color:#ffc46b; background:#3a2c12; }
+  .imp-chip.warn, .imp-b.warn{ color:#8a5300; background:#fff4e0; }
   .imp-tools{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:10px; }
   .imp-tools button{ padding:7px 12px; font-size:12.5px; }
-  .imp-wrap{ overflow-x:auto; border:1px solid var(--panel-edge); border-radius:10px; max-height:55vh; overflow-y:auto; }
+  .imp-wrap{ overflow-x:auto; border:1px solid var(--panel-edge); border-radius:12px; max-height:55vh; overflow-y:auto; }
   .imp-t{ width:100%; border-collapse:collapse; font-size:13px; }
-  .imp-t th{ position:sticky; top:0; background:var(--panel-alt); text-align:left; font-size:11px; letter-spacing:.03em; text-transform:uppercase; color:var(--muted); padding:8px 10px; border-bottom:1px solid var(--panel-edge); }
-  .imp-t td{ padding:7px 10px; border-bottom:1px solid var(--panel-edge); vertical-align:middle; }
+  .imp-t th{ position:sticky; top:0; background:var(--panel-alt); text-align:left; font-size:11px; letter-spacing:.03em; text-transform:uppercase; color:var(--muted); padding:9px 10px; border-bottom:1px solid var(--panel-edge); }
+  .imp-t td{ padding:8px 10px; border-bottom:1px solid var(--panel-edge); vertical-align:middle; }
+  .imp-t tbody tr:hover td{ background:var(--accent-soft); }
   .imp-t tr:last-child td{ border-bottom:none; }
   .imp-t tr.off td{ opacity:.6; }
   .imp-t .k{ font-family:var(--mono); color:var(--muted); white-space:nowrap; }
-  .imp-t select{ background:var(--panel); border:1px solid var(--panel-edge); color:var(--text); font-family:var(--sans); font-size:12.5px; padding:5px 8px; border-radius:7px; max-width:260px; }
+  .imp-t select{ background:var(--panel); border:1px solid var(--panel-edge); color:var(--text); font-family:var(--sans); font-size:12.5px; padding:5px 8px; border-radius:8px; max-width:260px; }
   .imp-b{ display:inline-block; font-size:11.5px; font-weight:700; padding:3px 9px; border-radius:999px; white-space:nowrap; }
   .imp-b.upd{ color:var(--accent-dark); background:var(--accent-soft); }
   .imp-b.same{ color:var(--muted); background:var(--panel-alt); border:1px solid var(--panel-edge); font-weight:600; }
-  .imp-b.warn{ color:#8a5300; background:#fff4e0; }
-  :root[data-theme="dark"] .imp-b.warn{ color:#ffc46b; background:#3a2c12; }
-  .imp-avisos{ font-size:12.5px; color:#8a5300; background:#fff4e0; border-radius:8px; padding:8px 12px; margin-top:10px; }
-  :root[data-theme="dark"] .imp-avisos{ color:#ffc46b; background:#3a2c12; }
+  .imp-avisos{ font-size:12.5px; color:#8a5300; background:#fff4e0; border-radius:10px; padding:9px 13px; margin-top:10px; }
   .imp-avisos ul{ margin:4px 0 0; padding-left:18px; }
+  :root[data-theme="dark"] .imp-chip.warn, :root[data-theme="dark"] .imp-b.warn, :root[data-theme="dark"] .imp-avisos{ color:#ffc46b; background:#3a2c12; }
   .imp-foot{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:12px; }
   .imp-foot .nota{ color:var(--muted); font-size:12px; }
-  .toast{ position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(10px) scale(.96); background:linear-gradient(135deg, var(--accent), var(--accent-dark)); color:#fff; font-size:13px; font-weight:600; padding:9px 18px; border-radius:8px; opacity:0; pointer-events:none; transition:opacity .22s ease, transform .22s cubic-bezier(.34,1.56,.64,1); box-shadow:0 6px 20px rgba(20,30,45,.18); }
+
+  /* ---- Aviso "copiado" ---- */
+  .toast{ position:fixed; bottom:24px; left:50%; display:flex; align-items:center; gap:8px; transform:translateX(-50%) translateY(10px) scale(.96); color:#fff; font-size:13px; font-weight:600; padding:11px 18px; border-radius:12px; opacity:0; pointer-events:none; z-index:500; transition:opacity .22s ease, transform .22s var(--spring); }
+  .toast svg{ width:16px; height:16px; fill:none; stroke:#fff; stroke-width:3; stroke-linecap:round; stroke-linejoin:round; }
   .toast.show{ opacity:1; transform:translateX(-50%) translateY(0) scale(1); }
+
+  @media (max-width:700px){
+    .row .pw-area{ width:100%; margin-left:0; justify-content:space-between; }
+    .row .pw{ flex:1; min-width:0; }
+    .iconbtn.lbl .t{ display:none; } .iconbtn.lbl{ padding:0; width:34px; }
+    .toolbar > button{ flex:1; }
+  }
+  
+  /* Sistema de favoritos */
+  #results { display: flex; flex-direction: column; }
+  .favbtn svg { stroke: var(--muted); fill: none; transition: all 0.2s; }
+  .favbtn:hover svg { stroke: #fbbf24; }
+  .favbtn.on svg { stroke: #fbbf24; fill: #fbbf24; filter: drop-shadow(0 0 6px rgba(251,191,36,0.5)); }
+  .row.fav { order: -1; }
+
+  /* Medidor de Entropía y Fortaleza (Health Check) */
+  .pw-health-box { margin-top: 6px; }
+  .meter { height: 5px; background: var(--panel-edge); border-radius: 999px; overflow: hidden; position: relative; }
+  .meter i { display: block; height: 100%; width: 0%; border-radius: 999px; transition: width 0.3s ease, background-color 0.3s ease; }
+  .meter i.l1 { width: 22%; background: #ef4444; }
+  .meter i.l2 { width: 48%; background: #f59e0b; }
+  .meter i.l3 { width: 75%; background: #3b82f6; }
+  .meter i.l4 { width: 100%; background: var(--accent); }
+  .health-meta { display: flex; justify-content: space-between; align-items: center; margin-top: 5px; font-size: 11px; }
+  .health-status { font-weight: 700; color: var(--muted); }
+  .health-crack { color: var(--muted); font-family: var(--mono); font-size: 10.5px; }
+  .health-warnings { font-size: 11px; color: #ef4444; margin-top: 3px; font-weight: 500; }
+
+  /* Auditoría de Salud de la Bóveda */
+  .audit-stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin: 16px 0; }
+  .audit-card-box { padding: 14px 16px; border-radius: 14px; background: var(--panel-alt); border: 1px solid var(--panel-edge); display: flex; flex-direction: column; gap: 4px; transition: transform 0.2s var(--ease), border-color 0.2s ease, box-shadow 0.2s ease; }
+  .audit-card-box:hover { border-color: var(--accent); box-shadow: 0 0 16px -4px rgba(var(--accent-rgb), 0.35); transform: translateY(-2px); }
+  .audit-card-box .num { font-size: 26px; font-weight: 800; font-family: var(--mono); line-height: 1.1; }
+  .audit-card-box .lbl { font-size: 12px; color: var(--muted); font-weight: 600; }
+  .audit-card-box.salud .num { color: var(--accent); }
+  .audit-card-box.warn .num { color: #f59e0b; }
+  .audit-card-box.danger .num { color: #ef4444; }
+  .audit-card-box.info .num { color: var(--text); }
+  .audit-sec { margin-top: 16px; border-top: 1px dashed var(--panel-edge); padding-top: 14px; }
+  .audit-sec h4 { margin: 0 0 10px; font-size: 13.5px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+  .audit-list { display: flex; flex-direction: column; gap: 6px; max-height: 280px; overflow-y: auto; }
+  .audit-item { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 14px; border-radius: 11px; background: var(--panel); border: 1px solid var(--panel-edge); font-size: 13px; transition: border-color 0.15s ease, background 0.15s ease; }
+  .audit-item:hover { border-color: var(--accent); background: rgba(var(--accent-rgb), 0.04); }
+  .audit-item a.link-edit { font-weight: 600; color: var(--text); text-decoration: none; display: flex; align-items: center; gap: 6px; }
+  .audit-item a.link-edit:hover { color: var(--accent); }
+  .audit-meta-date { display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; color: var(--muted); background: rgba(255,255,255,0.04); padding: 3px 8px; border-radius: 6px; border: 1px solid var(--panel-edge); }
+  .audit-meta-date svg { width: 13px; height: 13px; stroke: var(--accent); }
+  .audit-tag { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; }
+  .audit-tag.danger { color: #ef4444; background: rgba(239, 68, 68, 0.14); border: 1px solid rgba(239, 68, 68, 0.3); }
+  .audit-tag.warn { color: #f59e0b; background: rgba(245, 158, 11, 0.14); border: 1px solid rgba(245, 158, 11, 0.3); }
+  .audit-tag.dup { color: var(--accent); background: rgba(var(--accent-rgb), 0.14); border: 1px solid rgba(var(--accent-rgb), 0.3); }
+  
+  /* Iconos coloridos con halo neón para toolbar y acciones */
+  .toolbar-ico-btn svg { filter: drop-shadow(0 0 5px rgba(var(--accent-rgb), 0.5)); stroke: var(--accent); }
+  .legend-ico-eye svg { stroke: #38bdf8; filter: drop-shadow(0 0 4px rgba(56,189,248,0.5)); }
+  .legend-ico-copy svg { stroke: #34d399; filter: drop-shadow(0 0 4px rgba(52,211,153,0.5)); }
+  .legend-ico-edit svg { stroke: #f59e0b; filter: drop-shadow(0 0 4px rgba(245,158,11,0.5)); }
+  
+  /* Botones de acción en cada fila con iconos a color */
+  .iconbtn.btn-ver svg { stroke: #38bdf8; filter: drop-shadow(0 0 4px rgba(56,189,248,0.5)); }
+  .iconbtn.btn-ver:hover { border-color: #38bdf8; background: rgba(56,189,248,0.12); color: #38bdf8; }
+  .iconbtn.btn-copiar svg { stroke: #34d399; filter: drop-shadow(0 0 4px rgba(52,211,153,0.5)); }
+  .iconbtn.btn-copiar:hover { border-color: #34d399; background: rgba(52,211,153,0.12); color: #34d399; }
+  .iconbtn.btn-sql svg { stroke: #a855f7; filter: drop-shadow(0 0 4px rgba(168,85,247,0.5)); }
+  .iconbtn.btn-sql:hover { border-color: #a855f7; background: rgba(168,85,247,0.12); color: #a855f7; }
+  .iconbtn.btn-editar svg { stroke: #f59e0b; filter: drop-shadow(0 0 4px rgba(245,158,11,0.5)); }
+  .iconbtn.btn-editar:hover { border-color: #f59e0b; background: rgba(245,158,11,0.12); color: #f59e0b; }
 </style>
 
-<div class="top">
-  <h1>Claves Jira por empresa</h1>
-  <span class="count"><%= companies.length %> empresas</span>
+<div>
+  <div class="page-head">
+    <div>
+      <h1>Claves Jira por empresa</h1>
+      <p class="sub">Busca una empresa, revela su clave con <b>Ver</b> o cópiala con un clic en <b>Copiar</b>.</p>
+    </div>
+    <span class="count" id="countBadge"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg><span id="countTxt"><%= companies.length %> empresas</span></span>
+  </div>
+
+  <div class="toolbar">
+    <div class="search-wrap" id="searchWrap">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg>
+      <input type="text" id="searchInput" placeholder="Buscar empresa…" autocomplete="off" aria-label="Buscar empresa">
+      <kbd>/</kbd>
+      <button type="button" class="iconbtn search-clear" id="searchClear" title="Limpiar búsqueda" aria-label="Limpiar búsqueda"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+    </div>
+    <button type="button" class="secondary toolbar-ico-btn" id="toggleAuditBtn" aria-expanded="false"><svg viewBox="0 0 24 24" style="stroke:var(--accent);"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Auditar Bóveda</button>
+    <button type="button" class="secondary toolbar-ico-btn" id="toggleAddBtn" aria-expanded="false"><svg viewBox="0 0 24 24" style="stroke:#34d399; filter:drop-shadow(0 0 4px rgba(52,211,153,0.5));"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>Agregar empresa</button>
+    <button type="button" class="secondary toolbar-ico-btn" id="toggleImportBtn" aria-expanded="false"><svg viewBox="0 0 24 24" style="stroke:#38bdf8; filter:drop-shadow(0 0 4px rgba(56,189,248,0.5));"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>Importar claves</button>
+  </div>
+
+  <div class="legend">
+    <b>Guía rápida:</b>
+    <span class="legend-ico-eye"><svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"></path><circle cx="12" cy="12" r="3"></circle></svg>Ver muestra la clave 20 s</span>
+    <span class="legend-ico-copy"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>Copiar la lleva al portapapeles</span>
+    <span class="legend-ico-edit"><svg viewBox="0 0 24 24"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>Editar cambia nombre o clave</span>
+    <span>Pulsa <b>/</b> para buscar</span>
+  </div>
 </div>
 
-<div class="toolbar">
-  <div class="search-wrap">
-    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg>
-    <input type="text" id="searchInput" placeholder="Buscar empresa…" autocomplete="off">
+<div class="card add-card" id="auditCard" style="padding:22px;">
+  <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:12px;">
+    <div class="card-title" style="margin:0;"><span class="ico"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>Auditoría y Diagnóstico de la Bóveda</div>
+    <div style="display:flex; gap:8px;">
+      <button type="button" class="btn-sm" id="btnRecargarAuditoria"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Re-escanear</button>
+      <button type="button" class="secondary btn-sm" id="btnCerrarAuditoria">✕ Cerrar</button>
+    </div>
   </div>
-  <button type="button" class="secondary" id="toggleAddBtn">+ Agregar empresa</button>
-  <button type="button" class="secondary" id="toggleImportBtn">⬆ Importar claves</button>
+  <p class="sub" style="margin-bottom:14px;">Diagnóstico de salud de contraseñas: detecta claves débiles, contraseñas repetidas en varias empresas y credenciales sin actualizar.</p>
+
+  <div id="auditLoading" style="display:none; text-align:center; padding:32px 10px; color:var(--muted);">
+    <svg style="width:28px; height:28px; animation:spin 1s linear infinite;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10" stroke-opacity="0.25"/><path d="M12 2a10 10 0 0 1 10 10"/></svg>
+    <div style="margin-top:10px; font-weight:600;">Analizando entropía, duplicados y vigencia en la base de datos...</div>
+  </div>
+
+  <div id="auditContent"></div>
 </div>
 
 <div class="card add-card" id="addCard">
+  <div class="card-title"><span class="ico"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></span>Nueva empresa</div>
+  <p class="sub" style="margin-bottom:14px">Escribe el nombre y la clave. La clave se guardará cifrada.</p>
   <form method="post" action="/empresa/agregar">
     <div class="fields">
-      <div><label>Nombre de la empresa</label><input type="text" name="empresa" required></div>
-      <div><label>Clave</label><input type="text" name="clave" required></div>
+      <div><label>Nombre de la empresa</label><input type="text" name="empresa" required autocomplete="off"></div>
+      <div>
+        <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px;">
+          <label style="margin:0;">Clave</label>
+          <button type="button" class="plain" id="genPwAddBtn" style="font-size:12px; color:var(--accent); font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:4px;">
+            <svg viewBox="0 0 24 24" style="width:13px; height:13px; stroke:currentColor; stroke-width:2;"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="8" cy="8" r="1.5"/><circle cx="16" cy="16" r="1.5"/><circle cx="8" cy="16" r="1.5"/><circle cx="16" cy="8" r="1.5"/><circle cx="12" cy="12" r="1.5"/></svg>
+            🎲 Generar segura
+          </button>
+        </div>
+        <input type="text" name="clave" id="add-clave-input" required autocomplete="off">
+        <div class="pw-health-box">
+          <div class="meter"><i id="add-meter-bar"></i></div>
+          <div class="health-meta">
+            <span class="health-status" id="add-health-status">Introduce una contraseña</span>
+            <span class="health-crack" id="add-health-crack">--</span>
+          </div>
+          <div class="health-warnings" id="add-health-warnings"></div>
+        </div>
+      </div>
     </div>
-    <button class="full" type="submit">Guardar empresa</button>
+    <button class="full" type="submit"><svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>Guardar empresa</button>
   </form>
 </div>
 
 <div class="card add-card" id="importCard" style="padding:18px;">
-  <div class="imp-head"><strong>Importar claves desde un archivo</strong><span>.txt · .csv · .xml · .xlsx · .xls</span></div>
+  <div class="card-title"><span class="ico"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg></span>Importar claves desde un archivo</div>
+  <div class="imp-head" style="margin-top:2px"><span>.txt · .csv · .xml · .xlsx · .xls</span></div>
   <p class="imp-help">
     Sube un archivo donde cada empresa va seguida de su clave (una debajo de la otra, o en dos columnas).
     Primero verás una <strong>vista previa</strong>: no se cambia nada hasta que pulses «Aplicar».
   </p>
   <div class="imp-drop" id="impDrop">
-    Arrastra el archivo aquí o elígelo<br>
+    <strong style="color:var(--text)">Arrastra el archivo aquí</strong> o elígelo desde tu equipo<br>
     <input type="file" id="impFile" accept=".txt,.csv,.xml,.xlsx,.xls">
   </div>
   <div class="imp-msg" id="impMsg"></div>
@@ -130,73 +299,138 @@
 </div>
 
 <div id="results">
-  <% companies.forEach(function(c) { %>
-  <div class="row" data-name="<%= c.empresa.toLowerCase() %>">
+  <% companies.forEach(function(c, idx) { %>
+  <% 
+    var charCode = c.empresa.charCodeAt(0) || 65; 
+    var hue = (charCode * 15) % 360; 
+  %>
+  <div class="row" data-name="<%= c.empresa.toLowerCase() %>" data-id="<%= c.id %>" style="animation-delay:<%= Math.min(idx, 12) * 30 %>ms">
     <div class="main">
       <div class="name">
-        <span class="avatar"><%= c.empresa[0].toUpperCase() %></span>
-        <%= c.empresa %>
+        <button type="button" class="iconbtn favbtn" id="fav-<%= c.id %>" onclick="toggleFav(<%= c.id %>)" title="Marcar como favorito (anclar arriba)" style="padding:0; width:28px; height:28px; background:none; border:none; box-shadow:none;">
+          <svg viewBox="0 0 24 24" style="width:18px; height:18px;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+        </button>
+        <span class="avatar" style="--hue: <%= hue %>"><%= c.empresa[0].toUpperCase() %></span>
+        <span><%= c.empresa %></span>
       </div>
       <div class="pw-area">
-        <span class="pw" id="pw-<%= c.id %>">••••••••••••••••</span>
-        <button type="button" class="iconbtn" title="Mostrar / ocultar" onclick="toggleReveal(<%= c.id %>)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+        <div class="pw" id="pw-<%= c.id %>" title="Clave oculta">
+          <span id="pw-txt-<%= c.id %>">••••••••••••••••</span>
+          <div class="pw-timer" id="timer-<%= c.id %>"></div>
+        </div>
+        <button type="button" class="iconbtn lbl btn-ver" id="eye-<%= c.id %>" title="Mostrar u ocultar la clave" onclick="toggleReveal(<%= c.id %>)">
+          <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"></path><circle cx="12" cy="12" r="3"></circle></svg><span class="t">Ver</span>
         </button>
-        <button type="button" class="iconbtn" title="Copiar" onclick="copyPassword(<%= c.id %>)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+        <button type="button" class="iconbtn lbl btn-copiar" title="Copiar la clave al portapapeles" onclick="copyPassword(<%= c.id %>)">
+          <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><span class="t">Copiar</span>
         </button>
-        <button type="button" class="iconbtn" title="Editar empresa" onclick="toggleEdit(<%= c.id %>)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>
+        <button type="button" class="iconbtn lbl btn-sql" title="Copiar condición SQL (nit_empresa = '...')" onclick="copyAsSql(<%= c.id %>)">
+          <svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg><span class="t">SQL</span>
+        </button>
+        <button type="button" class="iconbtn lbl btn-editar" id="editbtn-<%= c.id %>" title="Editar nombre o clave" onclick="toggleEdit(<%= c.id %>)">
+          <svg viewBox="0 0 24 24"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg><span class="t">Editar</span>
         </button>
       </div>
     </div>
 
     <div class="edit-panel" id="edit-<%= c.id %>">
-      <form method="post" action="/empresa/<%= c.id %>/renombrar">
-        <div class="fields">
-          <div><label>Nombre de la empresa</label><input type="text" name="empresa" value="<%= c.empresa %>" required></div>
-        </div>
-        <div class="actions">
-          <button type="submit" class="secondary">Guardar nombre</button>
-        </div>
-      </form>
-      <form method="post" action="/empresa/<%= c.id %>/actualizar" style="margin-top:14px; padding-top:14px; border-top:1px dashed var(--panel-edge);">
-        <div class="fields">
-          <div><label>Clave anterior</label><input type="text" name="clave_anterior" required></div>
-          <div><label>Clave nueva</label><input type="text" name="clave_nueva" required></div>
-        </div>
-        <div class="actions">
-          <button type="submit">Guardar clave</button>
-          <button type="button" class="secondary" onclick="toggleEdit(<%= c.id %>)">Cancelar</button>
-        </div>
-      </form>
-      <form method="post" action="/empresa/<%= c.id %>/eliminar"
-            onsubmit="return confirm('¿Eliminar la empresa <%= c.empresa %> de la bóveda?');" style="margin-top:8px;">
-        <button type="submit" class="danger">Eliminar empresa</button>
-      </form>
+      <div class="ep-sec">
+        <h5><svg viewBox="0 0 24 24"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>Cambiar nombre</h5>
+        <form method="post" action="/empresa/<%= c.id %>/renombrar">
+          <div class="fields">
+            <div><label>Nombre de la empresa</label><input type="text" name="empresa" value="<%= c.empresa %>" required></div>
+          </div>
+          <div class="actions"><button type="submit" class="secondary btn-sm">Guardar nombre</button></div>
+        </form>
+      </div>
+      <div class="ep-sec">
+        <h5><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>Cambiar clave</h5>
+        <form method="post" action="/empresa/<%= c.id %>/actualizar">
+          <div class="fields">
+            <div><label>Clave anterior</label><input type="text" name="clave_anterior" required autocomplete="off"></div>
+            <div>
+              <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px;">
+                <label style="margin:0;">Clave nueva</label>
+                <button type="button" class="plain" onclick="generarClaveFila(<%= c.id %>)" style="font-size:11.5px; color:var(--accent); font-weight:700; cursor:pointer;">
+                  🎲 Generar segura
+                </button>
+              </div>
+              <input type="text" name="clave_nueva" id="edit-clave-<%= c.id %>" oninput="evaluarClaveInput(this, 'edit-meter-<%= c.id %>', 'edit-status-<%= c.id %>', 'edit-crack-<%= c.id %>', 'edit-warn-<%= c.id %>')" required autocomplete="off">
+              <div class="pw-health-box">
+                <div class="meter"><i id="edit-meter-<%= c.id %>"></i></div>
+                <div class="health-meta">
+                  <span class="health-status" id="edit-status-<%= c.id %>"></span>
+                  <span class="health-crack" id="edit-crack-<%= c.id %>"></span>
+                </div>
+                <div class="health-warnings" id="edit-warn-<%= c.id %>"></div>
+              </div>
+            </div>
+          </div>
+          <div class="actions">
+            <button type="submit" class="btn-sm">Guardar clave</button>
+            <button type="button" class="secondary btn-sm" onclick="toggleEdit(<%= c.id %>)">Cancelar</button>
+          </div>
+        </form>
+      </div>
+      <div class="ep-sec danger-zone">
+        <h5><svg viewBox="0 0 24 24"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg><span>Zona de peligro<small>Quitar esta empresa de la bóveda.</small></span></h5>
+        <form method="post" action="/empresa/<%= c.id %>/eliminar" onsubmit="return confirm('¿Eliminar la empresa <%= c.empresa %> de la bóveda?');">
+          <button type="submit" class="danger btn-sm">Eliminar empresa</button>
+        </form>
+      </div>
     </div>
   </div>
   <% }); %>
   <% if (companies.length === 0) { %>
-    <div class="empty">Todavía no hay empresas guardadas. Agrega la primera arriba.</div>
+    <div class="empty"><span class="big">🗂️</span><b>Todavía no hay empresas guardadas</b>Pulsa «Agregar empresa» arriba para guardar la primera.</div>
   <% } %>
+  <div class="empty" id="noMatch"><span class="big">🔎</span><b>Sin resultados</b>No encontramos ninguna empresa con ese nombre.</div>
 </div>
 
-<div class="foot-note">Las claves se guardan cifradas en PostgreSQL y solo se descifran cuando las pides.</div>
+<div class="foot-note"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>Las claves se guardan cifradas en PostgreSQL y solo se descifran cuando las pides.</div>
 
-<div class="toast" id="toast">Copiado</div>
+<div class="toast" id="toast"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg><span id="toastTxt">Copiado</span></div>
 
 <script>
-document.getElementById('searchInput').addEventListener('input', function(e){
-  const q = e.target.value.trim().toLowerCase();
-  document.querySelectorAll('#results .row').forEach(row => {
-    row.style.display = row.dataset.name.includes(q) ? '' : 'none';
-  });
-});
+/* ---------- Búsqueda, atajos y paneles ---------- */
+(function(){
+  var $ = function(id){ return document.getElementById(id); };
+  var input = $('searchInput'), wrap = $('searchWrap'), total = <%= companies.length %>;
 
-document.getElementById('toggleAddBtn').addEventListener('click', function(){
-  document.getElementById('addCard').classList.toggle('open');
-});
+  function filtrar(){
+    var q = input.value.trim().toLowerCase(), vis = 0;
+    wrap.classList.toggle('has-text', q.length > 0);
+    document.querySelectorAll('#results .row').forEach(function(row){
+      var ok = row.dataset.name.includes(q); row.style.display = ok ? '' : 'none'; if (ok) vis++;
+    });
+    $('countTxt').textContent = q ? (vis + ' de ' + total + ' empresas') : (total + ' empresas');
+    $('noMatch').style.display = (total > 0 && vis === 0) ? 'block' : 'none';
+  }
+  input.addEventListener('input', filtrar);
+  $('searchClear').addEventListener('click', function(){ input.value = ''; filtrar(); input.focus(); });
+  document.addEventListener('keydown', function(e){
+    var t = e.target, escribiendo = t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable);
+    if (e.key === '/' && !escribiendo && !e.ctrlKey && !e.metaKey) { e.preventDefault(); input.focus(); input.select(); }
+    else if (e.key === 'Escape' && t === input) { input.value = ''; filtrar(); input.blur(); }
+  });
+
+  function panel(btnId, cardId, otroId, otroBtn){
+    $(btnId).addEventListener('click', function(){
+      var abierto = $(cardId).classList.toggle('open');
+      if (abierto) { $(otroId).classList.remove('open'); $(otroBtn).classList.remove('active'); $(otroBtn).setAttribute('aria-expanded', 'false'); var f = $(cardId).querySelector('input[type=text]'); if (f) f.focus(); $(cardId).scrollIntoView({ behavior:'smooth', block:'nearest' }); }
+      this.classList.toggle('active', abierto); this.setAttribute('aria-expanded', abierto);
+    });
+  }
+  panel('toggleAddBtn', 'addCard', 'importCard', 'toggleImportBtn');
+  /* el panel de importar lo abre su propio script más abajo; aquí solo sincronizamos el estado visual */
+  $('toggleImportBtn').addEventListener('click', function(){
+    var btn = this; setTimeout(function(){
+      var abierto = $('importCard').classList.contains('open');
+      btn.classList.toggle('active', abierto); btn.setAttribute('aria-expanded', abierto);
+      if (abierto) { $('addCard').classList.remove('open'); $('toggleAddBtn').classList.remove('active'); $('toggleAddBtn').setAttribute('aria-expanded', 'false'); }
+    }, 0);
+  });
+})();
 
 /* ---------- Importar claves desde archivo ---------- */
 (function(){
@@ -340,23 +574,362 @@ document.getElementById('toggleAddBtn').addEventListener('click', function(){
   });
 })();
 
+
 const revealedState = {};
+const revealTimers = {};
+
+function nombreDe(id){ const r = document.querySelector('.row[data-id="' + id + '"] .name span:last-child'); return r ? r.textContent.trim() : ''; }
+
+function ocultar(id){
+  const el = document.getElementById('pw-' + id), eye = document.getElementById('eye-' + id);
+  const txt = document.getElementById('pw-txt-' + id);
+  const timer = document.getElementById('timer-' + id);
+  if (txt) txt.textContent = '••••••••••••••••'; 
+  el.classList.remove('revealed'); el.title = 'Clave oculta';
+  if (revealedState[id]) revealedState[id].value = null;
+  if (eye){ eye.classList.remove('on'); eye.querySelector('.t').textContent = 'Ver'; }
+  if (timer){ timer.style.transition = 'none'; timer.style.width = '0%'; }
+  clearTimeout(revealTimers[id]);
+}
 
 async function toggleReveal(id){
-  const el = document.getElementById('pw-' + id);
-  if (revealedState[id] && revealedState[id].value){
-    el.textContent = '••••••••••••••••';
-    el.classList.remove('revealed');
-    revealedState[id].value = null;
+  const el = document.getElementById('pw-' + id), eye = document.getElementById('eye-' + id);
+  const txt = document.getElementById('pw-txt-' + id);
+  const timer = document.getElementById('timer-' + id);
+  if (revealedState[id] && revealedState[id].value){ ocultar(id); return; }
+  
+  el.classList.add('loading');
+  if (txt) txt.textContent = 'Descifrando...';
+  
+  const res = await fetch('/empresa/' + id + '/clave');
+  if (!res.ok) {
+    el.classList.remove('loading');
+    if (txt) txt.textContent = 'Error';
     return;
   }
-  const res = await fetch('/empresa/' + id + '/clave');
-  if (!res.ok) return;
   const data = await res.json();
-  el.textContent = data.clave;
-  el.classList.add('revealed');
+  el.classList.remove('loading');
+  
+  if (txt) {
+    const finalStr = data.clave;
+    const glyphs = 'ABCDEF0123456789!@#$%^&*<>?';
+    let iter = 0; const maxIter = 12;
+    const scramble = setInterval(() => {
+      txt.textContent = finalStr.split('').map((char, index) => {
+        if (index < (iter / maxIter) * finalStr.length) return char;
+        return glyphs[Math.floor(Math.random() * glyphs.length)];
+      }).join('');
+      iter++;
+      if (iter > maxIter) { clearInterval(scramble); txt.textContent = finalStr; }
+    }, 45);
+  }
+  el.title = 'Clave visible (se oculta sola)';
+  el.classList.add('revealed'); el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump');
   revealedState[id] = { value: data.clave };
+  if (eye){ eye.classList.add('on'); eye.querySelector('.t').textContent = 'Ocultar'; }
+  
+  if (timer) {
+    timer.style.transition = 'none';
+    timer.style.width = '100%';
+    void timer.offsetWidth; // force reflow
+    timer.style.transition = 'width 10s linear';
+    timer.style.width = '0%';
+  }
+  
+  clearTimeout(revealTimers[id]);
+  revealTimers[id] = setTimeout(function(){ ocultar(id); }, 10000);   // hides in 10s
 }
+
+// === MEDIDOR DE ENTROPÍA Y FORTALEZA EN TIEMPO REAL (HEALTH CHECK) ===
+function calcularEntropiaYCrackeo(pw) {
+  if (!pw) return { score: 0, nivel: '', crack: '--', bits: 0, warnings: [] };
+  var len = pw.length;
+  var pool = 0;
+  if (/[a-z]/.test(pw)) pool += 26;
+  if (/[A-Z]/.test(pw)) pool += 26;
+  if (/[0-9]/.test(pw)) pool += 10;
+  if (/[^a-zA-Z0-9]/.test(pw)) pool += 32;
+
+  var bits = Math.round(len * (Math.log2(pool || 1)));
+  var warnings = [];
+  if (len < 8) warnings.push('Muy corta (mínimo 8 caracteres)');
+  if (/(.)\1{2,}/.test(pw)) warnings.push('Caracteres repetidos seguidos');
+  if (/1234|abcd|qwerty|admin|password|1111|12345/i.test(pw)) warnings.push('Secuencia o patrón predecible');
+
+  var score = 1;
+  var nivel = 'Muy Débil';
+  var crack = 'Instantáneo (< 1 seg)';
+
+  if (bits < 28 || len < 6) {
+    score = 1; nivel = 'Muy Débil'; crack = 'Instantáneo (< 1 seg)';
+  } else if (bits < 45 || len < 8) {
+    score = 2; nivel = 'Débil'; crack = 'Minutos / Horas';
+  } else if (bits < 60) {
+    score = 3; nivel = 'Aceptable'; crack = 'Días / Semanas';
+  } else if (bits < 80) {
+    score = 4; nivel = 'Robusta'; crack = 'Siglos';
+  } else {
+    score = 4; nivel = 'Ultra Segura (Militar)'; crack = 'Millones de años';
+  }
+
+  if (warnings.length && score > 2) score = 2;
+
+  return { score: score, nivel: nivel, crack: crack, bits: bits, warnings: warnings };
+}
+
+function evaluarClaveInput(input, barId, statusId, crackId, warnId) {
+  var val = input.value;
+  var bar = document.getElementById(barId);
+  var status = document.getElementById(statusId);
+  var crack = document.getElementById(crackId);
+  var warn = document.getElementById(warnId);
+  if (!bar) return;
+  if (!val) {
+    bar.className = '';
+    if (status) status.textContent = 'Introduce una clave';
+    if (crack) crack.textContent = '--';
+    if (warn) warn.textContent = '';
+    return;
+  }
+  var res = calcularEntropiaYCrackeo(val);
+  bar.className = 'l' + res.score;
+  if (status) {
+    status.textContent = res.nivel + ' · ' + res.bits + ' bits';
+    status.style.color = res.score === 1 ? '#ef4444' : (res.score === 2 ? '#f59e0b' : (res.score === 3 ? '#3b82f6' : 'var(--accent)'));
+  }
+  if (crack) crack.textContent = 'Crackeo: ' + res.crack;
+  if (warn) warn.textContent = res.warnings.length ? '⚠️ ' + res.warnings.join(' · ') : '';
+}
+
+function generarClaveSegura(longitud) {
+  longitud = longitud || 16;
+  var minus = 'abcdefghjkmnpqrstuvwxyz';
+  var mayus = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+  var nums = '23456789';
+  var specs = '!@#$%&*+=?~';
+  var todo = minus + mayus + nums + specs;
+  var clave = [
+    minus[Math.floor(Math.random() * minus.length)],
+    mayus[Math.floor(Math.random() * mayus.length)],
+    nums[Math.floor(Math.random() * nums.length)],
+    specs[Math.floor(Math.random() * specs.length)]
+  ];
+  for (var i = 4; i < longitud; i++) {
+    clave.push(todo[Math.floor(Math.random() * todo.length)]);
+  }
+  return clave.sort(function(){ return 0.5 - Math.random(); }).join('');
+}
+
+// Generador para el formulario de agregar
+const addGenBtn = document.getElementById('genPwAddBtn');
+const addInputClave = document.getElementById('add-clave-input');
+if (addGenBtn && addInputClave) {
+  addGenBtn.addEventListener('click', function() {
+    const pw = generarClaveSegura(18);
+    addInputClave.value = pw;
+    evaluarClaveInput(addInputClave, 'add-meter-bar', 'add-health-status', 'add-health-crack', 'add-health-warnings');
+    showToast('Clave segura generada (18 caracteres)');
+  });
+  addInputClave.addEventListener('input', function() {
+    evaluarClaveInput(this, 'add-meter-bar', 'add-health-status', 'add-health-crack', 'add-health-warnings');
+  });
+}
+
+// Generador para las filas de edición
+window.generarClaveFila = function(id) {
+  const inp = document.getElementById('edit-clave-' + id);
+  if (!inp) return;
+  const pw = generarClaveSegura(18);
+  inp.value = pw;
+  evaluarClaveInput(inp, 'edit-meter-' + id, 'edit-status-' + id, 'edit-crack-' + id, 'edit-warn-' + id);
+  showToast('Clave segura generada');
+};
+
+// === AUDITORÍA GLOBAL DE LA BÓVEDA ===
+const toggleAuditBtn = document.getElementById('toggleAuditBtn');
+const auditCard = document.getElementById('auditCard');
+const auditLoading = document.getElementById('auditLoading');
+const auditContent = document.getElementById('auditContent');
+const btnRecargarAuditoria = document.getElementById('btnRecargarAuditoria');
+const btnCerrarAuditoria = document.getElementById('btnCerrarAuditoria');
+
+async function ejecutarAuditoria() {
+  if (!auditCard) return;
+  auditLoading.style.display = 'block';
+  auditContent.innerHTML = '';
+  try {
+    const res = await fetch('/api/seguridad/auditoria');
+    if (!res.ok) {
+      if (res.status === 404) {
+        throw new Error('El servidor necesita reiniciarse para registrar el nuevo módulo de auditoría. Por favor, detén la terminal con Ctrl+C, ejecuta "npm start" y recarga la página.');
+      }
+      throw new Error('Error al auditar la bóveda (' + res.status + ').');
+    }
+    const data = await res.json();
+    auditLoading.style.display = 'none';
+
+    const saludColor = data.salud >= 80 ? 'var(--ok)' : (data.salud >= 50 ? '#f59e0b' : '#ef4444');
+    let html = `
+      <div class="audit-stat-grid">
+        <div class="audit-card-box salud">
+          <div class="num" style="color:${saludColor};">${data.salud}%</div>
+          <div class="lbl">Índice de Salud Global</div>
+        </div>
+        <div class="audit-card-box ${data.duplicadas.length ? 'danger' : 'info'}">
+          <div class="num">${data.duplicadas.length}</div>
+          <div class="lbl">Grupos de Claves Duplicadas</div>
+        </div>
+        <div class="audit-card-box ${data.debiles.length ? 'warn' : 'info'}">
+          <div class="num">${data.debiles.length}</div>
+          <div class="lbl">Contraseñas Débiles</div>
+        </div>
+        <div class="audit-card-box ${data.desactualizadas.length ? 'warn' : 'info'}">
+          <div class="num">${data.desactualizadas.length}</div>
+          <div class="lbl">Sin cambiar (+6 meses)</div>
+        </div>
+      </div>
+    `;
+
+    function formatearFechaMod(fIso) {
+      if (!fIso) return 'Sin fecha registrada';
+      try {
+        const d = new Date(fIso);
+        if (isNaN(d.getTime())) return 'Sin fecha';
+        return d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
+      } catch (e) {
+        return 'Sin fecha';
+      }
+    }
+
+    // Sección de duplicadas
+    if (data.duplicadas.length > 0) {
+      html += `
+        <div class="audit-sec">
+          <h4 style="color:#ef4444;"><svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:#ef4444;fill:none;stroke-width:2;filter:drop-shadow(0 0 4px rgba(239,68,68,0.5));"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            Contraseñas Duplicadas (Riesgo Crítico)
+          </h4>
+          <div class="audit-list">
+      `;
+      data.duplicadas.forEach(g => {
+        const empItems = g.empresas.map(e => `
+          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin:3px 0;">
+            <a href="javascript:void(0)" onclick="saltarAEmpresa(${e.id})" style="color:var(--accent); font-weight:700; text-decoration:none;">${e.empresa}</a>
+            <span class="audit-meta-date" title="Última actualización de contraseña"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>${formatearFechaMod(e.fecha)} (${e.dias != null ? e.dias + ' d' : 'reciente'})</span>
+          </div>
+        `).join('');
+        html += `
+          <div class="audit-item" style="align-items:flex-start;">
+            <div style="flex:1;">
+              <span style="font-size:12px; color:var(--muted); font-weight:600;">Misma clave usada en ${g.cantidad} empresas:</span>
+              <div style="margin-top:2px;">${empItems}</div>
+            </div>
+            <span class="audit-tag danger"><svg viewBox="0 0 24 24" style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.5;"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/></svg>Duplicada</span>
+          </div>
+        `;
+      });
+      html += `</div></div>`;
+    }
+
+    // Sección de débiles
+    if (data.debiles.length > 0) {
+      html += `
+        <div class="audit-sec">
+          <h4 style="color:#f59e0b;"><svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:#f59e0b;fill:none;stroke-width:2;filter:drop-shadow(0 0 4px rgba(245,158,11,0.5));"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            Contraseñas Débiles o Predecibles
+          </h4>
+          <div class="audit-list">
+      `;
+      data.debiles.forEach(d => {
+        html += `
+          <div class="audit-item">
+            <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; flex:1;">
+              <a href="javascript:void(0)" onclick="saltarAEmpresa(${d.id})" class="link-edit">
+                <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:var(--accent);fill:none;stroke-width:2;"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                ${d.empresa}
+              </a>
+              <span class="audit-meta-date" title="Última actualización de contraseña">
+                <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                ${formatearFechaMod(d.fecha)}
+              </span>
+            </div>
+            <span class="audit-tag warn"><svg viewBox="0 0 24 24" style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.5;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>${d.motivos.join(' · ')}</span>
+          </div>
+        `;
+      });
+      html += `</div></div>`;
+    }
+
+    // Sección de desactualizadas
+    if (data.desactualizadas.length > 0) {
+      html += `
+        <div class="audit-sec">
+          <h4 style="color:var(--text);"><svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:#38bdf8;fill:none;stroke-width:2;filter:drop-shadow(0 0 4px rgba(56,189,248,0.5));"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Credenciales con más de 6 meses sin renovar
+          </h4>
+          <div class="audit-list">
+      `;
+      data.desactualizadas.forEach(a => {
+        html += `
+          <div class="audit-item">
+            <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; flex:1;">
+              <a href="javascript:void(0)" onclick="saltarAEmpresa(${a.id})" class="link-edit">${a.empresa}</a>
+              <span class="audit-meta-date" title="Fecha de última actualización">
+                <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                Última vez: ${formatearFechaMod(a.fecha)}
+              </span>
+            </div>
+            <span class="audit-tag warn"><svg viewBox="0 0 24 24" style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>${a.dias} días sin cambio</span>
+          </div>
+        `;
+      });
+      html += `</div></div>`;
+    }
+
+    if (!data.duplicadas.length && !data.debiles.length && !data.desactualizadas.length) {
+      html += `
+        <div style="text-align:center; padding:30px 10px; color:var(--ok);">
+          <svg viewBox="0 0 24 24" style="width:40px;height:40px;stroke:currentColor;fill:none;stroke-width:2;margin-bottom:8px;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          <div style="font-size:16px; font-weight:700;">¡Bóveda Acorazada al 100%!</div>
+          <div style="font-size:13px; color:var(--muted); margin-top:4px;">No se encontraron claves duplicadas ni contraseñas débiles en tus registros.</div>
+        </div>
+      `;
+    }
+
+    auditContent.innerHTML = html;
+  } catch (err) {
+    auditLoading.style.display = 'none';
+    auditContent.innerHTML = `<div class="imp-msg err">${err.message}</div>`;
+  }
+}
+
+window.saltarAEmpresa = function(id) {
+  const row = document.querySelector('.row[data-id="' + id + '"]');
+  if (row) {
+    row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    row.classList.add('bump');
+    setTimeout(() => row.classList.remove('bump'), 1000);
+    const p = document.getElementById('edit-' + id);
+    if (p && !p.classList.contains('open')) toggleEdit(id);
+  }
+};
+
+if (toggleAuditBtn) {
+  toggleAuditBtn.addEventListener('click', function() {
+    const open = auditCard.classList.toggle('open');
+    this.setAttribute('aria-expanded', open);
+    if (open) {
+      if (document.getElementById('addCard')) document.getElementById('addCard').classList.remove('open');
+      if (document.getElementById('importCard')) document.getElementById('importCard').classList.remove('open');
+      ejecutarAuditoria();
+    }
+  });
+}
+if (btnRecargarAuditoria) btnRecargarAuditoria.addEventListener('click', ejecutarAuditoria);
+if (btnCerrarAuditoria) btnCerrarAuditoria.addEventListener('click', function() {
+  if (auditCard) auditCard.classList.remove('open');
+  if (toggleAuditBtn) toggleAuditBtn.setAttribute('aria-expanded', 'false');
+});
+
 
 async function copyPassword(id){
   let clave = revealedState[id] && revealedState[id].value;
@@ -376,19 +949,71 @@ async function copyPassword(id){
     document.execCommand('copy');
     document.body.removeChild(ta);
   }
-  showToast();
+  showToast('Clave de «' + nombreDe(id) + '» copiada');
+}
+
+async function copyAsSql(id){
+  let clave = revealedState[id] && revealedState[id].value;
+  if (!clave){
+    const res = await fetch('/empresa/' + id + '/clave');
+    if (!res.ok) return;
+    const data = await res.json();
+    clave = data.clave;
+  }
+  const cond = "nit_empresa = '" + (clave || '').trim() + "'";
+  try{
+    await navigator.clipboard.writeText(cond);
+  }catch(e){
+    const ta = document.createElement('textarea');
+    ta.value = cond;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+  }
+  showToast('Condición SQL copiada: ' + cond);
 }
 
 function toggleEdit(id){
-  document.getElementById('edit-' + id).classList.toggle('open');
+  const p = document.getElementById('edit-' + id);
+  const abierto = p.classList.toggle('open');
+  p.closest('.row').classList.toggle('open', abierto);
+  const b = document.getElementById('editbtn-' + id);
+  if (b){ b.classList.toggle('on', abierto); b.querySelector('.t').textContent = abierto ? 'Cerrar' : 'Editar'; }
 }
 
 let toastTimer;
-function showToast(){
+function showToast(texto){
   const t = document.getElementById('toast');
-  t.textContent = 'Copiado';
+  document.getElementById('toastTxt').textContent = texto || 'Copiado';
   t.classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove('show'), 1400);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 1800);
 }
+// === SISTEMA DE FAVORITOS (PINS) ===
+function getFavs(){ return JSON.parse(localStorage.getItem('boveda-favs') || '[]'); }
+function saveFavs(favs){ localStorage.setItem('boveda-favs', JSON.stringify(favs)); }
+function initFavs(){
+  const favs = getFavs();
+  favs.forEach(id => {
+    const btn = document.getElementById('fav-' + id);
+    const row = document.querySelector('.row[data-id="'+id+'"]');
+    if(btn && row) { btn.classList.add('on'); row.classList.add('fav'); }
+  });
+}
+function toggleFav(id){
+  const btn = document.getElementById('fav-' + id);
+  const row = document.querySelector('.row[data-id="'+id+'"]');
+  if(!btn || !row) return;
+  let favs = getFavs();
+  if(favs.includes(id)){
+    favs = favs.filter(x => x !== id);
+    btn.classList.remove('on'); row.classList.remove('fav');
+  } else {
+    favs.push(id);
+    btn.classList.add('on'); row.classList.add('fav');
+  }
+  saveFavs(favs);
+}
+document.addEventListener('DOMContentLoaded', initFavs);
 </script>

@@ -1,0 +1,525 @@
+<style>
+  .top{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:6px; }
+  .top h1{ margin:0; }
+  .acciones{ display:flex; gap:8px; flex-wrap:wrap; }
+  .acciones button{ padding:9px 15px; font-size:13.5px; }
+
+  .vtabs{ display:flex; gap:8px; flex-wrap:wrap; margin:0 0 16px; }
+  .vtabs button{ padding:9px 16px; font-size:13.5px; }
+
+  .panel-head{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:12px; }
+  .panel-head h2{ margin:0; font-size:17px; }
+
+  .vi-grid{ display:grid; grid-template-columns:minmax(380px, 560px) minmax(0, 1fr); gap:18px; align-items:start; }
+  @media (max-width: 1000px){ .vi-grid{ grid-template-columns:1fr; } }
+
+  .bloque{ padding:16px 18px; margin-bottom:14px; }
+  .bloque h3{ font-size:14px; margin:0 0 12px; display:flex; align-items:center; gap:8px; }
+  .bloque h3 .n{ display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border-radius:50%; background:var(--accent-soft); color:var(--accent-dark); font-size:12px; font-weight:800; }
+
+  .campo{ display:flex; flex-direction:column; gap:5px; margin-bottom:10px; min-width:0; }
+  .campo > span{ font-size:11px; font-weight:700; color:var(--muted); letter-spacing:.03em; text-transform:uppercase; }
+  .campo input, .campo select, .fila input, .mx input{
+    background:var(--panel-alt); border:1px solid var(--panel-edge); color:var(--text); font-family:var(--sans);
+    font-size:13.5px; padding:8px 10px; border-radius:8px; outline:none; width:100%; min-width:0; box-sizing:border-box;
+  }
+  .campo input:focus, .fila input:focus, .mx input:focus{ border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft); }
+  .campo input[readonly]{ background:var(--accent-soft); border-color:var(--accent); color:var(--accent-dark); font-weight:700; cursor:default; }
+  .campo small{ font-size:11.5px; color:var(--muted); line-height:1.4; }
+  .dos{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .con-btn{ display:flex; gap:6px; }
+  .con-btn button{ padding:0 10px; font-size:12px; white-space:nowrap; }
+  .btn-sm2{ padding:6px 11px; font-size:12.5px; }
+  .auto{ display:flex; align-items:center; gap:7px; margin-top:2px; font-size:12px; font-weight:600; color:var(--muted); text-transform:none; letter-spacing:0; cursor:pointer; }
+  .auto input{ width:auto !important; padding:0 !important; margin:0; accent-color:var(--accent); cursor:pointer; }
+
+  .cab{ display:grid; grid-template-columns:1.4fr 1fr 30px; gap:6px; font-size:10.5px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.03em; margin-bottom:5px; padding:0 2px; }
+  .fila{ display:grid; grid-template-columns:1.4fr 1fr 30px; gap:6px; margin-bottom:6px; align-items:center; }
+  .fila input.num{ text-align:right; }
+  .fila .x{ padding:0; height:30px; width:30px; font-size:14px; line-height:1; }
+  .agregar{ margin-top:6px; padding:8px 13px; font-size:13px; }
+
+  .vista{ position:sticky; top:10px; }
+  .vista iframe{ width:100%; height:calc(100vh - 150px); min-height:560px; border:1px solid var(--panel-edge); border-radius:10px; background:#e9edf3; }
+  .vista-ancha{ margin-top:6px; }
+  .vista-ancha iframe{ width:100%; height:calc(100vh - 140px); min-height:520px; border:1px solid var(--panel-edge); border-radius:10px; background:#e9edf3; }
+  .estado{ font-size:12.5px; color:var(--muted); min-height:18px; margin:0 0 8px; }
+  .estado.mal{ color:var(--danger); font-weight:600; }
+  .nota{ font-size:12px; color:var(--muted); margin-top:8px; }
+  .nota a{ color:var(--accent-dark); font-weight:600; }
+
+  /* Matriz de la legalización (se ve como la hoja de Excel) */
+  .mx-scroll{ overflow-x:auto; border:1px solid var(--panel-edge); border-radius:10px; }
+  table.mx{ border-collapse:collapse; table-layout:fixed; width:100%; min-width:900px; font-size:13px; }
+  .mx thead tr:first-child th:first-child{ width:190px; }
+  .mx thead tr:first-child th:last-child{ width:104px; }
+  .mx th, .mx td{ border:1px solid var(--panel-edge); padding:3px; text-align:center; }
+  .mx thead th{ background:var(--panel-alt); font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.03em; }
+  .mx th.mes{ text-transform:none; font-size:13px; color:var(--text); font-weight:700; letter-spacing:0; }
+  .mx th.dia{ font-size:12px; color:var(--accent-dark); text-transform:none; height:26px; }
+  .mx input{ border-radius:6px; padding:6px 6px; font-size:13px; }
+  .mx input.vv{ text-align:right; }
+  .mx input[type=date]{ padding:5px 4px; font-size:12px; }
+  .mx td.tot{ background:var(--panel-alt); font-weight:700; text-align:right; padding:3px 8px; white-space:nowrap; overflow:hidden; }
+  .mx tr.sep td{ background:var(--accent-soft); color:var(--accent-dark); font-weight:800; font-size:12px; letter-spacing:.04em; padding:5px; }
+  .mx tr.gt td{ background:var(--panel-alt); font-weight:800; text-align:right; padding:6px 8px; }
+  .mx tr.gt td.etq{ letter-spacing:.03em; }
+
+  .toast{ position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(10px) scale(.96); background:linear-gradient(135deg, var(--accent), var(--accent-dark)); color:#fff; font-size:13px; font-weight:600; padding:9px 18px; border-radius:8px; opacity:0; pointer-events:none; transition:opacity .18s ease, transform .18s ease; z-index:50; }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0) scale(1); }
+</style>
+
+<div class="top">
+  <h1>Viáticos</h1>
+</div>
+<p class="sub">Formatos de viáticos de Jaivaná. Llena los campos: la vista previa es el PDF real y se descarga idéntica al formato de Excel.</p>
+
+<div class="vtabs" id="vtabs">
+  <button type="button" class="secondary active" data-k="anticipo">1 · Solicitud de anticipo de viáticos</button>
+  <button type="button" class="secondary" data-k="legal">2 · Legalización de gastos de viaje</button>
+</div>
+
+<!-- ======================= 1) SOLICITUD DE ANTICIPO ======================= -->
+<section id="panel-anticipo">
+  <div class="panel-head">
+    <h2>Solicitud de anticipos de viáticos</h2>
+    <div class="acciones">
+      <button type="button" class="secondary" id="resetA" title="Vuelve a los datos de ejemplo">Restablecer</button>
+      <button type="button" id="descA">⬇ Descargar PDF</button>
+    </div>
+  </div>
+
+  <div class="vi-grid">
+    <div>
+      <div class="card bloque">
+        <h3><span class="n">1</span> Datos del empleado</h3>
+        <label class="campo"><span>Nombre del empleado</span><input type="text" id="a_nombre" maxlength="80"></label>
+        <div class="dos">
+          <label class="campo"><span>Cédula</span><input type="text" id="a_cedula" maxlength="30"></label>
+          <label class="campo"><span>Nro. de cuenta</span><input type="text" id="a_cuenta" maxlength="30"></label>
+        </div>
+        <div class="dos">
+          <label class="campo"><span>Cargo</span><input type="text" id="a_cargo" maxlength="60"></label>
+          <label class="campo"><span>Sede</span><input type="text" id="a_sede" maxlength="40"></label>
+        </div>
+      </div>
+
+      <div class="card bloque">
+        <h3><span class="n">2</span> Solicitud</h3>
+        <label class="campo"><span>Fecha de solicitud</span>
+          <div class="con-btn"><input type="date" id="a_fecha"><button type="button" class="secondary" id="a_hoy">Hoy</button></div>
+        </label>
+        <div class="dos">
+          <label class="campo"><span>Semana del</span><input type="date" id="a_desde"></label>
+          <label class="campo"><span>Al</span><input type="date" id="a_hasta"></label>
+        </div>
+        <div class="botones" style="display:flex; gap:8px; flex-wrap:wrap; margin:-2px 0 10px;">
+          <button type="button" class="secondary btn-sm2" id="a_armar" title="Escribe el texto del periodo con las fechas de arriba">↓ Armar el periodo</button>
+          <button type="button" class="secondary btn-sm2" id="a_semana" title="Lunes a viernes de esta semana">Esta semana (lun–vie)</button>
+        </div>
+        <label class="campo"><span>Periodo</span><input type="text" id="a_periodo" maxlength="80"></label>
+        <label class="campo"><span>Correría</span><input type="text" id="a_correria1" maxlength="90"></label>
+        <label class="campo"><span>Detalle de la correría (segunda línea)</span><input type="text" id="a_correria2" maxlength="90"></label>
+      </div>
+
+      <div class="card bloque">
+        <h3><span class="n">3</span> Presupuesto de la visita <small style="font-weight:500; color:var(--muted);">(página 2 del PDF)</small></h3>
+        <label class="campo"><span>Empresas</span><input type="text" id="a_empresas" maxlength="60"></label>
+        <div class="cab"><span>Concepto</span><span style="text-align:right;">Valor ($)</span><span></span></div>
+        <div id="a_filas"></div>
+        <button type="button" class="secondary agregar" id="a_agregar">+ Agregar concepto</button>
+        <label class="campo" style="margin-top:12px;"><span>Total del presupuesto</span><input type="text" id="a_total" readonly></label>
+      </div>
+
+      <div class="card bloque">
+        <h3><span class="n">4</span> Valores del anticipo</h3>
+        <div class="dos">
+          <label class="campo"><span>Anticipo anterior</span><input type="text" id="a_anterior" inputmode="numeric" placeholder="0"></label>
+          <label class="campo"><span>Valor causado</span><input type="text" id="a_causado" inputmode="numeric" placeholder="0"></label>
+        </div>
+        <label class="campo"><span>Saldo (anticipo anterior − valor causado)</span><input type="text" id="a_saldo" readonly></label>
+        <div class="campo"><span>Anticipo solicitado</span>
+          <input type="text" id="a_solicitado" inputmode="numeric">
+          <label class="auto"><input type="checkbox" id="a_auto" checked> Automático (igual al total del presupuesto)</label>
+        </div>
+        <label class="campo"><span>Valor a consignar (solicitado − saldo)</span><input type="text" id="a_consignar" readonly></label>
+      </div>
+
+      <div class="card bloque">
+        <h3><span class="n">5</span> Firmas y formato</h3>
+        <label class="campo"><span>Nombre bajo «Firma empleado»</span><input type="text" id="a_firmaEmp" maxlength="80" placeholder="Si lo dejas vacío, usa el nombre del empleado"></label>
+        <label class="campo"><span>Nombre bajo «Firma autorización»</span><input type="text" id="a_firmaAut" maxlength="80"></label>
+        <label class="campo"><span>Fecha de actualización del formato</span><input type="date" id="a_fechaFormato"></label>
+      </div>
+    </div>
+
+    <div class="vista">
+      <p class="estado" id="estadoA">Generando vista previa…</p>
+      <iframe id="marcoA" title="Vista previa de la solicitud de anticipo en PDF"></iframe>
+      <p class="nota">Si tu navegador no muestra la vista previa (pasa en algunos celulares), usa <a href="#" id="nuevaA">abrir en una pestaña nueva</a> o descarga el PDF.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= 2) LEGALIZACIÓN DE GASTOS ======================= -->
+<section id="panel-legal" hidden>
+  <div class="panel-head">
+    <h2>Legalización de gastos de viaje</h2>
+    <div class="acciones">
+      <button type="button" class="secondary" id="traerL" title="Copia nombre, cargo, sede, fechas y conceptos de la solicitud de anticipo">↙ Traer datos de la solicitud</button>
+      <button type="button" class="secondary" id="resetL" title="Vuelve a los datos de ejemplo">Restablecer</button>
+      <button type="button" id="descL">⬇ Descargar PDF</button>
+    </div>
+  </div>
+
+  <div class="card bloque">
+    <h3><span class="n">1</span> Datos del empleado</h3>
+    <div class="dos">
+      <label class="campo"><span>Nombre completo del empleado</span><input type="text" id="l_nombre" maxlength="80"></label>
+      <label class="campo"><span>Cargo</span><input type="text" id="l_cargo" maxlength="60"></label>
+    </div>
+    <div class="dos">
+      <label class="campo"><span>Zona o sede</span><input type="text" id="l_zona" maxlength="60"></label>
+      <label class="campo"><span>Fecha de actualización del formato</span><input type="date" id="l_fechaFormato"></label>
+    </div>
+    <label class="campo" style="margin-bottom:0;"><span>Nombre bajo «Firma empleado»</span><input type="text" id="l_firmaEmp" maxlength="80" placeholder="Si lo dejas vacío, usa el nombre del empleado"></label>
+  </div>
+
+  <div class="card bloque">
+    <h3><span class="n">2</span> Gastos por día <small style="font-weight:500; color:var(--muted);">(el día de la semana y los totales se calculan solos)</small></h3>
+    <div class="mx-scroll"><div id="l_matriz"></div></div>
+  </div>
+
+  <div class="vista-ancha">
+    <p class="estado" id="estadoL">Generando vista previa…</p>
+    <iframe id="marcoL" title="Vista previa de la legalización de gastos en PDF"></iframe>
+    <p class="nota">Si tu navegador no muestra la vista previa, usa <a href="#" id="nuevaL">abrir en una pestaña nueva</a> o descarga el PDF.</p>
+  </div>
+</section>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+'use strict';
+
+var $ = function(id){ return document.getElementById(id); };
+var KEY_A = 'boveda-viaticos-anticipo', KEY_L = 'boveda-viaticos-legal', KEY_TAB = 'boveda-viaticos-tab';
+var N_DIAS = 7, N_FILAS = 7, N_OTROS = 2;
+var MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+var DIAS = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+
+/* ---------- utilidades ---------- */
+function numero(v){
+  var s = String(v === null || v === undefined ? '' : v).trim();
+  if (!s) return 0;
+  var neg = /^[\s$]*[-(]/.test(s);
+  s = s.replace(/,\d{1,2}\s*$/, '').replace(/\D/g, '');
+  if (!s) return 0;
+  var n = Number(s.slice(0, 12));
+  return neg ? -n : n;
+}
+function miles(n){ return (n < 0 ? '-' : '') + String(Math.abs(Math.round(n))).replace(/\B(?=(\d{3})+(?!\d))/g, '.'); }
+function pesos(n){ return n ? '$ ' + miles(n) : '$ -'; }
+function pad(n){ return (n < 10 ? '0' : '') + n; }
+function aIso(d){ return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+function hoy(){ return aIso(new Date()); }
+function partes(iso){
+  var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso || ''));
+  if (!m) return null;
+  var y = +m[1], mo = +m[2], d = +m[3], f = new Date(Date.UTC(y, mo - 1, d));
+  if (f.getUTCFullYear() !== y || f.getUTCMonth() !== mo - 1 || f.getUTCDate() !== d) return null;
+  return { y: y, mo: mo, d: d, dia: f.getUTCDay() };
+}
+function nombreDia(iso){ var p = partes(iso); return p ? DIAS[p.dia] : ''; }
+function mesAnio(iso){ var p = partes(iso); if (!p) return ''; var m = MESES[p.mo - 1]; return m.charAt(0).toUpperCase() + m.slice(1) + ' del ' + p.y; }
+function sumarDias(iso, n){ var p = partes(iso); if (!p) return ''; var d = new Date(p.y, p.mo - 1, p.d + n); return aIso(d); }
+
+var toastT;
+function toast(msg){ var t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(function(){ t.classList.remove('show'); }, 1800); }
+
+/* ---------- datos de ejemplo (los mismos de los PDF originales) ---------- */
+function ejemploA(){
+  return {
+    fechaFormato: '2025-02-14', nombre: 'John James Grisales Cano', cedula: '1053827164', cuenta: '086170266083',
+    cargo: 'ANALISTA DE SOPORTE TÉCNICO', sede: 'MANIZALES',
+    fecha: '2025-02-14', desde: '2025-02-10', hasta: '2025-02-14', periodo: 'SEMANA DEL 10 AL 14 DE febrero',
+    correria1: 'Visita Manizales - supia', correria2: 'ACTUALIZACION POS',
+    anticipoAnterior: '', valorCausado: '', anticipoSolicitado: '', autoSolicitado: true,
+    empresas: 'VARIAS EMPRESAS',
+    conceptos: [
+      { concepto: 'Gasolina', valor: '55.000' }, { concepto: 'Terminal_Buses', valor: '' },
+      { concepto: 'Alimentación', valor: '' }, { concepto: 'Taxis', valor: '' }
+    ],
+    firmaEmpleado: '', firmaAutoriza: 'Juan Carlos Mejia'
+  };
+}
+function filaL(c, v){ var vals = []; for (var i = 0; i < N_DIAS; i++) vals.push((v && v[i]) || ''); return { concepto: c || '', valores: vals }; }
+function ejemploL(){
+  var filas = [filaL('Gasolina', ['55.000'])]; for (var i = 1; i < N_FILAS; i++) filas.push(filaL('', []));
+  var otros = []; for (var j = 0; j < N_OTROS; j++) otros.push(filaL('', []));
+  return {
+    fechaFormato: '2025-02-17', nombre: 'John James Grisales Cano', cargo: 'Analista de Soporte', zona: 'Manizales', firmaEmpleado: '',
+    fechas: ['2025-02-14', '', '', '', '', '', ''], filas: filas, otros: otros
+  };
+}
+
+/* =====================================================================
+   1) SOLICITUD DE ANTICIPO
+   ===================================================================== */
+function crearFilaA(c, v){
+  var f = document.createElement('div'); f.className = 'fila';
+  f.innerHTML = '<input type="text" maxlength="60" placeholder="Concepto"><input type="text" class="num" inputmode="numeric" placeholder="0">' +
+    '<button type="button" class="secondary x" title="Quitar">✕</button>';
+  var i = f.querySelectorAll('input'); i[0].value = c || ''; i[1].value = v || '';
+  f.querySelector('.x').addEventListener('click', function(){ f.remove(); cambio('anticipo'); });
+  return f;
+}
+function pintarFilasA(lista){
+  var cont = $('a_filas'); cont.innerHTML = '';
+  (lista || []).forEach(function(c){ cont.appendChild(crearFilaA(c.concepto, c.valor)); });
+}
+function leerA(){
+  var conceptos = [];
+  Array.prototype.forEach.call($('a_filas').children, function(f){
+    var i = f.querySelectorAll('input'); conceptos.push({ concepto: i[0].value, valor: i[1].value });
+  });
+  return {
+    fechaFormato: $('a_fechaFormato').value, nombre: $('a_nombre').value, cedula: $('a_cedula').value, cuenta: $('a_cuenta').value,
+    cargo: $('a_cargo').value, sede: $('a_sede').value,
+    fecha: $('a_fecha').value, desde: $('a_desde').value, hasta: $('a_hasta').value, periodo: $('a_periodo').value,
+    correria1: $('a_correria1').value, correria2: $('a_correria2').value,
+    anticipoAnterior: $('a_anterior').value, valorCausado: $('a_causado').value,
+    anticipoSolicitado: $('a_solicitado').value, autoSolicitado: $('a_auto').checked,
+    empresas: $('a_empresas').value, conceptos: conceptos,
+    firmaEmpleado: $('a_firmaEmp').value, firmaAutoriza: $('a_firmaAut').value
+  };
+}
+function pintarA(d){
+  $('a_fechaFormato').value = d.fechaFormato || ''; $('a_nombre').value = d.nombre || ''; $('a_cedula').value = d.cedula || ''; $('a_cuenta').value = d.cuenta || '';
+  $('a_cargo').value = d.cargo || ''; $('a_sede').value = d.sede || '';
+  $('a_fecha').value = d.fecha || ''; $('a_desde').value = d.desde || ''; $('a_hasta').value = d.hasta || ''; $('a_periodo').value = d.periodo || '';
+  $('a_correria1').value = d.correria1 || ''; $('a_correria2').value = d.correria2 || '';
+  $('a_anterior').value = d.anticipoAnterior || ''; $('a_causado').value = d.valorCausado || '';
+  $('a_solicitado').value = d.anticipoSolicitado || ''; $('a_auto').checked = d.autoSolicitado !== false;
+  $('a_empresas').value = d.empresas || '';
+  pintarFilasA(d.conceptos);
+  $('a_firmaEmp').value = d.firmaEmpleado || ''; $('a_firmaAut').value = d.firmaAutoriza || '';
+  calcularA();
+}
+function calcularA(){
+  var d = leerA(), total = 0;
+  d.conceptos.forEach(function(c){ total += numero(c.valor); });
+  var saldo = numero(d.anticipoAnterior) - numero(d.valorCausado);
+  var auto = d.autoSolicitado;
+  var solicitado = auto ? total : numero(d.anticipoSolicitado);
+  $('a_total').value = pesos(total);
+  $('a_saldo').value = pesos(saldo);
+  $('a_solicitado').readOnly = auto;
+  if (auto) $('a_solicitado').value = miles(total);
+  $('a_consignar').value = pesos(solicitado - saldo);
+}
+function textoPeriodo(desde, hasta){
+  var a = partes(desde), b = partes(hasta);
+  if (!a || !b) return '';
+  if (a.y === b.y && a.mo === b.mo) return 'SEMANA DEL ' + a.d + ' AL ' + b.d + ' DE ' + MESES[b.mo - 1];
+  return 'SEMANA DEL ' + a.d + ' DE ' + MESES[a.mo - 1] + ' AL ' + b.d + ' DE ' + MESES[b.mo - 1];
+}
+
+/* =====================================================================
+   2) LEGALIZACIÓN DE GASTOS
+   ===================================================================== */
+function construirMatriz(){
+  var h = '<table class="mx"><thead><tr><th class="mes" id="l_mes">—</th>';
+  for (var i = 0; i < N_DIAS; i++) h += '<th><input type="date" data-d="' + i + '"></th>';
+  h += '<th>Total</th></tr><tr><th>Fecha</th>';
+  for (i = 0; i < N_DIAS; i++) h += '<th class="dia" data-dia="' + i + '"></th>';
+  h += '<th></th></tr></thead><tbody>';
+  var fila = function(grupo, n){
+    var r = '<tr data-g="' + grupo + '" data-n="' + n + '"><td class="c1"><input type="text" class="cc" maxlength="60" placeholder="Concepto"></td>';
+    for (var k = 0; k < N_DIAS; k++) r += '<td><input type="text" class="vv" inputmode="numeric" data-k="' + k + '"></td>';
+    return r + '<td class="tot">$ -</td></tr>';
+  };
+  for (i = 0; i < N_FILAS; i++) h += fila('f', i);
+  h += '<tr class="sep"><td colspan="' + (N_DIAS + 2) + '">OTROS GASTOS</td></tr>';
+  for (i = 0; i < N_OTROS; i++) h += fila('o', i);
+  h += '<tr class="gt"><td class="etq" colspan="' + (N_DIAS + 1) + '">TOTAL GASTOS</td><td id="l_totalGastos">$ -</td></tr></tbody></table>';
+  $('l_matriz').innerHTML = h;
+}
+function leerL(){
+  var fechas = []; Array.prototype.forEach.call($('l_matriz').querySelectorAll('thead input[type=date]'), function(i){ fechas.push(i.value); });
+  var filas = [], otros = [];
+  Array.prototype.forEach.call($('l_matriz').querySelectorAll('tbody tr[data-g]'), function(tr){
+    var v = []; Array.prototype.forEach.call(tr.querySelectorAll('input.vv'), function(i){ v.push(i.value); });
+    var f = { concepto: tr.querySelector('input.cc').value, valores: v };
+    (tr.dataset.g === 'f' ? filas : otros).push(f);
+  });
+  return {
+    fechaFormato: $('l_fechaFormato').value, nombre: $('l_nombre').value, cargo: $('l_cargo').value, zona: $('l_zona').value,
+    firmaEmpleado: $('l_firmaEmp').value, fechas: fechas, filas: filas, otros: otros
+  };
+}
+function pintarL(d){
+  $('l_fechaFormato').value = d.fechaFormato || ''; $('l_nombre').value = d.nombre || ''; $('l_cargo').value = d.cargo || '';
+  $('l_zona').value = d.zona || ''; $('l_firmaEmp').value = d.firmaEmpleado || '';
+  var fechas = $('l_matriz').querySelectorAll('thead input[type=date]');
+  for (var i = 0; i < fechas.length; i++) fechas[i].value = (d.fechas && d.fechas[i]) || '';
+  var grupos = { f: d.filas || [], o: d.otros || [] };
+  Array.prototype.forEach.call($('l_matriz').querySelectorAll('tbody tr[data-g]'), function(tr){
+    var f = grupos[tr.dataset.g][+tr.dataset.n] || filaL('', []);
+    tr.querySelector('input.cc').value = f.concepto || '';
+    Array.prototype.forEach.call(tr.querySelectorAll('input.vv'), function(inp, k){ inp.value = (f.valores && f.valores[k]) || ''; });
+  });
+  calcularL();
+}
+function calcularL(){
+  var d = leerL(), total = 0, primera = '';
+  d.fechas.forEach(function(f, i){
+    if (!primera && partes(f)) primera = f;
+    var th = $('l_matriz').querySelector('th[data-dia="' + i + '"]'); if (th) th.textContent = nombreDia(f);
+  });
+  $('l_mes').textContent = mesAnio(primera) || '—';
+  Array.prototype.forEach.call($('l_matriz').querySelectorAll('tbody tr[data-g]'), function(tr){
+    var s = 0; Array.prototype.forEach.call(tr.querySelectorAll('input.vv'), function(i){ s += numero(i.value); });
+    tr.querySelector('td.tot').textContent = pesos(s); total += s;
+  });
+  $('l_totalGastos').textContent = pesos(total);
+}
+function traerDeSolicitud(){
+  var a = leerA(), l = leerL();
+  l.nombre = a.nombre; l.cargo = a.cargo; l.zona = a.sede;
+  if (partes(a.desde) && partes(a.hasta)) {
+    var f = [], dia = a.desde;
+    for (var i = 0; i < N_DIAS; i++) { f.push(dia <= a.hasta ? dia : ''); dia = sumarDias(dia, 1); }
+    l.fechas = f;
+  }
+  var nombres = a.conceptos.map(function(c){ return c.concepto; }).filter(function(c){ return c.trim(); });
+  nombres.slice(0, N_FILAS).forEach(function(n, i){ l.filas[i].concepto = n; });
+  pintarL(l); cambio('legal'); toast('Datos traídos de la solicitud');
+}
+
+/* =====================================================================
+   Guardado, vista previa (PDF real) y descarga
+   ===================================================================== */
+var CFG = {
+  anticipo: { key: KEY_A, url: '/viaticos/anticipo/pdf', leer: leerA, marco: 'marcoA', estado: 'estadoA', nueva: 'nuevaA',
+              archivo: function(d){ return 'SOLICITUD_ANTICIPO_VIATICOS_' + (partes(d.fecha) ? d.fecha : hoy()) + '.pdf'; } },
+  legal:    { key: KEY_L, url: '/viaticos/legalizacion/pdf', leer: leerL, marco: 'marcoL', estado: 'estadoL', nueva: 'nuevaL',
+              archivo: function(d){ var p = (d.fechas || []).filter(function(f){ return partes(f); })[0]; return 'LEGALIZACION_GASTOS_VIAJE_' + (p || hoy()) + '.pdf'; } }
+};
+var ctrl = {}, urls = {}, temporizador = {}, activa = 'anticipo';
+
+function estado(k, msg, mal){ var e = $(CFG[k].estado); e.textContent = msg || ''; e.className = 'estado' + (mal ? ' mal' : ''); }
+function guardar(k){ try { localStorage.setItem(CFG[k].key, JSON.stringify(CFG[k].leer())); } catch (e) {} }
+
+function pedirPdf(k, descargar, senal){
+  return fetch(CFG[k].url + (descargar ? '?descargar=1' : ''), {
+    method: 'POST', credentials: 'same-origin', signal: senal,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(CFG[k].leer())
+  }).then(function(r){
+    var tipo = r.headers.get('content-type') || '';
+    if (!r.ok || tipo.indexOf('pdf') < 0) throw new Error('No se pudo generar el PDF. Si tu sesión venció, recarga la página.');
+    return r.blob();
+  });
+}
+function vistaPrevia(k){
+  if (ctrl[k]) ctrl[k].abort();
+  ctrl[k] = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+  estado(k, 'Actualizando vista previa…');
+  pedirPdf(k, false, ctrl[k] ? ctrl[k].signal : undefined).then(function(blob){
+    if (urls[k]) URL.revokeObjectURL(urls[k]);
+    urls[k] = URL.createObjectURL(blob);
+    $(CFG[k].marco).src = urls[k] + '#toolbar=0&navpanes=0&view=FitH';
+    estado(k, '');
+  }).catch(function(e){ if (e && e.name === 'AbortError') return; estado(k, e.message || 'Error al generar el PDF', true); });
+}
+function cambio(k){
+  if (k === 'anticipo') calcularA(); else calcularL();
+  guardar(k);
+  clearTimeout(temporizador[k]);
+  temporizador[k] = setTimeout(function(){ if (activa === k) vistaPrevia(k); }, 600);
+}
+function descargar(k, boton){
+  boton.disabled = true;
+  pedirPdf(k, true).then(function(blob){
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = CFG[k].archivo(CFG[k].leer());
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(a.href); }, 2000);
+    toast('PDF descargado');
+  }).catch(function(e){ toast(e.message || 'Error al descargar'); })
+    .then(function(){ boton.disabled = false; });
+}
+
+function mostrarPestana(k){
+  activa = k;
+  try { localStorage.setItem(KEY_TAB, k); } catch (e) {}
+  $('panel-anticipo').hidden = k !== 'anticipo';
+  $('panel-legal').hidden = k !== 'legal';
+  Array.prototype.forEach.call($('vtabs').querySelectorAll('button'), function(b){ b.classList.toggle('active', b.dataset.k === k); });
+  vistaPrevia(k);
+}
+
+/* ---------- eventos ---------- */
+['anticipo', 'legal'].forEach(function(k){
+  var panel = $(k === 'anticipo' ? 'panel-anticipo' : 'panel-legal');
+  panel.addEventListener('input', function(){ cambio(k); });
+  panel.addEventListener('change', function(){ cambio(k); });
+  $(CFG[k].nueva).addEventListener('click', function(ev){
+    ev.preventDefault();
+    if (urls[k]) window.open(urls[k], '_blank'); else toast('Espera a que se genere la vista previa');
+  });
+});
+$('vtabs').addEventListener('click', function(e){ var b = e.target.closest('button'); if (b) mostrarPestana(b.dataset.k); });
+
+$('a_agregar').addEventListener('click', function(){ var f = crearFilaA('', ''); $('a_filas').appendChild(f); f.querySelector('input').focus(); cambio('anticipo'); });
+$('a_hoy').addEventListener('click', function(){ $('a_fecha').value = hoy(); cambio('anticipo'); });
+$('a_armar').addEventListener('click', function(){
+  var t = textoPeriodo($('a_desde').value, $('a_hasta').value);
+  if (!t) { toast('Elige las fechas «Semana del» y «Al»'); return; }
+  $('a_periodo').value = t; cambio('anticipo');
+});
+$('a_semana').addEventListener('click', function(){
+  var d = new Date(), atras = (d.getDay() + 6) % 7;
+  var lunes = new Date(d.getFullYear(), d.getMonth(), d.getDate() - atras);
+  var viernes = new Date(lunes.getFullYear(), lunes.getMonth(), lunes.getDate() + 4);
+  $('a_desde').value = aIso(lunes); $('a_hasta').value = aIso(viernes);
+  $('a_periodo').value = textoPeriodo($('a_desde').value, $('a_hasta').value);
+  cambio('anticipo');
+});
+$('resetA').addEventListener('click', function(){
+  if (!confirm('¿Volver a los datos de ejemplo? Se pierde lo que tienes escrito en la solicitud.')) return;
+  pintarA(ejemploA()); cambio('anticipo'); toast('Datos restablecidos');
+});
+$('resetL').addEventListener('click', function(){
+  if (!confirm('¿Volver a los datos de ejemplo? Se pierde lo que tienes escrito en la legalización.')) return;
+  pintarL(ejemploL()); cambio('legal'); toast('Datos restablecidos');
+});
+$('traerL').addEventListener('click', traerDeSolicitud);
+$('descA').addEventListener('click', function(){ descargar('anticipo', this); });
+$('descL').addEventListener('click', function(){ descargar('legal', this); });
+
+/* ---------- arranque ---------- */
+function cargarGuardado(k, base){
+  try {
+    var g = JSON.parse(localStorage.getItem(CFG[k].key) || 'null');
+    if (g && typeof g === 'object') return Object.assign(base, g);
+  } catch (e) {}
+  return base;
+}
+construirMatriz();
+var a0 = cargarGuardado('anticipo', ejemploA());
+if (!Array.isArray(a0.conceptos)) a0.conceptos = ejemploA().conceptos;
+pintarA(a0);
+var l0 = cargarGuardado('legal', ejemploL());
+if (!Array.isArray(l0.fechas) || !Array.isArray(l0.filas) || !Array.isArray(l0.otros)) l0 = ejemploL();
+pintarL(l0);
+
+var inicial = 'anticipo';
+try { if (localStorage.getItem(KEY_TAB) === 'legal') inicial = 'legal'; } catch (e) {}
+mostrarPestana(inicial);
+
+})();
+</script>

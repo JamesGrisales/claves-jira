@@ -16,6 +16,16 @@
   .a-hint{ font-size:12px; color:var(--muted); margin-top:8px; }
   .a-err{ font-size:13px; color:var(--danger); background:var(--danger-soft); border-radius:8px; padding:8px 12px; margin-top:10px; }
 
+  .a-map{ margin:16px 0 0; padding:12px 14px; border:1px solid var(--accent); border-radius:12px; background:var(--accent-soft); }
+  .a-map > span{ display:block; font-size:13px; color:var(--text); margin-bottom:8px; }
+  .a-map-b{ display:flex; gap:8px; flex-wrap:wrap; }
+  .a-map-b button{ display:flex; flex-direction:column; align-items:flex-start; gap:1px; padding:8px 14px; font-size:12px; font-weight:600; background:var(--panel); color:var(--text); border:2px solid var(--panel-edge); box-shadow:none; min-width:130px; text-align:left; }
+  .a-map-b button b{ font-size:17px; font-variant-numeric:tabular-nums; }
+  .a-map-b button.on{ border-color:var(--accent); background:var(--accent); color:#fff; }
+  .a-map-b button.on small{ opacity:.9; }
+  .a-map-b small{ font-size:10.5px; color:var(--muted); font-weight:700; text-transform:uppercase; letter-spacing:.03em; }
+  .a-map-b button.on small{ color:#fff; }
+  .a-inf{ display:inline-block; margin-left:5px; padding:1px 7px; border-radius:999px; background:var(--accent); color:#fff; font-size:9.5px; font-weight:800; letter-spacing:.03em; vertical-align:middle; }
   .cards{ display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:12px; margin:16px 0; }
   .kpi{ background:var(--panel); border:1px solid var(--panel-edge); border-radius:12px; padding:14px 16px; box-shadow:var(--shadow); }
   .kpi .l{ font-size:11px; font-weight:700; color:var(--muted); letter-spacing:.03em; text-transform:uppercase; }
@@ -70,6 +80,7 @@
 </div>
 
 <div id="panel" style="display:none;">
+  <div class="a-map" id="aMap"><span>¿Cuál de estas columnas son los <b>Aceptados</b>? Esa suma pasa sola al <b>Informe</b> (campo «Total de documentos aceptadas»):</span><div class="a-map-b" id="aMapB"></div></div>
   <div class="cards" id="cards"></div>
 
   <div class="a-tools">
@@ -179,7 +190,7 @@
     return { filas:filas, n:n, encabezados:encabezados };
   }
 
-  function etiqueta(i){ return st.labels[i] || (i === 0 ? 'Aceptados' : 'Columna ' + (i + 1)); }
+  function etiqueta(i){ return st.labels[i] || 'Columna ' + (i + 1); }   // sin suposiciones: tú eliges cuál es «Aceptados»
 
   function suma(filas, i){ return filas.reduce(function(a, f){ return a + f.nums[i].v; }, 0); }
 
@@ -198,7 +209,13 @@
       return;
     }
     datos = r;
-    if (r.encabezados && r.encabezados.length >= r.n) st.labels = r.encabezados.slice(0, r.n);
+    if (r.encabezados && r.encabezados.length >= r.n) {
+      st.labels = r.encabezados.slice(0, r.n);
+      // Si el título de alguna columna dice «Aceptados», esa es la que va al Informe
+      for (var h = 0; h < st.labels.length; h++) {
+        if (/aceptad/.test(String(st.labels[h]).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase())) { st.col = h; break; }
+      }
+    }
     if (st.col >= r.n) st.col = 0;
 
     var totales = []; for (var i = 0; i < r.n; i++) totales.push(suma(r.filas, i));
@@ -216,15 +233,28 @@
   var KEY_INFORME = 'boveda-aceptados-resumen';
   function guardarResumenInforme(){
     try {
-      if (!datos.filas.length) { localStorage.removeItem(KEY_INFORME); return; }
-      localStorage.setItem(KEY_INFORME, JSON.stringify({
+      if (!datos.filas.length) { localStorage.removeItem(KEY_INFORME); enviarResumen(null); return; }
+      var resumen = {
         empresas: datos.filas.length,
         aceptados: suma(datos.filas, st.col),
         columna: etiqueta(st.col),
         pegado: st.pegado || Date.now(),
         actualizado: Date.now()
-      }));
+      };
+      enviarResumen(resumen);                                    // primero al servidor
+      localStorage.setItem(KEY_INFORME, JSON.stringify(resumen)); // y copia en este navegador
     } catch(e){}
+  }
+  // También se guarda en el servidor: así el Informe lo recibe aunque abras la bóveda
+  // con otra dirección (localhost / 127.0.0.1 / IP) o desde otro navegador
+  var ultimoEnvio = '';
+  function enviarResumen(r){
+    var firma = r ? [r.empresas, r.aceptados, r.columna, r.pegado].join('|') : 'null';
+    if (firma === ultimoEnvio) return;
+    ultimoEnvio = firma;
+    try {
+      fetch('/api/kv/aceptados-resumen', { method: 'PUT', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ v: r }) }).catch(function(){});
+    } catch (e) {}
   }
 
   function render(){
@@ -235,6 +265,13 @@
     var sel = $('colAcept'), o = '';
     for (var i = 0; i < n; i++) o += '<option value="' + i + '"' + (i === st.col ? ' selected' : '') + '>' + esc(etiqueta(i)) + '</option>';
     sel.innerHTML = o;
+
+    // botones: cada columna con su suma, para reconocer cuál es la de Aceptados
+    var mb = '';
+    for (var c = 0; c < n; c++) {
+      mb += '<button type="button" data-c="' + c + '" class="' + (c === st.col ? 'on' : '') + '"><small>' + esc(etiqueta(c)) + (c === st.col ? ' · va al Informe' : '') + '</small><b>' + fmt(suma(filas, c)) + '</b></button>';
+    }
+    $('aMapB').innerHTML = mb;
 
     // tarjetas
     var tot = st.totals || [], prev = st.prevTotals;
@@ -265,7 +302,7 @@
 
     // encabezado
     var th = '<tr><th data-k="nombre">Empresa</th>';
-    for (var k = 0; k < n; k++) th += '<th class="n" data-k="c' + k + '"><input type="text" data-lab="' + k + '" value="' + esc(etiqueta(k)) + '" title="Clic para renombrar la columna">' + flecha('c' + k) + '</th>';
+    for (var k = 0; k < n; k++) th += '<th class="n" data-k="c' + k + '"><input type="text" data-lab="' + k + '" value="' + esc(etiqueta(k)) + '" title="Clic para renombrar la columna">' + (k === st.col ? '<span class="a-inf">Informe</span>' : '') + flecha('c' + k) + '</th>';
     th += '<th data-k="venc">Vencimiento' + flecha('venc') + '</th><th data-k="sync">Última sync' + flecha('sync') + '</th><th data-k="ver">Versión' + flecha('ver') + '</th></tr>';
     $('thead').innerHTML = th.replace('Empresa</th>', 'Empresa' + flecha('nombre') + '</th>');
 
@@ -338,7 +375,15 @@
     aplicarTexto(); entrada.focus();
   });
   $('buscar').addEventListener('input', function(){ filtro = this.value; pintarFilas(); });
-  $('colAcept').addEventListener('change', function(){ st.col = Number(this.value); guardar(); render(); });
+  $('colAcept').addEventListener('change', function(){ var b = $('aMapB').querySelector('button[data-c="' + this.value + '"]'); if (b) b.click(); });
+  $('aMapB').addEventListener('click', function(e){
+    var b = e.target.closest('button[data-c]'); if (!b) return;
+    var c = Number(b.getAttribute('data-c')), labels = [];
+    for (var j = 0; j < datos.n; j++) labels[j] = etiqueta(j);
+    for (var j2 = 0; j2 < labels.length; j2++) if (j2 !== c && labels[j2] === 'Aceptados') labels[j2] = 'Columna ' + (j2 + 1);   // la elegida antes deja de llamarse Aceptados
+    if (/^Columna \d+$/.test(labels[c])) labels[c] = 'Aceptados';
+    st.labels = labels; st.col = c; guardar(); render();
+  });
   $('bCopiar').addEventListener('click', function(){
     var t = resumenTexto();
     var ok = function(){ toast('Resumen copiado'); };

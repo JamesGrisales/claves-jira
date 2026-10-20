@@ -83,3 +83,36 @@ BEGIN
     ALTER TABLE jaivana_notas ALTER COLUMN categoria TYPE TEXT;
   END IF;
 END $$;
+
+-- Pequeños datos compartidos entre pestañas/navegadores (ej. resumen de Aceptados para el Informe)
+CREATE TABLE IF NOT EXISTS kv_store (
+  k TEXT PRIMARY KEY,
+  v JSONB,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Vendedores (código + nombre) para el panel "Procesar query" de /sql.
+-- Se llena solo la primera vez desde db/vendedores_seed.json; después se agregan desde la página.
+CREATE TABLE IF NOT EXISTS vendedores (
+  codigo TEXT PRIMARY KEY,
+  nombre TEXT NOT NULL DEFAULT '',
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Índices de alto rendimiento para ordenamiento y consultas activas frecuentes
+CREATE INDEX IF NOT EXISTS idx_companies_sort ON companies (empresa COLLATE "C" ASC);
+CREATE INDEX IF NOT EXISTS idx_notas_activas_sort ON notas (categoria COLLATE "C" ASC, titulo COLLATE "C" ASC) WHERE eliminado_en IS NULL;
+CREATE INDEX IF NOT EXISTS idx_jaivana_activas_sort ON jaivana_notas (categoria COLLATE "C" ASC, titulo COLLATE "C" ASC) WHERE eliminado_en IS NULL;
+
+-- Credenciales biométricas WebAuthn (Huella dactilar / Windows Hello)
+CREATE TABLE IF NOT EXISTS biometria_credenciales (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  credential_id TEXT NOT NULL UNIQUE,
+  public_key TEXT,
+  dispositivo TEXT DEFAULT 'Sensor de Huella (Windows Hello)',
+  created_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_biometria_user_id ON biometria_credenciales(user_id);
+CREATE INDEX IF NOT EXISTS idx_biometria_credential_id ON biometria_credenciales(credential_id);
+

@@ -1,0 +1,136 @@
+<style>
+  #recStack{ position:fixed; top:16px; right:16px; z-index:9500; display:flex; flex-direction:column; gap:10px; width:min(380px, calc(100vw - 32px)); pointer-events:none; }
+  .rec-card{ pointer-events:auto; background:var(--panel); border:1px solid var(--panel-edge); border-left:5px solid var(--accent); border-radius:14px; box-shadow:var(--shadow-lg); padding:14px 16px; animation:recIn .35s var(--spring, ease) both; }
+  .rec-card.especial{ border-left-color:#d97706; }
+  .rec-card.recordatorio{ border-left-color:#059669; }
+  .rec-card .rec-cab{ display:flex; align-items:center; gap:8px; font-size:11.5px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; color:var(--accent-dark); }
+  .rec-card .rec-cab .bell{ display:inline-block; font-size:16px; animation:recBell 1s ease-in-out infinite; transform-origin:50% 0; }
+  .rec-card .rec-tit{ font-size:16px; font-weight:700; margin:6px 0 2px; overflow-wrap:anywhere; }
+  .rec-card .rec-meta{ font-size:12.5px; color:var(--muted); }
+  .rec-card .rec-desc{ font-size:12.5px; color:var(--muted); margin-top:6px; white-space:pre-wrap; overflow-wrap:anywhere; max-height:70px; overflow:auto; }
+  .rec-card .rec-btns{ display:flex; gap:6px; flex-wrap:wrap; margin-top:12px; }
+  .rec-card .rec-btns button{ padding:7px 12px; font-size:12.5px; }
+  @keyframes recIn{ from{ opacity:0; transform:translateX(30px) scale(.97); } to{ opacity:1; transform:none; } }
+  @keyframes recBell{ 0%,100%{ transform:rotate(0); } 15%{ transform:rotate(16deg); } 30%{ transform:rotate(-14deg); } 45%{ transform:rotate(10deg); } 60%{ transform:rotate(-6deg); } }
+</style>
+<div id="recStack" aria-live="assertive"></div>
+
+<script>
+(function(){
+  var stack = document.getElementById('recStack');
+  if (!stack) return;
+
+  var mostrados = {};          // ids que ya tienen su tarjeta en pantalla
+  var tituloOriginal = document.title, parpadeo = null;
+  var TIPOS = { reunion: 'Reunión', especial: 'Fecha especial', recordatorio: 'Recordatorio' };
+
+  function post(url, body){
+    return fetch(url, {
+      method: 'POST', credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body || {})
+    }).catch(function(){});
+  }
+  function h12(hhmm){ var p = hhmm.split(':'), h = +p[0]; return (h % 12 || 12) + ':' + p[1] + ' ' + (h < 12 ? 'a. m.' : 'p. m.'); }
+  function mk(tag, cls, txt){ var e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; }
+
+  /* ----- Sonido (tres pitidos con Web Audio; si el navegador lo bloquea, no pasa nada) ----- */
+  function sonar(){
+    try {
+      var AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
+      var ctx = new AC(), t0 = ctx.currentTime;
+      [0, 0.28, 0.56].forEach(function(d){
+        var o = ctx.createOscillator(), g = ctx.createGain();
+        o.type = 'sine'; o.frequency.value = 880;
+        g.gain.setValueAtTime(0.0001, t0 + d);
+        g.gain.exponentialRampToValueAtTime(0.25, t0 + d + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + d + 0.22);
+        o.connect(g); g.connect(ctx.destination); o.start(t0 + d); o.stop(t0 + d + 0.25);
+      });
+      setTimeout(function(){ try { ctx.close(); } catch (e) {} }, 1200);
+    } catch (e) {}
+  }
+
+  function parpadearTitulo(texto){
+    if (parpadeo) return;
+    var alterna = false;
+    parpadeo = setInterval(function(){
+      alterna = !alterna; document.title = alterna ? '⏰ ' + texto : tituloOriginal;
+    }, 1000);
+  }
+  function pararParpadeo(){
+    if (parpadeo && !stack.children.length) { clearInterval(parpadeo); parpadeo = null; document.title = tituloOriginal; }
+  }
+
+  function textoAviso(e){
+    if (e.todo_el_dia) return 'Hoy: ' + e.titulo;
+    if (e.faltan_min > 1) return 'En ' + e.faltan_min + ' min: ' + e.titulo;
+    return 'Es hora de: ' + e.titulo;
+  }
+
+  function quitar(card, id){
+    delete mostrados[id];
+    card.remove();
+    pararParpadeo();
+  }
+
+  function mostrar(e){
+    if (mostrados[e.id]) return;
+    mostrados[e.id] = true;
+
+    var card = mk('div', 'rec-card ' + e.tipo);
+    card.setAttribute('role', 'alertdialog');
+
+    var cab = mk('div', 'rec-cab');
+    cab.appendChild(mk('span', 'bell', '🔔'));
+    cab.appendChild(mk('span', null, TIPOS[e.tipo] || 'Aviso'));
+    card.appendChild(cab);
+
+    var cuando = e.faltan_min > 1 && !e.todo_el_dia ? 'Faltan ' + e.faltan_min + ' min' : (e.todo_el_dia ? 'Hoy' : 'Es hora');
+    card.appendChild(mk('div', 'rec-tit', e.faltan_min > 1 && !e.todo_el_dia ? e.titulo : (e.todo_el_dia ? e.titulo : '¡Es hora de: ' + e.titulo + '!')));
+    card.appendChild(mk('div', 'rec-meta', cuando + (e.todo_el_dia ? ' · todo el día' : ' · ' + h12(e.hora))));
+    if (e.descripcion) card.appendChild(mk('div', 'rec-desc', e.descripcion));
+
+    var btns = mk('div', 'rec-btns');
+    var ok = mk('button', null, 'Entendido');
+    ok.type = 'button';
+    ok.addEventListener('click', function(){ post('/calendario/api/' + e.id + '/avisado'); quitar(card, e.id); });
+
+    var pos = mk('button', 'secondary', 'Posponer 5 min');
+    pos.type = 'button';
+    pos.addEventListener('click', function(){ post('/calendario/api/' + e.id + '/posponer', { min: 5 }); quitar(card, e.id); });
+
+    var ver = mk('a', 'btn secondary', 'Ver calendario');
+    ver.href = '/calendario';
+    ver.addEventListener('click', function(){ post('/calendario/api/' + e.id + '/avisado'); });
+
+    btns.appendChild(ok); btns.appendChild(pos); btns.appendChild(ver);
+    card.appendChild(btns);
+    stack.appendChild(card);
+
+    sonar();
+    parpadearTitulo(textoAviso(e));
+
+    // Notificación del sistema (si el usuario la permitió) para cuando la pestaña está oculta
+    try {
+      if ('Notification' in window && Notification.permission === 'granted' && document.hidden) {
+        var n = new Notification(textoAviso(e), { body: e.descripcion || (e.todo_el_dia ? 'Todo el día' : h12(e.hora)), tag: 'cal-' + e.id, requireInteraction: true });
+        n.onclick = function(){ window.focus(); n.close(); };
+      }
+    } catch (err) {}
+  }
+
+  function revisar(){
+    fetch('/calendario/api/pendientes', { credentials: 'same-origin', cache: 'no-store' })
+      .then(function(r){ return r.ok ? r.json() : { eventos: [] }; })
+      .then(function(j){ (j.eventos || []).forEach(mostrar); })
+      .catch(function(){});
+  }
+
+  window.recordatoriosRevisar = revisar;   // la página del calendario lo llama al guardar
+  revisar();
+  setInterval(revisar, 20000);
+  document.addEventListener('visibilitychange', function(){ if (!document.hidden) revisar(); });
+  window.addEventListener('focus', revisar);
+})();
+</script>

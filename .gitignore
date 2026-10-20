@@ -1,0 +1,18 @@
+# Variables de entorno y secretos
+.env
+boveda_node/.env
+
+# Dependencias
+node_modules/
+boveda_node/node_modules/compressible/
+boveda_node/node_modules/compression/
+
+# Logs y depuración
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Sistema
+.DS_Store
+Thumbs.db

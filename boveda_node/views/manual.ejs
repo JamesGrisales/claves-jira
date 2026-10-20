@@ -1,0 +1,1027 @@
+<style>
+  /* =====================================================================
+     MÓDULO DE MANUALES Y TRANSCRIPCIÓN OCR
+     ===================================================================== */
+  /* Selector de pestañas */
+  .manual-tabs-nav{
+    display:flex;
+    gap:10px;
+    padding:6px;
+    background:var(--panel-alt);
+    border:1px solid var(--panel-edge);
+    border-radius:16px;
+    margin-bottom:22px;
+    flex-wrap:wrap;
+  }
+  .mtab-btn{
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    padding:10px 18px;
+    border-radius:12px;
+    border:1px solid transparent;
+    background:transparent;
+    color:var(--muted);
+    font-weight:700;
+    font-size:13.5px;
+    cursor:pointer;
+    transition:all .2s var(--ease);
+    box-shadow:none;
+  }
+  .mtab-btn:hover{
+    color:var(--text);
+    background:rgba(255,255,255,.05);
+    transform:none;
+    box-shadow:none;
+  }
+  .mtab-btn.active{
+    background:var(--panel);
+    color:var(--text);
+    border-color:var(--accent);
+    box-shadow:0 0 16px -2px rgba(var(--accent-rgb), .35), 0 4px 12px rgba(0,0,0,.25);
+  }
+  .mtab-btn svg{
+    stroke:currentColor;
+    flex-shrink:0;
+    transition:transform .2s var(--spring);
+  }
+  .mtab-btn.active svg{
+    stroke:var(--accent);
+    transform:scale(1.1);
+  }
+  .mtab-pill{
+    font-size:11px;
+    font-weight:700;
+    padding:2px 8px;
+    border-radius:999px;
+    background:rgba(var(--accent-rgb), .12);
+    color:var(--accent);
+    border:1px solid rgba(var(--accent-rgb), .28);
+    letter-spacing:.02em;
+  }
+  .manual-panel{ display:none; animation:fadeIn .25s ease; }
+  .manual-panel.active{ display:block; }
+  @keyframes fadeIn{ from{ opacity:0; transform:translateY(6px); } to{ opacity:1; transform:none; } }
+
+  /* Estilos específicos de Video a Manual */
+  .mv-grid{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .mv-note{ font-size:12.5px; color:var(--muted); margin:10px 0 0; line-height:1.5; }
+  .mv-warn{ background:var(--danger-soft); color:var(--danger); border-radius:10px; padding:10px 12px; font-size:13px; margin-bottom:14px; line-height:1.5; }
+  .mv-chips{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
+  .mv-chip{ display:inline-flex; align-items:center; gap:7px; padding:5px 11px; border-radius:999px; font-size:12px; font-weight:700; border:1px solid var(--panel-edge); background:var(--panel-alt); color:var(--muted); }
+  .mv-chip::before{ content:''; width:8px; height:8px; border-radius:50%; background:var(--danger); }
+  .mv-chip.on{ color:var(--ok); border-color:var(--ok); } .mv-chip.on::before{ background:var(--ok); }
+  .mv-bar{ display:none; margin-top:18px; }
+  .mv-bar.on{ display:block; }
+  .mv-bar .meter i{ transition:width .4s var(--ease); background:var(--grad); }
+  .mv-bar .meter i.vago{ width:35% !important; animation:mvMove 1.3s ease-in-out infinite alternate; }
+  @keyframes mvMove{ from{ margin-left:0; } to{ margin-left:65%; } }
+  .mv-steps{ display:grid; gap:14px; margin-top:18px; }
+  .mv-step{ display:grid; grid-template-columns:260px 1fr; gap:16px; padding:14px; border:1px solid var(--panel-edge); border-radius:14px; background:var(--panel-alt); align-items:start; }
+  .mv-step img{ width:100%; border-radius:9px; border:1px solid var(--panel-edge); display:block; background:#000; }
+  .mv-head{ display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+  .mv-num{ width:28px; height:28px; border-radius:50%; background:var(--grad); color:#fff; font-weight:800; font-size:13px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .mv-time{ font-size:12px; color:var(--muted); font-variant-numeric:tabular-nums; }
+  .mv-tools{ margin-left:auto; display:flex; gap:6px; }
+  .mv-step textarea{ min-height:84px; resize:vertical; font-family:var(--sans); font-size:14px; }
+  .mv-actions{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:18px; }
+  .mv-actions .grow{ flex:1; }
+  .mv-check{ margin:0; display:flex; align-items:center; gap:8px; text-transform:none; letter-spacing:0; font-size:13px; font-weight:600; }
+  #mvResultado{ display:none; }
+
+  /* =====================================================================
+     ESTILOS DEL MÓDULO OCR (TRANSCRIPCIÓN DE IMAGEN)
+     ===================================================================== */
+  .ocr-container{ display:grid; gap:20px; }
+  .ocr-dropzone{
+    position:relative;
+    border:2px dashed rgba(var(--accent-rgb), .4);
+    border-radius:18px;
+    background:var(--panel-alt);
+    padding:36px 24px;
+    text-align:center;
+    cursor:pointer;
+    transition:all .25s var(--ease);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:12px;
+    min-height:220px;
+  }
+  .ocr-dropzone:hover, .ocr-dropzone.dragover{
+    border-color:var(--accent);
+    background:rgba(var(--accent-rgb), .08);
+    box-shadow:0 0 28px -4px rgba(var(--accent-rgb), .35), inset 0 0 16px rgba(var(--accent-rgb), .1);
+    transform:translateY(-2px);
+  }
+  .ocr-dropzone-icon{
+    width:64px;
+    height:64px;
+    border-radius:18px;
+    background:rgba(var(--accent-rgb), .14);
+    border:1px solid rgba(var(--accent-rgb), .35);
+    color:var(--accent);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    box-shadow:0 6px 18px -4px rgba(var(--accent-rgb), .4);
+    transition:transform .3s var(--spring);
+  }
+  .ocr-dropzone:hover .ocr-dropzone-icon{
+    transform:scale(1.1) rotate(-4deg);
+  }
+  .ocr-dropzone h3{
+    margin:0;
+    font-size:17px;
+    font-weight:700;
+    color:var(--text);
+  }
+  .ocr-dropzone p{
+    margin:0;
+    font-size:13px;
+    color:var(--muted);
+    max-width:480px;
+    line-height:1.5;
+  }
+  .ocr-kbd-badge{
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+    margin-top:4px;
+    font-size:12px;
+    color:var(--accent);
+    background:rgba(var(--accent-rgb), .12);
+    border:1px solid rgba(var(--accent-rgb), .28);
+    padding:4px 10px;
+    border-radius:999px;
+    font-weight:600;
+  }
+  .ocr-kbd-badge kbd{
+    background:var(--panel);
+    border:1px solid var(--panel-edge);
+    padding:1px 5px;
+    border-radius:4px;
+    font-family:var(--mono, monospace);
+    font-size:11px;
+    color:var(--text);
+  }
+
+  /* Previsualización de la imagen cargada */
+  .ocr-preview-card{
+    display:none;
+    align-items:center;
+    gap:18px;
+    padding:14px 18px;
+    border-radius:14px;
+    background:var(--panel-alt);
+    border:1px solid var(--panel-edge);
+    margin-top:14px;
+  }
+  .ocr-preview-card.show{ display:flex; animation:fadeIn .2s ease; }
+  .ocr-thumb-wrap{
+    width:76px;
+    height:76px;
+    border-radius:10px;
+    overflow:hidden;
+    background:#000;
+    border:1px solid var(--panel-edge);
+    flex-shrink:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .ocr-thumb-wrap img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+  }
+  .ocr-meta{
+    flex:1;
+    min-width:0;
+  }
+  .ocr-meta-name{
+    font-weight:700;
+    font-size:14px;
+    color:var(--text);
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .ocr-meta-info{
+    font-size:12px;
+    color:var(--muted);
+    margin-top:3px;
+  }
+  .ocr-preview-tools{
+    display:flex;
+    gap:8px;
+    flex-shrink:0;
+  }
+
+  /* Controles y opciones de transcripción */
+  .ocr-options-bar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:14px;
+    flex-wrap:wrap;
+    margin-top:16px;
+    padding-top:14px;
+    border-top:1px solid var(--panel-edge);
+  }
+  .ocr-modo-select{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    font-size:13px;
+    color:var(--text);
+  }
+  .ocr-modo-select select{
+    padding:6px 12px;
+    border-radius:9px;
+    border:1px solid var(--panel-edge);
+    background:var(--panel);
+    color:var(--text);
+    font-size:13px;
+    font-weight:600;
+  }
+
+  /* Barra de progreso OCR */
+  .ocr-progress-box{
+    display:none;
+    margin-top:16px;
+    padding:14px 18px;
+    border-radius:12px;
+    background:var(--panel-alt);
+    border:1px solid var(--panel-edge);
+  }
+  .ocr-progress-box.show{ display:block; animation:fadeIn .25s ease; }
+  .ocr-progress-label{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    font-size:13px;
+    font-weight:600;
+    color:var(--text);
+    margin-bottom:8px;
+  }
+  .ocr-spinner{
+    display:inline-block;
+    width:16px;
+    height:16px;
+    border:2px solid rgba(var(--accent-rgb), .3);
+    border-top-color:var(--accent);
+    border-radius:50%;
+    animation:giro .7s linear infinite;
+  }
+
+  /* Tarjeta de Resultados OCR */
+  .ocr-result-card{
+    display:none;
+    margin-top:20px;
+    animation:fadeIn .3s var(--spring);
+  }
+  .ocr-result-card.show{ display:block; }
+  .ocr-result-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    flex-wrap:wrap;
+    margin-bottom:12px;
+  }
+  .ocr-result-title{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-size:16px;
+    font-weight:800;
+    color:var(--text);
+  }
+  .ocr-result-stats{
+    display:inline-flex;
+    gap:6px;
+    flex-wrap:wrap;
+  }
+  .ocr-stat-chip{
+    font-size:11.5px;
+    font-weight:700;
+    color:var(--muted);
+    background:var(--panel-alt);
+    border:1px solid var(--panel-edge);
+    padding:3px 9px;
+    border-radius:999px;
+  }
+  .ocr-result-actions{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    flex-wrap:wrap;
+  }
+
+  /* Botón de copiar destacado con feedback visual instantáneo */
+  .btn-copiar-info{
+    background:var(--grad) !important;
+    color:#fff !important;
+    border:none !important;
+    font-weight:700 !important;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:8px 16px;
+    border-radius:10px;
+    box-shadow:0 4px 14px -3px rgba(var(--accent-rgb), .6);
+    cursor:pointer;
+    transition:all .2s var(--spring);
+  }
+  .btn-copiar-info:hover{
+    transform:translateY(-1px) scale(1.02);
+    box-shadow:0 6px 18px -2px rgba(var(--accent-rgb), .8);
+  }
+  .btn-copiar-info.copiado{
+    background:#10b981 !important;
+    box-shadow:0 4px 16px -2px rgba(16, 185, 129, .7) !important;
+  }
+
+  .ocr-textarea-wrap{
+    position:relative;
+    margin-top:6px;
+  }
+  .ocr-textarea{
+    width:100%;
+    min-height:280px;
+    padding:16px;
+    font-family:var(--sans);
+    font-size:14px;
+    line-height:1.6;
+    color:var(--text);
+    background:var(--panel-alt);
+    border:1px solid var(--panel-edge);
+    border-radius:14px;
+    resize:vertical;
+    box-sizing:border-box;
+    transition:border-color .2s ease, box-shadow .2s ease;
+  }
+  .ocr-textarea:focus{
+    outline:none;
+    border-color:var(--accent);
+    box-shadow:0 0 16px -2px rgba(var(--accent-rgb), .35);
+  }
+
+  @media (max-width:760px){
+    .mv-grid{ grid-template-columns:1fr; }
+    .mv-step{ grid-template-columns:1fr; }
+    .ocr-dropzone{ padding:26px 16px; min-height:180px; }
+    .ocr-options-bar{ flex-direction:column; align-items:stretch; }
+    .ocr-result-header{ flex-direction:column; align-items:stretch; }
+    .ocr-result-actions{ justify-content:stretch; }
+    .ocr-result-actions button{ flex:1; justify-content:center; }
+  }
+</style>
+
+<!-- Barra superior con pestañas de navegación del módulo -->
+<div class="manual-tabs-nav" role="tablist">
+  <button type="button" class="mtab-btn active" id="tabBtnVideo" data-tab="video" role="tab" aria-selected="true" aria-controls="panelVideo">
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polygon points="23 7 16 12 23 17 23 7"/>
+      <rect x="1" y="5" width="15" height="14" rx="2"/>
+    </svg>
+    <span>Manual desde Video</span>
+    <span class="mtab-pill">Video a PDF</span>
+  </button>
+  <button type="button" class="mtab-btn" id="tabBtnOcr" data-tab="ocr" role="tab" aria-selected="false" aria-controls="panelOcr">
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M4 7V4h3"/><path d="M20 7V4h-3"/><path d="M4 17v3h3"/><path d="M20 17v3h-3"/>
+      <circle cx="12" cy="12" r="3.2"/>
+      <path d="M5 12h2"/><path d="M17 12h2"/>
+    </svg>
+    <span>Transcribir Imagen</span>
+    <span class="mtab-pill">OCR con IA</span>
+  </button>
+</div>
+
+<!-- =====================================================================
+     PANEL 1: GENERADOR DE MANUALES DESDE VIDEO
+     ===================================================================== -->
+<div id="panelVideo" class="manual-panel active" role="tabpanel" aria-labelledby="tabBtnVideo">
+  <h1>Manual desde video</h1>
+  <p class="sub">Sube un video de pantalla donde se hace el procedimiento; no necesita audio. El sistema sigue el cursor, saca una captura de cada paso, escribe qué se está haciendo («Vamos al módulo de Facturación…») y te descarga el PDF con el membrete de Jaivaná.</p>
+
+  <div class="card" id="mvSubida">
+    <div class="mv-chips">
+      <span class="mv-chip <%= iaOk ? 'on' : '' %>" title="Mira las capturas, sigue el cursor y redacta cada paso">IA del asistente (sigue el cursor y redacta los pasos): <%= iaOk ? 'activa' : 'sin clave en el .env' %></span>
+    </div>
+    <% if (!fondoOk) { %>
+      <div class="mv-warn">No encontré el membrete <b>informe-fondo.jpeg</b>. Cópialo junto a <b>manual-video.js</b> o define <b>MANUAL_FONDO</b> en el .env; sin él, el PDF sale con fondo blanco.</div>
+    <% } %>
+    <form id="mvForm" enctype="multipart/form-data">
+      <label for="mvVideo" style="margin-top:0">Video (.mp4, .mov, .mkv, .webm…) · máx. <%= maxMb %> MB</label>
+      <input type="file" id="mvVideo" name="video" accept="video/*,.mkv,.mov,.mp4,.webm,.avi,.m4v,.wmv" required>
+
+      <details style="margin-top:14px">
+        <summary style="cursor:pointer;font-size:13px;font-weight:600;color:var(--muted)">Opciones</summary>
+        <div class="mv-grid">
+          <div>
+            <label for="mvSens">Cantidad de capturas</label>
+            <select id="mvSens" name="sensibilidad">
+              <option value="1">Muy pocas (solo cambios grandes)</option>
+              <option value="2">Pocas</option>
+              <option value="3">Normal</option>
+              <option value="4" selected>Muchas (recomendado: incluye cuando el cursor pasa por un menú)</option>
+              <option value="5">Todas las que cambien</option>
+            </select>
+          </div>
+          <div>
+            <label for="mvMax">Máximo de pasos</label>
+            <input type="number" id="mvMax" name="max" value="25" min="3" max="<%= maxPasos %>">
+          </div>
+          <div>
+            <label for="mvEstilo">Cómo se redactan los pasos</label>
+            <select id="mvEstilo" name="estilo">
+              <option value="narrado" selected>Narrado: «Vamos al módulo de Facturación…»</option>
+              <option value="instruccion">Instrucción: «Haz clic en el módulo de Facturación»</option>
+            </select>
+          </div>
+        </div>
+      </details>
+
+      <div class="mv-actions">
+        <button type="submit" id="mvGo">Crear el manual</button>
+        <label class="mv-check"><input type="checkbox" id="mvAuto" checked> Descargar el PDF automáticamente al terminar</label>
+      </div>
+      <div class="mv-bar" id="mvBar"><div class="meter"><i id="mvBarI" class="vago"></i></div><div class="meter-txt"><span id="mvBarTxt">Subiendo el video…</span></div></div>
+      <p class="mv-note">Para que la IA vea el cursor, graba con el puntero visible. El video no se guarda: solo quedan las capturas, durante 12 horas, por si quieres corregir y volver a descargar.</p>
+      <p class="mv-note" id="mvErrorSubida" style="color:var(--danger)"></p>
+    </form>
+  </div>
+
+  <div class="card" id="mvResultado" style="margin-top:18px">
+    <div class="mv-warn" id="mvAvisos" style="display:none"></div>
+    <label for="mvTitulo" style="margin-top:0">Título del manual</label>
+    <input type="text" id="mvTitulo" maxlength="150">
+    <label for="mvObjetivo">Objetivo</label>
+    <textarea id="mvObjetivo" rows="2" maxlength="600" style="font-family:var(--sans)"></textarea>
+    <p class="mv-note" id="mvResumen"></p>
+
+    <div class="mv-steps" id="mvPasos"></div>
+
+    <div class="mv-actions">
+      <label class="mv-check"><input type="checkbox" id="mvGrande" checked> Imágenes grandes (1 por página)</label>
+      <span class="grow"></span>
+      <button type="button" class="secondary" id="mvVer">Ver PDF</button>
+      <button type="button" id="mvDescargar">Descargar PDF</button>
+    </div>
+    <p class="mv-note" id="mvError" style="color:var(--danger)"></p>
+  </div>
+</div>
+
+<!-- =====================================================================
+     PANEL 2: TRANSCRIPCIÓN DE IMAGEN (OCR CON IA)
+     ===================================================================== -->
+<div id="panelOcr" class="manual-panel" role="tabpanel" aria-labelledby="tabBtnOcr">
+  <h1>Transcribir imagen (OCR con IA)</h1>
+  <p class="sub">Sube una imagen, captura de pantalla o foto de cualquier documento para transcribir todo el texto visible mediante inteligencia artificial. Puedes arrastrar el archivo, buscarlo en tu equipo o pulsar <b>Ctrl + V</b> tras tomar una captura de pantalla.</p>
+
+  <div class="card">
+    <div class="mv-chips">
+      <span class="mv-chip <%= iaOk ? 'on' : '' %>">Motor de Transcripción Multimodal: <%= iaOk ? 'Gemini Vision Activo' : 'Sin clave en .env' %></span>
+    </div>
+
+    <!-- Zona Drag & Drop -->
+    <div class="ocr-dropzone" id="ocrDropzone">
+      <input type="file" id="ocrInput" accept="image/*,.png,.jpg,.jpeg,.webp,.gif,.bmp,.tif,.tiff" style="display:none">
+      <div class="ocr-dropzone-icon">
+        <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+      </div>
+      <h3>Arrastra y suelta tu imagen aquí</h3>
+      <p>O haz clic para seleccionar una imagen desde tus carpetas.<br>También puedes pegar directamente cualquier captura con tu teclado.</p>
+      <span class="ocr-kbd-badge"><kbd>Ctrl</kbd> + <kbd>V</kbd> para pegar captura del portapapeles</span>
+    </div>
+
+    <!-- Previsualización de imagen seleccionada -->
+    <div class="ocr-preview-card" id="ocrPreviewCard">
+      <div class="ocr-thumb-wrap">
+        <img id="ocrPreviewImg" src="" alt="Vista previa">
+      </div>
+      <div class="ocr-meta">
+        <div class="ocr-meta-name" id="ocrMetaName">captura.png</div>
+        <div class="ocr-meta-info" id="ocrMetaInfo">0 KB · 0 x 0 px</div>
+      </div>
+      <div class="ocr-preview-tools">
+        <button type="button" class="secondary" id="ocrBtnCambiar">Cambiar</button>
+        <button type="button" class="iconbtn warn lbl" id="ocrBtnQuitar" title="Quitar imagen">✕</button>
+      </div>
+    </div>
+
+    <!-- Opciones de formato y botón de acción -->
+    <div class="ocr-options-bar">
+      <div class="ocr-modo-select">
+        <label for="ocrModo" style="margin:0;font-weight:700">Formato del texto:</label>
+        <select id="ocrModo">
+          <option value="texto" selected>Texto fiel / Exacto (respeta líneas y tablas)</option>
+          <option value="markdown">Markdown estructurado (encabezados, listas y código)</option>
+          <option value="limpio">Párrafos limpios (redacción continua ordenada)</option>
+        </select>
+      </div>
+
+      <div class="mv-actions" style="margin-top:0">
+        <button type="button" id="btnTranscribir" style="display:inline-flex;align-items:center;gap:8px" disabled>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <span id="btnTranscribirTxt">Transcribir imagen</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Barra de progreso / procesamiento -->
+    <div class="ocr-progress-box" id="ocrProgreso">
+      <div class="ocr-progress-label">
+        <span style="display:inline-flex;align-items:center;gap:8px">
+          <i class="ocr-spinner"></i>
+          <span id="ocrProgresoTxt">La IA está analizando la imagen y extrayendo los datos...</span>
+        </span>
+      </div>
+      <div class="meter"><i class="vago" style="background:var(--grad)"></i></div>
+    </div>
+
+    <p class="mv-note" id="ocrErrorMsg" style="color:var(--danger);display:none;margin-top:14px"></p>
+  </div>
+
+  <!-- Tarjeta con el Resultado de la Transcripción -->
+  <div class="card ocr-result-card" id="ocrResultadoCard">
+    <div class="ocr-result-header">
+      <div class="ocr-result-title">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--accent)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="16" y1="13" x2="8" y2="13"/>
+          <line x1="16" y1="17" x2="8" y2="17"/>
+          <polyline points="10 9 9 9 8 9"/>
+        </svg>
+        <span>Información extraída</span>
+        <div class="ocr-result-stats">
+          <span class="ocr-stat-chip" id="ocrStatPalabras">0 palabras</span>
+          <span class="ocr-stat-chip" id="ocrStatCaracteres">0 caracteres</span>
+        </div>
+      </div>
+
+      <div class="ocr-result-actions">
+        <button type="button" class="btn-copiar-info" id="btnCopiarOcr" title="Copiar todo el texto al portapapeles">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+          </svg>
+          <span id="btnCopiarOcrTxt">Copiar información</span>
+        </button>
+        <button type="button" class="secondary" id="btnDescargarTxt" title="Descargar como archivo de texto">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          <span>Descargar .txt</span>
+        </button>
+        <button type="button" class="secondary" id="btnLimpiarOcr" title="Limpiar y transcribir otra imagen">
+          Nueva imagen
+        </button>
+      </div>
+    </div>
+
+    <div class="ocr-textarea-wrap">
+      <textarea id="ocrSalida" class="ocr-textarea" placeholder="El texto transcrito aparecerá aquí..."></textarea>
+    </div>
+    <p class="mv-note">Puedes editar directamente el texto antes de copiarlo o descargarlo. El contenido permanece en tu navegador mientras no recargues la página.</p>
+  </div>
+</div>
+
+<script>
+(function(){
+  var $ = function(id){ return document.getElementById(id); };
+
+  /* =====================================================================
+     1. GESTIÓN DE PESTAÑAS (TABS) Y HASH DE URL (#video, #ocr)
+     ===================================================================== */
+  var tabBtnVideo = $('tabBtnVideo');
+  var tabBtnOcr = $('tabBtnOcr');
+  var panelVideo = $('panelVideo');
+  var panelOcr = $('panelOcr');
+
+  function cambiarPestana(tabName){
+    if (tabName === 'ocr') {
+      tabBtnOcr.classList.add('active');
+      tabBtnOcr.setAttribute('aria-selected', 'true');
+      tabBtnVideo.classList.remove('active');
+      tabBtnVideo.setAttribute('aria-selected', 'false');
+      panelOcr.classList.add('active');
+      panelVideo.classList.remove('active');
+      if (history.replaceState) history.replaceState(null, null, '#ocr');
+    } else {
+      tabBtnVideo.classList.add('active');
+      tabBtnVideo.setAttribute('aria-selected', 'true');
+      tabBtnOcr.classList.remove('active');
+      tabBtnOcr.setAttribute('aria-selected', 'false');
+      panelVideo.classList.add('active');
+      panelOcr.classList.remove('active');
+      if (history.replaceState) history.replaceState(null, null, '#video');
+    }
+  }
+
+  tabBtnVideo.addEventListener('click', function(){ cambiarPestana('video'); });
+  tabBtnOcr.addEventListener('click', function(){ cambiarPestana('ocr'); });
+
+  // Activar según hash inicial si existe
+  if (location.hash === '#ocr' || location.hash === '#transcribir' || location.hash === '#imagen') {
+    cambiarPestana('ocr');
+  }
+
+  /* =====================================================================
+     2. LÓGICA DE MANUAL DESDE VIDEO (EXISTENTE)
+     ===================================================================== */
+  var estado = { id: null, pasos: [] };
+
+  function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]; }); }
+
+  function leerTextos(){
+    Array.prototype.forEach.call(document.querySelectorAll('.mv-step textarea'), function(t){
+      estado.pasos[Number(t.dataset.i)].texto = t.value;
+    });
+  }
+
+  function pintar(){
+    $('mvPasos').innerHTML = estado.pasos.map(function(p, i){
+      return '<div class="mv-step">' +
+        '<img loading="lazy" src="/manual/' + estado.id + '/captura/' + p.archivo + '" alt="Paso ' + (i + 1) + '">' +
+        '<div><div class="mv-head"><span class="mv-num">' + (i + 1) + '</span><b>Paso ' + (i + 1) + '</b><span class="mv-time">· minuto ' + esc(p.tiempo) + '</span>' +
+          '<span class="mv-tools">' +
+            '<button type="button" class="iconbtn" data-a="sube" data-i="' + i + '" title="Subir">↑</button>' +
+            '<button type="button" class="iconbtn" data-a="baja" data-i="' + i + '" title="Bajar">↓</button>' +
+            '<button type="button" class="iconbtn warn lbl" data-a="quita" data-i="' + i + '" title="Quitar este paso">Quitar</button>' +
+          '</span></div>' +
+        '<textarea data-i="' + i + '" placeholder="Escribe qué se hace en este paso">' + esc(p.texto || '') + '</textarea></div>' +
+      '</div>';
+    }).join('');
+    $('mvResumen').textContent = estado.pasos.length + ' pasos. Puedes corregir cualquier texto, quitar o reordenar pasos y volver a descargar.';
+  }
+
+  $('mvPasos').addEventListener('click', function(e){
+    var b = e.target.closest('button[data-a]'); if (!b) return;
+    leerTextos();
+    var i = Number(b.dataset.i), a = b.dataset.a, p = estado.pasos;
+    if (a === 'quita') p.splice(i, 1);
+    if (a === 'sube' && i > 0) { var t = p[i]; p[i] = p[i - 1]; p[i - 1] = t; }
+    if (a === 'baja' && i < p.length - 1) { var u = p[i]; p[i] = p[i + 1]; p[i + 1] = u; }
+    pintar();
+  });
+
+  function barra(txt, pct){
+    $('mvBarTxt').textContent = txt;
+    var i = $('mvBarI');
+    if (pct == null) { i.className = 'vago'; i.style.width = ''; }
+    else { i.className = ''; i.style.width = Math.max(3, Math.min(100, pct)) + '%'; }
+  }
+  function terminarProceso(){ $('mvGo').disabled = false; $('mvBar').classList.remove('on'); }
+
+  function mostrarResultado(d){
+    terminarProceso();
+    estado.id = d.id;
+    estado.pasos = d.pasos.map(function(p){ return { archivo: p.archivo, tiempo: p.tiempo, texto: p.texto || '' }; });
+    $('mvTitulo').value = d.titulo || 'Manual';
+    $('mvObjetivo').value = d.objetivo || '';
+    var av = $('mvAvisos');
+    if (d.avisos && d.avisos.length) { av.style.display = 'block'; av.innerHTML = d.avisos.map(esc).join('<br>'); } else av.style.display = 'none';
+    $('mvResultado').style.display = 'block';
+    pintar();
+    $('mvResultado').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if ($('mvAuto').checked) pedirPdf(true);
+  }
+
+  function vigilar(id){
+    var fallos = 0;
+    (function consultar(){
+      fetch('/manual/' + id + '/estado', { cache: 'no-store' }).then(function(r){
+        return r.json().then(function(d){ return { ok: r.ok, d: d }; });
+      }).then(function(x){
+        fallos = 0;
+        if (x.d.error) { terminarProceso(); $('mvErrorSubida').textContent = x.d.error; return; }
+        if (x.d.listo) return mostrarResultado(x.d);
+        barra((x.d.fase || 'Procesando') + (x.d.total ? ' (' + x.d.hecho + ' de ' + x.d.total + ')' : '…'), x.d.total ? (x.d.hecho / x.d.total) * 100 : null);
+        setTimeout(consultar, 1500);
+      }).catch(function(){
+        if (++fallos > 8) { terminarProceso(); $('mvErrorSubida').textContent = 'Se perdió la conexión con el servidor.'; return; }
+        setTimeout(consultar, 3000);
+      });
+    })();
+  }
+
+  $('mvForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    var f = $('mvVideo').files[0]; if (!f) return;
+    $('mvGo').disabled = true; $('mvBar').classList.add('on'); $('mvErrorSubida').textContent = ''; barra('Subiendo el video…', 0);
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', '/manual/procesar');
+    xhr.upload.onprogress = function(ev){
+      if (ev.lengthComputable) barra(ev.loaded < ev.total ? 'Subiendo el video… ' + Math.round(ev.loaded / ev.total * 100) + '%' : 'Video recibido…', ev.loaded < ev.total ? ev.loaded / ev.total * 100 : null);
+    };
+    xhr.onload = function(){
+      var d = {}; try { d = JSON.parse(xhr.responseText); } catch (x) {}
+      if (xhr.status !== 200 || !d.id) { terminarProceso(); $('mvErrorSubida').textContent = d.error || 'No se pudo subir el video.'; return; }
+      barra('Analizando el video…', null);
+      vigilar(d.id);
+    };
+    xhr.onerror = function(){ terminarProceso(); $('mvErrorSubida').textContent = 'Se cortó la conexión con el servidor.'; };
+    xhr.send(new FormData($('mvForm')));
+  });
+
+  function pedirPdf(descargar){
+    leerTextos();
+    $('mvError').textContent = '';
+    if (!estado.pasos.length) { $('mvError').textContent = 'No quedan pasos para el PDF.'; return; }
+    var ventana = descargar ? null : window.open('', '_blank');
+    fetch('/manual/pdf' + (descargar ? '?descargar=1' : ''), {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: estado.id, titulo: $('mvTitulo').value, objetivo: $('mvObjetivo').value, grande: $('mvGrande').checked, pasos: estado.pasos })
+    }).then(function(r){
+      if (!r.ok) return r.json().then(function(d){ throw new Error(d.error || 'No se pudo generar el PDF.'); });
+      return r.blob();
+    }).then(function(blob){
+      var url = URL.createObjectURL(blob);
+      if (descargar) { var a = document.createElement('a'); a.href = url; a.download = ($('mvTitulo').value || 'manual').replace(/[^\w\- áéíóúñÁÉÍÓÚÑ]/g, '').trim().replace(/\s+/g, '_') + '.pdf'; document.body.appendChild(a); a.click(); a.remove(); }
+      else if (ventana) ventana.location = url;
+      setTimeout(function(){ URL.revokeObjectURL(url); }, 60000);
+    }).catch(function(err){ if (ventana) ventana.close(); $('mvError').textContent = err.message; });
+  }
+  $('mvVer').addEventListener('click', function(){ pedirPdf(false); });
+  $('mvDescargar').addEventListener('click', function(){ pedirPdf(true); });
+
+  /* =====================================================================
+     3. LÓGICA DEL MÓDULO OCR (TRANSCRIPCIÓN DE IMAGEN CON IA)
+     ===================================================================== */
+  var ocrDropzone = $('ocrDropzone');
+  var ocrInput = $('ocrInput');
+  var ocrPreviewCard = $('ocrPreviewCard');
+  var ocrPreviewImg = $('ocrPreviewImg');
+  var ocrMetaName = $('ocrMetaName');
+  var ocrMetaInfo = $('ocrMetaInfo');
+  var ocrBtnCambiar = $('ocrBtnCambiar');
+  var ocrBtnQuitar = $('ocrBtnQuitar');
+  var btnTranscribir = $('btnTranscribir');
+  var btnTranscribirTxt = $('btnTranscribirTxt');
+  var ocrProgreso = $('ocrProgreso');
+  var ocrProgresoTxt = $('ocrProgresoTxt');
+  var ocrErrorMsg = $('ocrErrorMsg');
+  var ocrResultadoCard = $('ocrResultadoCard');
+  var ocrSalida = $('ocrSalida');
+  var ocrStatPalabras = $('ocrStatPalabras');
+  var ocrStatCaracteres = $('ocrStatCaracteres');
+  var btnCopiarOcr = $('btnCopiarOcr');
+  var btnCopiarOcrTxt = $('btnCopiarOcrTxt');
+  var btnDescargarTxt = $('btnDescargarTxt');
+  var btnLimpiarOcr = $('btnLimpiarOcr');
+  var ocrModo = $('ocrModo');
+
+  var archivoActual = null;
+  var base64Actual = null;
+
+  function formatearTamano(bytes){
+    if (bytes === 0) return '0 Bytes';
+    var k = 1024, dm = 1;
+    var sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    var i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+  }
+
+  function actualizarContadores(){
+    var txt = ocrSalida.value || '';
+    var chars = txt.length;
+    var palabras = (txt.match(/\S+/g) || []).length;
+    ocrStatCaracteres.textContent = chars.toLocaleString() + ' caracteres';
+    ocrStatPalabras.textContent = palabras.toLocaleString() + ' palabras';
+  }
+  ocrSalida.addEventListener('input', actualizarContadores);
+
+  function cargarImagen(file, nombreSugerido){
+    if (!file) return;
+    if (!file.type.match(/^image\//i)) {
+      mostrarErrorOcr('El archivo seleccionado no es una imagen válida.');
+      return;
+    }
+
+    limpiarErrorOcr();
+    archivoActual = file;
+
+    var reader = new FileReader();
+    reader.onload = function(e){
+      base64Actual = e.target.result;
+      ocrPreviewImg.src = base64Actual;
+      ocrMetaName.textContent = file.name || nombreSugerido || 'captura-portapapeles.png';
+
+      // Obtener resolución de la imagen
+      var img = new Image();
+      img.onload = function(){
+        ocrMetaInfo.textContent = formatearTamano(file.size) + ' · ' + img.naturalWidth + ' × ' + img.naturalHeight + ' px';
+      };
+      img.src = base64Actual;
+
+      ocrDropzone.style.display = 'none';
+      ocrPreviewCard.classList.add('show');
+      btnTranscribir.disabled = false;
+    };
+    reader.onerror = function(){
+      mostrarErrorOcr('No se pudo leer el archivo de imagen.');
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function limpiarImagen(){
+    archivoActual = null;
+    base64Actual = null;
+    ocrInput.value = '';
+    ocrPreviewImg.src = '';
+    ocrPreviewCard.classList.remove('show');
+    ocrDropzone.style.display = 'flex';
+    btnTranscribir.disabled = true;
+    limpiarErrorOcr();
+  }
+
+  function mostrarErrorOcr(msg){
+    ocrErrorMsg.textContent = msg;
+    ocrErrorMsg.style.display = 'block';
+  }
+  function limpiarErrorOcr(){
+    ocrErrorMsg.textContent = '';
+    ocrErrorMsg.style.display = 'none';
+  }
+
+  // Click para seleccionar archivo
+  ocrDropzone.addEventListener('click', function(){ ocrInput.click(); });
+  ocrBtnCambiar.addEventListener('click', function(){ ocrInput.click(); });
+  ocrBtnQuitar.addEventListener('click', limpiarImagen);
+
+  ocrInput.addEventListener('change', function(e){
+    if (e.target.files && e.target.files[0]) {
+      cargarImagen(e.target.files[0]);
+    }
+  });
+
+  // Drag and drop
+  ['dragenter', 'dragover'].forEach(function(evt){
+    ocrDropzone.addEventListener(evt, function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      ocrDropzone.classList.add('dragover');
+    });
+  });
+  ['dragleave', 'drop'].forEach(function(evt){
+    ocrDropzone.addEventListener(evt, function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      ocrDropzone.classList.remove('dragover');
+    });
+  });
+  ocrDropzone.addEventListener('drop', function(e){
+    var dt = e.dataTransfer;
+    if (dt && dt.files && dt.files[0]) {
+      cargarImagen(dt.files[0]);
+    }
+  });
+
+  // Capturar pegado de capturas con Ctrl + V
+  window.addEventListener('paste', function(e){
+    var items = (e.clipboardData || (e.originalEvent && e.originalEvent.clipboardData)) ? (e.clipboardData || e.originalEvent.clipboardData).items : null;
+    if (!items) return;
+    for (var i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf('image') !== -1) {
+        var blob = items[i].getAsFile();
+        if (blob) {
+          cambiarPestana('ocr');
+          var fecha = new Date();
+          var timeStr = fecha.getHours() + '-' + fecha.getMinutes() + '-' + fecha.getSeconds();
+          cargarImagen(blob, 'captura_' + timeStr + '.png');
+          if (window.boveToast) window.boveToast('Captura pegada desde el portapapeles');
+          break;
+        }
+      }
+    }
+  });
+
+  // Botón Transcribir Imagen
+  btnTranscribir.addEventListener('click', function(){
+    if (!archivoActual && !base64Actual) {
+      mostrarErrorOcr('Primero selecciona o pega una imagen.');
+      return;
+    }
+
+    limpiarErrorOcr();
+    btnTranscribir.disabled = true;
+    btnTranscribirTxt.textContent = 'Transcribiendo...';
+    ocrProgreso.classList.add('show');
+    ocrProgresoTxt.textContent = 'Analizando imagen y transcribiendo con IA...';
+
+    var fd = new FormData();
+    if (archivoActual) {
+      fd.append('imagen', archivoActual);
+    } else if (base64Actual) {
+      fd.append('base64', base64Actual);
+    }
+    fd.append('modo', ocrModo.value);
+
+    fetch('/manual/transcribir-imagen', {
+      method: 'POST',
+      body: fd
+    })
+    .then(function(res){
+      return res.json().then(function(data){ return { status: res.status, data: data }; });
+    })
+    .then(function(resp){
+      btnTranscribir.disabled = false;
+      btnTranscribirTxt.textContent = 'Transcribir imagen';
+      ocrProgreso.classList.remove('show');
+
+      if (!resp.data.ok) {
+        throw new Error(resp.data.error || 'No se pudo transcribir la imagen.');
+      }
+
+      var texto = resp.data.texto || '';
+      ocrSalida.value = texto;
+      actualizarContadores();
+      ocrResultadoCard.classList.add('show');
+      ocrResultadoCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      if (window.boveToast) {
+        window.boveToast('¡Transcripción completada con éxito!');
+      }
+    })
+    .catch(function(err){
+      btnTranscribir.disabled = false;
+      btnTranscribirTxt.textContent = 'Transcribir imagen';
+      ocrProgreso.classList.remove('show');
+      mostrarErrorOcr(err.message || 'Error al conectar con el servidor.');
+    });
+  });
+
+  // Botón Copiar Información
+  btnCopiarOcr.addEventListener('click', function(){
+    var texto = ocrSalida.value || '';
+    if (!texto) {
+      if (window.boveToast) window.boveToast('No hay texto para copiar');
+      return;
+    }
+
+    function exitoCopia(){
+      btnCopiarOcr.classList.add('copiado');
+      btnCopiarOcrTxt.textContent = '✓ ¡Copiado!';
+      if (window.boveToast) window.boveToast('¡Información copiada al portapapeles!');
+      setTimeout(function(){
+        btnCopiarOcr.classList.remove('copiado');
+        btnCopiarOcrTxt.textContent = 'Copiar información';
+      }, 2500);
+    }
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(texto).then(exitoCopia).catch(function(){
+        // Fallback
+        ocrSalida.select();
+        document.execCommand('copy');
+        exitoCopia();
+      });
+    } else {
+      ocrSalida.select();
+      document.execCommand('copy');
+      exitoCopia();
+    }
+  });
+
+  // Botón Descargar .txt
+  btnDescargarTxt.addEventListener('click', function(){
+    var texto = ocrSalida.value || '';
+    if (!texto) return;
+
+    var blob = new Blob([texto], { type: 'text/plain;charset=utf-8' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    var baseNombre = (ocrMetaName.textContent || 'transcripcion').replace(/\.[^/.]+$/, '').replace(/[^\w\- áéíóúñÁÉÍÓÚÑ]/g, '').trim().replace(/\s+/g, '_');
+    a.href = url;
+    a.download = (baseNombre || 'transcripcion') + '.txt';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 60000);
+  });
+
+  // Botón Nueva Imagen / Limpiar
+  btnLimpiarOcr.addEventListener('click', function(){
+    limpiarImagen();
+    ocrSalida.value = '';
+    ocrResultadoCard.classList.remove('show');
+    ocrDropzone.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+
+})();
+</script>
