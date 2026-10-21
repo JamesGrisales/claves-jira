@@ -348,6 +348,7 @@
     <!-- Footer -->
     <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--panel-edge); padding-top:12px; margin-top:6px; flex-wrap:wrap; gap:8px;">
       <div style="display:flex; gap:6px; align-items:center;">
+        <button type="button" class="secondary" id="btnIrAConfig" style="font-size:12px;" title="Ver o editar configuración">⚙ Cuenta</button>
         <button type="button" class="secondary" id="btnAbrirOutlookApp" style="font-size:12px;" title="Ver borrador en tu aplicación de Outlook antes de enviar">✉ Ver borrador</button>
         <button type="button" class="secondary" id="btnOutlookWeb" style="font-size:12px;" title="Abrir en el navegador (Outlook Web)">🌐 Web</button>
       </div>
@@ -857,25 +858,25 @@ setInterval(sincronizarServidor, 15000);
   function cargarSmtpLocal(){
     try {
       var cfg = JSON.parse(localStorage.getItem(KEY_SMTP) || '{}');
-      smtpUser.value = cfg.user || 'jgrisales@jaivana.co';
-      if (cfg.pass) smtpPass.value = cfg.pass;
-      smtpHost.value = cfg.host || 'smtp.office365.com';
-      smtpPort.value = cfg.port || '587';
-      smtpFromName.value = cfg.fromName || 'James Grisales';
+      if (smtpUser) smtpUser.value = cfg.user || 'jgrisales@jaivana.co';
+      if (smtpPass && cfg.pass) smtpPass.value = cfg.pass;
+      if (smtpHost) smtpHost.value = cfg.host || 'smtp.office365.com';
+      if (smtpPort) smtpPort.value = cfg.port || '587';
+      if (smtpFromName) smtpFromName.value = cfg.fromName || 'James Grisales';
     } catch(e){
-      smtpUser.value = 'jgrisales@jaivana.co';
+      if (smtpUser) smtpUser.value = 'jgrisales@jaivana.co';
     }
   }
 
   function guardarSmtpLocal(){
     var cfg = {
-      user: smtpUser.value.trim(),
-      pass: smtpPass.value.trim(),
-      host: smtpHost.value.trim() || 'smtp.office365.com',
-      port: smtpPort.value.trim() || '587',
-      fromName: smtpFromName.value.trim() || 'James Grisales'
+      user: smtpUser ? smtpUser.value.trim() : 'jgrisales@jaivana.co',
+      pass: smtpPass ? smtpPass.value.trim() : '',
+      host: smtpHost ? (smtpHost.value.trim() || 'smtp.office365.com') : 'smtp.office365.com',
+      port: smtpPort ? (smtpPort.value.trim() || '587') : '587',
+      fromName: smtpFromName ? (smtpFromName.value.trim() || 'James Grisales') : 'James Grisales'
     };
-    localStorage.setItem(KEY_SMTP, JSON.stringify(cfg));
+    try { localStorage.setItem(KEY_SMTP, JSON.stringify(cfg)); } catch(e){}
     return cfg;
   }
 
@@ -887,21 +888,25 @@ setInterval(sincronizarServidor, 15000);
 
   function switchTab(aConfig){
     if (aConfig) {
-      tabConfig.classList.add('active'); tabRedactar.classList.remove('active');
-      pConfig.style.display = 'flex'; pRedactar.style.display = 'none';
-      btnIrAConfig.textContent = '← Volver a Redactar';
+      if (tabConfig) tabConfig.classList.add('active');
+      if (tabRedactar) tabRedactar.classList.remove('active');
+      if (pConfig) pConfig.style.display = 'flex';
+      if (pRedactar) pRedactar.style.display = 'none';
+      if (btnIrAConfig) btnIrAConfig.textContent = '← Volver a Redactar';
     } else {
-      tabRedactar.classList.add('active'); tabConfig.classList.remove('active');
-      pRedactar.style.display = 'flex'; pConfig.style.display = 'none';
-      btnIrAConfig.textContent = '⚙ Cuenta Outlook';
+      if (tabRedactar) tabRedactar.classList.add('active');
+      if (tabConfig) tabConfig.classList.remove('active');
+      if (pRedactar) pRedactar.style.display = 'flex';
+      if (pConfig) pConfig.style.display = 'none';
+      if (btnIrAConfig) btnIrAConfig.textContent = '⚙ Cuenta';
     }
   }
 
-  if (tabRedactar && tabConfig) {
-    tabRedactar.addEventListener('click', function(){ switchTab(false); });
-    tabConfig.addEventListener('click', function(){ switchTab(true); });
+  if (tabRedactar) tabRedactar.addEventListener('click', function(){ switchTab(false); });
+  if (tabConfig) tabConfig.addEventListener('click', function(){ switchTab(true); });
+  if (btnIrAConfig) {
     btnIrAConfig.addEventListener('click', function(){
-      var enConfig = tabConfig.classList.contains('active');
+      var enConfig = tabConfig && tabConfig.classList.contains('active');
       switchTab(!enConfig);
     });
   }
