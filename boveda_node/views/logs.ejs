@@ -81,11 +81,8 @@
 <div class="top">
   <h1>Revisor de logs</h1>
   <div style="display:inline-flex; align-items:center; gap:8px;">
-    <span class="db-orb db-orb-pg" title="Logs de PostgreSQL y PgBouncer">🐘</span>
-    <span class="db-orb db-orb-ora" title="Alert logs y trace files de Oracle">🏛️</span>
-    <span class="db-orb db-orb-sql" title="Logs de Microsoft SQL Server">🟦</span>
-    <span class="db-orb db-orb-rd" title="Logs de Redis & Docker">⚡</span>
     <span class="chip" id="chip">Sin archivos</span>
+    <span class="db-orb db-orb-pg" id="logsHeaderOrb" title="Motor de logs activo">🐘</span>
   </div>
 </div>
 <p class="sub">Sube uno o varios archivos <strong>.log</strong>, <strong>.txt</strong> o <strong>.gz</strong>, o <strong>pega el texto</strong> directamente (Ctrl+V), y te muestro solo lo importante: errores y advertencias, cuántas veces se repite cada uno y a qué hora ocurrieron. Todo se procesa en tu navegador y queda guardado aunque cambies de pestaña.</p>

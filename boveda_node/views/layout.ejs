@@ -3872,6 +3872,15 @@ button:hover, .btn:hover, .iconbtn:hover, .acc-btn:hover {
         sqlite:    { name:'SQLite Embedded', icon:'💾', cls:'db-orb-sqlite', c1:'#a855f7', c2:'#7c3aed', rgb:'168, 85, 247' }
       };
 
+      var ENGINE_CLASSES = ['db-orb-pg', 'db-orb-ora', 'db-orb-sql', 'db-orb-my', 'db-orb-mg', 'db-orb-rd', 'db-orb-sqlite'];
+
+      function actualizarOrbeElemento(orb, eng) {
+        orb.textContent = eng.icon;
+        ENGINE_CLASSES.forEach(function(c) { orb.classList.remove(c); });
+        orb.classList.add(eng.cls);
+        orb.title = 'Motor Activo: ' + eng.name;
+      }
+
       window.setDbEngine = function(engineId) {
         var eng = ENGINES[engineId] || ENGINES.postgres;
         root.setAttribute('data-db-engine', engineId);
@@ -3884,9 +3893,8 @@ button:hover, .btn:hover, .iconbtn:hover, .acc-btn:hover {
         var topOrb = $('topbarEngineOrb');
         var topName = $('topbarEngineName');
         if (topOrb) {
-          topOrb.textContent = eng.icon;
-          topOrb.className = 'db-orb db-orb-lg ' + eng.cls;
-          topOrb.title = 'Motor Activo: ' + eng.name;
+          actualizarOrbeElemento(topOrb, eng);
+          topOrb.classList.add('db-orb-lg');
         }
         if (topName) topName.textContent = eng.name;
 
@@ -3894,11 +3902,35 @@ button:hover, .btn:hover, .iconbtn:hover, .acc-btn:hover {
           item.classList.toggle('active', item.dataset.enginePick === engineId);
         });
 
-        var dashOrb = $('dashHeaderOrb');
-        if (dashOrb) { dashOrb.textContent = eng.icon; dashOrb.className = 'db-orb db-orb-lg ' + eng.cls; }
-        var sqlOrb = $('sqlEditorOrb');
-        if (sqlOrb) { sqlOrb.textContent = eng.icon; sqlOrb.className = 'db-orb ' + eng.cls; }
+        // Actualizar absolutamente TODOS los orbes de la interfaz (tablas, filas, menús, headers, modales)
+        var orbs = document.querySelectorAll('.db-orb:not(#topbarDbMenu .db-orb):not(.db-orb-fixed)');
+        orbs.forEach(function(orb) {
+          actualizarOrbeElemento(orb, eng);
+        });
       };
+
+      // Observador de mutaciones para asegurar que cualquier fila o modal nuevo tome el motor activo
+      if (window.MutationObserver) {
+        var orbObserver = new MutationObserver(function(muts) {
+          var cur = localStorage.getItem('boveda_db_engine') || 'postgres';
+          var eng = ENGINES[cur] || ENGINES.postgres;
+          muts.forEach(function(m) {
+            m.addedNodes.forEach(function(n) {
+              if (n.nodeType === 1) {
+                if (n.matches && n.matches('.db-orb:not(#topbarDbMenu .db-orb):not(.db-orb-fixed)')) {
+                  actualizarOrbeElemento(n, eng);
+                }
+                if (n.querySelectorAll) {
+                  n.querySelectorAll('.db-orb:not(#topbarDbMenu .db-orb):not(.db-orb-fixed)').forEach(function(orb) {
+                    actualizarOrbeElemento(orb, eng);
+                  });
+                }
+              }
+            });
+          });
+        });
+        orbObserver.observe(document.documentElement, { childList: true, subtree: true });
+      }
 
       var curEng = localStorage.getItem('boveda_db_engine') || 'postgres';
       window.setDbEngine(curEng);
