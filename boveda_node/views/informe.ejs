@@ -89,6 +89,20 @@
 
   .toast{ position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(10px) scale(.96); background:linear-gradient(135deg, var(--accent), var(--accent-dark)); color:#fff; font-size:13px; font-weight:600; padding:9px 18px; border-radius:8px; opacity:0; pointer-events:none; transition:opacity .18s ease, transform .18s ease; z-index:50; }
   .toast.show{ opacity:1; transform:translateX(-50%) translateY(0) scale(1); }
+
+  /* Estilos del modal de correo Outlook */
+  .em-tabs { display:flex; gap:6px; border-bottom:1px solid var(--panel-edge); padding-bottom:6px; margin-bottom:8px; }
+  .em-tab-btn { background:transparent; border:none; box-shadow:none; color:var(--muted); font-size:13px; font-weight:700; padding:6px 14px; border-bottom:2px solid transparent; border-radius:0; cursor:pointer; }
+  .em-tab-btn.active { color:var(--accent); border-bottom-color:var(--accent); }
+  .em-chip-box { display:flex; flex-wrap:wrap; gap:5px; align-items:center; background:var(--panel-alt); border:1px solid var(--panel-edge); border-radius:8px; padding:6px 8px; min-height:42px; }
+  .em-chip-box:focus-within { border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft); }
+  .em-chips { display:flex; flex-wrap:wrap; gap:5px; align-items:center; }
+  .em-chip { display:inline-flex; align-items:center; gap:5px; background:var(--accent-soft); color:var(--accent-dark); border:1px solid var(--accent); padding:2px 8px; border-radius:999px; font-size:11.5px; font-weight:600; }
+  .em-chip-del { background:none; border:none; padding:0; cursor:pointer; font-size:12px; color:var(--accent-dark); opacity:.7; display:inline-flex; }
+  .em-chip-del:hover { opacity:1; }
+  .em-chip-box input { flex:1; min-width:140px; border:none !important; background:transparent !important; padding:4px 6px !important; outline:none !important; box-shadow:none !important; color:var(--text); font-size:13px; font-family:var(--sans); }
+  .em-quick-btn { background:var(--panel-alt); border:1px solid var(--panel-edge); color:var(--muted); border-radius:999px; font-size:11px; font-weight:600; padding:2px 8px; cursor:pointer; box-shadow:none; transform:none; }
+  .em-quick-btn:hover { background:var(--accent-soft); color:var(--accent-dark); border-color:var(--accent); transform:none; }
 </style>
 
 <div>
@@ -97,6 +111,10 @@
     <div class="acciones" style="display:flex; align-items:center; gap:8px;">
       <button type="button" class="secondary" id="btnEjemplo" title="Vuelve a los datos del informe de ejemplo">Restablecer</button>
       <button type="button" id="btnDescargar">⬇ Descargar PDF</button>
+      <button type="button" class="secondary" id="btnAbrirModalCorreo" style="font-weight:700; border-color:var(--accent); background:var(--accent-soft); color:var(--accent-dark); display:inline-flex; align-items:center; gap:6px;">
+        <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        ✉ Enviar por Correo
+      </button>
       <span class="db-orb db-orb-pg" title="Conexión de datos en PostgreSQL">🐘</span>
     </div>
   </div>
@@ -192,6 +210,148 @@
     <div class="pk-foot">
       <button type="button" class="secondary" id="pkCancelar">Cancelar</button>
       <button type="button" id="pkAgregar">Agregar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Enviar Informe por Correo (Outlook) -->
+<div class="modal" id="modalCorreo" role="dialog" aria-modal="true" aria-label="Enviar informe por correo">
+  <div class="modal-box" style="width:min(660px, 96vw); max-height:92vh;">
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--panel-edge); padding-bottom:10px;">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span style="font-size:18px;">✉</span>
+        <h3 style="margin:0; font-size:16px;">Enviar informe por correo (Outlook)</h3>
+      </div>
+      <button type="button" class="iconbtn" id="btnCerrarModalCorreo" style="padding:0; width:28px; height:28px; background:none; border:none; box-shadow:none; font-size:16px; cursor:pointer;" title="Cerrar">✕</button>
+    </div>
+
+    <!-- Pestañas del Modal -->
+    <div class="em-tabs">
+      <button type="button" class="em-tab-btn active" id="tabBtnRedactar">✉ Redactar</button>
+      <button type="button" class="em-tab-btn" id="tabBtnConfig">⚙ Cuenta Outlook</button>
+    </div>
+
+    <!-- Panel 1: Redactar -->
+    <div id="panelRedactar" style="display:flex; flex-direction:column; gap:12px; overflow-y:auto; padding-right:4px;">
+      <!-- PARA -->
+      <div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+          <label style="margin:0; font-size:12px; font-weight:700; color:var(--text); letter-spacing:.02em;">PARA (Destinatarios):</label>
+          <span style="font-size:11px; color:var(--muted);">Enter o coma para añadir</span>
+        </div>
+        <div class="em-chip-box" id="boxPara">
+          <div class="em-chips" id="chipsPara"></div>
+          <input type="email" id="inputPara" placeholder="Escribe un correo o selecciona abajo..." autocomplete="off">
+        </div>
+        <!-- Contactos frecuentes PARA -->
+        <div style="display:flex; align-items:center; gap:5px; flex-wrap:wrap; margin-top:6px;">
+          <span style="font-size:11px; color:var(--muted); font-weight:600;">Frecuentes:</span>
+          <button type="button" class="em-quick-btn" data-add-to="para" data-email="jose.caracas@jaivana.co" data-name="José Yoani Caracas Delgado">+ José Yoani Caracas</button>
+          <button type="button" class="em-quick-btn" data-add-to="para" data-email="william.arboleda@jaivana.co" data-name="William Arboleda">+ William Arboleda</button>
+          <button type="button" class="em-quick-btn" data-add-to="para" data-email="natalia.velasquez@jaivana.co" data-name="Natalia Velasquez">+ Natalia Velasquez</button>
+        </div>
+      </div>
+
+      <!-- CC -->
+      <div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+          <label style="margin:0; font-size:12px; font-weight:700; color:var(--text); letter-spacing:.02em;">CC (Con copia):</label>
+          <span style="font-size:11px; color:var(--muted);">Opcional</span>
+        </div>
+        <div class="em-chip-box" id="boxCc">
+          <div class="em-chips" id="chipsCc"></div>
+          <input type="email" id="inputCc" placeholder="Escribe un correo en copia..." autocomplete="off">
+        </div>
+        <!-- Contactos frecuentes CC -->
+        <div style="display:flex; align-items:center; gap:5px; flex-wrap:wrap; margin-top:6px;">
+          <span style="font-size:11px; color:var(--muted); font-weight:600;">Frecuentes:</span>
+          <button type="button" class="em-quick-btn" data-add-to="cc" data-email="juan.mejia@jaivana.co" data-name="Juan Carlos Mejia">+ Juan Carlos Mejía</button>
+          <button type="button" class="em-quick-btn" data-add-to="cc" data-email="julio.molina@jaivana.co" data-name="Julio Molina">+ Julio Molina</button>
+        </div>
+      </div>
+
+      <!-- ASUNTO -->
+      <div>
+        <label style="margin:0 0 4px; font-size:12px; font-weight:700; color:var(--text); display:block;">ASUNTO:</label>
+        <input type="text" id="emailAsunto" value="INFORME FACTURACION ELECTRONICA" placeholder="Asunto del correo…" style="width:100%; font-size:13px; font-weight:600;">
+      </div>
+
+      <!-- MENSAJE -->
+      <div>
+        <label style="margin:0 0 4px; font-size:12px; font-weight:700; color:var(--text); display:block;">MENSAJE:</label>
+        <textarea id="emailMensaje" style="width:100%; height:90px; font-family:var(--sans); font-size:13px; line-height:1.45; resize:vertical;"></textarea>
+      </div>
+
+      <!-- FIRMA PREVIEW -->
+      <div style="background:var(--panel-alt); border:1px solid var(--panel-edge); border-radius:10px; padding:10px 14px; font-size:12.5px;">
+        <div style="color:var(--muted); font-size:11px; text-transform:uppercase; font-weight:700; margin-bottom:4px;">Firma del Correo (Outlook):</div>
+        <div style="font-weight:700; color:var(--text);" id="firmanteNombre">James Grisales</div>
+        <div style="color:var(--muted); font-size:12px;">Analista de Soporte</div>
+        <div style="margin-top:6px; display:inline-flex; align-items:center; background:#24283b; padding:6px 14px; border-radius:6px;">
+          <img src="/img/jaivana-signature.png" alt="Jaivaná" style="height:26px; display:block;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+          <span style="display:none; color:#fff; font-weight:bold; font-size:14px; letter-spacing:1px;">Jaivaná<span style="color:#ef4444; margin-left:3px;">▲</span></span>
+        </div>
+      </div>
+
+      <!-- ADJUNTO AUTOMÁTICO -->
+      <div style="display:flex; align-items:center; gap:10px; background:var(--accent-soft); border:1px solid var(--accent); border-radius:10px; padding:8px 12px;">
+        <span style="font-size:18px;">📎</span>
+        <div style="flex:1; min-width:0;">
+          <div style="font-size:12.5px; font-weight:700; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" id="emailAdjuntoNombre">INFORME_DOCUMENTOS_ELECTRONICOS.pdf</div>
+          <div style="font-size:11px; color:var(--muted);">El PDF con membrete y tabla de empresas se genera y adjunta automáticamente</div>
+        </div>
+        <span class="chip" style="font-size:11px;">PDF</span>
+      </div>
+
+      <!-- ESTADO / ERROR -->
+      <div class="em-err" id="emailErr" style="display:none; color:var(--danger); background:var(--danger-soft); border-radius:8px; padding:8px 12px; font-size:12.5px;"></div>
+    </div>
+
+    <!-- Panel 2: Configuración SMTP -->
+    <div id="panelConfig" style="display:none; flex-direction:column; gap:10px; overflow-y:auto;">
+      <p style="font-size:12.5px; color:var(--muted); margin:0 0 6px;">
+        Configura tu cuenta corporativa de Outlook / Microsoft 365. Las credenciales se guardan de forma segura en este navegador.
+      </p>
+      <label class="campo">
+        <span>Tu Correo Outlook</span>
+        <input type="email" id="smtpUser" placeholder="ejemplo@jaivana.co">
+      </label>
+      <label class="campo">
+        <span>Contraseña o Contraseña de Aplicación</span>
+        <input type="password" id="smtpPass" placeholder="••••••••••••••••">
+      </label>
+      <div style="display:grid; grid-template-columns:2fr 1fr; gap:8px;">
+        <label class="campo">
+          <span>Servidor SMTP</span>
+          <input type="text" id="smtpHost" value="smtp.office365.com">
+        </label>
+        <label class="campo">
+          <span>Puerto</span>
+          <input type="number" id="smtpPort" value="587">
+        </label>
+      </div>
+      <label class="campo">
+        <span>Nombre de quien envía</span>
+        <input type="text" id="smtpFromName" value="James Grisales">
+      </label>
+
+      <div style="display:flex; gap:8px; align-items:center; margin-top:8px; flex-wrap:wrap;">
+        <button type="button" class="secondary" id="btnProbarSmtp">🔌 Probar conexión</button>
+        <button type="button" id="btnGuardarSmtp">💾 Guardar configuración</button>
+        <span id="smtpStatus" style="font-size:12px; margin-left:auto; font-weight:600;"></span>
+      </div>
+      <div class="a-hint" style="font-size:11.5px; color:var(--muted); line-height:1.45;">
+        💡 Si tu empresa utiliza autenticación de dos pasos (MFA / 2FA), genera una <strong>Contraseña de Aplicación</strong> en la sección de seguridad de tu cuenta Microsoft para permitir el envío automático.
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--panel-edge); padding-top:12px; margin-top:6px;">
+      <button type="button" class="secondary" id="btnIrAConfig" style="font-size:12px;">⚙ Cuenta Outlook</button>
+      <div style="display:flex; gap:8px;">
+        <button type="button" class="secondary" id="btnCancelarEmail">Cancelar</button>
+        <button type="button" id="btnEnviarEmail" style="font-weight:700;">🚀 Enviar Informe</button>
+      </div>
     </div>
   </div>
 </div>
@@ -658,6 +818,315 @@ window.addEventListener('focus', function(){ refrescarAuto(); sincronizarServido
 document.addEventListener('visibilitychange', function(){ if (!document.hidden) { refrescarAuto(); sincronizarServidor(); } });
 sincronizarServidor();
 setInterval(sincronizarServidor, 15000);
+
+/* ---------- Envío de Informe por Correo (Outlook) ---------- */
+(function(){
+  var KEY_SMTP = 'boveda_informe_smtp';
+  var KEY_CONTACTS_PARA = 'boveda_informe_to';
+  var KEY_CONTACTS_CC = 'boveda_informe_cc';
+
+  var mCorreo = $('modalCorreo');
+  var bAbrir = $('btnAbrirModalCorreo');
+  var bCerrar = $('btnCerrarModalCorreo');
+  var bCancelar = $('btnCancelarEmail');
+  var bEnviar = $('btnEnviarEmail');
+
+  var tabRedactar = $('tabBtnRedactar');
+  var tabConfig = $('tabBtnConfig');
+  var pRedactar = $('panelRedactar');
+  var pConfig = $('panelConfig');
+  var bIrAConfig = $('btnIrAConfig');
+
+  var chipsPara = $('chipsPara'), inputPara = $('inputPara');
+  var chipsCc = $('chipsCc'), inputCc = $('inputCc');
+  var txtAsunto = $('emailAsunto');
+  var txtMensaje = $('emailMensaje');
+  var txtErr = $('emailErr');
+  var adjNombre = $('emailAdjuntoNombre');
+  var firmanteEl = $('firmanteNombre');
+
+  var smtpUser = $('smtpUser'), smtpPass = $('smtpPass'), smtpHost = $('smtpHost'), smtpPort = $('smtpPort'), smtpFromName = $('smtpFromName');
+  var btnProbarSmtp = $('btnProbarSmtp'), btnGuardarSmtp = $('btnGuardarSmtp'), smtpStatus = $('smtpStatus');
+
+  var listaPara = [];
+  var listaCc = [];
+
+  function cargarSmtpLocal(){
+    try {
+      var cfg = JSON.parse(localStorage.getItem(KEY_SMTP) || '{}');
+      if (cfg.user) smtpUser.value = cfg.user;
+      if (cfg.pass) smtpPass.value = cfg.pass;
+      if (cfg.host) smtpHost.value = cfg.host;
+      if (cfg.port) smtpPort.value = cfg.port;
+      if (cfg.fromName) smtpFromName.value = cfg.fromName;
+    } catch(e){}
+  }
+
+  function guardarSmtpLocal(){
+    var cfg = {
+      user: smtpUser.value.trim(),
+      pass: smtpPass.value.trim(),
+      host: smtpHost.value.trim() || 'smtp.office365.com',
+      port: smtpPort.value.trim() || '587',
+      fromName: smtpFromName.value.trim() || 'James Grisales'
+    };
+    localStorage.setItem(KEY_SMTP, JSON.stringify(cfg));
+    return cfg;
+  }
+
+  function getSmtpConfig(){
+    try {
+      return JSON.parse(localStorage.getItem(KEY_SMTP) || '{}');
+    } catch(e){ return {}; }
+  }
+
+  function switchTab(aConfig){
+    if (aConfig) {
+      tabConfig.classList.add('active'); tabRedactar.classList.remove('active');
+      pConfig.style.display = 'flex'; pRedactar.style.display = 'none';
+      btnIrAConfig.textContent = '← Volver a Redactar';
+    } else {
+      tabRedactar.classList.add('active'); tabConfig.classList.remove('active');
+      pRedactar.style.display = 'flex'; pConfig.style.display = 'none';
+      btnIrAConfig.textContent = '⚙ Cuenta Outlook';
+    }
+  }
+
+  if (tabRedactar && tabConfig) {
+    tabRedactar.addEventListener('click', function(){ switchTab(false); });
+    tabConfig.addEventListener('click', function(){ switchTab(true); });
+    btnIrAConfig.addEventListener('click', function(){
+      var enConfig = tabConfig.classList.contains('active');
+      switchTab(!enConfig);
+    });
+  }
+
+  function renderChips(tipo){
+    var cont = tipo === 'para' ? chipsPara : chipsCc;
+    var arr = tipo === 'para' ? listaPara : listaCc;
+    if (!cont) return;
+    cont.innerHTML = '';
+    arr.forEach(function(email, idx){
+      var chip = document.createElement('span'); chip.className = 'em-chip';
+      chip.textContent = email;
+      var del = document.createElement('button'); del.type = 'button'; del.className = 'em-chip-del'; del.textContent = '✕';
+      del.title = 'Quitar';
+      del.addEventListener('click', function(e){
+        e.stopPropagation();
+        arr.splice(idx, 1);
+        renderChips(tipo);
+        guardarContactos();
+      });
+      chip.appendChild(del);
+      cont.appendChild(chip);
+    });
+  }
+
+  function agregarEmail(tipo, email){
+    email = (email || '').trim().toLowerCase();
+    if (!email) return;
+    var arr = tipo === 'para' ? listaPara : listaCc;
+    if (!arr.includes(email)) {
+      arr.push(email);
+      renderChips(tipo);
+      guardarContactos();
+    }
+  }
+
+  function setupInputChips(input, tipo){
+    if (!input) return;
+    input.addEventListener('keydown', function(e){
+      if (e.key === 'Enter' || e.key === ',' || e.key === 'Tab') {
+        var v = input.value.replace(/,/g, '').trim();
+        if (v) {
+          e.preventDefault();
+          agregarEmail(tipo, v);
+          input.value = '';
+        }
+      } else if (e.key === 'Backspace' && !input.value) {
+        var arr = tipo === 'para' ? listaPara : listaCc;
+        if (arr.length) {
+          arr.pop();
+          renderChips(tipo);
+          guardarContactos();
+        }
+      }
+    });
+    input.addEventListener('blur', function(){
+      var v = input.value.replace(/,/g, '').trim();
+      if (v) {
+        agregarEmail(tipo, v);
+        input.value = '';
+      }
+    });
+  }
+
+  setupInputChips(inputPara, 'para');
+  setupInputChips(inputCc, 'cc');
+
+  // Botones de contactos frecuentes
+  document.querySelectorAll('.em-quick-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var destino = this.dataset.addTo;
+      var email = this.dataset.email;
+      agregarEmail(destino, email);
+    });
+  });
+
+  function guardarContactos(){
+    try {
+      localStorage.setItem(KEY_CONTACTS_PARA, JSON.stringify(listaPara));
+      localStorage.setItem(KEY_CONTACTS_CC, JSON.stringify(listaCc));
+    } catch(e){}
+  }
+
+  function cargarContactos(){
+    try {
+      var p = JSON.parse(localStorage.getItem(KEY_CONTACTS_PARA) || 'null');
+      var c = JSON.parse(localStorage.getItem(KEY_CONTACTS_CC) || 'null');
+      if (Array.isArray(p) && p.length) listaPara = p;
+      else listaPara = ['jose.caracas@jaivana.co', 'william.arboleda@jaivana.co', 'natalia.velasquez@jaivana.co'];
+      
+      if (Array.isArray(c) && c.length) listaCc = c;
+      else listaCc = ['juan.mejia@jaivana.co', 'julio.molina@jaivana.co'];
+    } catch(e){
+      listaPara = ['jose.caracas@jaivana.co', 'william.arboleda@jaivana.co', 'natalia.velasquez@jaivana.co'];
+      listaCc = ['juan.mejia@jaivana.co', 'julio.molina@jaivana.co'];
+    }
+    renderChips('para');
+    renderChips('cc');
+  }
+
+  function abrirModalCorreo(){
+    cargarSmtpLocal();
+    cargarContactos();
+    switchTab(false);
+
+    var f = $('fecha').value || hoy();
+    txtAsunto.value = 'INFORME FACTURACION ELECTRONICA';
+    txtMensaje.value = 'Cordial saludo,\n\nAdjunto el informe de documentos electrónicos correspondiente a las empresas.';
+    adjNombre.textContent = 'INFORME_DOCUMENTOS_ELECTRONICOS_' + f + '.pdf';
+    var tec = $('tecnico').value.trim() || 'James Grisales';
+    firmanteEl.textContent = tec;
+
+    txtErr.style.display = 'none';
+    txtErr.textContent = '';
+    mCorreo.style.display = 'flex';
+  }
+
+  function cerrarModalCorreo(){
+    mCorreo.style.display = 'none';
+  }
+
+  if (bAbrir) bAbrir.addEventListener('click', abrirModalCorreo);
+  if (bCerrar) bCerrar.addEventListener('click', cerrarModalCorreo);
+  if (bCancelar) bCancelar.addEventListener('click', cerrarModalCorreo);
+  if (mCorreo) {
+    mCorreo.addEventListener('click', function(e){ if (e.target === mCorreo) cerrarModalCorreo(); });
+    document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && mCorreo.style.display === 'flex') cerrarModalCorreo(); });
+  }
+
+  // Guardar SMTP
+  if (btnGuardarSmtp) {
+    btnGuardarSmtp.addEventListener('click', function(){
+      guardarSmtpLocal();
+      smtpStatus.textContent = '✓ Configuración guardada';
+      smtpStatus.style.color = 'var(--accent)';
+      setTimeout(function(){ smtpStatus.textContent = ''; }, 3000);
+      toast('Configuración de Outlook guardada');
+    });
+  }
+
+  // Probar SMTP
+  if (btnProbarSmtp) {
+    btnProbarSmtp.addEventListener('click', async function(){
+      var cfg = guardarSmtpLocal();
+      if (!cfg.user || !cfg.pass) {
+        smtpStatus.textContent = 'Ingresa usuario y contraseña';
+        smtpStatus.style.color = 'var(--danger)';
+        return;
+      }
+      btnProbarSmtp.disabled = true;
+      smtpStatus.textContent = 'Conectando a Outlook…';
+      smtpStatus.style.color = 'var(--muted)';
+      try {
+        var r = await fetch('/informe/probar-smtp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(cfg)
+        });
+        var d = await r.json();
+        if (!r.ok) throw new Error(d.error || 'Error de conexión');
+        smtpStatus.textContent = '✓ Conexión exitosa';
+        smtpStatus.style.color = 'var(--ok)';
+        toast('Conexión con Outlook exitosa');
+      } catch(err) {
+        smtpStatus.textContent = '✕ ' + err.message;
+        smtpStatus.style.color = 'var(--danger)';
+      } finally {
+        btnProbarSmtp.disabled = false;
+      }
+    });
+  }
+
+  // Enviar Informe
+  if (bEnviar) {
+    bEnviar.addEventListener('click', async function(){
+      txtErr.style.display = 'none';
+      txtErr.textContent = '';
+
+      // Validar destinatarios
+      if (!listaPara.length && inputPara.value.trim()) {
+        agregarEmail('para', inputPara.value.trim());
+        inputPara.value = '';
+      }
+      if (!listaPara.length) {
+        txtErr.style.display = 'block';
+        txtErr.textContent = 'Debes añadir al menos un correo destinatario en "Para".';
+        switchTab(false);
+        inputPara.focus();
+        return;
+      }
+
+      var cfg = getSmtpConfig();
+      var payload = {
+        to: listaPara,
+        cc: listaCc,
+        asunto: txtAsunto.value.trim() || 'INFORME FACTURACION ELECTRONICA',
+        mensaje: txtMensaje.value.trim(),
+        reporte: leer(),
+        smtp: cfg
+      };
+
+      bEnviar.disabled = true;
+      bEnviar.textContent = 'Enviando correo…';
+      try {
+        var res = await fetch('/informe/enviar-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        var data = await res.json();
+        if (!res.ok) {
+          if (data.needConfig) {
+            switchTab(true);
+            throw new Error(data.error || 'Configura tus credenciales de Outlook');
+          }
+          throw new Error(data.error || 'No se pudo enviar el correo');
+        }
+
+        cerrarModalCorreo();
+        toast('🚀 Informe enviado exitosamente por Outlook');
+      } catch(err) {
+        txtErr.style.display = 'block';
+        txtErr.textContent = err.message;
+      } finally {
+        bEnviar.disabled = false;
+        bEnviar.textContent = '🚀 Enviar Informe';
+      }
+    });
+  }
+})();
 
 /* ---------- arranque ---------- */
 var inicial = ejemplo();

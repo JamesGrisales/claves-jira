@@ -1984,6 +1984,136 @@ app.post("/informe/pdf", requireLogin, express.json({ limit: "512kb" }), async (
   }
 });
 
+app.post("/informe/probar-smtp", requireLogin, express.json(), async (req, res) => {
+  try {
+    const { host, port, user, pass } = req.body || {};
+    const finalUser = user || process.env.OUTLOOK_USER || process.env.SMTP_USER;
+    const finalPass = pass || process.env.OUTLOOK_PASS || process.env.SMTP_PASS;
+    const finalHost = host || process.env.OUTLOOK_HOST || "smtp.office365.com";
+    const finalPort = parseInt(port || process.env.OUTLOOK_PORT || 587, 10);
+
+    if (!finalUser || !finalPass) {
+      return res.status(400).json({ error: "Usuario y contraseña requeridos para probar la conexión." });
+    }
+
+    const nodemailer = require("nodemailer");
+    const transporter = nodemailer.createTransport({
+      host: finalHost,
+      port: finalPort,
+      secure: finalPort === 465,
+      auth: { user: finalUser, pass: finalPass },
+      tls: { ciphers: "SSLv3", rejectUnauthorized: false }
+    });
+
+    await transporter.verify();
+    res.json({ ok: true, mensaje: "Conexión con Outlook exitosa." });
+  } catch (err) {
+    console.error("Error al probar SMTP de Outlook:", err.message);
+    res.status(400).json({ error: err.message || "No se pudo conectar al servidor de correo." });
+  }
+});
+
+app.post("/informe/enviar-email", requireLogin, express.json({ limit: "1mb" }), async (req, res) => {
+  try {
+    const { to, cc, asunto, mensaje, reporte, smtp: clientSmtp } = req.body || {};
+
+    if (!to || (!Array.isArray(to) && !String(to).trim()) || (Array.isArray(to) && to.length === 0)) {
+      return res.status(400).json({ error: "Debes especificar al menos un destinatario en el campo 'Para'." });
+    }
+
+    const finalHost = (clientSmtp && clientSmtp.host) || process.env.OUTLOOK_HOST || "smtp.office365.com";
+    const finalPort = parseInt((clientSmtp && clientSmtp.port) || process.env.OUTLOOK_PORT || 587, 10);
+    const finalUser = (clientSmtp && clientSmtp.user) || process.env.OUTLOOK_USER || process.env.SMTP_USER;
+    const finalPass = (clientSmtp && clientSmtp.pass) || process.env.OUTLOOK_PASS || process.env.SMTP_PASS;
+    const finalFromName = (clientSmtp && clientSmtp.fromName) || process.env.OUTLOOK_FROM_NAME || (reporte && reporte.tecnico) || "James Grisales";
+
+    if (!finalUser || !finalPass) {
+      return res.status(400).json({
+        needConfig: true,
+        error: "No se han configurado las credenciales de Outlook. Por favor ingresa tu correo y contraseña en la pestaña 'Cuenta Outlook'."
+      });
+    }
+
+    // Generar el PDF oficial del informe en memoria
+    const { generarInformePdf } = require("./informe-pdf");
+    const { buffer, filename } = await generarInformePdf(reporte || {});
+
+    const nodemailer = require("nodemailer");
+    const transporter = nodemailer.createTransport({
+      host: finalHost,
+      port: finalPort,
+      secure: finalPort === 465,
+      auth: { user: finalUser, pass: finalPass },
+      tls: {
+        ciphers: "SSLv3",
+        rejectUnauthorized: false
+      }
+    });
+
+    const cuerpoHtml = (mensaje || "")
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/\n/g, "<br>");
+
+    const tecnicoNombre = (reporte && reporte.tecnico) || finalFromName || "James Grisales";
+
+    // Logo adjunto de Jaivaná
+    const fs = require("fs");
+    const logoPath = path.join(__dirname, "assets", "jaivana-signature.png");
+    const attachments = [
+      {
+        filename: filename || `INFORME_DOCUMENTOS_ELECTRONICOS_${new Date().toISOString().slice(0,10)}.pdf`,
+        content: buffer,
+        contentType: "application/pdf"
+      }
+    ];
+
+    let logoTag = "";
+    if (fs.existsSync(logoPath)) {
+      attachments.push({
+        filename: "jaivana-logo.png",
+        path: logoPath,
+        cid: "jaivana_signature_img"
+      });
+      logoTag = `<div style="background:#2b2b2b; display:inline-block; padding:10px 24px; border-radius:8px; margin-top:12px;">
+        <img src="cid:jaivana_signature_img" alt="Jaivaná" style="height:36px; display:block;" />
+      </div>`;
+    } else {
+      logoTag = `<div style="background:#2b2b2b; display:inline-block; padding:10px 24px; border-radius:8px; margin-top:12px; color:#ffffff; font-weight:bold; font-size:22px; font-family:sans-serif;">
+        Jaivaná<span style="color:#e11d48; margin-left:4px;">▲</span>
+      </div>`;
+    }
+
+    const htmlCompleto = `
+      <div style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 14.5px; color: #1e293b; line-height: 1.6; max-width: 650px;">
+        <div>${cuerpoHtml}</div>
+        <br>
+        <div style="margin-top: 20px; border-top: 1px solid #e2e8f0; padding-top: 14px; font-size: 13.5px; color: #334155;">
+          <strong style="font-size: 15px; color: #0f172a;">${tecnicoNombre}</strong><br>
+          <span style="color: #64748b;">Analista de Soporte</span><br>
+          ${logoTag}
+        </div>
+      </div>
+    `;
+
+    const toList = Array.isArray(to) ? to.join(", ") : to;
+    const ccList = cc ? (Array.isArray(cc) ? cc.join(", ") : cc) : undefined;
+
+    const info = await transporter.sendMail({
+      from: `"${finalFromName}" <${finalUser}>`,
+      to: toList,
+      cc: ccList,
+      subject: asunto || `INFORME FACTURACION ELECTRONICA - ${new Date().toLocaleDateString("es-CO")}`,
+      html: htmlCompleto,
+      attachments
+    });
+
+    res.json({ ok: true, messageId: info.messageId });
+  } catch (err) {
+    console.error("Error al enviar informe por correo:", err);
+    res.status(500).json({ error: err.message || "Error al enviar el correo a través de Outlook." });
+  }
+});
+
 // ---------------------------------------------------------------------------
 // Viáticos: solicitud de anticipo y legalización de gastos de viaje (formulario + PDF)
 // Los PDF se arman en viaticos-pdf.js con el mismo formato de los Excel originales.
