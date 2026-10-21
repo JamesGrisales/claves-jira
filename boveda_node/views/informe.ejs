@@ -348,13 +348,12 @@
     <!-- Footer -->
     <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--panel-edge); padding-top:12px; margin-top:6px; flex-wrap:wrap; gap:8px;">
       <div style="display:flex; gap:6px; align-items:center;">
-        <button type="button" class="secondary" id="btnOutlookWeb" style="font-size:12px;" title="Abrir en el navegador (Outlook Web)">🌐 Outlook Web</button>
-        <button type="button" class="secondary" id="btnIrAConfig" style="font-size:12px;">⚙ SMTP Opcional</button>
+        <button type="button" class="secondary" id="btnAbrirOutlookApp" style="font-size:12px;" title="Ver borrador en tu aplicación de Outlook antes de enviar">✉ Ver borrador</button>
+        <button type="button" class="secondary" id="btnOutlookWeb" style="font-size:12px;" title="Abrir en el navegador (Outlook Web)">🌐 Web</button>
       </div>
       <div style="display:flex; gap:8px; align-items:center;">
         <button type="button" class="secondary" id="btnCancelarEmail">Cancelar</button>
-        <button type="button" id="btnAbrirOutlookApp" style="font-weight:700; background:linear-gradient(135deg, #0284c7, #0369a1); color:#fff; border:none; box-shadow:0 4px 14px rgba(2,132,199,0.4);" title="Abre directamente tu aplicación de Outlook con el correo y el PDF ya adjunto (sin pedir contraseña ni permisos de administrador)">🚀 Abrir en Outlook (con PDF adjunto)</button>
-        <button type="button" class="secondary" id="btnEnviarEmail" style="font-size:12px;" title="Envío silencioso si configuraste usuario y clave SMTP">✉ Envío Directo</button>
+        <button type="button" id="btnEnviarEmail" style="font-weight:700; background:linear-gradient(135deg, #0284c7, #0369a1); color:#fff; border:none; box-shadow:0 4px 14px rgba(2,132,199,0.4); padding:8px 18px; font-size:13.5px;" title="Envía el correo directamente desde tu cuenta jgrisales@jaivana.co sin pedir contraseñas">🚀 Enviar directo desde la App</button>
       </div>
     </div>
   </div>
@@ -1122,13 +1121,13 @@ setInterval(sincronizarServidor, 15000);
         }
 
         cerrarModalCorreo();
-        toast('🚀 Informe enviado exitosamente por Outlook');
+        toast('🚀 ¡Informe enviado con éxito desde jgrisales@jaivana.co!');
       } catch(err) {
         txtErr.style.display = 'block';
         txtErr.textContent = err.message;
       } finally {
         bEnviar.disabled = false;
-        bEnviar.textContent = '✉ Envío Directo';
+        bEnviar.textContent = '🚀 Enviar directo desde la App';
       }
     });
   }
