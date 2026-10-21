@@ -314,7 +314,7 @@
       </p>
       <label class="campo">
         <span>Tu Correo Outlook</span>
-        <input type="email" id="smtpUser" placeholder="ejemplo@jaivana.co">
+        <input type="email" id="smtpUser" value="jgrisales@jaivana.co" placeholder="jgrisales@jaivana.co">
       </label>
       <label class="campo">
         <span>Contraseña o Contraseña de Aplicación</span>
@@ -854,12 +854,14 @@ setInterval(sincronizarServidor, 15000);
   function cargarSmtpLocal(){
     try {
       var cfg = JSON.parse(localStorage.getItem(KEY_SMTP) || '{}');
-      if (cfg.user) smtpUser.value = cfg.user;
+      smtpUser.value = cfg.user || 'jgrisales@jaivana.co';
       if (cfg.pass) smtpPass.value = cfg.pass;
-      if (cfg.host) smtpHost.value = cfg.host;
-      if (cfg.port) smtpPort.value = cfg.port;
-      if (cfg.fromName) smtpFromName.value = cfg.fromName;
-    } catch(e){}
+      smtpHost.value = cfg.host || 'smtp.office365.com';
+      smtpPort.value = cfg.port || '587';
+      smtpFromName.value = cfg.fromName || 'James Grisales';
+    } catch(e){
+      smtpUser.value = 'jgrisales@jaivana.co';
+    }
   }
 
   function guardarSmtpLocal(){
