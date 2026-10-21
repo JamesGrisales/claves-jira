@@ -346,11 +346,15 @@
     </div>
 
     <!-- Footer -->
-    <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--panel-edge); padding-top:12px; margin-top:6px;">
-      <button type="button" class="secondary" id="btnIrAConfig" style="font-size:12px;">⚙ Cuenta Outlook</button>
-      <div style="display:flex; gap:8px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--panel-edge); padding-top:12px; margin-top:6px; flex-wrap:wrap; gap:8px;">
+      <div style="display:flex; gap:6px; align-items:center;">
+        <button type="button" class="secondary" id="btnOutlookWeb" style="font-size:12px;" title="Abrir en el navegador (Outlook Web)">🌐 Outlook Web</button>
+        <button type="button" class="secondary" id="btnIrAConfig" style="font-size:12px;">⚙ SMTP Opcional</button>
+      </div>
+      <div style="display:flex; gap:8px; align-items:center;">
         <button type="button" class="secondary" id="btnCancelarEmail">Cancelar</button>
-        <button type="button" id="btnEnviarEmail" style="font-weight:700;">🚀 Enviar Informe</button>
+        <button type="button" id="btnAbrirOutlookApp" style="font-weight:700; background:linear-gradient(135deg, #0284c7, #0369a1); color:#fff; border:none; box-shadow:0 4px 14px rgba(2,132,199,0.4);" title="Abre directamente tu aplicación de Outlook con el correo y el PDF ya adjunto (sin pedir contraseña ni permisos de administrador)">🚀 Abrir en Outlook (con PDF adjunto)</button>
+        <button type="button" class="secondary" id="btnEnviarEmail" style="font-size:12px;" title="Envío silencioso si configuraste usuario y clave SMTP">✉ Envío Directo</button>
       </div>
     </div>
   </div>
@@ -1124,8 +1128,86 @@ setInterval(sincronizarServidor, 15000);
         txtErr.textContent = err.message;
       } finally {
         bEnviar.disabled = false;
-        bEnviar.textContent = '🚀 Enviar Informe';
+        bEnviar.textContent = '✉ Envío Directo';
       }
+    });
+  }
+
+  // Abrir directamente en la aplicación instalada de Outlook con el PDF ya adjunto
+  var bAbrirApp = $('btnAbrirOutlookApp');
+  if (bAbrirApp) {
+    bAbrirApp.addEventListener('click', async function(){
+      txtErr.style.display = 'none';
+      txtErr.textContent = '';
+
+      if (!listaPara.length && inputPara.value.trim()) {
+        agregarEmail('para', inputPara.value.trim());
+        inputPara.value = '';
+      }
+      if (!listaPara.length) {
+        txtErr.style.display = 'block';
+        txtErr.textContent = 'Debes añadir al menos un correo destinatario en "Para".';
+        switchTab(false);
+        inputPara.focus();
+        return;
+      }
+
+      var payload = {
+        to: listaPara,
+        cc: listaCc,
+        asunto: txtAsunto.value.trim() || 'INFORME FACTURACION ELECTRONICA',
+        mensaje: txtMensaje.value.trim(),
+        reporte: leer()
+      };
+
+      bAbrirApp.disabled = true;
+      bAbrirApp.textContent = 'Preparando Outlook…';
+      try {
+        var res = await fetch('/informe/abrir-outlook', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) {
+          var data = await res.json();
+          throw new Error(data.error || 'No se pudo preparar el correo');
+        }
+        var blob = await res.blob();
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'INFORME_OUTLOOK_' + ($('fecha').value || hoy()) + '.eml';
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        setTimeout(function(){ URL.revokeObjectURL(a.href); }, 2000);
+
+        cerrarModalCorreo();
+        toast('✉ Abriendo en tu aplicación de Outlook…');
+      } catch(err) {
+        txtErr.style.display = 'block';
+        txtErr.textContent = err.message;
+      } finally {
+        bAbrirApp.disabled = false;
+        bAbrirApp.textContent = '🚀 Abrir en Outlook (con PDF adjunto)';
+      }
+    });
+  }
+
+  // Abrir en Outlook Web
+  var bOutlookWeb = $('btnOutlookWeb');
+  if (bOutlookWeb) {
+    bOutlookWeb.addEventListener('click', function(){
+      if (!listaPara.length && inputPara.value.trim()) {
+        agregarEmail('para', inputPara.value.trim());
+        inputPara.value = '';
+      }
+      var toStr = listaPara.join(';');
+      var ccStr = listaCc.join(';');
+      var sub = encodeURIComponent(txtAsunto.value.trim() || 'INFORME FACTURACION ELECTRONICA');
+      var body = encodeURIComponent(txtMensaje.value.trim() + '\n\nJames Grisales\nAnalista de Soporte\nJaivaná');
+      var url = 'https://outlook.office.com/mail/deeplink/compose?to=' + encodeURIComponent(toStr) + '&cc=' + encodeURIComponent(ccStr) + '&subject=' + sub + '&body=' + body;
+      window.open(url, '_blank');
+      // También descargar el PDF para adjuntarlo fácilmente si usa la web
+      $('btnDescargar').click();
+      toast('Abriendo Outlook Web (el PDF se descargó para adjuntar)');
     });
   }
 })();

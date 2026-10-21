@@ -2114,6 +2114,92 @@ app.post("/informe/enviar-email", requireLogin, express.json({ limit: "1mb" }), 
   }
 });
 
+app.post("/informe/abrir-outlook", requireLogin, express.json({ limit: "1mb" }), async (req, res) => {
+  try {
+    const { to, cc, asunto, mensaje, reporte } = req.body || {};
+    const { generarInformePdf } = require("./informe-pdf");
+    const { buffer: pdfBuffer, filename } = await generarInformePdf(reporte || {});
+
+    const MailComposer = require("nodemailer/lib/mail-composer");
+    const cuerpoHtml = (mensaje || "")
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/\n/g, "<br>");
+
+    const tecnicoNombre = (reporte && reporte.tecnico) || "James Grisales";
+    const fs = require("fs");
+    const logoPath = path.join(__dirname, "assets", "jaivana-signature.png");
+
+    const attachments = [
+      {
+        filename: filename || `INFORME_DOCUMENTOS_ELECTRONICOS_${new Date().toISOString().slice(0,10)}.pdf`,
+        content: pdfBuffer,
+        contentType: "application/pdf"
+      }
+    ];
+
+    let logoTag = "";
+    if (fs.existsSync(logoPath)) {
+      attachments.push({
+        filename: "jaivana-logo.png",
+        path: logoPath,
+        cid: "jaivana_signature_img"
+      });
+      logoTag = `<div style="background:#2b2b2b; display:inline-block; padding:10px 24px; border-radius:8px; margin-top:12px;">
+        <img src="cid:jaivana_signature_img" alt="Jaivaná" style="height:36px; display:block;" />
+      </div>`;
+    } else {
+      logoTag = `<div style="background:#2b2b2b; display:inline-block; padding:10px 24px; border-radius:8px; margin-top:12px; color:#ffffff; font-weight:bold; font-size:22px; font-family:sans-serif;">
+        Jaivaná<span style="color:#e11d48; margin-left:4px;">▲</span>
+      </div>`;
+    }
+
+    const htmlCompleto = `
+      <div style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 14.5px; color: #1e293b; line-height: 1.6; max-width: 650px;">
+        <div>${cuerpoHtml}</div>
+        <br>
+        <div style="margin-top: 20px; border-top: 1px solid #e2e8f0; padding-top: 14px; font-size: 13.5px; color: #334155;">
+          <strong style="font-size: 15px; color: #0f172a;">${tecnicoNombre}</strong><br>
+          <span style="color: #64748b;">Analista de Soporte</span><br>
+          ${logoTag}
+        </div>
+      </div>
+    `;
+
+    const toList = Array.isArray(to) ? to.join("; ") : to;
+    const ccList = cc ? (Array.isArray(cc) ? cc.join("; ") : cc) : undefined;
+
+    const mail = new MailComposer({
+      from: `"James Grisales" <jgrisales@jaivana.co>`,
+      to: toList,
+      cc: ccList,
+      subject: asunto || `INFORME FACTURACION ELECTRONICA - ${new Date().toLocaleDateString("es-CO")}`,
+      html: htmlCompleto,
+      attachments
+    });
+
+    const emlBuffer = await mail.compile().build();
+
+    // Guardar temporalmente en Windows y abrir con la aplicación de Outlook
+    const os = require("os");
+    const { exec } = require("child_process");
+    const tempDir = os.tmpdir();
+    const tempEmlPath = path.join(tempDir, `INFORME_${Date.now()}.eml`);
+    fs.writeFileSync(tempEmlPath, emlBuffer);
+
+    // Lanzar Outlook con el borrador y PDF adjunto
+    exec(`start "" "${tempEmlPath}"`, (err) => {
+      if (err) console.error("No se pudo invocar start en Windows:", err.message);
+    });
+
+    res.setHeader("Content-Type", "message/rfc822");
+    res.setHeader("Content-Disposition", `attachment; filename="INFORME_OUTLOOK_${new Date().toISOString().slice(0,10)}.eml"`);
+    res.send(emlBuffer);
+  } catch (err) {
+    console.error("Error al preparar correo Outlook:", err);
+    res.status(500).json({ error: err.message || "Error al preparar el correo." });
+  }
+});
+
 // ---------------------------------------------------------------------------
 // Viáticos: solicitud de anticipo y legalización de gastos de viaje (formulario + PDF)
 // Los PDF se arman en viaticos-pdf.js con el mismo formato de los Excel originales.
