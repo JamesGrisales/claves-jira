@@ -1010,10 +1010,19 @@
         <span class="eng-icon">🏛️</span> <span class="eng-txt">ORACLE DB</span>
       </button>
       <button type="button" class="engine-tab" data-engine="sqlserver" title="SQL Server & Multi-Engine Matrix">
-        <span class="eng-icon">🌐</span> <span class="eng-txt">SQL MATRIX</span>
+        <span class="eng-icon">🟦</span> <span class="eng-txt">SQL SERVER</span>
       </button>
-      <button type="button" class="engine-tab" data-engine="nosql" title="MongoDB & Redis: Quantum Speed Core">
-        <span class="eng-icon">⚡</span> <span class="eng-txt">NOSQL / REDIS</span>
+      <button type="button" class="engine-tab" data-engine="mysql" title="MySQL / MariaDB: InnoDB Cluster">
+        <span class="eng-icon">🐬</span> <span class="eng-txt">MYSQL</span>
+      </button>
+      <button type="button" class="engine-tab" data-engine="mongodb" title="MongoDB: Distributed Document Shards">
+        <span class="eng-icon">🍃</span> <span class="eng-txt">MONGODB</span>
+      </button>
+      <button type="button" class="engine-tab" data-engine="redis" title="Redis: In-Memory Quantum Cache">
+        <span class="eng-icon">⚡</span> <span class="eng-txt">REDIS</span>
+      </button>
+      <button type="button" class="engine-tab" data-engine="sqlite" title="SQLite: Embedded Zero-Conf Core">
+        <span class="eng-icon">💾</span> <span class="eng-txt">SQLITE</span>
       </button>
       <button type="button" class="engine-tab" data-engine="planetas" title="Sistema Solar 3D en Tiempo Real">
         <span class="eng-icon">🪐</span> <span class="eng-txt">PLANETAS 3D</span>
@@ -2327,18 +2336,18 @@
     },
     sqlserver: {
       id: 'sqlserver',
-      name: 'SQL MATRIX',
-      fullName: 'SQL SERVER & CLOUD MATRIX · MULTI-ENGINE ACTIVE',
-      icon: '🌐',
+      name: 'SQL SERVER',
+      fullName: 'MICROSOFT SQL SERVER · CLUSTER MATRIX ALWAYS-ON',
+      icon: '🟦',
       image: '/login-themes/theme_sql_matrix.jpg',
       accent: '#3b82f6',
       accentRgb: '59, 130, 246',
       glow: 'rgba(59, 130, 246, 0.35)',
-      chip: 'T-SQL MATRIX',
-      iops: '172,400',
-      latency: '0.09 ms',
+      chip: 'T-SQL ALWAYSON',
+      iops: '182,400',
+      latency: '0.08 ms',
       code: [
-        "-- [SQL SERVER & MULTI-ENGINE CLOUD MATRIX]",
+        "-- [MICROSOFT SQL SERVER · CLUSTER ALWAYS-ON]",
         "CREATE PROCEDURE dbo.sp_AuthenticateClusterNode",
         "    @NodeIdentifier NVARCHAR(64),",
         "    @HashToken      VARBINARY(64),",
@@ -2347,43 +2356,142 @@
         "BEGIN",
         "    SET NOCOUNT ON;",
         "    BEGIN TRANSACTION WITH MARK 'AUTH_VERIFY';",
-        "    ",
         "    SELECT @IsGranted = is_active",
         "    FROM dbo.sys_cluster_matrix WITH (UPDLOCK, HOLDLOCK)",
         "    WHERE node_hash = @HashToken;",
-        "    ",
         "    INSERT INTO dbo.audit_telemetry (node_id, auth_time)",
         "    VALUES (@NodeIdentifier, SYSUTCDATETIME());",
-        "    ",
         "    COMMIT TRANSACTION;",
         "END;"
       ]
     },
-    nosql: {
-      id: 'nosql',
-      name: 'NOSQL / REDIS',
-      fullName: 'NOSQL & IN-MEMORY CACHE · QUANTUM SPEED ENGINE',
-      icon: '⚡',
-      image: '/login-themes/theme_nosql_redis.jpg',
+    mysql: {
+      id: 'mysql',
+      name: 'MYSQL',
+      fullName: 'MYSQL & MARIADB · INNODB REPLICATION CLUSTER',
+      icon: '🐬',
+      image: '/login-themes/theme_mysql.jpg',
+      accent: '#06b6d4',
+      accentRgb: '6, 182, 212',
+      glow: 'rgba(6, 182, 212, 0.35)',
+      chip: 'INNODB REPLICA',
+      iops: '215,800',
+      latency: '0.06 ms',
+      code: [
+        "-- [MYSQL v8.4 · INNODB CLUSTER ENGINE]",
+        "DELIMITER $$",
+        "CREATE PROCEDURE sp_VerifyVaultSession(",
+        "    IN  p_token_hash VARCHAR(64),",
+        "    OUT p_auth_state TINYINT",
+        ")",
+        "BEGIN",
+        "    DECLARE v_active_nodes INT DEFAULT 0;",
+        "    START TRANSACTION READ ONLY;",
+        "    SELECT COUNT(*) INTO v_active_nodes",
+        "    FROM mysql_cluster.node_membership",
+        "    WHERE node_token = SHA2(p_token_hash, 256)",
+        "      AND node_status = 'ONLINE';",
+        "    IF v_active_nodes > 0 THEN",
+        "        SET p_auth_state = 1;",
+        "    ELSE",
+        "        SET p_auth_state = 0;",
+        "    END IF;",
+        "    COMMIT;",
+        "END$$",
+        "DELIMITER ;"
+      ]
+    },
+    mongodb: {
+      id: 'mongodb',
+      name: 'MONGODB',
+      fullName: 'MONGODB · DISTRIBUTED DOCUMENT SHARD CLUSTER',
+      icon: '🍃',
+      image: '/login-themes/theme_mongodb.jpg',
       accent: '#10b981',
       accentRgb: '16, 185, 129',
       glow: 'rgba(16, 185, 129, 0.35)',
-      chip: 'IN-MEMORY CLUSTER',
-      iops: '890,000',
-      latency: '0.002 ms',
+      chip: 'MQL BSON PIPELINE',
+      iops: '450,000',
+      latency: '0.03 ms',
       code: [
-        "// [MONGODB & REDIS - QUANTUM SPEED CORE]",
-        "db.vault_sessions.aggregate([",
-        "  { $match: { status: 'ACTIVE', latency_us: { $lte: 120 } } },",
-        "  { $lookup: { from: 'auth_shards', localField: 'shard_id', foreignField: '_id', as: 'shard' } },",
-        "  { $project: { _id: 1, node_name: 1, replication_status: 'SYNCHRONIZED' } }",
-        "]);",
+        "// [MONGODB v7.0 · DISTRIBUTED DOCUMENT SHARD]",
+        "db.auth_shards.aggregate([",
+        "  { $match: { cluster_status: 'HEALTHY', primary_replica: true } },",
+        "  { $lookup: {",
+        "      from: 'vault_credentials',",
+        "      localField: 'shard_id',",
+        "      foreignField: 'active_shard',",
+        "      as: 'credentials'",
+        "  } },",
+        "  { $unwind: '$credentials' },",
+        "  { $project: {",
+        "      _id: 0,",
+        "      auth_node: '$node_dns',",
+        "      latency_us: { $avg: '$credentials.roundtrip_us' },",
+        "      is_synchronized: { $literal: true }",
+        "  } },",
+        "  { $limit: 10 }",
+        "]);"
+      ]
+    },
+    redis: {
+      id: 'redis',
+      name: 'REDIS',
+      fullName: 'REDIS QUANTUM · IN-MEMORY STREAM CACHE CORE',
+      icon: '⚡',
+      image: '/login-themes/theme_redis.jpg',
+      accent: '#ef4444',
+      accentRgb: '239, 68, 68',
+      glow: 'rgba(239, 68, 68, 0.35)',
+      chip: 'IN-MEMORY CLUSTER',
+      iops: '1,250,000',
+      latency: '0.001 ms',
+      code: [
+        "-- [REDIS v7.4 · IN-MEMORY QUANTUM STREAM CLUSTER]",
+        "local session_key = KEYS[1]",
+        "local client_token = ARGV[1]",
+        "local ttl_seconds = tonumber(ARGV[2])",
         "",
-        "// REDIS ATOMIC PIPELINE CACHE (0.002ms)",
-        "redis.multi()",
-        "  .hgetall('session:auth:token_active')",
-        "  .expire('session:auth:token_active', 3600)",
-        "  .exec();"
+        "-- Verificación atómica en microsegundos (0.001ms)",
+        "local stored_hash = redis.call('HGET', session_key, 'auth_hash')",
+        "if stored_hash == client_token then",
+        "    redis.call('HSET', session_key, 'last_seen', redis.call('TIME')[1])",
+        "    redis.call('EXPIRE', session_key, ttl_seconds)",
+        "    redis.call('XADD', 'stream:telemetry', '*', 'event', 'AUTH_OK')",
+        "    return 1",
+        "else",
+        "    return 0",
+        "end"
+      ]
+    },
+    sqlite: {
+      id: 'sqlite',
+      name: 'SQLITE',
+      fullName: 'SQLITE EMBEDDED · ZERO-CONFIGURATION ENCRYPTED LEDGER',
+      icon: '💾',
+      image: '/login-themes/theme_sqlite.jpg',
+      accent: '#a855f7',
+      accentRgb: '168, 85, 247',
+      glow: 'rgba(168, 85, 247, 0.35)',
+      chip: 'WAL JOURNALING',
+      iops: '98,200',
+      latency: '0.02 ms',
+      code: [
+        "-- [SQLITE v3.45 · EMBEDDED ZERO-CONF CORE]",
+        "PRAGMA journal_mode = WAL;",
+        "PRAGMA synchronous = NORMAL;",
+        "PRAGMA foreign_keys = ON;",
+        "",
+        "BEGIN IMMEDIATE TRANSACTION;",
+        "INSERT INTO sys_vault_wal (session_id, token_hash, access_utc)",
+        "SELECT 'SESS_' || hex(randomblob(8)),",
+        "       sha256('auth_signature_node'),",
+        "       strftime('%Y-%m-%d %H:%M:%f', 'now')",
+        "WHERE EXISTS (",
+        "    SELECT 1 FROM sys_encryption_keys",
+        "    WHERE key_status = 'ACTIVE' LIMIT 1",
+        ");",
+        "COMMIT;"
       ]
     },
     planetas: {
@@ -2502,7 +2610,12 @@
     var theme = DB_THEMES[themeId];
     currentTheme = themeId;
     if (persist) {
-      try { localStorage.setItem('boveda_login_theme', themeId); } catch(e) {}
+      try {
+        localStorage.setItem('boveda_login_theme', themeId);
+        if (themeId !== 'planetas') {
+          localStorage.setItem('boveda_db_engine', themeId);
+        }
+      } catch(e) {}
     }
 
     // Actualizar botones del selector
@@ -2513,8 +2626,13 @@
       });
     }
 
-    // Variables de color
+    // Variables de color dinámicas aplicadas en todo el login
     document.documentElement.style.setProperty('--planet-accent', theme.accent);
+    document.documentElement.style.setProperty('--p1', theme.accent);
+    document.documentElement.style.setProperty('--accent-rgb', theme.accentRgb);
+    if (themeId !== 'planetas') {
+      document.documentElement.setAttribute('data-db-engine', themeId);
+    }
 
     if (themeId === 'planetas') {
       if (backdrop) backdrop.classList.remove('active');
@@ -2581,7 +2699,7 @@
     });
   }
 
-  var engineKeys = ['postgres', 'oracle', 'sqlserver', 'nosql', 'planetas'];
+  var engineKeys = ['postgres', 'oracle', 'sqlserver', 'mysql', 'mongodb', 'redis', 'sqlite', 'planetas'];
   function rotarSiguiente() {
     var curIdx = engineKeys.indexOf(currentTheme);
     var nextIdx = (curIdx + 1) % engineKeys.length;

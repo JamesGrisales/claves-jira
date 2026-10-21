@@ -1,4 +1,4 @@
-@echo off
+﻿@echo off
 title Boveda Jira - Servidor
 echo =========================================
 echo   Iniciando la Boveda de Claves...
@@ -9,7 +9,11 @@ echo Cuando termines, simplemente cierra esta ventana.
 echo.
 
 :: 1. Ir a la carpeta del proyecto
-cd /d "C:\Users\JamesGrisales\Desktop\Proyectos\boveda_claves_jira_node_postgres_completov2\boveda_node"
+if exist "%~dp0boveda_node\server.js" (
+    cd /d "%~dp0boveda_node"
+) else (
+    cd /d "%~dp0"
+)
 
 :: 2. Crear un archivo temporal vbs para abrir el navegador con retraso sin pausar el servidor
 echo set WshShell = WScript.CreateObject("WScript.Shell") > "%TEMP%\abrir_boveda.vbs"
