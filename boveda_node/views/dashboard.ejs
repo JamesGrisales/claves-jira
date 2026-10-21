@@ -35,7 +35,8 @@
   .row.open{ transform:none; }
   @keyframes rowIn{ from{ opacity:0; transform:translateY(8px); } to{ opacity:1; transform:none; } }
   .row .main{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
-  .row .name{ display:flex; align-items:center; gap:12px; font-size:15px; font-weight:600; min-width:0; }
+  .row .name{ display:flex; align-items:center; gap:10px; font-size:15px; font-weight:600; min-width:0; }
+  .row .emp-name{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .row .avatar{ width:36px; height:36px; border-radius:11px; flex-shrink:0; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.12); color:var(--accent); display:flex; align-items:center; justify-content:center; font-size:14.5px; font-weight:800; box-shadow:none; transition:background .2s ease, border-color .2s ease, color .2s ease, transform .25s var(--spring); }
   :root[data-theme="light"] .row .avatar { background:rgba(0,0,0,.04); border-color:rgba(0,0,0,.08); color:var(--accent-dark); }
   .row:hover .avatar{ background:var(--accent-soft); border-color:var(--accent); color:var(--accent); transform:scale(1.06); box-shadow:0 0 12px -2px rgba(var(--accent-rgb),.4); }
@@ -323,8 +324,8 @@
           <svg viewBox="0 0 24 24" style="width:18px; height:18px;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
         </button>
         <span class="avatar" style="--hue: <%= hue %>"><%= c.empresa[0].toUpperCase() %></span>
-        <span><%= c.empresa %></span>
-        <span class="db-orb db-orb-sm db-orb-pg" style="margin-left:auto; margin-right:6px;" title="Registro activo en PostgreSQL">🐘</span>
+        <span class="db-orb db-orb-sm db-orb-pg" style="flex-shrink:0;" title="Registro activo en base de datos">🐘</span>
+        <span class="emp-name"><%= c.empresa %></span>
       </div>
       <div class="pw-area">
         <div class="pw" id="pw-<%= c.id %>" title="Clave oculta">
@@ -591,7 +592,7 @@
 const revealedState = {};
 const revealTimers = {};
 
-function nombreDe(id){ const r = document.querySelector('.row[data-id="' + id + '"] .name span:last-child'); return r ? r.textContent.trim() : ''; }
+function nombreDe(id){ const r = document.querySelector('.row[data-id="' + id + '"] .emp-name') || document.querySelector('.row[data-id="' + id + '"] .name span:last-child'); return r ? r.textContent.trim() : ''; }
 
 function ocultar(id){
   const el = document.getElementById('pw-' + id), eye = document.getElementById('eye-' + id);
