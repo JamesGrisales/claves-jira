@@ -31,10 +31,27 @@
       var theme = m === 'oled' ? 'oled' : ((m === 'dark' || (m === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches)) ? 'dark' : 'light');
       d.setAttribute('data-theme', theme); d.setAttribute('data-mode', m);
 
-      var p = localStorage.getItem('boveda-palette') || 'planeta-dia';
+      var dbEng = localStorage.getItem('boveda_db_engine') || 'postgres';
+      d.setAttribute('data-db-engine', dbEng);
+      var DB_ENGINES_CONFIG = {
+        postgres:  { name:'PostgreSQL 16', icon:'🐘', c1:'#00f5ff', c2:'#0284c7', rgb:'0, 245, 255' },
+        oracle:    { name:'Oracle Enterprise', icon:'🏛️', c1:'#f59e0b', c2:'#d97706', rgb:'245, 158, 11' },
+        sqlserver: { name:'SQL Server', icon:'🟦', c1:'#3b82f6', c2:'#1d4ed8', rgb:'59, 130, 246' },
+        mysql:     { name:'MySQL / MariaDB', icon:'🐬', c1:'#06b6d4', c2:'#0284c7', rgb:'6, 182, 212' },
+        mongodb:   { name:'MongoDB Document', icon:'🍃', c1:'#10b981', c2:'#059669', rgb:'16, 185, 129' },
+        redis:     { name:'Redis Cache', icon:'⚡', c1:'#ef4444', c2:'#b91c1c', rgb:'239, 68, 68' },
+        sqlite:    { name:'SQLite Embedded', icon:'💾', c1:'#a855f7', c2:'#7c3aed', rgb:'168, 85, 247' }
+      };
+
+      var p = localStorage.getItem('boveda-palette') || 'db-engine';
       d.setAttribute('data-palette', p);
 
-      if (p === 'planeta-dia') {
+      if (p === 'db-engine' || DB_ENGINES_CONFIG[dbEng]) {
+        var engCfg = DB_ENGINES_CONFIG[dbEng] || DB_ENGINES_CONFIG.postgres;
+        d.style.setProperty('--p1', engCfg.c1);
+        d.style.setProperty('--p2', engCfg.c2);
+        d.style.setProperty('--accent-rgb', engCfg.rgb);
+      } else if (p === 'planeta-dia') {
         var dayNum = new Date().getDay();
         var pl = window.PLANETAS_SISTEMA[dayNum] || window.PLANETAS_SISTEMA[2];
         d.setAttribute('data-planet-active', pl.id);
@@ -86,6 +103,15 @@
 :root[data-palette="titanio"]          { --p1:#64748b; --p2:#334155; --accent-rgb:100,116,139; }
 :root[data-palette="grafito"]          { --p1:#475569; --p2:#1e293b; --accent-rgb:71,85,105; }
 :root[data-palette="custom"]           { --p2:color-mix(in srgb, var(--p1) 62%, #1e1b4b); }
+
+/* Paletas por Motor de Base de Datos Activo */
+:root[data-db-engine="postgres"], :root[data-palette="db-postgres"] { --p1:#00f5ff; --p2:#0284c7; --accent-rgb:0,245,255; }
+:root[data-db-engine="oracle"],   :root[data-palette="db-oracle"]   { --p1:#f59e0b; --p2:#d97706; --accent-rgb:245,158,11; }
+:root[data-db-engine="sqlserver"],:root[data-palette="db-sqlserver"]{ --p1:#3b82f6; --p2:#1d4ed8; --accent-rgb:59,130,246; }
+:root[data-db-engine="mysql"],    :root[data-palette="db-mysql"]    { --p1:#06b6d4; --p2:#0284c7; --accent-rgb:6,182,212; }
+:root[data-db-engine="mongodb"],  :root[data-palette="db-mongodb"]  { --p1:#10b981; --p2:#059669; --accent-rgb:16,185,129; }
+:root[data-db-engine="redis"],    :root[data-palette="db-redis"]    { --p1:#ef4444; --p2:#b91c1c; --accent-rgb:239,68,68; }
+:root[data-db-engine="sqlite"],   :root[data-palette="db-sqlite"]   { --p1:#a855f7; --p2:#7c3aed; --accent-rgb:168,85,247; }
 
 /* ---------- 2) TOKENS ---------- */
 :root{
@@ -2499,6 +2525,357 @@ button:hover, .btn:hover, .iconbtn:hover, .acc-btn:hover {
   background:rgba(255,255,255,0.15);
   color:#fff;
 }
+
+/* ==========================================================================
+   ORBES Y MICRO-INSIGNIAS 3D ILUMINADAS DE MOTORES DE BD (SIN TEXTO)
+   ========================================================================== */
+.db-orb {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 9px;
+  position: relative;
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  user-select: none;
+  vertical-align: middle;
+  transition: all 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+  border: 1px solid transparent;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.db-orb-lg {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  font-size: 18px;
+}
+
+.db-orb-sm {
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  font-size: 12px;
+}
+
+/* Efecto de resplandor neón pulsante */
+@keyframes dbOrbPulse {
+  0%, 100% {
+    box-shadow: 0 0 10px var(--orb-glow), inset 0 0 7px var(--orb-inner);
+    filter: drop-shadow(0 0 4px var(--orb-glow));
+  }
+  50% {
+    box-shadow: 0 0 20px var(--orb-glow), 0 0 32px var(--orb-glow-soft), inset 0 0 11px var(--orb-inner);
+    filter: drop-shadow(0 0 8px var(--orb-glow));
+  }
+}
+
+.db-orb {
+  animation: dbOrbPulse 3.5s ease-in-out infinite;
+}
+
+/* PostgreSQL: Azul Cian Cobalto Neón */
+.db-orb-pg {
+  --orb-glow: rgba(0, 245, 255, 0.55);
+  --orb-glow-soft: rgba(2, 132, 199, 0.35);
+  --orb-inner: rgba(0, 245, 255, 0.3);
+  border-color: rgba(0, 245, 255, 0.6);
+  background: radial-gradient(circle at 30% 30%, rgba(14, 165, 233, 0.35), rgba(2, 132, 199, 0.15) 60%, rgba(4, 15, 30, 0.85));
+}
+.db-orb-pg:hover {
+  transform: translateY(-2px) scale(1.18);
+  border-color: #00f5ff;
+  box-shadow: 0 0 24px rgba(0, 245, 255, 0.9), 0 0 42px rgba(2, 132, 199, 0.6), inset 0 0 14px rgba(0, 245, 255, 0.5);
+  filter: drop-shadow(0 0 10px #00f5ff);
+}
+
+/* Oracle: Ámbar Dorado Enterprise */
+.db-orb-ora {
+  --orb-glow: rgba(245, 158, 11, 0.55);
+  --orb-glow-soft: rgba(217, 119, 6, 0.35);
+  --orb-inner: rgba(245, 158, 11, 0.3);
+  border-color: rgba(245, 158, 11, 0.6);
+  background: radial-gradient(circle at 30% 30%, rgba(245, 158, 11, 0.35), rgba(217, 119, 6, 0.15) 60%, rgba(30, 15, 4, 0.85));
+  animation-delay: 0.6s;
+}
+.db-orb-ora:hover {
+  transform: translateY(-2px) scale(1.18);
+  border-color: #fbbf24;
+  box-shadow: 0 0 24px rgba(245, 158, 11, 0.9), 0 0 42px rgba(217, 119, 6, 0.6), inset 0 0 14px rgba(245, 158, 11, 0.5);
+  filter: drop-shadow(0 0 10px #fbbf24);
+}
+
+/* SQL Server: Azul Zafiro Eléctrico */
+.db-orb-sql {
+  --orb-glow: rgba(59, 130, 246, 0.55);
+  --orb-glow-soft: rgba(37, 99, 235, 0.35);
+  --orb-inner: rgba(59, 130, 246, 0.3);
+  border-color: rgba(59, 130, 246, 0.6);
+  background: radial-gradient(circle at 30% 30%, rgba(59, 130, 246, 0.35), rgba(37, 99, 235, 0.15) 60%, rgba(6, 12, 32, 0.85));
+  animation-delay: 1.2s;
+}
+.db-orb-sql:hover {
+  transform: translateY(-2px) scale(1.18);
+  border-color: #60a5fa;
+  box-shadow: 0 0 24px rgba(59, 130, 246, 0.9), 0 0 42px rgba(37, 99, 235, 0.6), inset 0 0 14px rgba(59, 130, 246, 0.5);
+  filter: drop-shadow(0 0 10px #60a5fa);
+}
+
+/* MySQL / MariaDB: Turquesa Neón */
+.db-orb-my {
+  --orb-glow: rgba(6, 182, 212, 0.55);
+  --orb-glow-soft: rgba(14, 165, 233, 0.35);
+  --orb-inner: rgba(6, 182, 212, 0.3);
+  border-color: rgba(6, 182, 212, 0.6);
+  background: radial-gradient(circle at 30% 30%, rgba(6, 182, 212, 0.35), rgba(14, 165, 233, 0.15) 60%, rgba(4, 20, 28, 0.85));
+  animation-delay: 1.8s;
+}
+.db-orb-my:hover {
+  transform: translateY(-2px) scale(1.18);
+  border-color: #22d3ee;
+  box-shadow: 0 0 24px rgba(6, 182, 212, 0.9), 0 0 42px rgba(14, 165, 233, 0.6), inset 0 0 14px rgba(6, 182, 212, 0.5);
+  filter: drop-shadow(0 0 10px #22d3ee);
+}
+
+/* MongoDB: Verde Esmeralda Láser */
+.db-orb-mg {
+  --orb-glow: rgba(16, 185, 129, 0.55);
+  --orb-glow-soft: rgba(5, 150, 105, 0.35);
+  --orb-inner: rgba(16, 185, 129, 0.3);
+  border-color: rgba(16, 185, 129, 0.6);
+  background: radial-gradient(circle at 30% 30%, rgba(16, 185, 129, 0.35), rgba(5, 150, 105, 0.15) 60%, rgba(4, 25, 15, 0.85));
+  animation-delay: 2.4s;
+}
+.db-orb-mg:hover {
+  transform: translateY(-2px) scale(1.18);
+  border-color: #34d399;
+  box-shadow: 0 0 24px rgba(16, 185, 129, 0.9), 0 0 42px rgba(5, 150, 105, 0.6), inset 0 0 14px rgba(16, 185, 129, 0.5);
+  filter: drop-shadow(0 0 10px #34d399);
+}
+
+/* Redis: Rojo Rubí In-Memory */
+.db-orb-rd {
+  --orb-glow: rgba(239, 68, 68, 0.55);
+  --orb-glow-soft: rgba(220, 38, 38, 0.35);
+  --orb-inner: rgba(239, 68, 68, 0.3);
+  border-color: rgba(239, 68, 68, 0.6);
+  background: radial-gradient(circle at 30% 30%, rgba(239, 68, 68, 0.35), rgba(220, 38, 38, 0.15) 60%, rgba(30, 5, 5, 0.85));
+  animation-delay: 3.0s;
+}
+.db-orb-rd:hover {
+  transform: translateY(-2px) scale(1.18);
+  border-color: #f87171;
+  box-shadow: 0 0 24px rgba(239, 68, 68, 0.9), 0 0 42px rgba(220, 38, 38, 0.6), inset 0 0 14px rgba(239, 68, 68, 0.5);
+  filter: drop-shadow(0 0 10px #f87171);
+}
+
+/* SQLite: Púrpura Neón Láser */
+.db-orb-sqlite {
+  --orb-glow: rgba(168, 85, 247, 0.55);
+  --orb-glow-soft: rgba(124, 58, 237, 0.35);
+  --orb-inner: rgba(168, 85, 247, 0.3);
+  border-color: rgba(168, 85, 247, 0.6);
+  background: radial-gradient(circle at 30% 30%, rgba(168, 85, 247, 0.35), rgba(124, 58, 237, 0.15) 60%, rgba(20, 5, 30, 0.85));
+  animation-delay: 2.7s;
+}
+.db-orb-sqlite:hover {
+  transform: translateY(-2px) scale(1.18);
+  border-color: #c084fc;
+  box-shadow: 0 0 24px rgba(168, 85, 247, 0.9), 0 0 42px rgba(124, 58, 237, 0.6), inset 0 0 14px rgba(168, 85, 247, 0.5);
+  filter: drop-shadow(0 0 10px #c084fc);
+}
+
+/* Orbe fijado limpiamente a la DERECHA en cada tarjeta del menú */
+.nav-tabs a .nav-db-side {
+  margin-left: auto !important;
+  margin-right: 2px !important;
+  flex-shrink: 0 !important;
+  width: 22px !important;
+  height: 22px !important;
+  font-size: 11.5px !important;
+  border-radius: 6px !important;
+  z-index: 3 !important;
+  transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.22s ease !important;
+}
+.nav-tabs a:hover .nav-db-side {
+  transform: scale(1.2) !important;
+}
+
+/* En modo rueda radial (Rueda Holográfica) */
+:root[data-nav-style="rueda"] .nav-tabs a .nav-db-side {
+  margin-left: auto !important;
+  margin-right: 4px !important;
+  flex-shrink: 0 !important;
+  align-self: center !important;
+}
+
+/* En modo dock cerrado (solo iconos) */
+:root[data-nav-style="dock"]:not(:hover) .nav-tabs a .nav-db-side {
+  display: none !important;
+}
+:root[data-nav-style="dock"] body:not(.guest) .navbar:hover .nav-tabs a .nav-db-side,
+:root[data-nav-style="dock"] body:not(.guest) .navbar.expanded .nav-tabs a .nav-db-side {
+  display: inline-flex !important;
+  margin-left: auto !important;
+  margin-right: 6px !important;
+}
+
+/* ==========================================================================
+   SELECTOR DE MOTOR DE BD EN TOPBAR (DROPDOWN MODERNO)
+   ========================================================================== */
+.topbar-db-dropdown {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+.topbar-db-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: rgba(14, 21, 39, 0.72);
+  border: 1px solid rgba(var(--accent-rgb), 0.35);
+  border-radius: 10px;
+  padding: 3px 9px 3px 4px;
+  cursor: pointer;
+  transition: all 0.22s ease;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.35);
+}
+.topbar-db-btn:hover {
+  border-color: var(--accent);
+  box-shadow: 0 0 16px rgba(var(--accent-rgb), 0.45);
+  transform: translateY(-1px);
+}
+.topbar-db-btn .tbe-name {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+.topbar-db-btn .tbe-arrow {
+  width: 13px;
+  height: 13px;
+  stroke: var(--muted);
+  fill: none;
+  stroke-width: 2.2;
+  transition: transform 0.2s ease;
+}
+.topbar-db-dropdown.open .tbe-arrow {
+  transform: rotate(180deg);
+  stroke: var(--accent);
+}
+.topbar-db-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 235px;
+  background: rgba(8, 14, 26, 0.96);
+  border: 1px solid rgba(var(--accent-rgb), 0.4);
+  border-radius: 12px;
+  padding: 6px;
+  box-shadow: 0 14px 40px rgba(0,0,0,0.8), 0 0 24px rgba(var(--accent-rgb), 0.25);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  z-index: 1050;
+  display: none;
+  flex-direction: column;
+  gap: 3px;
+  animation: dbMenuIn 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.topbar-db-dropdown.open .topbar-db-menu {
+  display: flex;
+}
+@keyframes dbMenuIn {
+  from { opacity: 0; transform: translateY(-6px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.tbm-header {
+  font-family: var(--sans);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 6px 8px 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 3px;
+}
+.tbm-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  color: #fff;
+  transition: all 0.18s ease;
+}
+.tbm-item:hover {
+  background: rgba(var(--accent-rgb), 0.16);
+  border-color: rgba(var(--accent-rgb), 0.3);
+  transform: translateX(3px);
+}
+.tbm-item.active {
+  background: rgba(var(--accent-rgb), 0.25);
+  border-color: var(--accent);
+}
+.tbm-info {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+.tbm-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+}
+.tbm-info small {
+  font-size: 10px;
+  color: var(--muted);
+}
+
+/* Compatibilidad para elementos anteriores */
+.db-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  vertical-align: middle;
+}
+.db-badge-pg { background: rgba(2, 132, 199, 0.2); border: 1px solid rgba(0, 245, 255, 0.4); color: #38bdf8; }
+.db-badge-ora { background: rgba(245, 158, 11, 0.2); border: 1px solid rgba(245, 158, 11, 0.4); color: #fbbf24; }
+.db-badge-sql { background: rgba(37, 99, 235, 0.2); border: 1px solid rgba(59, 130, 246, 0.4); color: #60a5fa; }
+.db-badge-my { background: rgba(6, 182, 212, 0.2); border: 1px solid rgba(6, 182, 212, 0.4); color: #22d3ee; }
+.db-badge-mg { background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.4); color: #34d399; }
+.db-badge-rd { background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); color: #f87171; }
+
+/* Decoración en campos de formulario (inputs) */
+.field-db-addon {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  z-index: 3;
+}
 </style>
 </head>
 <body class="<%= currentUser ? '' : 'guest' %>" data-user="<%= currentUser ? currentUser.username : '' %>">
@@ -2506,22 +2883,22 @@ button:hover, .btn:hover, .iconbtn:hover, .acc-btn:hover {
     var cp = (typeof currentPath !== 'undefined' && currentPath) ? currentPath : '';
     var S = function(d){ return '<svg viewBox="0 0 24 24" aria-hidden="true">' + d + '</svg>'; };
     var navItems = [
-      { h:'/',          t:'Empresas',      desc:'Contraseñas de clientes', i:S('<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>') },
-      { h:'/notas',     t:'Notas',         desc:'Tus apuntes rápidos', i:S('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>') },
-      { h:'/jaivana',   t:'Jaivaná',       desc:'Datos del proyecto', i:S('<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>') },
-      { h:'/visor',     t:'Visor XML/JSON',desc:'Previsualizar archivos', i:S('<polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>') },
-      { h:'/sql',       t:'SQL',           desc:'Formateador y Revisor SQL', i:S('<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>') },
-      { h:'/listas',    t:'Listas',        desc:'Tareas pendientes', i:S('<line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>') },
-      { h:'/aceptados', t:'Aceptados',     desc:'Elementos validados', i:S('<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>') },
-      { h:'/informe',   t:'Informe',       desc:'Reportes generados', i:S('<path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/>') },
-      { h:'/viaticos',  t:'Viáticos',      desc:'Gastos de viajes', i:S('<path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/>') },
-      { h:'/logs',      t:'Logs',          desc:'Registro de actividad', i:S('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="14" y2="17"/>') },
-      { h:'/enlaces',   t:'Enlaces',       desc:'Accesos directos', i:S('<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>') },
-      { h:'/calendario', t:'Calendario',   desc:'Fechas importantes', i:S('<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>') },
-      { h:'/manual',    t:'Manual',        desc:'Cómo usar el sistema', i:S('<polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/>') },
-      { h:'/papelera',  t:'Papelera',      desc:'Cosas eliminadas', i:S('<polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>'), badge:true }
+      { h:'/',          t:'Empresas',      desc:'Contraseñas de clientes', i:S('<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>'), badgeIcon:'🐘', badgeCls:'db-orb-pg', badgeTitle:'PostgreSQL 16 · Bóveda Principal' },
+      { h:'/notas',     t:'Notas',         desc:'Tus apuntes rápidos', i:S('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>'), badgeIcon:'🐘', badgeCls:'db-orb-pg', badgeTitle:'PostgreSQL · Documentos' },
+      { h:'/jaivana',   t:'Jaivaná',       desc:'Datos del proyecto', i:S('<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>'), badgeIcon:'🐘', badgeCls:'db-orb-pg', badgeTitle:'PostgreSQL · Jaivaná Sync' },
+      { h:'/visor',     t:'Visor XML/JSON',desc:'Previsualizar archivos', i:S('<polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>'), badgeIcon:'🍃', badgeCls:'db-orb-mg', badgeTitle:'MongoDB & JSON Parser' },
+      { h:'/sql',       t:'SQL',           desc:'Formateador y Revisor SQL', i:S('<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>'), badgeIcon:'🐘', badgeCls:'db-orb-pg', badgeTitle:'PostgreSQL / Multi-Engine SQL' },
+      { h:'/listas',    t:'Listas',        desc:'Tareas pendientes', i:S('<line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>'), badgeIcon:'🏛️', badgeCls:'db-orb-ora', badgeTitle:'Oracle & SQL Matrix Lists' },
+      { h:'/aceptados', t:'Aceptados',     desc:'Elementos validados', i:S('<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>'), badgeIcon:'🐬', badgeCls:'db-orb-my', badgeTitle:'MySQL / MariaDB Sync' },
+      { h:'/informe',   t:'Informe',       desc:'Reportes generados', i:S('<path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/>'), badgeIcon:'🟦', badgeCls:'db-orb-sql', badgeTitle:'SQL Server Reporting' },
+      { h:'/viaticos',  t:'Viáticos',      desc:'Gastos de viajes', i:S('<path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/>'), badgeIcon:'💾', badgeCls:'db-orb-sqlite', badgeTitle:'SQLite Embedded Storage' },
+      { h:'/logs',      t:'Logs',          desc:'Registro de actividad', i:S('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="14" y2="17"/>'), badgeIcon:'⚡', badgeCls:'db-orb-rd', badgeTitle:'Redis Realtime Cache & Logs' },
+      { h:'/enlaces',   t:'Enlaces',       desc:'Accesos directos', i:S('<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>'), badgeIcon:'🐘', badgeCls:'db-orb-pg', badgeTitle:'PostgreSQL Links Storage' },
+      { h:'/calendario', t:'Calendario',   desc:'Fechas importantes', i:S('<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>'), badgeIcon:'🏛️', badgeCls:'db-orb-ora', badgeTitle:'Oracle Cron & Event Scheduler' },
+      { h:'/manual',    t:'Manual',        desc:'Cómo usar el sistema', i:S('<polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/>'), badgeIcon:'🐬', badgeCls:'db-orb-my', badgeTitle:'MySQL Knowledge Base' },
+      { h:'/papelera',  t:'Papelera',      desc:'Cosas eliminadas', i:S('<polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>'), badge:true, badgeIcon:'⚡', badgeCls:'db-orb-rd', badgeTitle:'Redis Soft-Delete Garbage Collector' }
     ];
-    var clockBox = '<div class="clock" id="clock" role="timer" aria-label="Hora y fecha actual"><svg class="face" viewBox="0 0 44 44" aria-hidden="true"><circle class="ring" cx="22" cy="22" r="20"/><line class="tick" x1="22" y1="4.5" x2="22" y2="7.5"/><line class="tick" x1="39.5" y1="22" x2="36.5" y2="22"/><line class="tick" x1="22" y1="39.5" x2="22" y2="36.5"/><line class="tick" x1="4.5" y1="22" x2="7.5" y2="22"/><line class="hand h" id="ckHh" x1="22" y1="22" x2="22" y2="12" stroke-width="2.6"/><line class="hand m" id="ckHm" x1="22" y1="22" x2="22" y2="8" stroke-width="1.8"/><line class="hand s" id="ckHs" x1="22" y1="25" x2="22" y2="6.5"/><circle class="pin" cx="22" cy="22" r="1.9"/></svg><div class="clock-txt"><div class="clock-time"><span id="ckH">--</span><i>:</i><span id="ckM">--</span><small id="ckA"></small></div><div class="clock-date" id="ckD"></div></div></div>';
+    var clockBox = '<div class="clock" id="clock" role="timer" aria-label="Hora y fecha actual"><svg class="face" viewBox="0 0 44 44" aria-hidden="true"><circle class="ring" cx="22" cy="22" r="20"/><line class="tick" x1="22" y1="4.5" x2="22" y2="7.5"/><line class="tick" x1="39.5" y1="22" x2="36.5" y2="22"/><line class="tick" x1="22" y1="39.5" x2="22" y2="36.5"/><line class="tick" x1="4.5" y1="22" x2="7.5" y2="22"/><line class="hand h" id="ckHh" x1="22" y1="22" x2="22" y2="12" stroke-width="2.6"/><line class="hand m" id="ckHm" x1="22" y1="22" x2="22" y2="8" stroke-width="1.8"/><line class="hand s" id="ckHs" x1="22" y1="25" x2="22" y2="6.5"/><circle class="pin" cx="22" cy="22" r="1.9"/></svg><div class="clock-txt"><div class="clock-time"><span id="ckH">--</span><i>:</i><span id="ckM">--</span><i>:</i><span id="ckS">--</span><small id="ckA" style="display:none;"></small></div><div class="clock-date" id="ckD"></div></div></div>';
     var themeBtn = '<button type="button" class="theme-toggle" id="themeToggle" title="Alternar claro / oscuro" aria-label="Alternar tema claro/oscuro"><svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path></svg><svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"></path></svg></button>';
     var palBtn = '<button type="button" class="theme-toggle" id="palBtn" title="Cambiar colores y apariencia" aria-label="Cambiar paleta de colores" aria-haspopup="dialog"><span class="pal-dot"></span></button>';
   %>
@@ -2610,7 +2987,17 @@ button:hover, .btn:hover, .iconbtn:hover, .acc-btn:hover {
     <button type="button" class="plain cmd-trigger" id="cmdOpen" title="Buscar… (Ctrl K)" aria-haspopup="dialog" aria-label="Abrir buscador rápido"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><span>Buscar…</span><kbd class="kbd">Ctrl K</kbd></button>
     <nav class="nav-tabs" id="navTabs">
       <% navItems.forEach(function(n, idx){ var on = n.h === '/' ? cp === '/' : cp.indexOf(n.h) === 0; %>
-      <a href="<%= n.h %>" title="<%= n.t %>" data-title="<%= n.t %>" data-desc="<%= n.desc %>" style="--i:<%= idx %>" class="<%= on ? 'active' : '' %>"<%- on ? ' aria-current="page"' : '' %>><span class="nav-ic"><%- n.i %></span><span class="nav-txt"><%= n.t %><span class="nav-sub"><%= n.desc %></span></span><% if (n.badge && typeof papeleraCount !== 'undefined' && papeleraCount > 0) { %> <span class="tab-count"><%= papeleraCount %></span><% } %></a>
+      <a href="<%= n.h %>" title="<%= n.t %>" data-title="<%= n.t %>" data-desc="<%= n.desc %>" style="--i:<%= idx %>" class="<%= on ? 'active' : '' %>"<%- on ? ' aria-current="page"' : '' %>>
+        <span class="nav-ic"><%- n.i %></span>
+        <span class="nav-txt">
+          <span class="nav-tit"><%= n.t %></span>
+          <span class="nav-sub"><%= n.desc %></span>
+        </span>
+        <% if (n.badgeIcon) { %>
+          <span class="nav-db-side db-orb db-orb-sm <%= n.badgeCls %>" title="<%= n.badgeTitle %>"><%= n.badgeIcon %></span>
+        <% } %>
+        <% if (n.badge && typeof papeleraCount !== 'undefined' && papeleraCount > 0) { %> <span class="tab-count"><%= papeleraCount %></span><% } %>
+      </a>
       <% }); %>
     </nav>
     <div class="nav-account">
@@ -2741,7 +3128,46 @@ button:hover, .btn:hover, .iconbtn:hover, .acc-btn:hover {
         <svg class="bnm-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="6 9 12 15 18 9"/></svg>
       </button>
     </div>
-    <div class="topbar-right">
+    <div class="topbar-right" style="display:flex; align-items:center; gap:12px;">
+      <!-- Selector Interactivo de Motor de Base de Datos y Color Global -->
+      <div class="topbar-db-dropdown" id="topbarDbDropdown">
+        <button type="button" class="topbar-db-btn" id="btnTopbarDb" title="Motor de Base de Datos Activo (Clic para alternar motor y color)">
+          <span class="db-orb db-orb-lg db-orb-pg" id="topbarEngineOrb">🐘</span>
+          <span class="tbe-name" id="topbarEngineName">PostgreSQL 16</span>
+          <svg class="tbe-arrow" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="topbar-db-menu" id="topbarDbMenu">
+          <div class="tbm-header">Motor de BD & Color del Sistema</div>
+          <button type="button" class="tbm-item" data-engine-pick="postgres">
+            <span class="db-orb db-orb-sm db-orb-pg">🐘</span>
+            <div class="tbm-info"><div class="tbm-title">PostgreSQL 16</div><small>Cian Neón · Relacional ACID</small></div>
+          </button>
+          <button type="button" class="tbm-item" data-engine-pick="oracle">
+            <span class="db-orb db-orb-sm db-orb-ora">🏛️</span>
+            <div class="tbm-info"><div class="tbm-title">Oracle Enterprise</div><small>Ámbar Dorado · Cloud</small></div>
+          </button>
+          <button type="button" class="tbm-item" data-engine-pick="sqlserver">
+            <span class="db-orb db-orb-sm db-orb-sql">🟦</span>
+            <div class="tbm-info"><div class="tbm-title">Microsoft SQL Server</div><small>Azul Zafiro · Matrix</small></div>
+          </button>
+          <button type="button" class="tbm-item" data-engine-pick="mysql">
+            <span class="db-orb db-orb-sm db-orb-my">🐬</span>
+            <div class="tbm-info"><div class="tbm-title">MySQL / MariaDB</div><small>Turquesa · InnoDB Cluster</small></div>
+          </button>
+          <button type="button" class="tbm-item" data-engine-pick="mongodb">
+            <span class="db-orb db-orb-sm db-orb-mg">🍃</span>
+            <div class="tbm-info"><div class="tbm-title">MongoDB Document</div><small>Verde Esmeralda · Shards</small></div>
+          </button>
+          <button type="button" class="tbm-item" data-engine-pick="redis">
+            <span class="db-orb db-orb-sm db-orb-rd">⚡</span>
+            <div class="tbm-info"><div class="tbm-title">Redis In-Memory</div><small>Rojo Rubí · Quantum Cache</small></div>
+          </button>
+          <button type="button" class="tbm-item" data-engine-pick="sqlite">
+            <span class="db-orb db-orb-sm db-orb-sqlite">💾</span>
+            <div class="tbm-info"><div class="tbm-title">SQLite Embedded</div><small>Púrpura Neón · Zero-Conf</small></div>
+          </button>
+        </div>
+      </div>
       <%- clockBox %>
     </div>
   </div>
@@ -2989,16 +3415,19 @@ button:hover, .btn:hover, .iconbtn:hover, .acc-btn:hover {
 
     /* ----- Reloj y fecha ----- */
     (function(){
-      var H = $('ckH'), M = $('ckM'), A = $('ckA'), D = $('ckD'), hh = $('ckHh'), hm = $('ckHm'), hs = $('ckHs');
+      var H = $('ckH'), M = $('ckM'), S = $('ckS'), A = $('ckA'), D = $('ckD'), hh = $('ckHh'), hm = $('ckHm'), hs = $('ckHs');
       if (!H) return;
       var fecha = new Intl.DateTimeFormat('es-CO', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
       var ultimaFecha = '';
       function tick(){
         var d = new Date(), h = d.getHours(), m = d.getMinutes(), s = d.getSeconds();
-        H.textContent = (h % 12 || 12); M.textContent = (m < 10 ? '0' : '') + m; A.textContent = h < 12 ? 'a. m.' : 'p. m.';
-        hh.setAttribute('transform', 'rotate(' + (((h % 12) + m / 60) * 30) + ' 22 22)');
-        hm.setAttribute('transform', 'rotate(' + ((m + s / 60) * 6) + ' 22 22)');
-        hs.setAttribute('transform', 'rotate(' + (s * 6) + ' 22 22)');
+        H.textContent = (h < 10 ? '0' : '') + h;
+        M.textContent = (m < 10 ? '0' : '') + m;
+        if (S) S.textContent = (s < 10 ? '0' : '') + s;
+        if (A) A.textContent = '';
+        if (hh) hh.setAttribute('transform', 'rotate(' + (((h % 12) + m / 60) * 30) + ' 22 22)');
+        if (hm) hm.setAttribute('transform', 'rotate(' + ((m + s / 60) * 6) + ' 22 22)');
+        if (hs) hs.setAttribute('transform', 'rotate(' + (s * 6) + ' 22 22)');
         var f = fecha.format(d); if (f !== ultimaFecha) { ultimaFecha = f; D.textContent = f.charAt(0).toUpperCase() + f.slice(1); }
       }
       tick(); setInterval(tick, 1000);
@@ -3429,6 +3858,75 @@ button:hover, .btn:hover, .iconbtn:hover, .acc-btn:hover {
       if (sbc) attachPopover(sbc, function(){ return root.classList.contains('sb-off') ? 'Expandir menú' : 'Ocultar menú'; }, '');
 
       document.addEventListener('scroll', function(){ navPop.classList.remove('show'); }, { passive:true });
+    })();
+
+    /* ----- Manejador de Motor de Base de Datos y Paleta Global ----- */
+    (function(){
+      var ENGINES = {
+        postgres:  { name:'PostgreSQL 16', icon:'🐘', cls:'db-orb-pg', c1:'#00f5ff', c2:'#0284c7', rgb:'0, 245, 255' },
+        oracle:    { name:'Oracle Enterprise', icon:'🏛️', cls:'db-orb-ora', c1:'#f59e0b', c2:'#d97706', rgb:'245, 158, 11' },
+        sqlserver: { name:'SQL Server', icon:'🟦', cls:'db-orb-sql', c1:'#3b82f6', c2:'#1d4ed8', rgb:'59, 130, 246' },
+        mysql:     { name:'MySQL / MariaDB', icon:'🐬', cls:'db-orb-my', c1:'#06b6d4', c2:'#0284c7', rgb:'6, 182, 212' },
+        mongodb:   { name:'MongoDB Document', icon:'🍃', cls:'db-orb-mg', c1:'#10b981', c2:'#059669', rgb:'16, 185, 129' },
+        redis:     { name:'Redis Cache', icon:'⚡', cls:'db-orb-rd', c1:'#ef4444', c2:'#b91c1c', rgb:'239, 68, 68' },
+        sqlite:    { name:'SQLite Embedded', icon:'💾', cls:'db-orb-sqlite', c1:'#a855f7', c2:'#7c3aed', rgb:'168, 85, 247' }
+      };
+
+      window.setDbEngine = function(engineId) {
+        var eng = ENGINES[engineId] || ENGINES.postgres;
+        root.setAttribute('data-db-engine', engineId);
+        root.style.setProperty('--p1', eng.c1);
+        root.style.setProperty('--p2', eng.c2);
+        root.style.setProperty('--accent-rgb', eng.rgb);
+        store('boveda_db_engine', engineId);
+        store('boveda_login_theme', engineId);
+
+        var topOrb = $('topbarEngineOrb');
+        var topName = $('topbarEngineName');
+        if (topOrb) {
+          topOrb.textContent = eng.icon;
+          topOrb.className = 'db-orb db-orb-lg ' + eng.cls;
+          topOrb.title = 'Motor Activo: ' + eng.name;
+        }
+        if (topName) topName.textContent = eng.name;
+
+        document.querySelectorAll('.tbm-item').forEach(function(item) {
+          item.classList.toggle('active', item.dataset.enginePick === engineId);
+        });
+
+        var dashOrb = $('dashHeaderOrb');
+        if (dashOrb) { dashOrb.textContent = eng.icon; dashOrb.className = 'db-orb db-orb-lg ' + eng.cls; }
+        var sqlOrb = $('sqlEditorOrb');
+        if (sqlOrb) { sqlOrb.textContent = eng.icon; sqlOrb.className = 'db-orb ' + eng.cls; }
+      };
+
+      var curEng = localStorage.getItem('boveda_db_engine') || 'postgres';
+      window.setDbEngine(curEng);
+
+      var dbDrop = $('topbarDbDropdown');
+      var dbBtn = $('btnTopbarDb');
+      var dbMenu = $('topbarDbMenu');
+      if (dbBtn && dbDrop) {
+        dbBtn.addEventListener('click', function(e){
+          e.stopPropagation();
+          dbDrop.classList.toggle('open');
+        });
+        document.addEventListener('click', function(e){
+          if (!dbDrop.contains(e.target)) dbDrop.classList.remove('open');
+        });
+      }
+      if (dbMenu) {
+        dbMenu.addEventListener('click', function(e){
+          var item = e.target.closest('.tbm-item');
+          if (!item) return;
+          var pick = item.dataset.enginePick;
+          if (pick) {
+            window.setDbEngine(pick);
+            if (dbDrop) dbDrop.classList.remove('open');
+            aviso((ENGINES[pick] ? ENGINES[pick].icon + ' ' + ENGINES[pick].name : pick) + ' activado');
+          }
+        });
+      }
     })();
   })();
   </script>
