@@ -1787,57 +1787,58 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
   display: none !important;
 }
 
-/* Handle táctico visible SOLO en modo hex-matrix */
 :root[data-nav-style="hex-matrix"] .hex-matrix-handle {
   position: fixed !important;
   left: 0 !important;
-  top: 140px !important;
-  width: 36px !important;
-  height: 120px !important;
+  top: 160px !important;
+  width: 38px !important;
+  height: 130px !important;
   border-radius: 0 16px 16px 0 !important;
-  background: linear-gradient(135deg, rgba(8, 14, 26, 0.95) 0%, rgba(14, 24, 42, 0.9) 100%) !important;
+  background: linear-gradient(135deg, rgba(8, 14, 26, 0.96) 0%, rgba(14, 24, 42, 0.94) 100%) !important;
   backdrop-filter: blur(20px) saturate(2.0) !important;
   -webkit-backdrop-filter: blur(20px) saturate(2.0) !important;
-  border: 1.5px solid var(--accent) !important;
+  border: 1.5px solid var(--accent, #00f5ff) !important;
   border-left: none !important;
-  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.65), 0 0 18px rgba(var(--accent-rgb), 0.4), inset 0 1px 0 rgba(255,255,255,0.2) !important;
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.8), 0 0 18px rgba(var(--accent-rgb, 0, 245, 255), 0.5), inset 0 1px 0 rgba(255,255,255,0.2) !important;
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
   justify-content: center !important;
   gap: 8px !important;
   cursor: pointer !important;
-  z-index: 280 !important;
+  z-index: 9999 !important;
   pointer-events: auto !important;
+  padding: 8px 0 !important;
   transition: all 0.25s cubic-bezier(0.34, 1.3, 0.64, 1) !important;
   user-select: none !important;
-  animation: hexHandlePulse 3s infinite ease-in-out !important;
+  animation: hexHandlePulse 2.8s infinite ease-in-out !important;
 }
 
 @keyframes hexHandlePulse {
   0%, 100% {
-    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.6), 0 0 14px rgba(var(--accent-rgb), 0.35);
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.7), 0 0 14px rgba(var(--accent-rgb, 0, 245, 255), 0.4);
+    border-color: var(--accent);
   }
   50% {
-    box-shadow: 5px 0 28px rgba(0, 0, 0, 0.8), 0 0 24px rgba(var(--accent-rgb), 0.7);
+    box-shadow: 6px 0 32px rgba(0, 0, 0, 0.9), 0 0 26px rgba(var(--accent-rgb, 0, 245, 255), 0.85);
     border-color: #fff;
   }
 }
 
 :root[data-nav-style="hex-matrix"] .hex-matrix-handle:hover {
-  width: 44px !important;
+  width: 48px !important;
   background: rgba(14, 24, 42, 0.98) !important;
-  box-shadow: 6px 0 32px rgba(0, 0, 0, 0.85), 0 0 28px rgba(var(--accent-rgb), 0.75) !important;
+  box-shadow: 6px 0 35px rgba(0, 0, 0, 0.9), 0 0 30px var(--accent) !important;
 }
 
 :root[data-nav-style="hex-matrix"] .hmh-icon {
-  font-size: 15px !important;
+  font-size: 16px !important;
   line-height: 1 !important;
   filter: drop-shadow(0 0 6px var(--accent)) !important;
   transition: transform 0.25s ease !important;
 }
 :root[data-nav-style="hex-matrix"] .hex-matrix-handle:hover .hmh-icon {
-  transform: scale(1.2) rotate(30deg) !important;
+  transform: scale(1.25) rotate(30deg) !important;
 }
 
 :root[data-nav-style="hex-matrix"] .hmh-text {
@@ -1845,8 +1846,8 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
   text-orientation: mixed !important;
   font-family: var(--mono, monospace) !important;
   font-size: 9.5px !important;
-  font-weight: 800 !important;
-  letter-spacing: 2px !important;
+  font-weight: 900 !important;
+  letter-spacing: 2.5px !important;
   color: #fff !important;
   text-shadow: 0 0 8px var(--accent) !important;
 }
@@ -1863,15 +1864,16 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
   transform: translateX(3px) !important;
 }
 
-/* Cuando el navbar está abierto, el handle se oculta limpiamente */
-:root[data-nav-style="hex-matrix"] .navbar:hover .hex-matrix-handle,
-:root[data-nav-style="hex-matrix"] .navbar.expanded .hex-matrix-handle,
-:root[data-nav-style="hex-matrix"] body:not(.guest) .navbar:hover ~ .hex-matrix-handle,
-:root[data-nav-style="hex-matrix"] body:not(.guest) .navbar.expanded ~ .hex-matrix-handle {
+/* Cuando el navbar está abierto, ocultar suavemente el handle */
+:root[data-nav-style="hex-matrix"] body:not(.guest) .navbar:hover ~ #hexMatrixHandle,
+:root[data-nav-style="hex-matrix"] body:not(.guest) .navbar.expanded ~ #hexMatrixHandle,
+:root[data-nav-style="hex-matrix"] body:not(.guest):has(.navbar:hover) #hexMatrixHandle,
+:root[data-nav-style="hex-matrix"] body:not(.guest):has(.navbar.expanded) #hexMatrixHandle {
   opacity: 0 !important;
   pointer-events: none !important;
   transform: translateX(-100%) !important;
 }
+
 
 :root[data-nav-style="hex-matrix"] .brand {
   border-bottom: 1px solid rgba(255,255,255,0.08) !important;
@@ -3334,13 +3336,6 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
       </svg>
     </div>
 
-    <!-- Pestaña Táctica Sci-Fi de la Matriz Hexagonal (Handle cuando está oculta) -->
-    <div class="hex-matrix-handle" id="hexMatrixHandle" title="Matriz Hexagonal HUD (Clic o posar ratón para expandir)">
-      <span class="hmh-icon">🔷</span>
-      <span class="hmh-text">MATRIX</span>
-      <span class="hmh-arrow">›</span>
-    </div>
-
     <div class="brand"><span class="badge" id="brandBadge" title="Bóveda Jira">🔐</span><span class="brand-title">Bóveda Jira</span><button type="button" class="sb-close" id="sbClose" title="Cerrar menú (Esc)" aria-label="Cerrar menú"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
     <button type="button" class="plain cmd-trigger" id="cmdOpen" title="Buscar… (Ctrl K)" aria-haspopup="dialog" aria-label="Abrir buscador rápido"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><span>Buscar…</span><kbd class="kbd">Ctrl K</kbd></button>
     <nav class="nav-tabs" id="navTabs">
@@ -3559,7 +3554,12 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
     <%- body %>
   </div>
 
-  <% if (currentUser) { %><button type="button" id="sbOpen" title="Desplegar menú de navegación" aria-label="Desplegar menú"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg><span>Menú</span></button><% } %>
+  <% if (currentUser) { %><button type="button" class="hex-matrix-handle" id="hexMatrixHandle" title="Matriz Hexagonal HUD (Clic o posar ratón para expandir)" aria-label="Abrir Matriz Hexagonal">
+    <span class="hmh-icon">🔷</span>
+    <span class="hmh-text">MATRIX</span>
+    <span class="hmh-arrow">›</span>
+  </button>
+  <button type="button" id="sbOpen" title="Desplegar menú de navegación" aria-label="Desplegar menú"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg><span>Menú</span></button><% } %>
   <button type="button" class="to-top" id="toTop" title="Volver arriba" aria-label="Volver arriba"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"></path></svg></button>
 
   <!-- Modal Visual Selector de Menú / Navegación -->
@@ -3996,6 +3996,24 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
       });
       $('hexMatrixHandle').addEventListener('mouseenter', function(){
         if (nb) nb.classList.add('expanded');
+      });
+    }
+    var hexHandle = $('hexMatrixHandle');
+    if (hexHandle) {
+      hexHandle.addEventListener('click', function(e){
+        e.stopPropagation();
+        if (nb) nb.classList.toggle('expanded');
+      });
+      hexHandle.addEventListener('mouseenter', function(){
+        if (nb) nb.classList.add('expanded');
+      });
+    }
+    if (nb) {
+      nb.addEventListener('mouseleave', function(){
+        var st = root.getAttribute('data-nav-style') || 'oculto';
+        if (st === 'hex-matrix') {
+          nb.classList.remove('expanded');
+        }
       });
     }
     if ($('ruedaTriggerBadge')) $('ruedaTriggerBadge').addEventListener('click', function(e){
