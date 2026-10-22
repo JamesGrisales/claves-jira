@@ -90,19 +90,22 @@
   .toast{ position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(10px) scale(.96); background:linear-gradient(135deg, var(--accent), var(--accent-dark)); color:#fff; font-size:13px; font-weight:600; padding:9px 18px; border-radius:8px; opacity:0; pointer-events:none; transition:opacity .18s ease, transform .18s ease; z-index:50; }
   .toast.show{ opacity:1; transform:translateX(-50%) translateY(0) scale(1); }
 
-  /* Estilos del modal de correo Outlook */
-  .em-tabs { display:flex; gap:6px; border-bottom:1px solid var(--panel-edge); padding-bottom:6px; margin-bottom:8px; }
-  .em-tab-btn { background:transparent; border:none; box-shadow:none; color:var(--muted); font-size:13px; font-weight:700; padding:6px 14px; border-bottom:2px solid transparent; border-radius:0; cursor:pointer; }
+  /* Estilos del modal de correo Outlook - Ampliado y Espacioso */
+  .em-tabs { display:flex; gap:8px; border-bottom:1px solid var(--panel-edge); padding-bottom:8px; margin-bottom:12px; }
+  .em-tab-btn { background:transparent; border:none; box-shadow:none; color:var(--muted); font-size:13.5px; font-weight:700; padding:8px 18px; border-bottom:2px solid transparent; border-radius:0; cursor:pointer; transition:all .15s ease; }
   .em-tab-btn.active { color:var(--accent); border-bottom-color:var(--accent); }
-  .em-chip-box { display:flex; flex-wrap:wrap; gap:5px; align-items:center; background:var(--panel-alt); border:1px solid var(--panel-edge); border-radius:8px; padding:6px 8px; min-height:42px; }
+  .em-chip-box { display:flex; flex-wrap:wrap; gap:6px; align-items:center; background:var(--panel-alt); border:1px solid var(--panel-edge); border-radius:10px; padding:7px 10px; min-height:46px; }
   .em-chip-box:focus-within { border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft); }
-  .em-chips { display:flex; flex-wrap:wrap; gap:5px; align-items:center; }
-  .em-chip { display:inline-flex; align-items:center; gap:5px; background:var(--accent-soft); color:var(--accent-dark); border:1px solid var(--accent); padding:2px 8px; border-radius:999px; font-size:11.5px; font-weight:600; }
-  .em-chip-del { background:none; border:none; padding:0; cursor:pointer; font-size:12px; color:var(--accent-dark); opacity:.7; display:inline-flex; }
+  .em-chips { display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
+  .em-chip { display:inline-flex; align-items:center; gap:6px; background:var(--accent-soft); color:var(--accent-dark); border:1px solid var(--accent); padding:4px 10px; border-radius:999px; font-size:12px; font-weight:600; }
+  .em-chip-del { background:none; border:none; padding:0; cursor:pointer; font-size:13px; color:var(--accent-dark); opacity:.75; display:inline-flex; line-height:1; }
   .em-chip-del:hover { opacity:1; }
-  .em-chip-box input { flex:1; min-width:140px; border:none !important; background:transparent !important; padding:4px 6px !important; outline:none !important; box-shadow:none !important; color:var(--text); font-size:13px; font-family:var(--sans); }
-  .em-quick-btn { background:var(--panel-alt); border:1px solid var(--panel-edge); color:var(--muted); border-radius:999px; font-size:11px; font-weight:600; padding:2px 8px; cursor:pointer; box-shadow:none; transform:none; }
+  .em-chip-box input { flex:1; min-width:160px; border:none !important; background:transparent !important; padding:5px 8px !important; outline:none !important; box-shadow:none !important; color:var(--text); font-size:13.5px; font-family:var(--sans); }
+  .em-quick-btn { background:var(--panel-alt); border:1px solid var(--panel-edge); color:var(--muted); border-radius:999px; font-size:11.5px; font-weight:600; padding:3px 10px; cursor:pointer; box-shadow:none; transform:none; transition:all .15s ease; }
   .em-quick-btn:hover { background:var(--accent-soft); color:var(--accent-dark); border-color:var(--accent); transform:none; }
+  @media (max-width: 760px) {
+    .em-bottom-grid { grid-template-columns: 1fr !important; }
+  }
 </style>
 
 <div>
@@ -216,36 +219,40 @@
 
 <!-- Modal Enviar Informe por Correo (Outlook) -->
 <div class="modal" id="modalCorreo" role="dialog" aria-modal="true" aria-label="Enviar informe por correo">
-  <div class="modal-box" style="width:min(660px, 96vw); max-height:92vh;">
-    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--panel-edge); padding-bottom:10px;">
-      <div style="display:flex; align-items:center; gap:8px;">
-        <span style="font-size:18px;">✉</span>
-        <h3 style="margin:0; font-size:16px;">Enviar informe por correo (Outlook)</h3>
+  <div class="modal-box" style="width:min(900px, 96vw); max-height:94vh; padding:22px 28px; gap:14px; box-shadow:0 24px 60px rgba(0,0,0,0.5); border-radius:16px;">
+    <!-- Header del Modal -->
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--panel-edge); padding-bottom:12px;">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span style="font-size:22px; color:var(--accent);">✉</span>
+        <div>
+          <h3 style="margin:0; font-size:18px; font-weight:700; color:var(--text); letter-spacing:-0.01em;">Enviar informe por correo (Outlook)</h3>
+          <span style="font-size:12px; color:var(--muted);">Envío corporativo directo con PDF adjunto y firma institucional de Jaivaná</span>
+        </div>
       </div>
-      <button type="button" class="iconbtn" id="btnCerrarModalCorreo" style="padding:0; width:28px; height:28px; background:none; border:none; box-shadow:none; font-size:16px; cursor:pointer;" title="Cerrar">✕</button>
+      <button type="button" class="iconbtn" id="btnCerrarModalCorreo" style="padding:0; width:32px; height:32px; background:var(--panel-alt); border:1px solid var(--panel-edge); border-radius:8px; font-size:15px; cursor:pointer; color:var(--muted); display:inline-flex; align-items:center; justify-content:center;" title="Cerrar">✕</button>
     </div>
 
     <!-- Pestañas del Modal -->
     <div class="em-tabs">
-      <button type="button" class="em-tab-btn active" id="tabBtnRedactar">✉ Redactar</button>
-      <button type="button" class="em-tab-btn" id="tabBtnConfig">⚙ Cuenta Outlook</button>
+      <button type="button" class="em-tab-btn active" id="tabBtnRedactar">✉ Redactar Correo</button>
+      <button type="button" class="em-tab-btn" id="tabBtnConfig">⚙ Cuenta y Configuración</button>
     </div>
 
     <!-- Panel 1: Redactar -->
-    <div id="panelRedactar" style="display:flex; flex-direction:column; gap:12px; overflow-y:auto; padding-right:4px;">
+    <div id="panelRedactar" style="display:flex; flex-direction:column; gap:14px; overflow-y:auto; padding-right:4px;">
       <!-- PARA -->
       <div>
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-          <label style="margin:0; font-size:12px; font-weight:700; color:var(--text); letter-spacing:.02em;">PARA (Destinatarios):</label>
-          <span style="font-size:11px; color:var(--muted);">Enter o coma para añadir</span>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+          <label style="margin:0; font-size:12.5px; font-weight:700; color:var(--text); letter-spacing:.02em;">PARA (Destinatarios):</label>
+          <span style="font-size:11.5px; color:var(--muted);">Presiona Enter o coma para añadir</span>
         </div>
         <div class="em-chip-box" id="boxPara">
           <div class="em-chips" id="chipsPara"></div>
-          <input type="email" id="inputPara" placeholder="Escribe un correo o selecciona abajo..." autocomplete="off">
+          <input type="email" id="inputPara" placeholder="Escribe un correo o selecciona de los frecuentes..." autocomplete="off">
         </div>
         <!-- Contactos frecuentes PARA -->
-        <div style="display:flex; align-items:center; gap:5px; flex-wrap:wrap; margin-top:6px;">
-          <span style="font-size:11px; color:var(--muted); font-weight:600;">Frecuentes:</span>
+        <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-top:6px;">
+          <span style="font-size:11.5px; color:var(--muted); font-weight:600;">Sugeridos:</span>
           <button type="button" class="em-quick-btn" data-add-to="para" data-email="jose.caracas@jaivana.co" data-name="José Yoani Caracas Delgado">+ José Yoani Caracas</button>
           <button type="button" class="em-quick-btn" data-add-to="para" data-email="william.arboleda@jaivana.co" data-name="William Arboleda">+ William Arboleda</button>
           <button type="button" class="em-quick-btn" data-add-to="para" data-email="natalia.velasquez@jaivana.co" data-name="Natalia Velasquez">+ Natalia Velasquez</button>
@@ -254,17 +261,17 @@
 
       <!-- CC -->
       <div>
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-          <label style="margin:0; font-size:12px; font-weight:700; color:var(--text); letter-spacing:.02em;">CC (Con copia):</label>
-          <span style="font-size:11px; color:var(--muted);">Opcional</span>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+          <label style="margin:0; font-size:12.5px; font-weight:700; color:var(--text); letter-spacing:.02em;">CC (Con copia):</label>
+          <span style="font-size:11.5px; color:var(--muted);">Opcional</span>
         </div>
         <div class="em-chip-box" id="boxCc">
           <div class="em-chips" id="chipsCc"></div>
           <input type="email" id="inputCc" placeholder="Escribe un correo en copia..." autocomplete="off">
         </div>
         <!-- Contactos frecuentes CC -->
-        <div style="display:flex; align-items:center; gap:5px; flex-wrap:wrap; margin-top:6px;">
-          <span style="font-size:11px; color:var(--muted); font-weight:600;">Frecuentes:</span>
+        <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-top:6px;">
+          <span style="font-size:11.5px; color:var(--muted); font-weight:600;">Sugeridos:</span>
           <button type="button" class="em-quick-btn" data-add-to="cc" data-email="juan.mejia@jaivana.co" data-name="Juan Carlos Mejia">+ Juan Carlos Mejía</button>
           <button type="button" class="em-quick-btn" data-add-to="cc" data-email="julio.molina@jaivana.co" data-name="Julio Molina">+ Julio Molina</button>
         </div>
@@ -272,44 +279,60 @@
 
       <!-- ASUNTO -->
       <div>
-        <label style="margin:0 0 4px; font-size:12px; font-weight:700; color:var(--text); display:block;">ASUNTO:</label>
-        <input type="text" id="emailAsunto" value="INFORME FACTURACION ELECTRONICA" placeholder="Asunto del correo…" style="width:100%; font-size:13px; font-weight:600;">
+        <label style="margin:0 0 5px; font-size:12.5px; font-weight:700; color:var(--text); display:block;">ASUNTO:</label>
+        <input type="text" id="emailAsunto" value="INFORME FACTURACION ELECTRONICA" placeholder="Asunto del correo…" style="width:100%; font-size:13.5px; font-weight:600; padding:9px 12px; border-radius:10px;">
       </div>
 
       <!-- MENSAJE -->
       <div>
-        <label style="margin:0 0 4px; font-size:12px; font-weight:700; color:var(--text); display:block;">MENSAJE:</label>
-        <textarea id="emailMensaje" style="width:100%; height:90px; font-family:var(--sans); font-size:13px; line-height:1.45; resize:vertical;"></textarea>
+        <label style="margin:0 0 5px; font-size:12.5px; font-weight:700; color:var(--text); display:block;">MENSAJE:</label>
+        <textarea id="emailMensaje" style="width:100%; min-height:100px; font-family:var(--sans); font-size:13.5px; line-height:1.5; padding:10px 12px; border-radius:10px; resize:vertical;"></textarea>
       </div>
 
-      <!-- FIRMA PREVIEW -->
-      <div style="background:var(--panel-alt); border:1px solid var(--panel-edge); border-radius:10px; padding:10px 14px; font-size:12.5px;">
-        <div style="color:var(--muted); font-size:11px; text-transform:uppercase; font-weight:700; margin-bottom:4px;">Firma del Correo (Outlook):</div>
-        <div style="font-weight:700; color:var(--text);" id="firmanteNombre">James Grisales</div>
-        <div style="color:var(--muted); font-size:12px;">Analista de Soporte</div>
-        <div style="margin-top:8px; max-width:380px; border-radius:6px; overflow:hidden; border:1px solid rgba(255,255,255,0.08);">
-          <img src="/img/jaivana-signature.png" alt="Jaivaná" style="width:100%; height:auto; display:block;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-          <span style="display:none; color:#fff; font-weight:bold; font-size:14px; letter-spacing:1px; padding:8px 14px;">Jaivaná<span style="color:#ef4444; margin-left:3px;">▲</span></span>
+      <!-- FILA DE ADJUNTO Y FIRMA INSTITUCIONAL (DISTRIBUCIÓN EN 2 COLUMNAS) -->
+      <div class="em-bottom-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:2px;">
+        <!-- COL 1: ADJUNTO AUTOMÁTICO -->
+        <div style="background:var(--panel-alt); border:1px solid var(--panel-edge); border-radius:12px; padding:12px 14px; display:flex; flex-direction:column; justify-content:space-between;">
+          <div>
+            <div style="color:var(--muted); font-size:11px; text-transform:uppercase; font-weight:700; margin-bottom:8px; letter-spacing:0.5px;">Documento Adjunto:</div>
+            <div style="display:flex; align-items:center; gap:10px; background:var(--accent-soft); border:1px solid var(--accent); border-radius:10px; padding:10px 12px;">
+              <span style="font-size:22px;">📄</span>
+              <div style="flex:1; min-width:0;">
+                <div style="font-size:12.5px; font-weight:700; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" id="emailAdjuntoNombre">INFORME_DOCUMENTOS_ELECTRONICOS.pdf</div>
+                <div style="font-size:11px; color:var(--muted);">Generado con membrete y tabla de empresas</div>
+              </div>
+              <span class="chip" style="font-size:11px; font-weight:700; padding:2px 8px;">PDF</span>
+            </div>
+          </div>
+          <div style="font-size:11.5px; color:var(--muted); margin-top:10px; display:flex; align-items:center; gap:6px;">
+            <span style="color:#10b981;">●</span> Envío 100% nativo vía sesión Outlook Windows
+          </div>
         </div>
-      </div>
 
-      <!-- ADJUNTO AUTOMÁTICO -->
-      <div style="display:flex; align-items:center; gap:10px; background:var(--accent-soft); border:1px solid var(--accent); border-radius:10px; padding:8px 12px;">
-        <span style="font-size:18px;">📎</span>
-        <div style="flex:1; min-width:0;">
-          <div style="font-size:12.5px; font-weight:700; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" id="emailAdjuntoNombre">INFORME_DOCUMENTOS_ELECTRONICOS.pdf</div>
-          <div style="font-size:11px; color:var(--muted);">El PDF con membrete y tabla de empresas se genera y adjunta automáticamente</div>
+        <!-- COL 2: FIRMA INSTITUCIONAL JAIVANÁ -->
+        <div style="background:var(--panel-alt); border:1px solid var(--panel-edge); border-radius:12px; padding:12px 14px; display:flex; flex-direction:column; justify-content:space-between;">
+          <div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+              <div style="color:var(--muted); font-size:11px; text-transform:uppercase; font-weight:700; letter-spacing:0.5px;">Firma del Correo (Outlook):</div>
+              <span style="font-size:11px; color:var(--muted);">Banner Oficial</span>
+            </div>
+            <div style="font-weight:700; color:var(--text); font-size:13.5px;" id="firmanteNombre">James Grisales</div>
+            <div style="color:var(--muted); font-size:11.5px; margin-bottom:8px;">Analista de Soporte</div>
+          </div>
+          <div style="border-radius:6px; overflow:hidden; border:1px solid rgba(255,255,255,0.1); background:#333; box-shadow:0 2px 8px rgba(0,0,0,0.25);">
+            <img src="/img/jaivana-signature.png" alt="Jaivaná" style="width:100%; height:auto; display:block;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <span style="display:none; color:#fff; font-weight:bold; font-size:14px; letter-spacing:1px; padding:8px 14px;">Jaivaná<span style="color:#ef4444; margin-left:3px;">▲</span></span>
+          </div>
         </div>
-        <span class="chip" style="font-size:11px;">PDF</span>
       </div>
 
       <!-- ESTADO / ERROR -->
-      <div class="em-err" id="emailErr" style="display:none; color:var(--danger); background:var(--danger-soft); border-radius:8px; padding:8px 12px; font-size:12.5px;"></div>
+      <div class="em-err" id="emailErr" style="display:none; color:var(--danger); background:var(--danger-soft); border-radius:8px; padding:10px 14px; font-size:13px;"></div>
     </div>
 
     <!-- Panel 2: Configuración SMTP -->
-    <div id="panelConfig" style="display:none; flex-direction:column; gap:10px; overflow-y:auto;">
-      <p style="font-size:12.5px; color:var(--muted); margin:0 0 6px;">
+    <div id="panelConfig" style="display:none; flex-direction:column; gap:12px; overflow-y:auto; padding:4px 0;">
+      <p style="font-size:13px; color:var(--muted); margin:0 0 6px;">
         Configura tu cuenta corporativa de Outlook / Microsoft 365. Las credenciales se guardan de forma segura en este navegador.
       </p>
       <label class="campo">
@@ -320,7 +343,7 @@
         <span>Contraseña o Contraseña de Aplicación</span>
         <input type="password" id="smtpPass" placeholder="••••••••••••••••">
       </label>
-      <div style="display:grid; grid-template-columns:2fr 1fr; gap:8px;">
+      <div style="display:grid; grid-template-columns:2fr 1fr; gap:10px;">
         <label class="campo">
           <span>Servidor SMTP</span>
           <input type="text" id="smtpHost" value="smtp.office365.com">
@@ -335,26 +358,26 @@
         <input type="text" id="smtpFromName" value="James Grisales">
       </label>
 
-      <div style="display:flex; gap:8px; align-items:center; margin-top:8px; flex-wrap:wrap;">
+      <div style="display:flex; gap:10px; align-items:center; margin-top:8px; flex-wrap:wrap;">
         <button type="button" class="secondary" id="btnProbarSmtp">🔌 Probar conexión</button>
         <button type="button" id="btnGuardarSmtp">💾 Guardar configuración</button>
-        <span id="smtpStatus" style="font-size:12px; margin-left:auto; font-weight:600;"></span>
+        <span id="smtpStatus" style="font-size:12.5px; margin-left:auto; font-weight:600;"></span>
       </div>
-      <div class="a-hint" style="font-size:11.5px; color:var(--muted); line-height:1.45;">
+      <div class="a-hint" style="font-size:12px; color:var(--muted); line-height:1.5;">
         💡 Si tu empresa utiliza autenticación de dos pasos (MFA / 2FA), genera una <strong>Contraseña de Aplicación</strong> en la sección de seguridad de tu cuenta Microsoft para permitir el envío automático.
       </div>
     </div>
 
     <!-- Footer -->
-    <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--panel-edge); padding-top:12px; margin-top:6px; flex-wrap:wrap; gap:8px;">
-      <div style="display:flex; gap:6px; align-items:center;">
-        <button type="button" class="secondary" id="btnIrAConfig" style="font-size:12px;" title="Ver o editar configuración">⚙ Cuenta</button>
-        <button type="button" class="secondary" id="btnAbrirOutlookApp" style="font-size:12px;" title="Ver borrador en tu aplicación de Outlook antes de enviar">✉ Ver borrador</button>
-        <button type="button" class="secondary" id="btnOutlookWeb" style="font-size:12px;" title="Abrir en el navegador (Outlook Web)">🌐 Web</button>
-      </div>
+    <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--panel-edge); padding-top:14px; margin-top:4px; flex-wrap:wrap; gap:10px;">
       <div style="display:flex; gap:8px; align-items:center;">
-        <button type="button" class="secondary" id="btnCancelarEmail">Cancelar</button>
-        <button type="button" id="btnEnviarEmail" style="font-weight:700; background:linear-gradient(135deg, #0284c7, #0369a1); color:#fff; border:none; box-shadow:0 4px 14px rgba(2,132,199,0.4); padding:8px 18px; font-size:13.5px;" title="Envía el correo directamente desde tu cuenta jgrisales@jaivana.co sin pedir contraseñas">🚀 Enviar directo desde la App</button>
+        <button type="button" class="secondary" id="btnIrAConfig" style="font-size:12.5px; padding:7px 12px;" title="Ver o editar configuración">⚙ Cuenta</button>
+        <button type="button" class="secondary" id="btnAbrirOutlookApp" style="font-size:12.5px; padding:7px 12px;" title="Ver borrador en tu aplicación de Outlook antes de enviar">✉ Ver borrador</button>
+        <button type="button" class="secondary" id="btnOutlookWeb" style="font-size:12.5px; padding:7px 12px;" title="Abrir en el navegador (Outlook Web)">🌐 Web</button>
+      </div>
+      <div style="display:flex; gap:10px; align-items:center;">
+        <button type="button" class="secondary" id="btnCancelarEmail" style="padding:8px 16px;">Cancelar</button>
+        <button type="button" id="btnEnviarEmail" style="font-weight:700; background:linear-gradient(135deg, #0284c7, #0369a1); color:#fff; border:none; box-shadow:0 4px 16px rgba(2,132,199,0.45); padding:10px 22px; font-size:14px; border-radius:10px; cursor:pointer;" title="Envía el correo directamente desde tu cuenta jgrisales@jaivana.co sin pedir contraseñas">🚀 Enviar directo desde la App</button>
       </div>
     </div>
   </div>
