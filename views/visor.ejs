@@ -1534,6 +1534,274 @@ $('bCopiarValor').addEventListener('click', function(){
   if (it && it.valor !== undefined) copiar(String(it.valor), 'Valor copiado');
 });
 
+
+/* ==========================================================================
+   Extractor de Pedidos WMS en Logs / JSON (Streaming de alto rendimiento)
+   ========================================================================== */
+var wmsArchivoSeleccionado = null;
+var wmsUltimosResultados = { pedido: '', rawLines: [], jsonBloques: [] };
+
+var inputWmsFile = $('inputWmsFile');
+var lblWmsFileName = $('lblWmsFileName');
+var inputWmsPedido = $('inputWmsPedido');
+var inputWmsCampo = $('inputWmsCampo');
+var chkWmsExacto = $('chkWmsExacto');
+var chkWmsSoloJson = $('chkWmsSoloJson');
+var btnWmsExtraer = $('btnWmsExtraer');
+var btnWmsDescargarLog = $('btnWmsDescargarLog');
+var btnWmsDescargarJson = $('btnWmsDescargarJson');
+var wmsEstadoChip = $('wmsEstadoChip');
+var wmsProgresoBox = $('wmsProgresoBox');
+var wmsProgresoTxt = $('wmsProgresoTxt');
+var btnToggleWmsCard = $('btnToggleWmsCard');
+var wmsPanelBody = $('wmsPanelBody');
+
+if (btnToggleWmsCard && wmsPanelBody) {
+  btnToggleWmsCard.addEventListener('click', function(){
+    var oculto = wmsPanelBody.style.display === 'none';
+    wmsPanelBody.style.display = oculto ? 'block' : 'none';
+    btnToggleWmsCard.textContent = oculto ? '▲' : '▼';
+  });
+}
+
+if (inputWmsFile) {
+  inputWmsFile.addEventListener('change', function(e){
+    var file = e.target.files && e.target.files[0];
+    if (file) {
+      wmsArchivoSeleccionado = file;
+      var mb = (file.size / (1024 * 1024)).toFixed(1);
+      lblWmsFileName.textContent = file.name + ' (' + mb + ' MB)';
+      wmsEstadoChip.className = 'chip info';
+      wmsEstadoChip.textContent = 'Archivo cargado (' + mb + ' MB)';
+    }
+  });
+}
+
+// Permitir arrastrar archivos directamente sobre la tarjeta del extractor WMS
+var cardWms = $('cardExtractorWms');
+if (cardWms) {
+  ['dragenter', 'dragover'].forEach(function(ev){
+    cardWms.addEventListener(ev, function(e){
+      e.preventDefault();
+      cardWms.style.borderColor = 'var(--accent)';
+      cardWms.style.boxShadow = '0 0 15px var(--accent-soft)';
+    });
+  });
+  ['dragleave', 'drop'].forEach(function(ev){
+    cardWms.addEventListener(ev, function(e){
+      e.preventDefault();
+      cardWms.style.borderColor = '';
+      cardWms.style.boxShadow = '';
+    });
+  });
+  cardWms.addEventListener('drop', function(e){
+    var files = e.dataTransfer && e.dataTransfer.files;
+    if (files && files[0]) {
+      wmsArchivoSeleccionado = files[0];
+      var mb = (wmsArchivoSeleccionado.size / (1024 * 1024)).toFixed(1);
+      lblWmsFileName.textContent = wmsArchivoSeleccionado.name + ' (' + mb + ' MB)';
+      wmsEstadoChip.className = 'chip info';
+      wmsEstadoChip.textContent = 'Archivo cargado (' + mb + ' MB)';
+    }
+  });
+}
+
+if (inputWmsPedido) {
+  inputWmsPedido.addEventListener('keydown', function(e){
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      ejecutarExtraccionWms();
+    }
+  });
+}
+
+if (btnWmsExtraer) {
+  btnWmsExtraer.addEventListener('click', function(){
+    ejecutarExtraccionWms();
+  });
+}
+
+async function ejecutarExtraccionWms() {
+  var pedido = inputWmsPedido.value.trim();
+  var campo = (inputWmsCampo.value || 'numero_pedido').trim();
+  var exacto = chkWmsExacto.checked;
+  var soloJson = chkWmsSoloJson.checked;
+
+  if (!pedido) {
+    alert('Por favor escribe el número de pedido a buscar (ej: 90396).');
+    inputWmsPedido.focus();
+    return;
+  }
+
+  wmsProgresoBox.style.display = 'flex';
+  wmsProgresoTxt.textContent = 'Iniciando escaneo para pedido ' + pedido + '…';
+  btnWmsExtraer.disabled = true;
+
+  try {
+    var regex;
+    if (exacto) {
+      regex = new RegExp('"' + escapeRegExp(campo) + '"\\s*:\\s*"?' + escapeRegExp(pedido) + '"?\\b', 'i');
+    } else {
+      regex = new RegExp(escapeRegExp(pedido), 'i');
+    }
+
+    var tInicio = performance.now();
+    var rawLines = [];
+    var jsonBloques = [];
+    var lineCount = 0;
+
+    if (wmsArchivoSeleccionado) {
+      var file = wmsArchivoSeleccionado;
+      var chunkSize = 4 * 1024 * 1024; // 4MB
+      var offset = 0;
+      var leftover = '';
+
+      while (offset < file.size) {
+        var slice = file.slice(offset, offset + chunkSize);
+        var textChunk = await leerBloqueComoTexto(slice);
+        offset += chunkSize;
+
+        var fullText = leftover + textChunk;
+        var lines = fullText.split(/\r?\n/);
+        leftover = lines.pop();
+
+        for (var i = 0; i < lines.length; i++) {
+          lineCount++;
+          var l = lines[i];
+          if (regex.test(l)) {
+            rawLines.push(l);
+            var parsed = extraerJsonDeLinea(l);
+            if (parsed) jsonBloques.push({ lineNum: lineCount, data: parsed });
+          }
+        }
+
+        var pct = Math.min(100, Math.round((offset / file.size) * 100));
+        wmsProgresoTxt.textContent = 'Analizando ' + pct + '% (' + lineCount.toLocaleString('es-CO') + ' líneas, ' + rawLines.length + ' encontradas)…';
+      }
+
+      if (leftover) {
+        lineCount++;
+        if (regex.test(leftover)) {
+          rawLines.push(leftover);
+          var parsedLast = extraerJsonDeLinea(leftover);
+          if (parsedLast) jsonBloques.push({ lineNum: lineCount, data: parsedLast });
+        }
+      }
+
+    } else {
+      var textoActual = entrada.value;
+      if (!textoActual.trim()) {
+        wmsProgresoBox.style.display = 'none';
+        btnWmsExtraer.disabled = false;
+        alert('Por favor selecciona un archivo .log (o pega contenido en el visor) antes de extraer.');
+        return;
+      }
+      var lineasEntrada = textoActual.split(/\r?\n/);
+      for (var j = 0; j < lineasEntrada.length; j++) {
+        lineCount++;
+        var curLine = lineasEntrada[j];
+        if (regex.test(curLine)) {
+          rawLines.push(curLine);
+          var pCur = extraerJsonDeLinea(curLine);
+          if (pCur) jsonBloques.push({ lineNum: lineCount, data: pCur });
+        }
+      }
+    }
+
+    var duracion = ((performance.now() - tInicio) / 1000).toFixed(2);
+    wmsUltimosResultados = { pedido: pedido, rawLines: rawLines, jsonBloques: jsonBloques };
+
+    if (rawLines.length === 0) {
+      wmsEstadoChip.className = 'chip warn';
+      wmsEstadoChip.textContent = '0 coincidencias (' + duracion + 's)';
+      wmsProgresoBox.style.display = 'none';
+      btnWmsDescargarLog.disabled = true;
+      btnWmsDescargarJson.disabled = true;
+      alert('No se encontraron coincidencias exactas para el pedido [' + pedido + '] en ' + lineCount.toLocaleString('es-CO') + ' líneas analizadas (' + duracion + 's).');
+      return;
+    }
+
+    wmsEstadoChip.className = 'chip ok';
+    wmsEstadoChip.textContent = rawLines.length + ' coincidencia(s) en ' + duracion + 's';
+    btnWmsDescargarLog.disabled = false;
+    btnWmsDescargarJson.disabled = jsonBloques.length === 0;
+
+    if (soloJson && jsonBloques.length > 0) {
+      if (jsonBloques.length === 1) {
+        entrada.value = JSON.stringify(jsonBloques[0].data, null, 2);
+      } else {
+        entrada.value = JSON.stringify(jsonBloques.map(function(item){ return item.data; }), null, 2);
+      }
+    } else {
+      entrada.value = rawLines.join('\n');
+    }
+
+    procesar();
+
+    wmsProgresoTxt.textContent = '¡Listo! ' + rawLines.length + ' coincidencia(s) extraída(s) con éxito en ' + duracion + 's.';
+    setTimeout(function(){ wmsProgresoBox.style.display = 'none'; }, 4000);
+
+  } catch(err) {
+    console.error('Error al extraer pedido:', err);
+    alert('Ocurrió un error al procesar el archivo: ' + err.message);
+    wmsProgresoBox.style.display = 'none';
+  } finally {
+    btnWmsExtraer.disabled = false;
+  }
+}
+
+function leerBloqueComoTexto(blob) {
+  return new Promise(function(resolve, reject){
+    var fr = new FileReader();
+    fr.onload = function(){ resolve(fr.result); };
+    fr.onerror = function(){ reject(fr.error); };
+    fr.readAsText(blob, 'utf-8');
+  });
+}
+
+function extraerJsonDeLinea(linea) {
+  var start = linea.indexOf('{');
+  var end = linea.lastIndexOf('}');
+  if (start !== -1 && end > start) {
+    try {
+      return JSON.parse(linea.slice(start, end + 1));
+    } catch(e) {
+      return null;
+    }
+  }
+  return null;
+}
+
+if (btnWmsDescargarLog) {
+  btnWmsDescargarLog.addEventListener('click', function(){
+    if (!wmsUltimosResultados.rawLines || wmsUltimosResultados.rawLines.length === 0) return;
+    var contenido = wmsUltimosResultados.rawLines.join('\n');
+    var blob = new Blob([contenido], { type: 'text/plain;charset=utf-8' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'pedido_filtrado_' + (wmsUltimosResultados.pedido || 'log') + '.log';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(a.href); }, 2000);
+  });
+}
+
+if (btnWmsDescargarJson) {
+  btnWmsDescargarJson.addEventListener('click', function(){
+    if (!wmsUltimosResultados.jsonBloques || wmsUltimosResultados.jsonBloques.length === 0) return;
+    var data = wmsUltimosResultados.jsonBloques.length === 1 
+      ? wmsUltimosResultados.jsonBloques[0].data 
+      : wmsUltimosResultados.jsonBloques.map(function(item){ return item.data; });
+    var contenido = JSON.stringify(data, null, 2);
+    var blob = new Blob([contenido], { type: 'application/json;charset=utf-8' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'pedido_filtrado_' + (wmsUltimosResultados.pedido || 'datos') + '.json';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(a.href); }, 2000);
+  });
+}
+
+
 // Para pruebas / uso avanzado
 window.__visor = { analizar: analizar, procesar: procesar, fijarModo: fijarModo, mostrarVista: mostrarVista, get estado(){ return estado; } };
 })();
