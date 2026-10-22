@@ -2083,7 +2083,7 @@ app.post("/informe/enviar-email", requireLogin, express.json({ limit: "1mb" }), 
       });
       return res.json({ ok: true, mensaje: "Informe enviado exitosamente desde tu cuenta de Outlook." });
     } catch (mapiErr) {
-      console.warn("MAPI COM directo no disponible en este equipo, preparando envío universal vía Outlook:", mapiErr.message);
+      console.log("ℹ️ MAPI COM directo no disponible en este equipo (" + (mapiErr.message || 'New Outlook') + "). Preparando envío mediante aplicación Outlook...");
 
       const MailComposer = require("nodemailer/lib/mail-composer");
       const fs = require("fs");

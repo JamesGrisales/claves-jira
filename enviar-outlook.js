@@ -57,7 +57,59 @@ function enviarViaOutlookMapi({ to, cc, asunto, mensajeHtml, tecnico, cargo, pdf
         $ErrorActionPreference = "Stop"
         try {
           $data = Get-Content -Raw -Path "${jsonFile.replace(/\\/g, "\\\\")}" -Encoding UTF8 | ConvertFrom-Json
-          $outlook = New-Object -ComObject Outlook.Application
+          
+          # Estrategia 1: ProgID estándar de Outlook
+          $outlook = $null
+          try { $outlook = New-Object -ComObject Outlook.Application } catch {}
+
+          # Estrategia 2: Por CLSID oficial inmutable {0006F03A-0000-0000-C000-000000000046}
+          if (-not $outlook) {
+            try {
+              $t = [Type]::GetTypeFromCLSID([Guid]'0006F03A-0000-0000-C000-000000000046')
+              if ($t) { $outlook = [Activator]::CreateInstance($t) }
+            } catch {}
+          }
+
+          # Estrategia 3: Conectar a instancia activa en memoria si Outlook ya está abierto
+          if (-not $outlook) {
+            try { $outlook = [System.Runtime.InteropServices.Marshal]::GetActiveObject("Outlook.Application") } catch {}
+          }
+
+          # Estrategia 4: Buscar OUTLOOK.EXE en disco, iniciarlo y conectar
+          if (-not $outlook) {
+            try {
+              $cand = @(
+                (Get-ItemProperty -Path 'HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\OUTLOOK.EXE' -ErrorAction SilentlyContinue).'(default)',
+                "C:\\Program Files\\Microsoft Office\\root\\Office16\\OUTLOOK.EXE",
+                "C:\\Program Files (x86)\\Microsoft Office\\root\\Office16\\OUTLOOK.EXE",
+                "C:\\Program Files\\Microsoft Office\\Office16\\OUTLOOK.EXE",
+                "C:\\Program Files (x86)\\Microsoft Office\\Office16\\OUTLOOK.EXE",
+                "C:\\Program Files\\Microsoft Office\\Office15\\OUTLOOK.EXE",
+                "C:\\Program Files (x86)\\Microsoft Office\\Office15\\OUTLOOK.EXE"
+              )
+              $exePath = $null
+              foreach ($c in $cand) {
+                if ($c -and (Test-Path $c)) { $exePath = $c; break }
+              }
+              if ($exePath) {
+                if (-not (Get-Process -Name "OUTLOOK" -ErrorAction SilentlyContinue)) {
+                  Start-Process -FilePath $exePath -ArgumentList "/recycle" -WindowStyle Minimized
+                  Start-Sleep -Milliseconds 1500
+                }
+                try { $outlook = [System.Runtime.InteropServices.Marshal]::GetActiveObject("Outlook.Application") } catch {}
+                if (-not $outlook) {
+                  $t = [Type]::GetTypeFromCLSID([Guid]'0006F03A-0000-0000-C000-000000000046')
+                  if ($t) { $outlook = [Activator]::CreateInstance($t) }
+                }
+                if (-not $outlook) { $outlook = New-Object -ComObject Outlook.Application }
+              }
+            } catch {}
+          }
+
+          if (-not $outlook) {
+            throw "No se pudo conectar con Outlook Classic COM (REGDB_E_CLASSNOTREG)"
+          }
+
           $mail = $outlook.CreateItem(0)
           
           if ($data.to) { $mail.To = $data.to }
@@ -139,21 +191,38 @@ function enviarViaOutlookMapi({ to, cc, asunto, mensajeHtml, tecnico, cargo, pdf
  */
 function verificarOutlookMapi() {
   return new Promise((resolve) => {
-    const psCmd = `powershell -ExecutionPolicy Bypass -Command "try { $o = New-Object -ComObject Outlook.Application; Write-Output ('OUTLOOK_VERSION=' + $o.Version) } catch { try { $p = Start-Process 'C:\Windows\SysWOW64\WindowsPowerShell\v1.0\powershell.exe' -ArgumentList '-Command \"$o = New-Object -ComObject Outlook.Application; Write-Output (\'OUTLOOK_VERSION=\' + $o.Version)\"' -Wait -NoNewWindow -PassThru; } catch {} Write-Output 'NO_OUTLOOK' }"`;
-    exec(psCmd, { encoding: "utf8", timeout: 6000 }, (err, stdout) => {
+    const psCmd = `powershell -ExecutionPolicy Bypass -Command "
+      $o = $null
+      try { $o = New-Object -ComObject Outlook.Application } catch {}
+      if (-not $o) {
+        try {
+          $t = [Type]::GetTypeFromCLSID([Guid]'0006F03A-0000-0000-C000-000000000046')
+          if ($t) { $o = [Activator]::CreateInstance($t) }
+        } catch {}
+      }
+      if (-not $o) {
+        try { $o = [System.Runtime.InteropServices.Marshal]::GetActiveObject('Outlook.Application') } catch {}
+      }
+      if ($o) {
+        Write-Output ('OUTLOOK_VERSION=' + $o.Version)
+      } else {
+        if (Get-Process olk -ErrorAction SilentlyContinue) {
+          Write-Output 'OUTLOOK_NEW_APP'
+        } else {
+          Write-Output 'NO_OUTLOOK'
+        }
+      }
+    "`;
+    exec(psCmd, { encoding: "utf8", timeout: 7000 }, (err, stdout) => {
       const out = (stdout || "").trim();
       if (out.includes("OUTLOOK_VERSION=")) {
         const ver = out.split("OUTLOOK_VERSION=")[1].trim();
-        return resolve({ disponible: true, version: ver });
+        return resolve({ disponible: true, version: ver, esClassic: true });
       }
-      // Verificar si tiene New Outlook o app moderna instalada
-      exec('powershell -ExecutionPolicy Bypass -Command "if (Get-Process olk -ErrorAction SilentlyContinue) { Write-Output \"NEW_OUTLOOK\" } else { Write-Output \"NO_PROCESS\" }"', { encoding: "utf8", timeout: 4000 }, (e2, s2) => {
-        const o2 = (s2 || "").trim();
-        if (o2.includes("NEW_OUTLOOK")) {
-          return resolve({ disponible: true, version: "New Outlook (App)", esNewOutlook: true });
-        }
-        resolve({ disponible: false, version: null });
-      });
+      if (out.includes("OUTLOOK_NEW_APP")) {
+        return resolve({ disponible: true, version: "New Outlook (App)", esNewOutlook: true });
+      }
+      resolve({ disponible: false, version: null });
     });
   });
 }
