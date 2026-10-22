@@ -8,33 +8,80 @@
       radial-gradient(at 50% 0%, rgba(10, 18, 38, 0.7) 0%, transparent 80%),
       url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='97.005' viewBox='0 0 56 97.005'%3E%3Cpath d='M28 0l28 16.168v32.335L28 64.67 0 48.503V16.168L28 0zm0 97.005l28-16.168V48.502L28 32.335 0 48.502v32.335l28 16.168z' fill='none' stroke='rgba(0,245,255,0.045)' stroke-width='1'/%3E%3C/svg%3E") !important;
     background-attachment: fixed;
-    height: 100vh;
-    height: 100dvh;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: stretch;
-    padding: 0;
-    box-sizing: border-box;
-    overflow: hidden;
+    height: 100vh !important;
+    height: 100dvh !important;
+    width: 100vw !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    position: relative !important;
+    box-sizing: border-box !important;
     font-family: var(--sans);
-    --planet-accent: #ff3b30;
+    --planet-accent: #00f5ff;
   }
 
   :root[data-theme="oled"] body.guest {
     background-color: #000000 !important;
   }
 
-  /* Contenedor a pantalla completa 100% */
+  /* Barra superior flotante de invitado: NO empuja la pantalla */
+  body.guest .navbar {
+    position: absolute !important;
+    top: 14px !important;
+    left: 24px !important;
+    z-index: 80 !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+  }
+
+  /* Wrap abarca el 100% de la ventana sin crear barras ni empujar */
+  body.guest .wrap {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    max-width: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+  }
+
+  /* Alerta flash tipo toast flotante superior centrado */
+  body.guest .flash {
+    position: absolute !important;
+    top: 20px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    z-index: 150 !important;
+    max-width: 520px !important;
+    width: 90% !important;
+    margin: 0 !important;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.9), 0 0 20px rgba(239, 68, 68, 0.4) !important;
+    animation: flashToastIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  }
+  @keyframes flashToastIn {
+    from { opacity: 0; transform: translate(-50%, -12px); }
+    to { opacity: 1; transform: translate(-50%, 0); }
+  }
+
+  /* Contenedor a pantalla completa fija y absoluta */
   .cyber-split-screen {
-    display: grid;
-    grid-template-columns: 1.15fr 0.85fr;
-    width: 100vw;
-    height: 100vh;
-    height: 100dvh;
-    position: relative;
-    overflow: hidden;
-    box-sizing: border-box;
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    display: grid !important;
+    grid-template-columns: 1.15fr 0.85fr !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
   }
 
   /* Lienzo 3D en toda la pantalla */
@@ -222,29 +269,31 @@
 
   /* --- SELECTOR DE MOTORES, EDITORES Y LENGUAJES (DOCK HORIZONTAL INFERIOR) --- */
   .hud-engine-switcher {
-    position: absolute;
-    bottom: 12px;
-    left: 20px;
-    right: 20px;
-    max-width: calc(100% - 40px);
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    z-index: 50;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    overflow-y: hidden;
-    scrollbar-width: none;
-    padding: 6px 10px;
-    background: rgba(6, 12, 24, 0.88);
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    border-radius: 14px;
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.85), 0 0 20px rgba(var(--accent-rgb, 0, 245, 255), 0.2);
-    pointer-events: auto;
+    position: absolute !important;
+    bottom: 12px !important;
+    left: 20px !important;
+    right: 20px !important;
+    max-width: calc(100% - 40px) !important;
+    height: 44px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    z-index: 100 !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    scrollbar-width: none !important;
+    padding: 0 10px !important;
+    background: rgba(6, 12, 24, 0.92) !important;
+    border: 1px solid rgba(var(--accent-rgb, 0, 245, 255), 0.35) !important;
+    border-radius: 12px !important;
+    backdrop-filter: blur(24px) !important;
+    -webkit-backdrop-filter: blur(24px) !important;
+    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.92), 0 0 20px rgba(var(--accent-rgb, 0, 245, 255), 0.22) !important;
+    pointer-events: auto !important;
+    box-sizing: border-box !important;
   }
-  .hud-engine-switcher::-webkit-scrollbar { display: none; }
+  .hud-engine-switcher::-webkit-scrollbar { display: none !important; }
 
   .eng-category-pill {
     font-family: var(--mono);
@@ -758,23 +807,23 @@
 
   /* --- TERMINAL HOLOGRÁFICO PL/SQL EN VIVO --- */
   .hud-plsql-terminal {
-    position: absolute;
-    bottom: 78px;
-    left: 48px;
-    right: 32px;
-    max-width: 650px;
-    height: 250px;
-    background: rgba(4, 9, 20, 0.78);
-    border: 1px solid var(--planet-accent, rgba(0, 245, 255, 0.35));
-    box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.85), 0 0 24px var(--planet-accent, rgba(0, 245, 255, 0.2));
-    border-radius: 12px;
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    z-index: 12;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    pointer-events: auto;
+    position: absolute !important;
+    bottom: 64px !important;
+    left: 20px !important;
+    right: 32px !important;
+    max-width: min(650px, 48vw) !important;
+    height: min(180px, 24vh) !important;
+    background: rgba(4, 9, 20, 0.85) !important;
+    border: 1px solid var(--planet-accent, rgba(0, 245, 255, 0.35)) !important;
+    box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.85), 0 0 24px var(--planet-accent, rgba(0, 245, 255, 0.2)) !important;
+    border-radius: 12px !important;
+    backdrop-filter: blur(14px) !important;
+    -webkit-backdrop-filter: blur(14px) !important;
+    z-index: 12 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+    pointer-events: auto !important;
     transition: border-color 0.35s ease, box-shadow 0.35s ease, opacity 0.4s ease;
   }
   .hud-term-header {
@@ -1092,6 +1141,10 @@
       <button type="button" class="engine-tab" data-engine="javascript" title="JavaScript / Node.js 24: V8 Event Loop">
         <span class="eng-icon">🟨</span> <span class="eng-txt">JAVASCRIPT</span>
       </button>
+      <button type="button" class="engine-tab" data-engine="java" title="Java 21 LTS: Virtual Threads & Spring Security Matrix">
+        <span class="eng-icon">☕</span> <span class="eng-txt">JAVA</span>
+      </button>
+
       <button type="button" class="engine-tab" data-engine="rust" title="Rust 2024: Memory-Safe Zero-Cost Engine">
         <span class="eng-icon">🦀</span> <span class="eng-txt">RUST</span>
       </button>
@@ -1117,9 +1170,9 @@
           </div>
           <h2>ACCESO AL SISTEMA</h2>
         </div>
-        <div class="auth-planet-badges">
-          <span style="font-size: 15px; opacity: 0.7;" title="Planeta Tierra">🌐</span>
-          <span class="mini-planet-badge" id="miniPlanetBadge" title="Planeta activo"></span>
+        <div class="auth-engine-badge" id="authEngineBadge" title="Motor / Entorno Activo">
+          <span class="aeb-icon" id="aebIcon">🐘</span>
+          <span class="aeb-txt" id="aebTxt">POSTGRESQL</span>
         </div>
       </div>
 
@@ -1694,6 +1747,44 @@
         "    return {'authorized': True, 'token': token_digest, 'pool': 'worker_pool_0'}"
       ]
     },
+        java: {
+      id: 'java',
+      name: 'JAVA',
+      fullName: 'JAVA 21 LTS · VIRTUAL THREADS & SPRING SECURITY',
+      icon: '☕',
+      image: '/login-themes/theme_java.jpg',
+      accent: '#ea580c',
+      accentRgb: '234, 88, 12',
+      glow: 'rgba(234, 88, 12, 0.35)',
+      chip: 'JAVA 21 JVM VTHREADS',
+      iops: '1,650,000 IOPS',
+      latency: '0.003 ms',
+      code: [
+        "// [JAVA 21 LTS · VIRTUAL THREADS CONCURRENCY MATRIX]",
+        "package com.jira.vault.security;",
+        "",
+        "import java.security.MessageDigest;",
+        "import java.time.Instant;",
+        "import org.springframework.stereotype.Service;",
+        "",
+        "@Service",
+        "public class VaultAuthenticationService {",
+        "    public record AuthTicket(String clusterNode, boolean verified, long latencyNs) {}",
+        "",
+        "    public AuthTicket authenticateCluster(byte[] tokenHash, String clientIp) {",
+        "        try (var executor = java.util.concurrent.Executors.newVirtualThreadPerTaskExecutor()) {",
+        "            return executor.submit(() -> {",
+        "                long start = System.nanoTime();",
+        "                byte[] digest = MessageDigest.getInstance(\"SHA-256\").digest(tokenHash);",
+        "                return new AuthTicket(\"jvm-core-primary\", true, System.nanoTime() - start);",
+        "            }).get();",
+        "        } catch (Exception ex) {",
+        "            throw new SecurityException(\"Auth verification failure\", ex);",
+        "        }",
+        "    }",
+        "}"
+      ]
+    },
     javascript: {
       id: 'javascript',
       name: 'JAVASCRIPT',
@@ -1824,7 +1915,7 @@
     }
     var s = escapeHtml(line);
     s = s.replace(/(['"`][^'"`]*['"`])/g, '<span class="plsql-str">$1</span>');
-    var kwRegex = /\b(CREATE|OR|REPLACE|PACKAGE|BODY|PROCEDURE|FUNCTION|RETURNS|TABLE|DECLARE|BEGIN|END|IS|AS|IF|THEN|OPEN|FETCH|CLOSE|INTO|CURSOR|SELECT|INSERT|FROM|WHERE|FOR|UPDATE|COMMIT|RETURN|QUERY|LANGUAGE|SET|TRANSACTION|OUTPUT|NOCOUNT|WITH|ROWLOCK|UPDLOCK|HOLDLOCK|import|export|from|async|await|const|let|var|function|def|class|pub|fn|impl|struct|type|package|return|match|MERGE|MATCH|KEYSPACE|PRAGMA)\b/gi;
+    var kwRegex = /\b(CREATE|OR|REPLACE|PACKAGE|BODY|PROCEDURE|FUNCTION|RETURNS|TABLE|DECLARE|BEGIN|END|IS|AS|IF|THEN|OPEN|FETCH|CLOSE|INTO|CURSOR|SELECT|INSERT|FROM|WHERE|FOR|UPDATE|COMMIT|RETURN|QUERY|LANGUAGE|SET|TRANSACTION|OUTPUT|NOCOUNT|WITH|ROWLOCK|UPDLOCK|HOLDLOCK|import|export|from|async|await|const|let|var|function|def|class|pub|fn|impl|struct|type|package|return|match|record|public|private|protected|static|final|new|try|catch|throw|throws|MERGE|MATCH|KEYSPACE|PRAGMA)\b/gi;
     s = s.replace(kwRegex, '<span class="plsql-kw">$1</span>');
     var typeRegex = /\b(VARCHAR2|VARCHAR|NUMBER|BOOLEAN|RAW|BYTEA|INT|INTEGER|INET|TEXT|BIT|NVARCHAR|VARBINARY|MAX|SYSUTCDATETIME|ROWTYPE|UUID|BLOB|TIMESTAMP|Result|Option|String|Arc|RwLock|Duration|Response|Request)\b/gi;
     s = s.replace(typeRegex, '<span class="plsql-type">$1</span>');
@@ -1994,7 +2085,7 @@
   var engineKeys = [
     'postgres', 'oracle', 'sqlserver', 'mysql', 'mongodb', 'redis', 'sqlite', 'cassandra', 'neo4j',
     'vscode', 'neovim',
-    'python', 'javascript', 'rust', 'golang'
+    'python', 'javascript', 'java', 'rust', 'golang'
   ];
 
   function rotarSiguiente() {
