@@ -123,6 +123,18 @@
   .code-line.json-block-dimmed:hover{ opacity:0.95; filter:none; }
   .code-line.cur-line{ outline:2px solid #ffd54a !important; outline-offset:-2px; background:rgba(255,213,74,0.22) !important; }
   .code-line.cur-line .ln{ color:#ffd54a !important; font-weight:700; }
+
+  /* Estilos del Extractor de Pedidos WMS */
+  .wms-extractor-card { background:linear-gradient(180deg, var(--panel) 0%, var(--panel-alt) 100%); border:1px solid var(--accent); border-radius:14px; padding:16px 20px; margin-bottom:16px; box-shadow:0 8px 25px rgba(0,0,0,0.25); }
+  .wms-grid { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-top:12px; background:rgba(0,0,0,0.2); padding:12px 14px; border-radius:10px; border:1px solid var(--panel-edge); }
+  .wms-input-num { width:135px; font-weight:800; font-family:var(--mono); font-size:14px; color:#38bdf8 !important; background:var(--panel) !important; border:1px solid var(--panel-edge) !important; padding:7px 10px !important; border-radius:8px !important; outline:none; }
+  .wms-input-num:focus { border-color:var(--accent) !important; box-shadow:0 0 0 3px var(--accent-soft) !important; }
+  .wms-input-field { width:130px; font-size:12.5px; font-family:var(--mono); color:var(--text) !important; background:var(--panel) !important; border:1px solid var(--panel-edge) !important; padding:7px 10px !important; border-radius:8px !important; outline:none; }
+  .wms-input-field:focus { border-color:var(--accent) !important; box-shadow:0 0 0 3px var(--accent-soft) !important; }
+  .wms-btn-extract { font-weight:700; background:linear-gradient(135deg, #0284c7, #0369a1); color:#fff; border:none; padding:8px 18px; border-radius:8px; cursor:pointer; font-size:13px; display:inline-flex; align-items:center; gap:6px; box-shadow:0 2px 10px rgba(2,132,199,0.35); transition:all .15s ease; }
+  .wms-btn-extract:hover { transform:translateY(-1px); box-shadow:0 4px 14px rgba(2,132,199,0.5); }
+  .wms-tag { font-size:11px; padding:2px 8px; border-radius:999px; background:rgba(56,189,248,0.15); color:#38bdf8; font-weight:700; }
+  
 </style>
 
 <div class="top">
@@ -134,6 +146,77 @@
 </div>
 <p class="sub">Pega aquí un XML o un JSON (o abre / arrastra un archivo) y se muestra formateado, validado y con colores. Todo se procesa en tu navegador: no se guarda ni se envía nada.</p>
 
+
+<!-- Extractor de Pedidos WMS en Logs / JSON -->
+<div class="card wms-extractor-card" id="cardExtractorWms">
+  <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+    <div style="display:flex; align-items:center; gap:10px;">
+      <span style="font-size:22px;">📦</span>
+      <div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <strong style="font-size:15px; color:var(--text); letter-spacing:-0.01em;">Extractor de Pedidos WMS en Logs / JSON</strong>
+          <span class="wms-tag">Filtro Exacto</span>
+        </div>
+        <span style="font-size:12px; color:var(--muted); display:block;">Busca archivos grandes (.log de 90+ MB) y extrae únicamente la estructura JSON del pedido deseado sin falsos positivos.</span>
+      </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:8px;">
+      <span class="chip info" id="wmsEstadoChip" style="font-size:11.5px;">Listo para filtrar</span>
+      <button type="button" class="secondary" id="btnToggleWmsCard" style="padding:4px 9px; font-size:12px;" title="Minimizar panel">▲</button>
+    </div>
+  </div>
+
+  <div id="wmsPanelBody">
+    <div class="wms-grid">
+      <!-- Selector de archivo Log -->
+      <div>
+        <label class="btn secondary" for="inputWmsFile" style="display:inline-flex; align-items:center; gap:6px; font-size:12.5px; padding:7px 14px; cursor:pointer; font-weight:700; margin:0;" title="Selecciona tu archivo .log (ej: pmv_ferricentro_wms.log)">
+          <span>📁</span> <span id="lblWmsFileName">Elegir archivo .log / .txt</span>
+        </label>
+        <input type="file" id="inputWmsFile" accept=".log,.txt,.json,.out" style="display:none;">
+      </div>
+
+      <!-- Inputs de Pedido y Campo -->
+      <div style="display:inline-flex; align-items:center; gap:6px;">
+        <label for="inputWmsPedido" style="font-size:12px; font-weight:700; color:var(--text); white-space:nowrap;">N° Pedido:</label>
+        <input type="text" id="inputWmsPedido" class="wms-input-num" placeholder="Ej: 90396" autocomplete="off">
+      </div>
+
+      <div style="display:inline-flex; align-items:center; gap:6px;">
+        <label for="inputWmsCampo" style="font-size:12px; color:var(--muted); white-space:nowrap;">Campo:</label>
+        <input type="text" id="inputWmsCampo" class="wms-input-field" value="numero_pedido" title="Nombre del atributo en el JSON">
+      </div>
+
+      <label class="chk chk-highlight" style="font-size:12px; cursor:pointer;" title="Busca coincidencia exacta con límites de palabra para evitar que 90396 coincida con 990396 o códigos de barras">
+        <input type="checkbox" id="chkWmsExacto" checked> <b>Exacto</b>
+      </label>
+
+      <label class="chk" style="font-size:12px; cursor:pointer;" title="Extrae el bloque JSON formateado limpio en el editor">
+        <input type="checkbox" id="chkWmsSoloJson" checked> Formatear JSON
+      </label>
+
+      <!-- Botones de Acción -->
+      <div style="display:flex; gap:8px; align-items:center; margin-left:auto; flex-wrap:wrap;">
+        <button type="button" class="wms-btn-extract" id="btnWmsExtraer" title="Escanear archivo y extraer la estructura JSON">
+          <span>🔍</span> Extraer
+        </button>
+        <button type="button" class="secondary" id="btnWmsDescargarLog" style="font-size:12px; padding:7px 12px;" disabled title="Descargar como archivo de log">
+          ⬇ Descargar .log
+        </button>
+        <button type="button" class="secondary" id="btnWmsDescargarJson" style="font-size:12px; padding:7px 12px;" disabled title="Descargar como archivo JSON estructurado">
+          ⬇ Descargar .json
+        </button>
+      </div>
+    </div>
+
+    <!-- Barra de progreso / resultado -->
+    <div id="wmsProgresoBox" style="display:none; align-items:center; gap:10px; margin-top:10px; font-size:12.5px; padding:8px 12px; border-radius:8px; background:rgba(2,132,199,0.1); border:1px solid rgba(2,132,199,0.3); color:#38bdf8;">
+      <span class="spinner" style="display:inline-block; width:13px; height:13px; border:2px solid #38bdf8; border-top-color:transparent; border-radius:50%; animation:spin 0.8s linear infinite;"></span>
+      <span id="wmsProgresoTxt">Analizando archivo...</span>
+    </div>
+  </div>
+</div>
+
 <div class="card" style="padding:18px;">
  <div class="ed-wrap" id="edEntrada">
   <div class="v-toolbar">
@@ -144,7 +227,7 @@
     </div>
     <span class="sp"></span>
     <label class="btn secondary" for="archivo">⬆ Abrir archivo</label>
-    <input type="file" id="archivo" accept=".xml,.json,.txt,.xsd,.xsl,.xslt,.svg,.config,.csproj,.wsdl,.html" style="display:none;">
+    <input type="file" id="archivo" accept=".log,.xml,.json,.txt,.xsd,.xsl,.xslt,.svg,.config,.csproj,.wsdl,.html" style="display:none;">
     <button type="button" class="secondary" id="btnMinificar" title="Quita todos los espacios (Minificar) para un curl o db">Minificar</button>
     <button type="button" class="secondary" id="btnAmpliarEntrada" title="Pantalla completa (Esc para salir)">⤢ Ampliar</button>
     <button type="button" class="secondary" id="btnLimpiar">Limpiar</button>
