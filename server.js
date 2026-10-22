@@ -2068,7 +2068,7 @@ app.post("/informe/enviar-email", requireLogin, express.json({ limit: "1mb" }), 
     const tecnicoNombre = tecnico || (reporte && reporte.tecnico) || "John James Grisales";
     const cargoNombre = cargo || "Analista de Soporte";
 
-    // Envío directo transparente a través de Outlook MAPI de Windows (sin pedir contraseñas ni 2FA)
+    // 1. Envío directo transparente a través de Outlook de Windows (detecta 64-bit y 32-bit automáticamente)
     const { enviarViaOutlookMapi } = require("./enviar-outlook");
     try {
       await enviarViaOutlookMapi({
@@ -2083,90 +2083,69 @@ app.post("/informe/enviar-email", requireLogin, express.json({ limit: "1mb" }), 
       });
       return res.json({ ok: true, mensaje: "Informe enviado exitosamente desde tu cuenta de Outlook." });
     } catch (mapiErr) {
-      console.log("ℹ️ MAPI COM directo no disponible en este equipo (" + (mapiErr.message || 'New Outlook') + "). Preparando envío mediante aplicación Outlook...");
+      console.log("ℹ️ MAPI directo no completó (" + (mapiErr.message || 'Error MAPI') + "). Verificando alternativas...");
 
-      const MailComposer = require("nodemailer/lib/mail-composer");
-      const fs = require("fs");
+      // 2. Si el usuario configuró SMTP en la pestaña Cuenta, intentar envío SMTP
+      const nodemailer = require("nodemailer");
       const path = require("path");
-      const os = require("os");
-      const { exec } = require("child_process");
+      const fs = require("fs");
+      const smtpUser = (clientSmtp && clientSmtp.user) || process.env.OUTLOOK_USER;
+      const smtpPass = (clientSmtp && clientSmtp.pass) || process.env.OUTLOOK_PASS;
 
-      const logoPath = path.join(__dirname, "assets", "jaivana-signature.png");
-      const attachments = [
-        {
-          filename: filename || `INFORME_DOCUMENTOS_ELECTRONICOS_${new Date().toISOString().slice(0,10)}.pdf`,
-          content: buffer,
-          contentType: "application/pdf"
+      if (smtpUser && smtpPass) {
+        try {
+          const transporter = nodemailer.createTransport({
+            host: (clientSmtp && clientSmtp.host) || process.env.OUTLOOK_HOST || "smtp.office365.com",
+            port: Number((clientSmtp && clientSmtp.port) || 587),
+            secure: false,
+            auth: { user: smtpUser, pass: smtpPass },
+            tls: { ciphers: "SSLv3" }
+          });
+
+          const attachments = [
+            {
+              filename: filename || `INFORME_${new Date().toISOString().slice(0,10)}.pdf`,
+              content: buffer,
+              contentType: "application/pdf"
+            }
+          ];
+
+          const logoPath = path.join(__dirname, "assets", "jaivana-signature.png");
+          if (fs.existsSync(logoPath)) {
+            attachments.push({ filename: "jaivana-logo.png", path: logoPath, cid: "jaivana_signature_img" });
+          }
+
+          const htmlCompleto = `
+            <div style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 14.5px; color: #1e293b; line-height: 1.6; max-width: 650px;">
+              <div>${cuerpoHtml}</div>
+              <br>
+              <div style="margin-top: 20px; border-top: 1px solid #e2e8f0; padding-top: 14px; font-size: 13.5px; color: #334155;">
+                <strong style="font-size: 15px; color: #0f172a;">${tecnicoNombre}</strong><br>
+                <span style="color: #64748b;">${cargoNombre}</span><br>
+                <div style="margin-top:12px; max-width:560px;"><img src="cid:jaivana_signature_img" alt="Jaivaná" width="560" style="width:100%; max-width:560px; height:auto; display:block; border:0;" /></div>
+              </div>
+            </div>
+          `;
+
+          await transporter.sendMail({
+            from: `"${tecnicoNombre}" <${smtpUser}>`,
+            to: Array.isArray(to) ? to.join("; ") : to,
+            cc: cc ? (Array.isArray(cc) ? cc.join("; ") : cc) : undefined,
+            subject: asunto || `INFORME FACTURACION ELECTRONICA - ${new Date().toLocaleDateString("es-CO")}`,
+            html: htmlCompleto,
+            attachments
+          });
+
+          return res.json({ ok: true, mensaje: "Informe enviado exitosamente mediante conexión SMTP." });
+        } catch (smtpErr) {
+          console.error("Error al enviar vía SMTP:", smtpErr.message);
         }
-      ];
-
-      let logoTag = "";
-      if (fs.existsSync(logoPath)) {
-        attachments.push({
-          filename: "jaivana-logo.png",
-          path: logoPath,
-          cid: "jaivana_signature_img"
-        });
-        logoTag = `<div style="margin-top:12px; max-width:560px;"><img src="cid:jaivana_signature_img" alt="Jaivaná" width="560" style="width:100%; max-width:560px; height:auto; display:block; border:0;" /></div>`;
-      } else {
-        logoTag = `<div style="background:#2b2b2b; display:inline-block; padding:10px 24px; border-radius:8px; margin-top:12px; color:#ffffff; font-weight:bold; font-size:22px; font-family:sans-serif;">
-          Jaivaná<span style="color:#e11d48; margin-left:4px;">▲</span>
-        </div>`;
       }
 
-      const htmlCompleto = `
-        <div style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 14.5px; color: #1e293b; line-height: 1.6; max-width: 650px;">
-          <div>${cuerpoHtml}</div>
-          <br>
-          <div style="margin-top: 20px; border-top: 1px solid #e2e8f0; padding-top: 14px; font-size: 13.5px; color: #334155;">
-            <strong style="font-size: 15px; color: #0f172a;">${tecnicoNombre}</strong><br>
-            <span style="color: #64748b;">${cargoNombre}</span><br>
-            ${logoTag}
-          </div>
-        </div>
-      `;
-
-      const toList = Array.isArray(to) ? to.join("; ") : to;
-      const ccList = cc ? (Array.isArray(cc) ? cc.join("; ") : cc) : undefined;
-      const userEmail = (clientSmtp && clientSmtp.user) || process.env.OUTLOOK_USER || "jgrisales@jaivana.co";
-
-      const mail = new MailComposer({
-        from: `"${tecnicoNombre}" <${userEmail}>`,
-        to: toList,
-        cc: ccList,
-        subject: asunto || `INFORME FACTURACION ELECTRONICA - ${new Date().toLocaleDateString("es-CO")}`,
-        html: htmlCompleto,
-        attachments
-      });
-
-      const emlBuffer = await mail.compile().build();
-
-      // Enviar automáticamente a través de la aplicación Outlook sin descargar archivos
-      try {
-        const tempEmlPath = path.join(os.tmpdir(), `INFORME_OUTLOOK_${Date.now()}.eml`);
-        fs.writeFileSync(tempEmlPath, emlBuffer);
-        const autoSendScript = `
-          $p = "${tempEmlPath.replace(/\\/g, "\\\\")}"
-          Start-Process -FilePath $p
-          Start-Sleep -Milliseconds 1800
-          try {
-            $wshell = New-Object -ComObject WScript.Shell
-            if ($wshell.AppActivate("Outlook")) {
-              Start-Sleep -Milliseconds 300
-              $wshell.SendKeys("^{ENTER}")
-            }
-          } catch {}
-        `;
-        const tempPs = path.join(os.tmpdir(), `auto_send_${Date.now()}.ps1`);
-        fs.writeFileSync(tempPs, autoSendScript, "utf8");
-        exec(`powershell -ExecutionPolicy Bypass -File "${tempPs}"`, () => {
-          try { fs.unlinkSync(tempPs); } catch(e){}
-        });
-      } catch (e) {}
-
-      return res.json({
-        ok: true,
-        mensaje: "Informe enviado exitosamente desde tu cuenta de Outlook."
+      // 3. Si no se pudo enviar automáticamente, retornar error claro para que el usuario use 'Ver borrador' o configure Outlook
+      return res.status(400).json({
+        ok: false,
+        error: "No se pudo enviar automáticamente desde Outlook (" + (mapiErr.message || "Outlook no respondió") + "). Por favor abre tu aplicación de Outlook o pulsa el botón '✉ Ver borrador' para abrir el correo listo con el PDF adjunto."
       });
     }
   } catch (err) {
