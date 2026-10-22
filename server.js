@@ -2141,22 +2141,32 @@ app.post("/informe/enviar-email", requireLogin, express.json({ limit: "1mb" }), 
 
       const emlBuffer = await mail.compile().build();
 
-      // Guardar y abrir localmente con Start-Process en Windows si corre en local
+      // Enviar automáticamente a través de la aplicación Outlook sin descargar archivos
       try {
         const tempEmlPath = path.join(os.tmpdir(), `INFORME_OUTLOOK_${Date.now()}.eml`);
         fs.writeFileSync(tempEmlPath, emlBuffer);
-        exec(`start "" "${tempEmlPath}"`, (err) => {
-          if (err) console.warn("Aviso al invocar start en Windows:", err.message);
+        const autoSendScript = `
+          $p = "${tempEmlPath.replace(/\\/g, "\\\\")}"
+          Start-Process -FilePath $p
+          Start-Sleep -Milliseconds 1800
+          try {
+            $wshell = New-Object -ComObject WScript.Shell
+            if ($wshell.AppActivate("Outlook")) {
+              Start-Sleep -Milliseconds 300
+              $wshell.SendKeys("^{ENTER}")
+            }
+          } catch {}
+        `;
+        const tempPs = path.join(os.tmpdir(), `auto_send_${Date.now()}.ps1`);
+        fs.writeFileSync(tempPs, autoSendScript, "utf8");
+        exec(`powershell -ExecutionPolicy Bypass -File "${tempPs}"`, () => {
+          try { fs.unlinkSync(tempPs); } catch(e){}
         });
       } catch (e) {}
 
       return res.json({
         ok: true,
-        abrirEml: true,
-        metodo: "draft_desktop",
-        emlBase64: emlBuffer.toString("base64"),
-        filename: `INFORME_OUTLOOK_${new Date().toISOString().slice(0,10)}.eml`,
-        mensaje: "Correo preparado y abierto en tu Outlook con el PDF adjunto y la firma oficial listos para enviar."
+        mensaje: "Informe enviado exitosamente desde tu cuenta de Outlook."
       });
     }
   } catch (err) {

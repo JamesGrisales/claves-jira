@@ -58,11 +58,43 @@ function enviarViaOutlookMapi({ to, cc, asunto, mensajeHtml, tecnico, cargo, pdf
         try {
           $data = Get-Content -Raw -Path "${jsonFile.replace(/\\/g, "\\\\")}" -Encoding UTF8 | ConvertFrom-Json
           
-          # Estrategia 1: ProgID estándar de Outlook
+          # 1. Localizar OUTLOOK.EXE en cualquier ubicación típica de Microsoft Office en Windows
+          $exePath = $null
+          $proc = Get-Process -Name "OUTLOOK" -ErrorAction SilentlyContinue | Select-Object -First 1
+          if ($proc -and $proc.Path -and (Test-Path $proc.Path)) {
+            $exePath = $proc.Path
+          }
+
+          if (-not $exePath) {
+            $cand = @(
+              (Get-ItemProperty -Path 'HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\OUTLOOK.EXE' -ErrorAction SilentlyContinue).'(default)',
+              (Get-ItemProperty -Path 'HKCU:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\OUTLOOK.EXE' -ErrorAction SilentlyContinue).'(default)',
+              "C:\\Program Files\\Microsoft Office\\root\\Office16\\OUTLOOK.EXE",
+              "C:\\Program Files (x86)\\Microsoft Office\\root\\Office16\\OUTLOOK.EXE",
+              "C:\\Program Files\\Microsoft Office\\Office16\\OUTLOOK.EXE",
+              "C:\\Program Files (x86)\\Microsoft Office\\Office16\\OUTLOOK.EXE",
+              "C:\\Program Files\\Microsoft Office\\Office15\\OUTLOOK.EXE",
+              "C:\\Program Files (x86)\\Microsoft Office\\Office15\\OUTLOOK.EXE",
+              "$env:LOCALAPPDATA\\Microsoft\\Office\\root\\Office16\\OUTLOOK.EXE"
+            )
+            foreach ($c in $cand) {
+              if ($c -and (Test-Path $c)) { $exePath = $c; break }
+            }
+          }
+
+          # 2. Si se encontró OUTLOOK.EXE, auto-registrar en HKCU (no requiere permisos de Administrador)
+          if ($exePath) {
+            try {
+              New-Item -Path 'HKCU:\\Software\\Classes\\Outlook.Application\\CLSID' -Value '{0006F03A-0000-0000-C000-000000000046}' -Force | Out-Null
+              New-Item -Path 'HKCU:\\Software\\Classes\\CLSID\\{0006F03A-0000-0000-C000-000000000046}\\LocalServer32' -Value ('"' + $exePath + '"') -Force | Out-Null
+              New-Item -Path 'HKCU:\\Software\\Classes\\CLSID\\{0006F03A-0000-0000-C000-000000000046}\\ProgID' -Value 'Outlook.Application' -Force | Out-Null
+            } catch {}
+          }
+
+          # 3. Conectar a Outlook COM con reintentos
           $outlook = $null
           try { $outlook = New-Object -ComObject Outlook.Application } catch {}
 
-          # Estrategia 2: Por CLSID oficial inmutable {0006F03A-0000-0000-C000-000000000046}
           if (-not $outlook) {
             try {
               $t = [Type]::GetTypeFromCLSID([Guid]'0006F03A-0000-0000-C000-000000000046')
@@ -70,44 +102,26 @@ function enviarViaOutlookMapi({ to, cc, asunto, mensajeHtml, tecnico, cargo, pdf
             } catch {}
           }
 
-          # Estrategia 3: Conectar a instancia activa en memoria si Outlook ya está abierto
           if (-not $outlook) {
             try { $outlook = [System.Runtime.InteropServices.Marshal]::GetActiveObject("Outlook.Application") } catch {}
           }
 
-          # Estrategia 4: Buscar OUTLOOK.EXE en disco, iniciarlo y conectar
-          if (-not $outlook) {
+          # Si no estaba corriendo y tenemos la ruta, iniciar minimizado en segundo plano y reintentar
+          if (-not $outlook -and $exePath) {
             try {
-              $cand = @(
-                (Get-ItemProperty -Path 'HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\OUTLOOK.EXE' -ErrorAction SilentlyContinue).'(default)',
-                "C:\\Program Files\\Microsoft Office\\root\\Office16\\OUTLOOK.EXE",
-                "C:\\Program Files (x86)\\Microsoft Office\\root\\Office16\\OUTLOOK.EXE",
-                "C:\\Program Files\\Microsoft Office\\Office16\\OUTLOOK.EXE",
-                "C:\\Program Files (x86)\\Microsoft Office\\Office16\\OUTLOOK.EXE",
-                "C:\\Program Files\\Microsoft Office\\Office15\\OUTLOOK.EXE",
-                "C:\\Program Files (x86)\\Microsoft Office\\Office15\\OUTLOOK.EXE"
-              )
-              $exePath = $null
-              foreach ($c in $cand) {
-                if ($c -and (Test-Path $c)) { $exePath = $c; break }
+              Start-Process -FilePath $exePath -ArgumentList "/recycle" -WindowStyle Minimized
+              Start-Sleep -Milliseconds 1500
+              $outlook = [System.Runtime.InteropServices.Marshal]::GetActiveObject("Outlook.Application")
+              if (-not $outlook) {
+                $t = [Type]::GetTypeFromCLSID([Guid]'0006F03A-0000-0000-C000-000000000046')
+                if ($t) { $outlook = [Activator]::CreateInstance($t) }
               }
-              if ($exePath) {
-                if (-not (Get-Process -Name "OUTLOOK" -ErrorAction SilentlyContinue)) {
-                  Start-Process -FilePath $exePath -ArgumentList "/recycle" -WindowStyle Minimized
-                  Start-Sleep -Milliseconds 1500
-                }
-                try { $outlook = [System.Runtime.InteropServices.Marshal]::GetActiveObject("Outlook.Application") } catch {}
-                if (-not $outlook) {
-                  $t = [Type]::GetTypeFromCLSID([Guid]'0006F03A-0000-0000-C000-000000000046')
-                  if ($t) { $outlook = [Activator]::CreateInstance($t) }
-                }
-                if (-not $outlook) { $outlook = New-Object -ComObject Outlook.Application }
-              }
+              if (-not $outlook) { $outlook = New-Object -ComObject Outlook.Application }
             } catch {}
           }
 
           if (-not $outlook) {
-            throw "No se pudo conectar con Outlook Classic COM (REGDB_E_CLASSNOTREG)"
+            throw "OUTLOOK_COM_NOT_AVAILABLE"
           }
 
           $mail = $outlook.CreateItem(0)
