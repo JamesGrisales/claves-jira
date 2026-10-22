@@ -115,7 +115,10 @@
 
 <div>
   <div class="top">
-    <h1>Informe diario</h1>
+    <div style="display:flex; align-items:center; gap:10px;">
+      <h1>Informe diario</h1>
+      <span class="inf-version-badge" style="background:rgba(2,132,199,0.14); color:#0284c7; border:1px solid rgba(2,132,199,0.32); font-size:11px; font-weight:800; padding:2px 8px; border-radius:12px; letter-spacing:0.4px;" title="Versión activa de la Suite de Informes">v2.5.0</span>
+    </div>
     <div class="acciones" style="display:flex; align-items:center; gap:8px;">
       <button type="button" class="secondary" id="btnEjemplo" title="Vuelve a los datos del informe de ejemplo">Restablecer</button>
       <button type="button" id="btnDescargar">⬇ Descargar PDF</button>
@@ -230,7 +233,10 @@
       <div style="display:flex; align-items:center; gap:10px;">
         <span style="font-size:22px; color:var(--accent);">✉</span>
         <div>
-          <h3 style="margin:0; font-size:18px; font-weight:700; color:var(--text); letter-spacing:-0.01em;">Enviar informe por correo (Outlook)</h3>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <h3 style="margin:0; font-size:18px; font-weight:700; color:var(--text); letter-spacing:-0.01em;">Enviar informe por correo (Outlook)</h3>
+            <span class="inf-version-badge" style="background:linear-gradient(135deg, rgba(2,132,199,0.22), rgba(14,165,233,0.12)); border:1px solid rgba(2,132,199,0.4); color:#0284c7; font-size:11px; font-weight:800; padding:2px 8px; border-radius:12px; letter-spacing:0.5px;" title="Versión del módulo de correo y reportes">v2.5.0</span>
+          </div>
           <span style="font-size:12px; color:var(--muted);">Envío corporativo directo con PDF adjunto y firma institucional de Jaivaná</span>
         </div>
       </div>
@@ -314,19 +320,45 @@
           </div>
         </div>
 
-        <!-- COL 2: FIRMA INSTITUCIONAL JAIVANÁ -->
-        <div style="background:var(--panel-alt); border:1px solid var(--panel-edge); border-radius:12px; padding:12px 14px; display:flex; flex-direction:column; justify-content:space-between;">
+        <!-- COL 2: FIRMA INSTITUCIONAL JAIVANÁ EDITABLE -->
+        <div style="background:var(--panel-alt); border:1px solid var(--panel-edge); border-radius:12px; padding:12px 14px; display:flex; flex-direction:column; justify-content:space-between; position:relative;">
           <div>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-              <div style="color:var(--muted); font-size:11px; text-transform:uppercase; font-weight:700; letter-spacing:0.5px;">Firma del Correo (Outlook):</div>
-              <span style="font-size:11px; color:var(--muted);">Banner Oficial</span>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+              <div style="display:flex; align-items:center; gap:6px;">
+                <span style="color:var(--muted); font-size:11px; text-transform:uppercase; font-weight:700; letter-spacing:0.5px;">Firma del Correo (Outlook):</span>
+                <span class="badge-app-version" style="background:rgba(2,132,199,0.18); color:#0284c7; border:1px solid rgba(2,132,199,0.35); font-size:10.5px; font-weight:800; padding:1px 7px; border-radius:6px; letter-spacing:0.3px;" title="Versión de la firma corporativa">v2.5.0</span>
+              </div>
+              <div style="display:flex; align-items:center; gap:6px;">
+                <span style="font-size:11px; color:#10b981; font-weight:600; display:flex; align-items:center; gap:3px;" id="badgeFirmaStatus">
+                  <span>✏️ Editable</span>
+                </span>
+                <button type="button" id="btnRestablecerFirma" style="background:transparent; border:none; color:var(--muted); font-size:10.5px; cursor:pointer; padding:1px 4px; text-decoration:underline;" title="Restablecer a valores iniciales">↺ Restaurar</button>
+              </div>
             </div>
-            <div style="font-weight:700; color:var(--text); font-size:13.5px;" id="firmanteNombre">James Grisales</div>
-            <div style="color:var(--muted); font-size:11.5px; margin-bottom:8px;">Analista de Soporte</div>
+
+            <!-- Campos editables de la Firma -->
+            <div style="display:flex; flex-direction:column; gap:6px; margin-bottom:10px;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <label for="firmanteNombreInput" style="font-size:10.5px; color:var(--muted); font-weight:700; text-transform:uppercase; width:52px; flex-shrink:0; margin:0;">Nombre:</label>
+                <input type="text" id="firmanteNombreInput" value="John James Grisales" placeholder="Nombre completo" title="Haz clic para editar el nombre de quien firma" style="flex:1; font-weight:700; color:var(--text); font-size:13px; background:rgba(255,255,255,0.05); border:1px solid var(--panel-edge); border-radius:6px; padding:5px 8px; outline:none; transition:all 0.15s ease;">
+              </div>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <label for="firmanteCargoInput" style="font-size:10.5px; color:var(--muted); font-weight:700; text-transform:uppercase; width:52px; flex-shrink:0; margin:0;">Cargo:</label>
+                <input type="text" id="firmanteCargoInput" value="Analista de Soporte" placeholder="Cargo laboral" title="Haz clic para editar el cargo" style="flex:1; font-weight:500; color:var(--text); font-size:12px; background:rgba(255,255,255,0.05); border:1px solid var(--panel-edge); border-radius:6px; padding:5px 8px; outline:none; transition:all 0.15s ease;">
+              </div>
+            </div>
           </div>
-          <div style="border-radius:6px; overflow:hidden; border:1px solid rgba(255,255,255,0.1); background:#333; box-shadow:0 2px 8px rgba(0,0,0,0.25);">
-            <img src="/img/jaivana-signature.png" alt="Jaivaná" style="width:100%; height:auto; display:block;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-            <span style="display:none; color:#fff; font-weight:bold; font-size:14px; letter-spacing:1px; padding:8px 14px;">Jaivaná<span style="color:#ef4444; margin-left:3px;">▲</span></span>
+
+          <!-- Banner Oficial Jaivaná -->
+          <div>
+            <div style="border-radius:6px; overflow:hidden; border:1px solid rgba(255,255,255,0.1); background:#333; box-shadow:0 2px 8px rgba(0,0,0,0.25);">
+              <img src="/img/jaivana-signature.png" alt="Jaivaná" style="width:100%; height:auto; display:block;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+              <span style="display:none; color:#fff; font-weight:bold; font-size:14px; letter-spacing:1px; padding:8px 14px;">Jaivaná<span style="color:#ef4444; margin-left:3px;">▲</span></span>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px; font-size:10.5px; color:var(--muted);">
+              <span>Banner Oficial Jaivaná</span>
+              <span style="opacity:0.8;">Outlook Windows</span>
+            </div>
           </div>
         </div>
       </div>
@@ -391,10 +423,11 @@
 
     <!-- Footer -->
     <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--panel-edge); padding-top:14px; margin-top:4px; flex-wrap:wrap; gap:10px;">
-      <div style="display:flex; gap:8px; align-items:center;">
+      <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
         <button type="button" class="secondary" id="btnIrAConfig" style="font-size:12.5px; padding:7px 12px;" title="Ver o editar configuración">⚙ Cuenta</button>
         <button type="button" class="secondary" id="btnAbrirOutlookApp" style="font-size:12.5px; padding:7px 12px;" title="Ver borrador en tu aplicación de Outlook antes de enviar">✉ Ver borrador</button>
         <button type="button" class="secondary" id="btnOutlookWeb" style="font-size:12.5px; padding:7px 12px;" title="Abrir en el navegador (Outlook Web)">🌐 Web</button>
+        <span style="font-size:11px; color:var(--muted); font-weight:600; padding:2px 8px; border-radius:6px; background:rgba(255,255,255,0.04); border:1px solid var(--panel-edge);" title="Versión de compilación activa">Build <strong style="color:var(--text);">v2.5.0</strong></span>
       </div>
       <div style="display:flex; gap:10px; align-items:center;">
         <button type="button" class="secondary" id="btnCancelarEmail" style="padding:8px 16px;">Cancelar</button>
@@ -872,6 +905,9 @@ setInterval(sincronizarServidor, 15000);
   var KEY_SMTP = 'boveda_informe_smtp';
   var KEY_CONTACTS_PARA = 'boveda_informe_to';
   var KEY_CONTACTS_CC = 'boveda_informe_cc';
+  var KEY_FIRMA_NOMBRE = 'boveda_firma_nombre';
+  var KEY_FIRMA_CARGO = 'boveda_firma_cargo';
+  var APP_VERSION = 'v2.5.0';
 
   var mCorreo = $('modalCorreo');
   var bAbrir = $('btnAbrirModalCorreo');
@@ -891,7 +927,10 @@ setInterval(sincronizarServidor, 15000);
   var txtMensaje = $('emailMensaje');
   var txtErr = $('emailErr');
   var adjNombre = $('emailAdjuntoNombre');
-  var firmanteEl = $('firmanteNombre');
+  var inpFirmaNombre = $('firmanteNombreInput');
+  var inpFirmaCargo = $('firmanteCargoInput');
+  var badgeFirmaStatus = $('badgeFirmaStatus');
+  var btnRestablecerFirma = $('btnRestablecerFirma');
 
   var smtpUser = $('smtpUser'), smtpPass = $('smtpPass'), smtpHost = $('smtpHost'), smtpPort = $('smtpPort'), smtpFromName = $('smtpFromName');
   var btnProbarSmtp = $('btnProbarSmtp'), btnGuardarSmtp = $('btnGuardarSmtp'), smtpStatus = $('smtpStatus');
@@ -1060,12 +1099,59 @@ setInterval(sincronizarServidor, 15000);
     txtAsunto.value = 'INFORME FACTURACION ELECTRONICA';
     txtMensaje.value = 'Cordial saludo,\n\nAdjunto el informe de documentos electrónicos correspondiente a las empresas.';
     adjNombre.textContent = 'INFORME_DOCUMENTOS_ELECTRONICOS_' + f + '.pdf';
-    var tec = $('tecnico').value.trim() || 'James Grisales';
-    firmanteEl.textContent = tec;
+    cargarFirmaLocal();
 
     txtErr.style.display = 'none';
     txtErr.textContent = '';
     mCorreo.style.display = 'flex';
+  }
+
+  var timerFirmaStatus;
+  function notificarFirmaGuardada(){
+    if (!badgeFirmaStatus) return;
+    badgeFirmaStatus.innerHTML = '<span style="color:#38bdf8;">✓ Guardado</span>';
+    clearTimeout(timerFirmaStatus);
+    timerFirmaStatus = setTimeout(function(){
+      badgeFirmaStatus.innerHTML = '<span>✏️ Editable</span>';
+    }, 1500);
+  }
+
+  function cargarFirmaLocal(){
+    try {
+      var nom = localStorage.getItem(KEY_FIRMA_NOMBRE);
+      var crg = localStorage.getItem(KEY_FIRMA_CARGO);
+      var defaultNom = ($('tecnico') && $('tecnico').value.trim()) || 'John James Grisales';
+      if (inpFirmaNombre) inpFirmaNombre.value = (nom !== null && nom !== undefined) ? nom : defaultNom;
+      if (inpFirmaCargo) inpFirmaCargo.value = (crg !== null && crg !== undefined) ? crg : 'Analista de Soporte';
+    } catch(e){}
+  }
+
+  function guardarFirmaLocal(){
+    try {
+      if (inpFirmaNombre) localStorage.setItem(KEY_FIRMA_NOMBRE, inpFirmaNombre.value.trim());
+      if (inpFirmaCargo) localStorage.setItem(KEY_FIRMA_CARGO, inpFirmaCargo.value.trim());
+      notificarFirmaGuardada();
+    } catch(e){}
+  }
+
+  if (inpFirmaNombre) inpFirmaNombre.addEventListener('input', guardarFirmaLocal);
+  if (inpFirmaCargo) inpFirmaCargo.addEventListener('input', guardarFirmaLocal);
+
+  if (btnRestablecerFirma) {
+    btnRestablecerFirma.addEventListener('click', function(){
+      try {
+        localStorage.removeItem(KEY_FIRMA_NOMBRE);
+        localStorage.removeItem(KEY_FIRMA_CARGO);
+      } catch(e){}
+      var defaultNom = ($('tecnico') && $('tecnico').value.trim()) || 'John James Grisales';
+      if (inpFirmaNombre) inpFirmaNombre.value = defaultNom;
+      if (inpFirmaCargo) inpFirmaCargo.value = 'Analista de Soporte';
+      if (badgeFirmaStatus) {
+        badgeFirmaStatus.innerHTML = '<span style="color:#38bdf8;">↺ Restaurado</span>';
+        setTimeout(function(){ badgeFirmaStatus.innerHTML = '<span>✏️ Editable</span>'; }, 1500);
+      }
+      toast('Firma restablecida a los valores predeterminados');
+    });
   }
 
   function cerrarModalCorreo(){
@@ -1145,12 +1231,17 @@ setInterval(sincronizarServidor, 15000);
       }
 
       var cfg = getSmtpConfig();
+      var firmanteNombre = inpFirmaNombre ? inpFirmaNombre.value.trim() : (($('tecnico') && $('tecnico').value.trim()) || 'John James Grisales');
+      var firmanteCargo = inpFirmaCargo ? inpFirmaCargo.value.trim() : 'Analista de Soporte';
+
       var payload = {
         to: listaPara,
         cc: listaCc,
         asunto: txtAsunto.value.trim() || 'INFORME FACTURACION ELECTRONICA',
         mensaje: txtMensaje.value.trim(),
         reporte: leer(),
+        tecnico: firmanteNombre,
+        cargo: firmanteCargo,
         smtp: cfg
       };
 
@@ -1202,12 +1293,17 @@ setInterval(sincronizarServidor, 15000);
         return;
       }
 
+      var firmanteNombre = inpFirmaNombre ? inpFirmaNombre.value.trim() : (($('tecnico') && $('tecnico').value.trim()) || 'John James Grisales');
+      var firmanteCargo = inpFirmaCargo ? inpFirmaCargo.value.trim() : 'Analista de Soporte';
+
       var payload = {
         to: listaPara,
         cc: listaCc,
         asunto: txtAsunto.value.trim() || 'INFORME FACTURACION ELECTRONICA',
         mensaje: txtMensaje.value.trim(),
-        reporte: leer()
+        reporte: leer(),
+        tecnico: firmanteNombre,
+        cargo: firmanteCargo
       };
 
       bAbrirApp.disabled = true;
@@ -1252,7 +1348,9 @@ setInterval(sincronizarServidor, 15000);
       var toStr = listaPara.join(';');
       var ccStr = listaCc.join(';');
       var sub = encodeURIComponent(txtAsunto.value.trim() || 'INFORME FACTURACION ELECTRONICA');
-      var body = encodeURIComponent(txtMensaje.value.trim() + '\n\nJames Grisales\nAnalista de Soporte\nJaivaná');
+      var firmanteNombre = inpFirmaNombre ? inpFirmaNombre.value.trim() : 'John James Grisales';
+      var firmanteCargo = inpFirmaCargo ? inpFirmaCargo.value.trim() : 'Analista de Soporte';
+      var body = encodeURIComponent(txtMensaje.value.trim() + '\n\n' + firmanteNombre + '\n' + firmanteCargo + '\nJaivaná');
       var url = 'https://outlook.office.com/mail/deeplink/compose?to=' + encodeURIComponent(toStr) + '&cc=' + encodeURIComponent(ccStr) + '&subject=' + sub + '&body=' + body;
       window.open(url, '_blank');
       // También descargar el PDF para adjuntarlo fácilmente si usa la web

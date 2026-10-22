@@ -10,7 +10,7 @@ const os = require("os");
  * No requiere contraseña, ni SMTP, ni autenticador, porque utiliza el perfil
  * autenticado de Outlook en el equipo local.
  */
-function enviarViaOutlookMapi({ to, cc, asunto, mensajeHtml, tecnico, pdfBuffer, pdfFilename }) {
+function enviarViaOutlookMapi({ to, cc, asunto, mensajeHtml, tecnico, cargo, pdfBuffer, pdfFilename }) {
   return new Promise((resolve, reject) => {
     try {
       const tempId = Date.now() + "_" + Math.floor(Math.random() * 10000);
@@ -23,7 +23,8 @@ function enviarViaOutlookMapi({ to, cc, asunto, mensajeHtml, tecnico, pdfBuffer,
       const toList = Array.isArray(to) ? to.join("; ") : (to || "");
       const ccList = Array.isArray(cc) ? cc.join("; ") : (cc || "");
       const finalSubject = asunto || `INFORME FACTURACION ELECTRONICA - ${new Date().toLocaleDateString("es-CO")}`;
-      const tecnicoNombre = tecnico || "James Grisales";
+      const tecnicoNombre = tecnico || "John James Grisales";
+      const cargoNombre = cargo || "Analista de Soporte";
 
       // Formato HTML del correo con la firma oficial de Jaivaná en tamaño adecuado (banner ancho)
       const htmlCompleto = `
@@ -32,7 +33,7 @@ function enviarViaOutlookMapi({ to, cc, asunto, mensajeHtml, tecnico, pdfBuffer,
           <br><br>
           <div style="margin-top: 18px; border-top: 1px solid #cbd5e1; padding-top: 14px; font-size: 11pt; color: #334155;">
             <strong style="font-size: 12pt; color: #0f172a;">${tecnicoNombre}</strong><br>
-            <span style="color: #64748b; font-size: 10.5pt;">Analista de Soporte</span><br><br>
+            <span style="color: #64748b; font-size: 10.5pt;">${cargoNombre}</span><br><br>
             <div style="margin-top: 6px; max-width: 560px;">
               <img src="cid:jaivana_signature_img" alt="Jaivaná" width="560" style="width: 100%; max-width: 560px; height: auto; display: block; border: 0;" />
             </div>

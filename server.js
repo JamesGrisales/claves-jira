@@ -2051,7 +2051,7 @@ app.post("/informe/probar-smtp", requireLogin, express.json(), async (req, res) 
 
 app.post("/informe/enviar-email", requireLogin, express.json({ limit: "1mb" }), async (req, res) => {
   try {
-    const { to, cc, asunto, mensaje, reporte, smtp: clientSmtp } = req.body || {};
+    const { to, cc, asunto, mensaje, reporte, tecnico, cargo, smtp: clientSmtp } = req.body || {};
 
     if (!to || (!Array.isArray(to) && !String(to).trim()) || (Array.isArray(to) && to.length === 0)) {
       return res.status(400).json({ error: "Debes especificar al menos un destinatario en el campo 'Para'." });
@@ -2065,7 +2065,8 @@ app.post("/informe/enviar-email", requireLogin, express.json({ limit: "1mb" }), 
       .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
       .replace(/\n/g, "<br>");
 
-    const tecnicoNombre = (reporte && reporte.tecnico) || "James Grisales";
+    const tecnicoNombre = tecnico || (reporte && reporte.tecnico) || "John James Grisales";
+    const cargoNombre = cargo || "Analista de Soporte";
 
     // Envío directo transparente a través de Outlook MAPI de Windows (sin pedir contraseñas ni 2FA)
     const { enviarViaOutlookMapi } = require("./enviar-outlook");
@@ -2076,6 +2077,7 @@ app.post("/informe/enviar-email", requireLogin, express.json({ limit: "1mb" }), 
         asunto,
         mensajeHtml: cuerpoHtml,
         tecnico: tecnicoNombre,
+        cargo: cargoNombre,
         pdfBuffer: buffer,
         pdfFilename: filename
       });
@@ -2131,7 +2133,7 @@ app.post("/informe/enviar-email", requireLogin, express.json({ limit: "1mb" }), 
           <br>
           <div style="margin-top: 20px; border-top: 1px solid #e2e8f0; padding-top: 14px; font-size: 13.5px; color: #334155;">
             <strong style="font-size: 15px; color: #0f172a;">${tecnicoNombre}</strong><br>
-            <span style="color: #64748b;">Analista de Soporte</span><br>
+            <span style="color: #64748b;">${cargoNombre}</span><br>
             ${logoTag}
           </div>
         </div>
@@ -2159,7 +2161,7 @@ app.post("/informe/enviar-email", requireLogin, express.json({ limit: "1mb" }), 
 
 app.post("/informe/abrir-outlook", requireLogin, express.json({ limit: "1mb" }), async (req, res) => {
   try {
-    const { to, cc, asunto, mensaje, reporte } = req.body || {};
+    const { to, cc, asunto, mensaje, reporte, tecnico, cargo } = req.body || {};
     const { generarInformePdf } = require("./informe-pdf");
     const { buffer: pdfBuffer, filename } = await generarInformePdf(reporte || {});
 
@@ -2168,7 +2170,8 @@ app.post("/informe/abrir-outlook", requireLogin, express.json({ limit: "1mb" }),
       .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
       .replace(/\n/g, "<br>");
 
-    const tecnicoNombre = (reporte && reporte.tecnico) || "James Grisales";
+    const tecnicoNombre = tecnico || (reporte && reporte.tecnico) || "John James Grisales";
+    const cargoNombre = cargo || "Analista de Soporte";
     const fs = require("fs");
     const logoPath = path.join(__dirname, "assets", "jaivana-signature.png");
 
@@ -2200,7 +2203,7 @@ app.post("/informe/abrir-outlook", requireLogin, express.json({ limit: "1mb" }),
         <br>
         <div style="margin-top: 20px; border-top: 1px solid #e2e8f0; padding-top: 14px; font-size: 13.5px; color: #334155;">
           <strong style="font-size: 15px; color: #0f172a;">${tecnicoNombre}</strong><br>
-          <span style="color: #64748b;">Analista de Soporte</span><br>
+          <span style="color: #64748b;">${cargoNombre}</span><br>
           ${logoTag}
         </div>
       </div>
