@@ -76,18 +76,34 @@
   .mv-bar .meter i{ transition:width .4s var(--ease); background:var(--grad); }
   .mv-bar .meter i.vago{ width:35% !important; animation:mvMove 1.3s ease-in-out infinite alternate; }
   @keyframes mvMove{ from{ margin-left:0; } to{ margin-left:65%; } }
-  .mv-steps{ display:grid; gap:14px; margin-top:18px; }
-  .mv-step{ display:grid; grid-template-columns:260px 1fr; gap:16px; padding:14px; border:1px solid var(--panel-edge); border-radius:14px; background:var(--panel-alt); align-items:start; }
-  .mv-step img{ width:100%; border-radius:9px; border:1px solid var(--panel-edge); display:block; background:#000; }
-  .mv-head{ display:flex; align-items:center; gap:10px; margin-bottom:8px; }
-  .mv-num{ width:28px; height:28px; border-radius:50%; background:var(--grad); color:#fff; font-weight:800; font-size:13px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-  .mv-time{ font-size:12px; color:var(--muted); font-variant-numeric:tabular-nums; }
+  .mv-steps{ display:grid; gap:16px; margin-top:18px; }
+  .mv-step{ display:grid; grid-template-columns:280px 1fr; gap:18px; padding:16px; border:1px solid var(--panel-edge); border-radius:16px; background:var(--panel-alt); align-items:start; transition:border-color .2s ease; }
+  .mv-step:hover{ border-color:rgba(var(--accent-rgb), .35); }
+  .mv-thumb-wrap{ position:relative; border-radius:10px; overflow:hidden; cursor:pointer; background:#000; border:1px solid var(--panel-edge); transition:transform .2s ease, box-shadow .2s ease; }
+  .mv-thumb-wrap:hover{ transform:scale(1.015); border-color:var(--accent); box-shadow:0 6px 20px -4px rgba(var(--accent-rgb), .35); }
+  .mv-thumb-wrap img{ width:100%; border-radius:9px; display:block; background:#000; }
+  .mv-thumb-badge{ position:absolute; bottom:8px; right:8px; background:rgba(10,14,24,.82); backdrop-filter:blur(6px); color:#fff; font-size:11px; font-weight:600; padding:3px 8px; border-radius:6px; border:1px solid rgba(255,255,255,.15); display:inline-flex; align-items:center; gap:5px; pointer-events:none; }
+  .mv-head{ display:flex; align-items:center; gap:10px; margin-bottom:10px; flex-wrap:wrap; }
+  .mv-num{ width:30px; height:30px; border-radius:50%; background:var(--grad); color:#fff; font-weight:800; font-size:13px; display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 2px 8px rgba(var(--accent-rgb), .4); }
+  .mv-time{ font-size:12px; color:var(--muted); font-variant-numeric:tabular-nums; display:inline-flex; align-items:center; gap:4px; background:rgba(255,255,255,.04); padding:3px 8px; border-radius:999px; border:1px solid var(--panel-edge); }
   .mv-tools{ margin-left:auto; display:flex; gap:6px; }
-  .mv-step textarea{ min-height:84px; resize:vertical; font-family:var(--sans); font-size:14px; }
+  .mv-step textarea{ min-height:104px; resize:vertical; font-family:var(--sans); font-size:14px; line-height:1.6; border-radius:12px; padding:12px 14px; }
+  .mv-step-counter{ font-size:11px; color:var(--muted); margin-top:6px; text-align:right; }
   .mv-actions{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:18px; }
   .mv-actions .grow{ flex:1; }
   .mv-check{ margin:0; display:flex; align-items:center; gap:8px; text-transform:none; letter-spacing:0; font-size:13px; font-weight:600; }
   #mvResultado{ display:none; }
+
+  /* Modal Lightbox para ampliar captura */
+  .mv-modal{ position:fixed; inset:0; z-index:9999; display:flex; align-items:center; justify-content:center; padding:20px; animation:fadeIn .2s ease; }
+  .mv-modal-bg{ position:absolute; inset:0; background:rgba(0,0,0,.85); backdrop-filter:blur(8px); }
+  .mv-modal-box{ position:relative; max-width:94vw; max-height:92vh; display:flex; flex-direction:column; background:var(--panel); border:1px solid var(--panel-edge); border-radius:16px; overflow:hidden; box-shadow:0 24px 60px rgba(0,0,0,.8); z-index:2; }
+  .mv-modal-bar{ display:flex; align-items:center; justify-content:space-between; padding:12px 18px; border-bottom:1px solid var(--panel-edge); background:var(--panel-alt); }
+  .mv-modal-title{ font-weight:700; font-size:14px; color:var(--text); display:inline-flex; align-items:center; gap:8px; }
+  .mv-modal-close{ background:transparent; border:none; color:var(--muted); font-size:18px; cursor:pointer; padding:4px 8px; border-radius:8px; transition:all .2s ease; }
+  .mv-modal-close:hover{ color:var(--text); background:rgba(255,255,255,.1); }
+  .mv-modal-img-wrap{ overflow:auto; display:flex; align-items:center; justify-content:center; background:#070a10; padding:8px; }
+  .mv-modal-img-wrap img{ max-width:100%; max-height:80vh; object-fit:contain; border-radius:8px; box-shadow:0 4px 20px rgba(0,0,0,.5); }
 
   /* =====================================================================
      ESTILOS DEL MÓDULO OCR (TRANSCRIPCIÓN DE IMAGEN)
@@ -425,22 +441,23 @@
           <div>
             <label for="mvSens">Cantidad de capturas</label>
             <select id="mvSens" name="sensibilidad">
-              <option value="1">Muy pocas (solo cambios grandes)</option>
-              <option value="2">Pocas</option>
+              <option value="5" selected>Minuciosa / Ultra-detallada (todos los pasos, clics, menús y textos)</option>
+              <option value="4">Detallada (menús, clics y campos principales)</option>
               <option value="3">Normal</option>
-              <option value="4" selected>Muchas (recomendado: incluye cuando el cursor pasa por un menú)</option>
-              <option value="5">Todas las que cambien</option>
+              <option value="2">Pocas</option>
+              <option value="1">Muy pocas (solo cambios grandes)</option>
             </select>
           </div>
           <div>
             <label for="mvMax">Máximo de pasos</label>
-            <input type="number" id="mvMax" name="max" value="25" min="3" max="<%= maxPasos %>">
+            <input type="number" id="mvMax" name="max" value="60" min="3" max="<%= maxPasos %>">
+            <p class="mv-note" style="margin:4px 0 0;font-size:11.5px">Captura hasta <%= maxPasos %> pasos detallados secuenciales.</p>
           </div>
           <div>
             <label for="mvEstilo">Cómo se redactan los pasos</label>
             <select id="mvEstilo" name="estilo">
-              <option value="narrado" selected>Narrado: «Vamos al módulo de Facturación…»</option>
-              <option value="instruccion">Instrucción: «Haz clic en el módulo de Facturación»</option>
+              <option value="narrado" selected>Narrado exhaustivo: «Nos dirigimos al módulo...»</option>
+              <option value="instruccion">Instrucción técnica paso a paso: «1. Haz clic en...»</option>
             </select>
           </div>
         </div>
@@ -473,6 +490,20 @@
       <button type="button" id="mvDescargar">Descargar PDF</button>
     </div>
     <p class="mv-note" id="mvError" style="color:var(--danger)"></p>
+  </div>
+
+  <!-- Modal Lightbox para ampliar captura del manual -->
+  <div id="mvModalZoom" class="mv-modal" style="display:none">
+    <div class="mv-modal-bg" id="mvModalBg"></div>
+    <div class="mv-modal-box">
+      <div class="mv-modal-bar">
+        <span class="mv-modal-title" id="mvModalTitle">Captura ampliada</span>
+        <button type="button" class="mv-modal-close" id="mvModalClose" title="Cerrar (Esc)">✕</button>
+      </div>
+      <div class="mv-modal-img-wrap">
+        <img id="mvModalImg" src="" alt="Captura de pantalla en alta resolución">
+      </div>
+    </div>
   </div>
 </div>
 
@@ -656,18 +687,35 @@
 
   function pintar(){
     $('mvPasos').innerHTML = estado.pasos.map(function(p, i){
+      var src = '/manual/' + estado.id + '/captura/' + p.archivo;
       return '<div class="mv-step">' +
-        '<img loading="lazy" src="/manual/' + estado.id + '/captura/' + p.archivo + '" alt="Paso ' + (i + 1) + '">' +
-        '<div><div class="mv-head"><span class="mv-num">' + (i + 1) + '</span><b>Paso ' + (i + 1) + '</b><span class="mv-time">· minuto ' + esc(p.tiempo) + '</span>' +
-          '<span class="mv-tools">' +
-            '<button type="button" class="iconbtn" data-a="sube" data-i="' + i + '" title="Subir">↑</button>' +
-            '<button type="button" class="iconbtn" data-a="baja" data-i="' + i + '" title="Bajar">↓</button>' +
-            '<button type="button" class="iconbtn warn lbl" data-a="quita" data-i="' + i + '" title="Quitar este paso">Quitar</button>' +
-          '</span></div>' +
-        '<textarea data-i="' + i + '" placeholder="Escribe qué se hace en este paso">' + esc(p.texto || '') + '</textarea></div>' +
+        '<div class="mv-thumb-wrap" data-src="' + src + '" data-step="' + (i + 1) + '" data-time="' + esc(p.tiempo) + '" title="Clic para ampliar captura en alta resolución">' +
+          '<img loading="lazy" src="' + src + '" alt="Paso ' + (i + 1) + '">' +
+          '<span class="mv-thumb-badge">' +
+            '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>' +
+            'Ampliar' +
+          '</span>' +
+        '</div>' +
+        '<div>' +
+          '<div class="mv-head">' +
+            '<span class="mv-num">' + (i + 1) + '</span>' +
+            '<b>Paso ' + (i + 1) + '</b>' +
+            '<span class="mv-time">' +
+              '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>' +
+              'minuto ' + esc(p.tiempo) +
+            '</span>' +
+            '<span class="mv-tools">' +
+              '<button type="button" class="iconbtn" data-a="sube" data-i="' + i + '" title="Subir paso">↑</button>' +
+              '<button type="button" class="iconbtn" data-a="baja" data-i="' + i + '" title="Bajar paso">↓</button>' +
+              '<button type="button" class="iconbtn warn lbl" data-a="quita" data-i="' + i + '" title="Quitar este paso">Quitar</button>' +
+            '</span>' +
+          '</div>' +
+          '<textarea data-i="' + i + '" placeholder="Describe minuciosamente la acción realizada...">' + esc(p.texto || '') + '</textarea>' +
+          '<div class="mv-step-counter">' + (p.texto ? p.texto.length + ' caracteres' : 'Sin descripción') + '</div>' +
+        '</div>' +
       '</div>';
     }).join('');
-    $('mvResumen').textContent = estado.pasos.length + ' pasos. Puedes corregir cualquier texto, quitar o reordenar pasos y volver a descargar.';
+    $('mvResumen').textContent = estado.pasos.length + ' pasos capturados. La IA ha detallado minuciosamente las acciones; puedes editar cualquier paso, reordenar o quitar antes de descargar el PDF.';
   }
 
   $('mvPasos').addEventListener('click', function(e){
@@ -759,6 +807,31 @@
   }
   $('mvVer').addEventListener('click', function(){ pedirPdf(false); });
   $('mvDescargar').addEventListener('click', function(){ pedirPdf(true); });
+
+  // Lightbox Modal para ampliar las capturas
+  var modalZoom = $('mvModalZoom');
+  var modalZoomImg = $('mvModalImg');
+  var modalZoomTitle = $('mvModalTitle');
+
+  function cerrarZoom(){
+    if (modalZoom) modalZoom.style.display = 'none';
+  }
+
+  $('mvPasos').addEventListener('click', function(e){
+    var thumb = e.target.closest('.mv-thumb-wrap');
+    if (thumb) {
+      modalZoomImg.src = thumb.dataset.src;
+      modalZoomTitle.textContent = 'Paso ' + thumb.dataset.step + ' · Minuto ' + thumb.dataset.time;
+      modalZoom.style.display = 'flex';
+      return;
+    }
+  });
+
+  if ($('mvModalClose')) $('mvModalClose').addEventListener('click', cerrarZoom);
+  if ($('mvModalBg')) $('mvModalBg').addEventListener('click', cerrarZoom);
+  window.addEventListener('keydown', function(e){
+    if (e.key === 'Escape' && modalZoom && modalZoom.style.display !== 'none') cerrarZoom();
+  });
 
   /* =====================================================================
      3. LÓGICA DEL MÓDULO OCR (TRANSCRIPCIÓN DE IMAGEN CON IA)
