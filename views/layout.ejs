@@ -1536,6 +1536,7 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
    MODO 6: DOCK FLOTANTE CYBER-GLASSMORPHIC SUPERIOR (Estilo macOS + HUD Sci-Fi)
    ===================================================================== */
 :root[data-nav-style="cyber-dock"] body:not(.guest) {
+  position: relative !important;
   padding: 85px 24px 40px 24px !important;
 }
 :root[data-nav-style="cyber-dock"] #sbOpen { display: none !important; }
@@ -1543,7 +1544,7 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
 
 /* El navbar se convierte en una cápsula horizontal flotante en la parte SUPERIOR */
 :root[data-nav-style="cyber-dock"] body:not(.guest) .navbar {
-  position: fixed !important;
+  position: absolute !important;
   top: 10px !important;
   bottom: auto !important;
   left: 50% !important;
@@ -1943,6 +1944,7 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
    MODO 8: ISLA DINÁMICA TÁCTICA & HUD ORBITAL (Panorámica / Wide Pill)
    ===================================================================== */
 :root[data-nav-style="dynamic-island"] body:not(.guest) {
+  position: relative !important;
   padding: 85px 24px 70px 24px !important;
 }
 :root[data-nav-style="dynamic-island"] #sbOpen { display: none !important; }
@@ -1950,7 +1952,7 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
 
 /* El navbar se convierte en una Cápsula / Isla Dinámica PANORÁMICA en el centro superior */
 :root[data-nav-style="dynamic-island"] body:not(.guest) .navbar {
-  position: fixed !important;
+  position: absolute !important;
   top: 10px !important;
   left: 50% !important;
   bottom: auto !important;
