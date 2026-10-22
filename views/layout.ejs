@@ -3440,8 +3440,7 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
   position: absolute;
   top: calc(100% + 8px);
   right: 0;
-  min-width: 260px;
-  max-height: 480px;
+  min-width: 275px; max-height: 520px;
   overflow-y: auto;
   scrollbar-width: thin;
   background: rgba(8, 14, 26, 0.96);
@@ -3476,32 +3475,36 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
   margin-bottom: 3px;
 }
 .tbm-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 6px 10px;
-  border-radius: 8px;
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  padding: 8px 12px !important;
+  border-radius: 9px !important;
   background: transparent;
   border: 1px solid transparent;
   cursor: pointer;
   text-align: left;
-  width: 100%;
+  width: 100% !important;
   color: #fff;
+  flex-shrink: 0 !important;
+  min-height: 44px !important;
+  box-sizing: border-box !important;
   transition: all 0.18s ease;
 }
 .tbm-item:hover {
-  background: rgba(var(--accent-rgb), 0.16);
-  border-color: rgba(var(--accent-rgb), 0.3);
-  transform: translateX(3px);
+  background: rgba(var(--accent-rgb), 0.18) !important;
+  border-color: rgba(var(--accent-rgb), 0.35) !important;
+  transform: translateX(3px) !important;
 }
 .tbm-item.active {
-  background: rgba(var(--accent-rgb), 0.25);
-  border-color: var(--accent);
+  background: rgba(var(--accent-rgb), 0.28) !important;
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 14px rgba(var(--accent-rgb), 0.35) !important;
 }
 .tbm-info {
   display: flex;
   flex-direction: column;
-  line-height: 1.2;
+  line-height: 1.25;
 }
 .tbm-title {
   font-size: 12px;
