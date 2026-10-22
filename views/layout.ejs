@@ -2524,7 +2524,7 @@ button:hover, .btn:hover, .iconbtn:hover, .acc-btn:hover {
 /* Grid con las 5 tarjetas */
 .nav-modal-grid{
   display:grid;
-  grid-template-columns:repeat(5, 1fr);
+  grid-template-columns:repeat(4, 1fr);
   gap:14px;
   margin-bottom:22px;
 }
@@ -2887,6 +2887,128 @@ button:hover, .btn:hover, .iconbtn:hover, .acc-btn:hover {
 }
 
 /* Lista de ventajas */
+
+/* Preview 6: Cyber-Dock Superior */
+.ncp-cyber-topdock{
+  position:absolute;
+  top:6px;
+  left:50%;
+  transform:translateX(-50%);
+  height:18px;
+  padding:2px 8px;
+  border-radius:999px;
+  background:rgba(18, 26, 42, 0.95);
+  border:1px solid var(--accent);
+  box-shadow:0 0 10px rgba(var(--accent-rgb), 0.45);
+  display:flex;
+  align-items:center;
+  gap:4px;
+}
+.ncp-cd-ic{
+  width:9px;
+  height:9px;
+  border-radius:2px;
+  background:rgba(255, 255, 255, 0.2);
+  transition:all .2s ease;
+}
+.ncp-cd-ic.active{
+  background:var(--accent);
+  box-shadow:0 0 6px var(--accent);
+  transform:scale(1.25);
+}
+.ncp-cyber-content{
+  flex:1;
+  padding:30px 8px 6px;
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+
+/* Preview 7: Matriz Hexagonal HUD Autoplegable */
+.ncp-hex-side{
+  width:32px;
+  height:100%;
+  background:rgba(14, 20, 32, 0.95);
+  border-right:1px solid var(--accent);
+  box-shadow:2px 0 8px rgba(var(--accent-rgb), 0.3);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:2px;
+}
+.ncp-hex-grid{
+  display:grid;
+  grid-template-columns:repeat(2, 1fr);
+  gap:3px;
+}
+.ncp-hex-cell{
+  width:9px;
+  height:9px;
+  border-radius:2px;
+  background:rgba(255, 255, 255, 0.12);
+  border:1px solid rgba(255, 255, 255, 0.2);
+}
+.ncp-hex-cell.active{
+  background:rgba(var(--accent-rgb), 0.4);
+  border-color:var(--accent);
+  box-shadow:0 0 6px var(--accent);
+}
+.ncp-hex-content{
+  flex:1;
+  padding:10px 8px;
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+
+/* Preview 8: Isla Dinámica Panorámica */
+.ncp-island-capsule{
+  position:absolute;
+  top:5px;
+  left:50%;
+  transform:translateX(-50%);
+  height:16px;
+  width:88%;
+  border-radius:999px;
+  background:rgba(10, 15, 26, 0.95);
+  border:1px solid var(--accent);
+  box-shadow:0 0 10px rgba(var(--accent-rgb), 0.5);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 5px;
+  gap:3px;
+}
+.ncp-isl-dot{
+  width:5px;
+  height:5px;
+  border-radius:50%;
+  background:#ff5f56;
+}
+.ncp-isl-chip{
+  height:6px;
+  width:9px;
+  border-radius:2px;
+  background:rgba(255, 255, 255, 0.15);
+}
+.ncp-isl-chip.active{
+  background:var(--accent);
+  box-shadow:0 0 5px var(--accent);
+}
+.ncp-isl-clock{
+  font-size:6.5px;
+  color:var(--accent);
+  font-family:monospace;
+  font-weight:700;
+}
+.ncp-island-content{
+  flex:1;
+  padding:28px 8px 6px;
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+
 .nc-features{
   list-style:none;
   padding:0;
@@ -3822,10 +3944,29 @@ button:hover, .btn:hover, .iconbtn:hover, .acc-btn:hover {
           </div>
           <div class="nc-info">
             <h3 class="nc-title">Dock Flotante Cyber</h3>
-            <p class="nc-desc">Barra inferior horizontal estilo macOS con efecto lupa en iconos, micro-LEDs y máxima amplitud de pantalla.</p>
+            <p class="nc-desc">Dock superior flotante estilo macOS con efecto lupa en iconos, micro-LEDs y máxima amplitud.</p>
+          </div>
+          <div class="nc-preview-frame">
+            <div class="ncp-header">
+              <span class="ncp-dot"></span><span class="ncp-dot"></span><span class="ncp-dot"></span>
+            </div>
+            <div class="ncp-body">
+              <div class="ncp-cyber-topdock">
+                <span class="ncp-cd-ic"></span>
+                <span class="ncp-cd-ic active"></span>
+                <span class="ncp-cd-ic"></span>
+                <span class="ncp-cd-ic"></span>
+                <span class="ncp-cd-ic"></span>
+              </div>
+              <div class="ncp-cyber-content">
+                <span class="ncp-zen-line w80"></span>
+                <span class="ncp-zen-line w60"></span>
+                <span class="ncp-zen-line w90"></span>
+              </div>
+            </div>
           </div>
           <ul class="nc-features">
-            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span>Libera el 100% del ancho para tablas y editores</span></li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span>Dock horizontal en la parte superior</span></li>
             <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span>Física de lupa (magnification) al posar el ratón</span></li>
             <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span>Orbes de base de datos fijados en cada módulo</span></li>
           </ul>
@@ -3840,17 +3981,39 @@ button:hover, .btn:hover, .iconbtn:hover, .acc-btn:hover {
           </div>
           <div class="nc-info">
             <h3 class="nc-title">Matriz Hexagonal</h3>
-            <p class="nc-desc">Panel lateral en panal de colmena con nodos agrupados por Núcleo de Datos, Soporte y Auditoría.</p>
+            <p class="nc-desc">Panel lateral táctico autoplegable en panal de colmena. Se asoma al borde y se expande en hover.</p>
+          </div>
+          <div class="nc-preview-frame">
+            <div class="ncp-header">
+              <span class="ncp-dot"></span><span class="ncp-dot"></span><span class="ncp-dot"></span>
+            </div>
+            <div class="ncp-body">
+              <div class="ncp-hex-side">
+                <div class="ncp-hex-grid">
+                  <span class="ncp-hex-cell active"></span>
+                  <span class="ncp-hex-cell"></span>
+                  <span class="ncp-hex-cell"></span>
+                  <span class="ncp-hex-cell active"></span>
+                  <span class="ncp-hex-cell"></span>
+                  <span class="ncp-hex-cell"></span>
+                </div>
+              </div>
+              <div class="ncp-hex-content">
+                <span class="ncp-zen-line w90"></span>
+                <span class="ncp-zen-line w60"></span>
+                <span class="ncp-zen-line w80"></span>
+              </div>
+            </div>
           </div>
           <ul class="nc-features">
-            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span>Agrupación táctica por núcleos funcionales</span></li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span>Autoplegable: 100% de espacio libre en pantalla</span></li>
             <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span>Estética de centro de operaciones y ciberseguridad</span></li>
             <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span>Orbes y resplandores holográficos dinámicos</span></li>
           </ul>
           <button type="button" class="nc-select-btn">Seleccionar</button>
         </div>
 
-        <!-- Opción 8: Isla Dinámica Táctica & HUD Orbital -->
+        <!-- Opción 8: Isla Dinámica Táctica Panorámica -->
         <div class="nav-card" data-nav-target="dynamic-island">
           <div class="nc-head">
             <span class="nc-tag">ELITE · DYNAMIC ISLAND</span>
@@ -3858,11 +4021,32 @@ button:hover, .btn:hover, .iconbtn:hover, .acc-btn:hover {
           </div>
           <div class="nc-info">
             <h3 class="nc-title">Isla Dinámica Táctica</h3>
-            <p class="nc-desc">Cápsula superior central que se expande fluidamente en un HUD de comando con reloj militar y telemetría en vivo.</p>
+            <p class="nc-desc">Cápsula superior panorámica que muestra todos los módulos en chips luminosos con reloj y telemetría.</p>
+          </div>
+          <div class="nc-preview-frame">
+            <div class="ncp-header">
+              <span class="ncp-dot"></span><span class="ncp-dot"></span><span class="ncp-dot"></span>
+            </div>
+            <div class="ncp-body">
+              <div class="ncp-island-capsule">
+                <span class="ncp-isl-dot"></span>
+                <span class="ncp-isl-chip active"></span>
+                <span class="ncp-isl-chip"></span>
+                <span class="ncp-isl-chip"></span>
+                <span class="ncp-isl-chip"></span>
+                <span class="ncp-isl-chip"></span>
+                <span class="ncp-isl-clock">20:14</span>
+              </div>
+              <div class="ncp-island-content">
+                <span class="ncp-zen-line w80"></span>
+                <span class="ncp-zen-line w60"></span>
+                <span class="ncp-zen-line w90"></span>
+              </div>
+            </div>
           </div>
           <ul class="nc-features">
-            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span>Ultra compacta en reposo: no tapa nada de contenido</span></li>
-            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span>Expansión fluida al pasar el ratón con chips de módulos</span></li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span>Formato panorámico con todos los módulos visibles</span></li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span>Expansión fluida al posar el ratón con chips iluminados</span></li>
             <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span>Telemetría en tiempo real: reloj militar y motor BD</span></li>
           </ul>
           <button type="button" class="nc-select-btn">Seleccionar</button>
