@@ -3590,9 +3590,11 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
   display:flex !important;
   align-items:center !important;
   justify-content:center !important;
+  transition:all .2s var(--spring) !important;
+}
+.cmdk-item .ci:not(.dot){
   background:rgba(255, 255, 255, 0.06) !important;
   color:var(--accent, #00f5ff) !important;
-  transition:all .2s var(--spring) !important;
 }
 .cmdk-item .ci svg{
   width:16px !important;
@@ -3603,14 +3605,24 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
   stroke-linecap:round !important;
   stroke-linejoin:round !important;
 }
-.cmdk-item.sel .ci{
+.cmdk-item.sel .ci:not(.dot){
   background:var(--accent, #00f5ff) !important;
   color:#040914 !important;
   box-shadow:0 0 10px var(--accent) !important;
   transform:scale(1.1) rotate(-4deg) !important;
 }
+
+/* Orbes esféricos de color en los resultados de búsqueda */
+.cmdk-item .ci.dot{
+  width:24px !important;
+  height:24px !important;
+  border-radius:50% !important;
+  box-shadow:0 0 0 2px rgba(255, 255, 255, 0.3), 0 2px 10px rgba(0, 0, 0, 0.5) !important;
+  margin:0 4px !important;
+}
 .cmdk-item.sel .ci.dot{
-  transform:scale(1.15) !important;
+  box-shadow:0 0 0 2.5px #ffffff, 0 0 16px rgba(255, 255, 255, 0.7) !important;
+  transform:scale(1.22) !important;
 }
 
 .cmdk-item .ct{
@@ -4824,7 +4836,36 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
       if (!box) return;
       var NAV = <%- JSON.stringify(currentUser ? navItems : []).replace(/</g, '\\u003c') %>;
       var logged = NAV.length > 0, cur = location.pathname, prevFocus = null, sel = 0, vis = [];
-      var PALS = [['azul','Azul','#2563eb','#4f46e5'],['cian','Cian','#0891b2','#2563eb'],['esmeralda','Esmeralda','#059669','#0d9488'],['lima','Lima Matrix','#84cc16','#22c55e'],['atardecer','Atardecer','#ea580c','#db2777'],['rosa','Rosa','#db2777','#9333ea'],['violeta','Violeta','#7c3aed','#4f46e5'],['grafito','Grafito','#475569','#1e293b']];
+      var PALS = [
+        ['planeta-dia','Planeta del Día (Automático)','#00f5ff','#ff3b30'],
+        ['mercurio','Planeta Mercurio (Lunes)','#94a3b8','#475569'],
+        ['venus','Planeta Venus (Martes)','#ffd700','#d97706'],
+        ['tierra','Planeta Tierra (Miércoles)','#00f5ff','#0284c7'],
+        ['marte','Planeta Marte (Jueves)','#ff3b30','#b91c1c'],
+        ['jupiter','Planeta Júpiter (Viernes)','#f59e0b','#b45309'],
+        ['saturno','Planeta Saturno (Sábado)','#e0c580','#92400e'],
+        ['urano','Planeta Urano (Domingo)','#4ef2d2','#0284c7'],
+        ['cyber','Cyber Neón','#00f5ff','#ff0055'],
+        ['azul','Azul','#2563eb','#4f46e5'],
+        ['cobalto','Cobalto','#38bdf8','#1d4ed8'],
+        ['nordico','Ice Frost','#0284c7','#0369a1'],
+        ['turquesa','Turquesa','#06b6d4','#0ea5e9'],
+        ['cian','Cian','#0891b2','#2563eb'],
+        ['menta','Neo Mint','#10b981','#06b6d4'],
+        ['esmeralda','Esmeralda','#059669','#0d9488'],
+        ['lima','Lima Matrix','#84cc16','#22c55e'],
+        ['oro','Oro Imperial','#eab308','#b45309'],
+        ['ambar','Ámbar Cyber','#f59e0b','#d97706'],
+        ['cobre','Cobre Bronze','#f97316','#9a3412'],
+        ['carmesi','Carmesí SOC','#f43f5e','#be123c'],
+        ['atardecer','Atardecer','#ea580c','#db2777'],
+        ['rosa','Rosa Neo','#db2777','#9333ea'],
+        ['purpura','Synthwave','#a855f7','#ec4899'],
+        ['lavanda','Lavanda','#8b5cf6','#6366f1'],
+        ['violeta','Violeta','#7c3aed','#4f46e5'],
+        ['titanio','Titanio','#64748b','#334155'],
+        ['grafito','Grafito','#475569','#1e293b']
+      ];
       function ico(d){ return '<svg viewBox="0 0 24 24" aria-hidden="true">' + d + '</svg>'; }
       var I = {
         sun:  ico('<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>'),
