@@ -201,66 +201,111 @@
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.5), inset 0 0 8px var(--planet-accent, rgba(255, 59, 48, 0.15));
   }
 
-  /* Selector interactivo de planetas por día de la semana */
-  .hud-planets-bar {
+  /* Badge interactivo del motor / entorno en la tarjeta de login */
+  .auth-engine-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--planet-accent, rgba(0, 245, 255, 0.45));
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 700;
+    color: #fff;
+    box-shadow: 0 0 12px var(--planet-accent, rgba(0, 245, 255, 0.25));
+    user-select: none;
+    transition: all 0.3s ease;
+  }
+  .auth-engine-badge .aeb-icon { font-size: 13px; }
+
+  /* --- SELECTOR DE MOTORES, EDITORES Y LENGUAJES (DOCK HORIZONTAL INFERIOR) --- */
+  .hud-engine-switcher {
     position: absolute;
-    bottom: 8px;
-    left: 48px;
-    z-index: 15;
+    bottom: 12px;
+    left: 20px;
+    right: 20px;
+    max-width: calc(100% - 40px);
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 5px;
+    z-index: 50;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    padding: 6px 10px;
+    background: rgba(6, 12, 24, 0.88);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 14px;
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.85), 0 0 20px rgba(var(--accent-rgb, 0, 245, 255), 0.2);
     pointer-events: auto;
   }
-  .planet-tab {
-    background: rgba(10, 16, 32, 0.65);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    color: rgba(255, 255, 255, 0.72);
-    font-size: 9.5px;
-    font-weight: 700;
+  .hud-engine-switcher::-webkit-scrollbar { display: none; }
+
+  .eng-category-pill {
     font-family: var(--mono);
-    padding: 3px 6px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: all .15s ease;
+    font-size: 9px;
+    font-weight: 800;
+    color: rgba(255, 255, 255, 0.55);
+    letter-spacing: 0.08em;
+    padding: 3px 7px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.06);
+    border-left: 2.5px solid var(--planet-accent, #00f5ff);
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin: 0 3px 0 6px;
     user-select: none;
   }
-  .planet-tab:hover {
-    background: rgba(255, 255, 255, 0.18);
+  .eng-category-pill:first-child { margin-left: 0; }
+
+  .engine-tab {
+    background: rgba(14, 22, 40, 0.72);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.85);
+    padding: 5px 11px;
+    border-radius: 8px;
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    user-select: none;
+  }
+  .engine-tab:hover {
+    background: rgba(255, 255, 255, 0.14);
+    border-color: var(--planet-accent, #00f5ff);
     color: #fff;
-    transform: translateY(-1px);
-    border-color: rgba(255, 255, 255, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
   }
-  .planet-tab.active {
-    background: var(--planet-accent, #ff3b30) !important;
-    color: #04060d !important;
-    border-color: var(--planet-accent, #ff3b30) !important;
-    box-shadow: 0 0 12px var(--planet-accent, #ff3b30);
-    font-weight: 800;
-  }
-  .planet-tab.auto-tab {
-    margin-left: 3px;
-    background: rgba(255, 255, 255, 0.10);
-    color: var(--planet-accent, #ff3b30);
-    border-color: rgba(255, 255, 255, 0.25);
-  }
-  .planet-tab.meteor-tab {
-    margin-left: 6px;
-    background: rgba(245, 158, 11, 0.18) !important;
-    color: #fbbf24 !important;
-    border-color: rgba(245, 158, 11, 0.45) !important;
-    font-weight: 800 !important;
-  }
-  .planet-tab.meteor-tab:hover {
-    background: rgba(245, 158, 11, 0.35) !important;
+  .engine-tab.active {
+    background: rgba(var(--accent-rgb, 0, 245, 255), 0.25) !important;
+    border-color: var(--planet-accent, #00f5ff) !important;
     color: #fff !important;
-    border-color: #f59e0b !important;
+    box-shadow: 0 0 16px var(--planet-accent, #00f5ff) !important;
   }
-  .planet-tab.meteor-tab.active {
-    background: #f59e0b !important;
-    color: #030712 !important;
-    border-color: #f59e0b !important;
-    box-shadow: 0 0 14px rgba(245, 158, 11, 0.75) !important;
+  .engine-tab.auto-rotar {
+    margin-left: 4px;
+    background: rgba(16, 185, 129, 0.15);
+    border-color: rgba(16, 185, 129, 0.4);
+    color: #34d399;
+  }
+  .engine-tab.auto-rotar.active {
+    background: rgba(16, 185, 129, 0.35) !important;
+    border-color: #10b981 !important;
+    color: #fff !important;
+    box-shadow: 0 0 16px rgba(16, 185, 129, 0.5) !important;
   }
 
   /* MITAD DERECHA: TARJETA DE LOGIN FUTURISTA (GLASSMORPHISM) */
@@ -1001,15 +1046,16 @@
       </div>
     </div>
 
-    <!-- Selector interactivo de Motores de Base de Datos y Modo 3D -->
-    <div class="hud-engine-switcher" id="hudEngineSwitcher">
-      <button type="button" class="engine-tab" data-engine="postgres" title="PostgreSQL: Núcleo Relacional Cyber 3D">
+    <!-- Selector interactivo de Motores, Editores y Lenguajes (Dock Horizontal Pinned) -->
+    <div class="hud-engine-switcher" id="hudEngineSwitcher" title="Haz clic o gira la rueda del ratón para explorar motores y entornos">
+      <span class="eng-category-pill">💾 BASES DE DATOS</span>
+      <button type="button" class="engine-tab" data-engine="postgres" title="PostgreSQL 16: Núcleo Relacional Cyber ACID">
         <span class="eng-icon">🐘</span> <span class="eng-txt">POSTGRESQL</span>
       </button>
-      <button type="button" class="engine-tab" data-engine="oracle" title="Oracle: Bóveda Enterprise Cloud">
+      <button type="button" class="engine-tab" data-engine="oracle" title="Oracle DB: Bóveda Enterprise Cloud">
         <span class="eng-icon">🏛️</span> <span class="eng-txt">ORACLE DB</span>
       </button>
-      <button type="button" class="engine-tab" data-engine="sqlserver" title="SQL Server & Multi-Engine Matrix">
+      <button type="button" class="engine-tab" data-engine="sqlserver" title="SQL Server: Cluster Always-On Matrix">
         <span class="eng-icon">🟦</span> <span class="eng-txt">SQL SERVER</span>
       </button>
       <button type="button" class="engine-tab" data-engine="mysql" title="MySQL / MariaDB: InnoDB Cluster">
@@ -1018,31 +1064,44 @@
       <button type="button" class="engine-tab" data-engine="mongodb" title="MongoDB: Distributed Document Shards">
         <span class="eng-icon">🍃</span> <span class="eng-txt">MONGODB</span>
       </button>
-      <button type="button" class="engine-tab" data-engine="redis" title="Redis: In-Memory Quantum Cache">
+      <button type="button" class="engine-tab" data-engine="redis" title="Redis: Quantum In-Memory Cache">
         <span class="eng-icon">⚡</span> <span class="eng-txt">REDIS</span>
       </button>
       <button type="button" class="engine-tab" data-engine="sqlite" title="SQLite: Embedded Zero-Conf Core">
         <span class="eng-icon">💾</span> <span class="eng-txt">SQLITE</span>
       </button>
-      <button type="button" class="engine-tab" data-engine="planetas" title="Sistema Solar 3D en Tiempo Real">
-        <span class="eng-icon">🪐</span> <span class="eng-txt">PLANETAS 3D</span>
+      <button type="button" class="engine-tab" data-engine="cassandra" title="Apache Cassandra: High-Throughput NoSQL">
+        <span class="eng-icon">👁️</span> <span class="eng-txt">CASSANDRA</span>
       </button>
-      <button type="button" class="engine-tab auto-rotar" id="btnAutoRotar" title="Rotación Automática entre todos los Motores">
+      <button type="button" class="engine-tab" data-engine="neo4j" title="Neo4j: Graph Database Cypher Engine">
+        <span class="eng-icon">🕸️</span> <span class="eng-txt">NEO4J</span>
+      </button>
+
+      <span class="eng-category-pill">⚡ EDITORES</span>
+      <button type="button" class="engine-tab" data-engine="vscode" title="Visual Studio Code: Hyper-IntelliSense Core">
+        <span class="eng-icon">🔷</span> <span class="eng-txt">VS CODE</span>
+      </button>
+      <button type="button" class="engine-tab" data-engine="neovim" title="Neovim: Lua Modal Tactical Editor">
+        <span class="eng-icon">🟩</span> <span class="eng-txt">NEOVIM</span>
+      </button>
+
+      <span class="eng-category-pill">🚀 LENGUAJES</span>
+      <button type="button" class="engine-tab" data-engine="python" title="Python 3.12: AsyncIO Security Daemon">
+        <span class="eng-icon">🐍</span> <span class="eng-txt">PYTHON</span>
+      </button>
+      <button type="button" class="engine-tab" data-engine="javascript" title="JavaScript / Node.js 24: V8 Event Loop">
+        <span class="eng-icon">🟨</span> <span class="eng-txt">JAVASCRIPT</span>
+      </button>
+      <button type="button" class="engine-tab" data-engine="rust" title="Rust 2024: Memory-Safe Zero-Cost Engine">
+        <span class="eng-icon">🦀</span> <span class="eng-txt">RUST</span>
+      </button>
+      <button type="button" class="engine-tab" data-engine="golang" title="Go 1.23: Goroutines Concurrency Pipeline">
+        <span class="eng-icon">🩵</span> <span class="eng-txt">GOLANG</span>
+      </button>
+
+      <button type="button" class="engine-tab auto-rotar" id="btnAutoRotar" title="Rotación Automática entre todos los Entornos">
         <span class="eng-icon">🔄</span> <span class="eng-txt">AUTO</span>
       </button>
-    </div>
-
-    <!-- Selector interactivo de planetas por día de la semana (modo Planetas 3D) -->
-    <div class="hud-planets-bar" id="hudPlanetsBar" style="display:none;" title="Haz clic en cualquier día para explorar su planeta">
-      <button type="button" class="planet-tab" data-day="1" title="Lunes: Mercurio">LUN</button>
-      <button type="button" class="planet-tab" data-day="2" title="Martes: Venus">MAR</button>
-      <button type="button" class="planet-tab" data-day="3" title="Miércoles: Tierra">MIÉ</button>
-      <button type="button" class="planet-tab" data-day="4" title="Jueves: Marte">JUE</button>
-      <button type="button" class="planet-tab" data-day="5" title="Viernes: Júpiter">VIE</button>
-      <button type="button" class="planet-tab" data-day="6" title="Sábado: Saturno">SÁB</button>
-      <button type="button" class="planet-tab" data-day="0" title="Domingo: Urano">DOM</button>
-      <button type="button" class="planet-tab auto-tab" id="btnAutoDay" title="Modo Automático: Volver al día de hoy">HOY</button>
-      <button type="button" class="planet-tab meteor-tab" id="btnToggleMeteoritos" title="Activar / Desactivar Cinturón de Meteoritos 3D">☄️ METEORITOS</button>
     </div>
   </div>
 
@@ -1133,1131 +1192,133 @@
 <script src="/biometria.js"></script>
 
 <script>
-// --- MOTOR 3D HIPERREALISTA DE PLANETAS CON PEDESTAL Y SHADERS (THREE.JS) ---
-(function initPlanetHologram() {
+// --- MOTOR 3D HOLOGRÁFICO CYBERNETIC DATA CORE (THREE.JS) ---
+(function initCyberDataCore() {
   var container = document.getElementById('earthCanvasWrap');
   if (!container || typeof THREE === 'undefined') return;
 
   var width = window.innerWidth;
   var height = window.innerHeight;
 
-  // Escena, Cámara y Renderer
   var scene = new THREE.Scene();
   var camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-  camera.position.z = 7.0;
+  camera.position.set(0, 0, 7.5);
 
   var renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
   renderer.setSize(width, height);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2.0));
-  if (THREE.sRGBEncoding) renderer.outputEncoding = THREE.sRGBEncoding;
-  if (THREE.ACESFilmicToneMapping) {
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 0.88;
-  }
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   container.appendChild(renderer.domElement);
 
-  // Iluminación cinemática equilibrada (Luz solar suave + Rim sutil + Ambiente cósmico)
-  var sunLight = new THREE.DirectionalLight(0xfff5ea, 1.45);
-  sunLight.position.set(-6, 3.8, 4.5);
-  scene.add(sunLight);
+  var group = new THREE.Group();
+  scene.add(group);
+  group.position.set(-1.8, 0.3, 0);
 
-  var rimSunLight = new THREE.DirectionalLight(0xff453a, 1.10);
-  rimSunLight.position.set(5.5, 1.8, -2.5);
-  scene.add(rimSunLight);
+  // 1. Núcleo geométrico wireframe holográfico
+  var geomIco = new THREE.IcosahedronGeometry(1.6, 1);
+  var matIco = new THREE.MeshBasicMaterial({
+    color: 0x00f5ff,
+    wireframe: true,
+    transparent: true,
+    opacity: 0.35
+  });
+  var coreMesh = new THREE.Mesh(geomIco, matIco);
+  group.add(coreMesh);
 
-  var ambientLight = new THREE.AmbientLight(0x101524, 0.40);
-  scene.add(ambientLight);
+  // 2. Cubo interior cuántico
+  var geomCube = new THREE.BoxGeometry(1.3, 1.3, 1.3);
+  var matCube = new THREE.MeshBasicMaterial({
+    color: 0x00f5ff,
+    wireframe: true,
+    transparent: true,
+    opacity: 0.22
+  });
+  var cubeMesh = new THREE.Mesh(geomCube, matCube);
+  group.add(cubeMesh);
 
-  // Grupo principal del holograma planetario
-  var globeGroup = new THREE.Group();
-  scene.add(globeGroup);
+  // 3. Anillos orbitales de telemetría de datos
+  var ringGeom1 = new THREE.RingGeometry(2.1, 2.14, 64);
+  var ringMat1 = new THREE.MeshBasicMaterial({ color: 0x00f5ff, side: THREE.DoubleSide, transparent: true, opacity: 0.45 });
+  var ringMesh1 = new THREE.Mesh(ringGeom1, ringMat1);
+  ringMesh1.rotation.x = Math.PI * 0.35;
+  group.add(ringMesh1);
 
-  var GLOBE_RADIUS = 2.3;
+  var ringGeom2 = new THREE.RingGeometry(2.5, 2.53, 64);
+  var ringMat2 = new THREE.MeshBasicMaterial({ color: 0x00f5ff, side: THREE.DoubleSide, transparent: true, opacity: 0.28 });
+  var ringMesh2 = new THREE.Mesh(ringGeom2, ringMat2);
+  ringMesh2.rotation.y = Math.PI * 0.4;
+  group.add(ringMesh2);
 
-  // 1. Texturas Satelitales Oficiales de la NASA (sin relieves circulares artificiales)
-
-  // 2. Texturas Procedurales en Canvas de Respaldo (Fallback)
-  function generarTexturaPlaneta(tipo) {
-    var c = document.createElement('canvas');
-    c.width = 1024;
-    c.height = 512;
-    var ctx = c.getContext('2d');
-
-    if (tipo === 'marte') {
-      var grad = ctx.createLinearGradient(0, 0, 0, 512);
-      grad.addColorStop(0, '#752410');
-      grad.addColorStop(0.3, '#b8441f');
-      grad.addColorStop(0.5, '#cf562b');
-      grad.addColorStop(0.7, '#963618');
-      grad.addColorStop(1, '#5a190a');
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, 1024, 512);
-    } else if (tipo === 'tierra') {
-      ctx.fillStyle = '#0a2342';
-      ctx.fillRect(0, 0, 1024, 512);
-      ctx.fillStyle = '#1e593a';
-      for (var t = 0; t < 55; t++) {
-        ctx.beginPath();
-        ctx.arc(Math.random() * 1024, 80 + Math.random() * 350, 40 + Math.random() * 90, 0, Math.PI * 2);
-        ctx.fill();
-      }
-    } else if (tipo === 'jupiter') {
-      for (var j = 0; j < 512; j += 16) {
-        ctx.fillStyle = (j % 32 === 0) ? '#cf822b' : ((j % 48 === 0) ? '#7a3e14' : '#e6a457');
-        ctx.fillRect(0, j, 1024, 16);
-      }
-    } else if (tipo === 'saturno') {
-      for (var s = 0; s < 512; s += 20) {
-        ctx.fillStyle = (s % 40 === 0) ? '#c2a66b' : '#dfcca1';
-        ctx.fillRect(0, s, 1024, 20);
-      }
-    } else if (tipo === 'mercurio') {
-      ctx.fillStyle = '#555f6d';
-      ctx.fillRect(0, 0, 1024, 512);
-    } else if (tipo === 'venus') {
-      ctx.fillStyle = '#d4a237';
-      ctx.fillRect(0, 0, 1024, 512);
-    } else if (tipo === 'urano') {
-      var gradU = ctx.createLinearGradient(0, 0, 0, 512);
-      gradU.addColorStop(0, '#5eead4');
-      gradU.addColorStop(0.3, '#38bdf8');
-      gradU.addColorStop(0.5, '#4ef2d2');
-      gradU.addColorStop(0.7, '#2dd4bf');
-      gradU.addColorStop(1, '#0284c7');
-      ctx.fillStyle = gradU;
-      ctx.fillRect(0, 0, 1024, 512);
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
-      for (var u = 0; u < 512; u += 24) {
-        ctx.fillRect(0, u, 1024, 12);
-      }
-    } else {
-      ctx.fillStyle = '#103982';
-      ctx.fillRect(0, 0, 1024, 512);
-    }
-    return new THREE.CanvasTexture(c);
+  // 4. Nube de partículas de telemetría cuántica
+  var partCount = 380;
+  var partGeom = new THREE.BufferGeometry();
+  var partPos = new Float32Array(partCount * 3);
+  for (var i = 0; i < partCount * 3; i += 3) {
+    var r = 1.9 + Math.random() * 1.8;
+    var theta = Math.random() * Math.PI * 2;
+    var phi = (Math.random() - 0.5) * Math.PI;
+    partPos[i] = r * Math.cos(theta) * Math.cos(phi);
+    partPos[i + 1] = r * Math.sin(phi);
+    partPos[i + 2] = r * Math.sin(theta) * Math.cos(phi);
   }
+  partGeom.setAttribute('position', new THREE.BufferAttribute(partPos, 3));
+  var partMat = new THREE.PointsMaterial({
+    color: 0x00f5ff,
+    size: 0.05,
+    transparent: true,
+    opacity: 0.65
+  });
+  var particleSystem = new THREE.Points(partGeom, partMat);
+  group.add(particleSystem);
 
-  // 3. Cargador de Texturas Fotográficas Satelitales y Generador de Relieve Normal Maps
-  var textureLoader = new THREE.TextureLoader();
-  var maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
-  var NORMAL_MAPS_CACHE = {};
-
-  // Generador de Relieve Topográfico Fotorrealista (Sobel Suavizado con Preservación de Tono Natural)
-  function crearNormalMapDeImagen(img, fuerza) {
-    if (!img) return null;
+  // Función global para actualizar el color del holograma según el motor activo
+  window.updateHologramColor = function(hexColor) {
     try {
-      var w = Math.min(img.naturalWidth || img.width || 2048, 2048);
-      var h = Math.min(img.naturalHeight || img.height || 1024, 1024);
-      var c = document.createElement('canvas');
-      c.width = w; c.height = h;
-      var ctx = c.getContext('2d');
-      ctx.drawImage(img, 0, 0, w, h);
-      var src = ctx.getImageData(0, 0, w, h);
-      var dst = ctx.createImageData(w, h);
-      var s = src.data, d = dst.data;
-      var f = fuerza || 1.4;
-
-      // 1. Extraer luminancia linealizada
-      var rawLum = new Float32Array(w * h);
-      for (var i = 0, p = 0; i < rawLum.length; i++, p += 4) {
-        rawLum[i] = (s[p] * 0.299 + s[p + 1] * 0.587 + s[p + 2] * 0.114) * 0.0039215686;
-      }
-
-      // 2. Filtro de suavizado espacial 3x3 para eliminar artefactos de compresión y micro-picos
-      var lum = new Float32Array(w * h);
-      for (var y = 0; y < h; y++) {
-        var y0 = (y > 0 ? y - 1 : 0) * w;
-        var y1 = y * w;
-        var y2 = (y < h - 1 ? y + 1 : h - 1) * w;
-        for (var x = 0; x < w; x++) {
-          var x0 = (x > 0 ? x - 1 : w - 1);
-          var x2 = (x < w - 1 ? x + 1 : 0);
-          lum[y1 + x] = (rawLum[y0 + x0] + rawLum[y0 + x] * 2.0 + rawLum[y0 + x2]
-                      + rawLum[y1 + x0] * 2.0 + rawLum[y1 + x] * 4.0 + rawLum[y1 + x2] * 2.0
-                      + rawLum[y2 + x0] + rawLum[y2 + x] * 2.0 + rawLum[y2 + x2]) * 0.0625;
-        }
-      }
-
-      // 3. Sobel con componente Z dominante perpendicular (+Z a 1.0)
-      for (var y = 0; y < h; y++) {
-        var yPrev = (y > 0 ? y - 1 : 0) * w;
-        var yCurr = y * w;
-        var yNext = (y < h - 1 ? y + 1 : h - 1) * w;
-
-        for (var x = 0; x < w; x++) {
-          var xPrev = (x > 0 ? x - 1 : w - 1);
-          var xNext = (x < w - 1 ? x + 1 : 0);
-
-          var tl = lum[yPrev + xPrev];
-          var t  = lum[yPrev + x];
-          var tr = lum[yPrev + xNext];
-          var l  = lum[yCurr + xPrev];
-          var r  = lum[yCurr + xNext];
-          var bl = lum[yNext + xPrev];
-          var b  = lum[yNext + x];
-          var br = lum[yNext + xNext];
-
-          var dX = ((tr + 2.0 * r + br) - (tl + 2.0 * l + bl)) * f;
-          var dY = ((bl + 2.0 * b + br) - (tl + 2.0 * t + tr)) * f;
-          var dZ = 1.0;
-
-          var invLen = 1.0 / Math.sqrt(dX * dX + dY * dY + dZ * dZ);
-          var nx = -dX * invLen;
-          var ny = -dY * invLen;
-          var nz = dZ * invLen;
-
-          var p = (yCurr + x) * 4;
-          d[p]     = (nx * 127.5 + 127.5) | 0;
-          d[p + 1] = (ny * 127.5 + 127.5) | 0;
-          d[p + 2] = (nz * 127.5 + 127.5) | 0;
-          d[p + 3] = 255;
-        }
-      }
-      ctx.putImageData(dst, 0, 0);
-      var nTex = new THREE.CanvasTexture(c);
-      nTex.wrapS = THREE.RepeatWrapping;
-      nTex.wrapT = THREE.ClampToEdgeWrapping;
-      nTex.anisotropy = maxAnisotropy;
-      nTex.generateMipmaps = true;
-      nTex.minFilter = THREE.LinearMipmapLinearFilter;
-      nTex.magFilter = THREE.LinearFilter;
-      return nTex;
-    } catch(err) {
-      return null;
-    }
-  }
-
-  function cargarFotoPlaneta(ruta) {
-    try {
-      var tex = textureLoader.load(ruta);
-      tex.anisotropy = maxAnisotropy;
-      tex.wrapS = THREE.RepeatWrapping;
-      tex.wrapT = THREE.ClampToEdgeWrapping;
-      tex.generateMipmaps = true;
-      tex.minFilter = THREE.LinearMipmapLinearFilter;
-      tex.magFilter = THREE.LinearFilter;
-      return tex;
-    } catch(e) {
-      return null;
-    }
-  }
-
-  function cargarFotoPlanetaConRelieve(id, ruta, fuerzaNormal) {
-    try {
-      var tex = textureLoader.load(ruta, function(loadedTex) {
-        if (id !== 'tierra') {
-          var nMap = crearNormalMapDeImagen(loadedTex.image, fuerzaNormal || 1.2);
-          if (nMap) {
-            NORMAL_MAPS_CACHE[id] = nMap;
-            if (planetaActual && planetaActual.id === id) {
-              planetMat.normalMap = nMap;
-              var ns = planetaActual.normalScale || 0.45;
-              planetMat.normalScale = new THREE.Vector2(ns, ns);
-              planetMat.needsUpdate = true;
-            }
-          }
-        }
-      });
-      tex.anisotropy = maxAnisotropy;
-      tex.wrapS = THREE.RepeatWrapping;
-      tex.wrapT = THREE.ClampToEdgeWrapping;
-      tex.generateMipmaps = true;
-      tex.minFilter = THREE.LinearMipmapLinearFilter;
-      tex.magFilter = THREE.LinearFilter;
-      return tex;
-    } catch(e) {
-      return null;
-    }
-  }
-
-  var TEXTURAS_FOTO = {
-    'mercurio': cargarFotoPlanetaConRelieve('mercurio', '/planets/mercury_texture.jpg?v=2026', 1.4),
-    'venus': cargarFotoPlanetaConRelieve('venus', '/planets/venus_texture.jpg?v=2026', 0.7),
-    'tierra': cargarFotoPlaneta('/planets/earth_texture.jpg?v=2026'),
-    'marte': cargarFotoPlanetaConRelieve('marte', '/planets/mars_texture.jpg?v=2026', 1.2),
-    'jupiter': cargarFotoPlanetaConRelieve('jupiter', '/planets/jupiter_texture.jpg?v=2026', 0.6),
-    'saturno': cargarFotoPlanetaConRelieve('saturno', '/planets/saturn_texture.jpg?v=2026', 0.5),
-    'urano': cargarFotoPlanetaConRelieve('urano', '/planets/uranus_texture.jpg?v=2026', 0.5),
-    'neptuno': cargarFotoPlanetaConRelieve('neptuno', '/planets/neptune_texture.jpg?v=2026', 0.6)
+      var c = new THREE.Color(hexColor);
+      matIco.color.copy(c);
+      matCube.color.copy(c);
+      ringMat1.color.copy(c);
+      ringMat2.color.copy(c);
+      partMat.color.copy(c);
+    } catch(e) {}
   };
 
-  var earthNormalMap = cargarFotoPlaneta('/planets/earth_normal.jpg?v=2026');
-  var earthSpecularMap = cargarFotoPlaneta('/planets/earth_specular.jpg?v=2026');
-  var earthCloudsTexture = cargarFotoPlaneta('/planets/earth_clouds.png?v=2026');
-
-  var planetGeo = new THREE.SphereGeometry(GLOBE_RADIUS, 128, 128);
-  var planetMat = new THREE.MeshStandardMaterial({
-    map: TEXTURAS_FOTO['tierra'] || generarTexturaPlaneta('tierra'),
-    roughness: 0.45,
-    metalness: 0.05
-  });
-  var planetMesh = new THREE.Mesh(planetGeo, planetMat);
-  globeGroup.add(planetMesh);
-
-  // Capa Dinámica Tridimensional de Nubes Terrestres Fotorrealistas
-  var earthCloudsGeo = new THREE.SphereGeometry(GLOBE_RADIUS * 1.014, 128, 128);
-  var earthCloudsMat = new THREE.MeshStandardMaterial({
-    map: earthCloudsTexture,
-    transparent: true,
-    opacity: 0.88,
-    blending: THREE.AdditiveBlending,
-    side: THREE.DoubleSide
-  });
-  var earthCloudsMesh = new THREE.Mesh(earthCloudsGeo, earthCloudsMat);
-  globeGroup.add(earthCloudsMesh);
-  earthCloudsMesh.visible = false;
-
-  // Capa Dinámica Tridimensional de Atmósfera Super-Rotatoria de Venus
-  function generarTexturaNubesVenus() {
-    var c = document.createElement('canvas');
-    c.width = 1024; c.height = 512;
-    var ctx = c.getContext('2d');
-    ctx.fillStyle = '#eed690';
-    ctx.fillRect(0, 0, 1024, 512);
-    for (var y = 0; y < 512; y += 4) {
-      var vFactor = Math.sin(y * 0.045) * Math.cos(y * 0.018);
-      ctx.fillStyle = (vFactor > 0.2) ? 'rgba(255, 235, 165, 0.38)' : 'rgba(185, 140, 55, 0.30)';
-      ctx.fillRect(0, y, 1024, 4);
-    }
-    for (var i = 0; i < 35; i++) {
-      ctx.beginPath();
-      var cx = Math.random() * 1024;
-      var cy = 110 + Math.random() * 290;
-      ctx.ellipse(cx, cy, 65 + Math.random() * 140, 16 + Math.random() * 28, Math.PI / 6, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(255, 245, 205, 0.26)';
-      ctx.fill();
-    }
-    var tex = new THREE.CanvasTexture(c);
-    tex.wrapS = THREE.RepeatWrapping;
-    tex.wrapT = THREE.ClampToEdgeWrapping;
-    return tex;
-  }
-  var venusCloudsGeo = new THREE.SphereGeometry(GLOBE_RADIUS * 1.012, 96, 96);
-  var venusCloudsMat = new THREE.MeshStandardMaterial({
-    map: generarTexturaNubesVenus(),
-    transparent: true,
-    opacity: 0.65,
-    roughness: 0.60,
-    blending: THREE.NormalBlending
-  });
-  var venusCloudsMesh = new THREE.Mesh(venusCloudsGeo, venusCloudsMat);
-  globeGroup.add(venusCloudsMesh);
-  venusCloudsMesh.visible = false;
-
-  // Capa Dinámica Tridimensional de Cirros de Metano de Neptuno
-  function generarTexturaNubesNeptuno() {
-    var c = document.createElement('canvas');
-    c.width = 1024; c.height = 512;
-    var ctx = c.getContext('2d');
-    ctx.clearRect(0, 0, 1024, 512);
-    for (var i = 0; i < 45; i++) {
-      var y = 130 + Math.random() * 250;
-      var x = Math.random() * 1024;
-      var w = 90 + Math.random() * 240;
-      var grad = ctx.createLinearGradient(x, y, x + w, y);
-      grad.addColorStop(0, 'rgba(255,255,255,0)');
-      grad.addColorStop(0.5, 'rgba(220,245,255,0.92)');
-      grad.addColorStop(1, 'rgba(255,255,255,0)');
-      ctx.fillStyle = grad;
-      ctx.beginPath();
-      ctx.ellipse(x + w / 2, y, w / 2, 4 + Math.random() * 9, 0, 0, Math.PI * 2);
-      ctx.fill();
-    }
-    ctx.beginPath();
-    ctx.ellipse(650, 310, 48, 26, -0.15, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(3, 14, 52, 0.72)';
-    ctx.fill();
-    ctx.beginPath();
-    ctx.ellipse(668, 290, 40, 10, -0.1, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
-    ctx.fill();
-    var tex = new THREE.CanvasTexture(c);
-    tex.wrapS = THREE.RepeatWrapping;
-    tex.wrapT = THREE.ClampToEdgeWrapping;
-    return tex;
-  }
-  var neptuneCloudsGeo = new THREE.SphereGeometry(GLOBE_RADIUS * 1.010, 96, 96);
-  var neptuneCloudsMat = new THREE.MeshStandardMaterial({
-    map: generarTexturaNubesNeptuno(),
-    transparent: true,
-    opacity: 0.85,
-    blending: THREE.AdditiveBlending
-  });
-  var neptuneCloudsMesh = new THREE.Mesh(neptuneCloudsGeo, neptuneCloudsMat);
-  globeGroup.add(neptuneCloudsMesh);
-  neptuneCloudsMesh.visible = false;
-
-  // 4. Capa de Resplandor Atmosférico Fresnel Cinemático
-  var atmosGeo = new THREE.SphereGeometry(GLOBE_RADIUS * 1.026, 96, 96);
-  var atmosMat = new THREE.ShaderMaterial({
-    vertexShader: [
-      'varying vec3 vNormal;',
-      'void main() {',
-      '  vNormal = normalize(normalMatrix * normal);',
-      '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
-      '}'
-    ].join('\n'),
-    fragmentShader: [
-      'varying vec3 vNormal;',
-      'uniform vec3 glowColor;',
-      'void main() {',
-      '  float intensity = pow(0.66 - dot(vNormal, vec3(0.0, 0.0, 1.0)), 3.0);',
-      '  gl_FragColor = vec4(glowColor, 1.0) * intensity * 1.15;',
-      '}'
-    ].join('\n'),
-    uniforms: {
-      glowColor: { value: new THREE.Color(0xff3b30) }
-    },
-    side: THREE.BackSide,
-    blending: THREE.AdditiveBlending,
-    transparent: true
-  });
-  var atmosMesh = new THREE.Mesh(atmosGeo, atmosMat);
-  globeGroup.add(atmosMesh);
-
-  // 5. Anillos Orbitales Holográficos con Mira Telemetría [⨁]
-  var hudRingGroup = new THREE.Group();
-  globeGroup.add(hudRingGroup);
-
-  var r1Geo = new THREE.RingGeometry(GLOBE_RADIUS + 0.35, GLOBE_RADIUS + 0.42, 64);
-  var r1Mat = new THREE.MeshBasicMaterial({ color: 0xff3b30, side: THREE.DoubleSide, transparent: true, opacity: 0.65 });
-  var r1Mesh = new THREE.Mesh(r1Geo, r1Mat);
-  hudRingGroup.add(r1Mesh);
-
-  var r2Geo = new THREE.RingGeometry(GLOBE_RADIUS + 0.52, GLOBE_RADIUS + 0.56, 64);
-  var r2Mat = new THREE.MeshBasicMaterial({ color: 0xff453a, side: THREE.DoubleSide, transparent: true, opacity: 0.42 });
-  var r2Mesh = new THREE.Mesh(r2Geo, r2Mat);
-  hudRingGroup.add(r2Mesh);
-
-  // Retículo / Mira de apuntado orbital que viaja sobre el anillo
-  var trackerGeo = new THREE.RingGeometry(0.04, 0.08, 16);
-  var trackerMat = new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide });
-  var trackerMesh = new THREE.Mesh(trackerGeo, trackerMat);
-  hudRingGroup.add(trackerMesh);
-
-  hudRingGroup.rotation.x = Math.PI / 2.3;
-  hudRingGroup.rotation.y = 0.25;
-
-  // 6. Pedestal Holográfico con Núcleo Emitter Pulsante y Haz Ascendente
-  var pedestalGroup = new THREE.Group();
-  pedestalGroup.position.y = -3.2;
-  pedestalGroup.rotation.x = -Math.PI / 2.2;
-  globeGroup.add(pedestalGroup);
-
-  var pedestalMaterials = [];
-  [0.45, 0.85, 1.35, 1.85, 2.35].forEach(function(r, idx) {
-    var pGeo = new THREE.RingGeometry(r, r + (idx === 1 ? 0.08 : 0.04), 48);
-    var pMat = new THREE.MeshBasicMaterial({
-      color: idx === 1 ? 0xff5533 : 0xff3b30,
-      side: THREE.DoubleSide,
-      transparent: true,
-      opacity: idx === 1 ? 0.85 : 0.45
-    });
-    pedestalMaterials.push(pMat);
-    var pRing = new THREE.Mesh(pGeo, pMat);
-    pedestalGroup.add(pRing);
-  });
-
-  // Núcleo central brillante del proyector en el suelo
-  var emitterCoreGeo = new THREE.CircleGeometry(0.38, 32);
-  var emitterCoreMat = new THREE.MeshBasicMaterial({ color: 0xff7755, side: THREE.DoubleSide, transparent: true, opacity: 0.95 });
-  var emitterCore = new THREE.Mesh(emitterCoreGeo, emitterCoreMat);
-  pedestalGroup.add(emitterCore);
-
-  // Luz puntual ascendente desde el pedestal
-  var pedestalLight = new THREE.PointLight(0xff3b30, 0.95, 6.5);
-  pedestalLight.position.set(0, -3.1, 0);
-  globeGroup.add(pedestalLight);
-
-  // Haz de luz cónico holográfico ascendente
-  var coneGeo = new THREE.CylinderGeometry(GLOBE_RADIUS * 0.95, 0.8, 3.2, 32, 1, true);
-  var coneMat = new THREE.ShaderMaterial({
-    vertexShader: [
-      'varying vec2 vUv;',
-      'void main() {',
-      '  vUv = uv;',
-      '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
-      '}'
-    ].join('\n'),
-    fragmentShader: [
-      'varying vec2 vUv;',
-      'uniform vec3 beamColor;',
-      'void main() {',
-      '  float alpha = smoothstep(1.0, 0.0, vUv.y) * 0.35;',
-      '  gl_FragColor = vec4(beamColor, alpha);',
-      '}'
-    ].join('\n'),
-    uniforms: {
-      beamColor: { value: new THREE.Color(0xff3b30) }
-    },
-    transparent: true,
-    side: THREE.DoubleSide,
-    blending: THREE.AdditiveBlending
-  });
-  var beamMesh = new THREE.Mesh(coneGeo, coneMat);
-  beamMesh.position.y = -1.6;
-  globeGroup.add(beamMesh);
-
-  // 7. Micro-partículas de Polvo Espacial y Destellos Orbitales
-  var dustPositions = [];
-  for (var dp = 0; dp < 180; dp++) {
-    var dPhi = Math.acos((Math.random() * 2) - 1);
-    var dTheta = Math.random() * Math.PI * 2;
-    var dRad = GLOBE_RADIUS + 0.35 + Math.random() * 1.8;
-    dustPositions.push(
-      dRad * Math.sin(dPhi) * Math.cos(dTheta),
-      dRad * Math.sin(dPhi) * Math.sin(dTheta),
-      dRad * Math.cos(dPhi)
-    );
-  }
-  var dustGeo = new THREE.BufferGeometry();
-  dustGeo.setAttribute('position', new THREE.Float32BufferAttribute(dustPositions, 3));
-  var dustMat = new THREE.PointsMaterial({
-    size: 0.045,
-    color: 0xff6b4a,
-    transparent: true,
-    opacity: 0.8,
-    blending: THREE.AdditiveBlending
-  });
-  var dustMesh = new THREE.Points(dustGeo, dustMat);
-  globeGroup.add(dustMesh);
-
-  // 8. Anillos de Saturno Fotorrealistas con División de Cassini en Alta Definición (2048x2048)
-  function generarTexturaAnillosSaturno() {
-    var c = document.createElement('canvas');
-    c.width = 2048;
-    c.height = 2048;
-    var ctx = c.getContext('2d');
-    var cx = 1024, cy = 1024;
-    ctx.clearRect(0, 0, 2048, 2048);
-
-    for (var r = 530; r <= 1016; r += 0.5) {
-      var norm = (r - 530) / (1016 - 530);
-      var alpha = 0;
-      var rColor = 'rgba(225, 205, 160, ';
-
-      if (norm < 0.16) {
-        // Anillo C (Crepe ring)
-        alpha = 0.20 + Math.sin(r * 0.2) * 0.08;
-        rColor = 'rgba(165, 145, 115, ';
-      } else if (norm >= 0.16 && norm < 0.62) {
-        // Anillo B (brillante, denso)
-        alpha = 0.88 + Math.sin(r * 0.45) * 0.10;
-        rColor = (Math.floor(r) % 4 < 2) ? 'rgba(235, 215, 168, ' : 'rgba(215, 192, 145, ';
-      } else if (norm >= 0.62 && norm < 0.70) {
-        // División de Cassini (Brecha oscura transparente)
-        alpha = 0.02;
-      } else if (norm >= 0.70 && norm < 0.94) {
-        // Anillo A
-        if (norm > 0.86 && norm < 0.885) {
-          // Brecha de Encke
-          alpha = 0.06;
-        } else {
-          alpha = 0.70 + Math.sin(r * 0.3) * 0.08;
-          rColor = 'rgba(215, 195, 150, ';
-        }
-      } else {
-        // Borde exterior difuminado (Anillo F)
-        alpha = (1.0 - (norm - 0.94) / 0.06) * 0.35;
-      }
-
-      ctx.beginPath();
-      ctx.arc(cx, cy, r, 0, Math.PI * 2);
-      ctx.lineWidth = 1.0;
-      ctx.strokeStyle = rColor + Math.max(0, Math.min(1, alpha)) + ')';
-      ctx.stroke();
-    }
-
-    var tex = new THREE.CanvasTexture(c);
-    tex.anisotropy = maxAnisotropy;
-    tex.generateMipmaps = true;
-    tex.minFilter = THREE.LinearMipmapLinearFilter;
-    tex.magFilter = THREE.LinearFilter;
-    return tex;
-  }
-
-  var saturnGroup = new THREE.Group();
-  globeGroup.add(saturnGroup);
-
-  // 8.1 Lámina micro-partículas de fondo con División de Cassini de alta geometría
-  var satRingGeo = new THREE.RingGeometry(GLOBE_RADIUS + 0.42, GLOBE_RADIUS + 2.35, 192);
-  var satRingMat = new THREE.MeshStandardMaterial({
-    map: generarTexturaAnillosSaturno(),
-    side: THREE.DoubleSide,
-    transparent: true,
-    opacity: 0.88,
-    roughness: 0.65,
-    metalness: 0.05
-  });
-  var satRingMesh = new THREE.Mesh(satRingGeo, satRingMat);
-  saturnGroup.add(satRingMesh);
-
-  // 8.2 CINTURÓN DE METEORITOS 3D FOTORREALISTA (2,200 ROCAS, MONOLITOS Y ASTEROIDES EN ÓRBITA)
-  function crearGeometriaAsteroide(radioBase, semilla) {
-    var geo = new THREE.DodecahedronGeometry(radioBase, 1);
-    var pos = geo.attributes.position;
-    var v = new THREE.Vector3();
-    for (var i = 0; i < pos.count; i++) {
-      v.fromBufferAttribute(pos, i);
-      var ang = Math.atan2(v.z, v.x);
-      var elev = v.y / radioBase;
-      var ruido = Math.sin(ang * 3.2 + semilla) * Math.cos(elev * 4.1 + semilla * 1.5) * 0.35
-                + Math.sin(v.x * 5.5 + v.y * 3.3) * 0.18;
-      var factor = 1.0 + ruido + (Math.sin(i * 11.3) * 0.12);
-      v.x *= 1.20;
-      v.z *= 0.85;
-      v.multiplyScalar(factor);
-      pos.setXYZ(i, v.x, v.y, v.z);
-    }
-    geo.computeVertexNormals();
-    return geo;
-  }
-
-  var NUM_METEORITOS = 2200;
-  var geoAsteroide = crearGeometriaAsteroide(1.0, 4.2);
-  var matAsteroide = new THREE.MeshStandardMaterial({
-    color: 0xffffff,
-    roughness: 0.62,
-    metalness: 0.25,
-    flatShading: true
-  });
-  var meteoritosMesh = new THREE.InstancedMesh(geoAsteroide, matAsteroide, NUM_METEORITOS);
-  meteoritosMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-  saturnGroup.add(meteoritosMesh);
-
-  var meteoritoData = [];
-  var dummyMeteor = new THREE.Object3D();
-  var colorAsteroide = new THREE.Color();
-  var paletaRocas = [
-    0xf5eee4, // Hielo reflectivo brillante
-    0xe0d4c2, // Hielo ambarino con polvo
-    0xc7b599, // Silicato arenoso dorado
-    0x96836c, // Roca basáltica meteorítica
-    0x665b50, // Chondrita carbonácea oscura
-    0x4a433c, // Hierro meteorítico oscuro
-    0xfff5ea  // Fragmento de hielo cristalino
-  ];
-
-  for (var mi = 0; mi < NUM_METEORITOS; mi++) {
-    var randZona = Math.random();
-    var r = 0;
-    if (randZona < 0.62) {
-      // Anillo B: densísimo, lleno de rocas grandes y medianas
-      r = GLOBE_RADIUS + 0.65 + Math.random() * 0.90;
-    } else if (randZona < 0.91) {
-      // Anillo A: exterior tras la división de Cassini
-      r = GLOBE_RADIUS + 1.74 + Math.random() * 0.52;
-    } else {
-      // Anillo C: tenue interior
-      r = GLOBE_RADIUS + 0.38 + Math.random() * 0.25;
-    }
-
-    var angulo = Math.random() * Math.PI * 2;
-    var yDisp = (Math.random() - 0.5) * (0.045 + Math.random() * 0.075);
-
-    var rTam = Math.random();
-    var escala = (rTam < 0.68) ? (0.022 + Math.random() * 0.034)
-               : (rTam < 0.93) ? (0.058 + Math.random() * 0.044)
-               : (0.11 + Math.random() * 0.070); // Boulders gigantes
-
-    var rx = Math.random() * Math.PI * 2;
-    var ry = Math.random() * Math.PI * 2;
-    var rz = Math.random() * Math.PI * 2;
-
-    dummyMeteor.position.set(Math.cos(angulo) * r, yDisp, Math.sin(angulo) * r);
-    dummyMeteor.rotation.set(rx, ry, rz);
-    dummyMeteor.scale.set(escala, escala * (0.8 + Math.random() * 0.4), escala * (0.8 + Math.random() * 0.4));
-    dummyMeteor.updateMatrix();
-
-    meteoritosMesh.setMatrixAt(mi, dummyMeteor.matrix);
-
-    var cHex = paletaRocas[Math.floor(Math.random() * paletaRocas.length)];
-    colorAsteroide.setHex(cHex);
-    colorAsteroide.offsetHSL(0, 0, (Math.random() - 0.5) * 0.12);
-    meteoritosMesh.setColorAt(mi, colorAsteroide);
-
-    meteoritoData.push({
-      dist: r,
-      ang: angulo,
-      y: yDisp,
-      scaleX: dummyMeteor.scale.x,
-      scaleY: dummyMeteor.scale.y,
-      scaleZ: dummyMeteor.scale.z,
-      velOrbital: (0.0078 / Math.sqrt(r / 2.3)),
-      rotX: rx,
-      rotY: ry,
-      rotZ: rz,
-      tumbleX: (Math.random() - 0.5) * 0.024,
-      tumbleY: (Math.random() - 0.5) * 0.032,
-      tumbleZ: (Math.random() - 0.5) * 0.022
-    });
-  }
-  meteoritosMesh.instanceMatrix.needsUpdate = true;
-  if (meteoritosMesh.instanceColor) meteoritosMesh.instanceColor.needsUpdate = true;
-
-  saturnGroup.rotation.x = Math.PI / 2.45;
-  saturnGroup.rotation.y = 0.22;
-  saturnGroup.visible = false;
-
-  // 9. Campo de Estrellas y Nebulosas de Fondo
-  var starPositions = [];
-  var starColors = [];
-  var starPalette = [[1.0, 0.25, 0.2], [0.0, 0.96, 1.0], [1.0, 1.0, 1.0], [0.75, 0.45, 1.0]];
-  for (var s = 0; s < 2500; s++) {
-    starPositions.push((Math.random() - 0.5) * 36, (Math.random() - 0.5) * 24, -2 - Math.random() * 24);
-    var cp = starPalette[Math.floor(Math.random() * starPalette.length)];
-    var lum = 0.4 + Math.random() * 0.6;
-    starColors.push(cp[0] * lum, cp[1] * lum, cp[2] * lum);
-  }
-  var starGeo = new THREE.BufferGeometry();
-  starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starPositions, 3));
-  starGeo.setAttribute('color', new THREE.Float32BufferAttribute(starColors, 3));
-  var stars = new THREE.Points(starGeo, new THREE.PointsMaterial({ size: 0.05, vertexColors: true, transparent: true, opacity: 0.9 }));
-  scene.add(stars);
-
-  function updateGlobePlacement() {
-    var isMobile = window.innerWidth <= 960;
-    if (isMobile) {
-      globeGroup.position.set(0, 1.3, 0);
-      globeGroup.scale.set(0.85, 0.85, 0.85);
-    } else {
-      var aspect = window.innerWidth / window.innerHeight;
-      var offsetX = -(aspect * 0.72);
-      globeGroup.position.set(offsetX, 0, 0);
-      globeGroup.scale.set(1.05, 1.05, 1.05);
-    }
-  }
-  updateGlobePlacement();
-
-  // --- CATÁLOGO DE PLANETAS POR DÍA ---
-  var CONFIG_PLANETAS = {
-    1: { id: 'mercurio', dia: 'LUNES', nombre: 'MERCURIO - SECTOR ROCOSO', sub: 'CRÁTERES DE IMPACTO & CUENCA CALORIS', colorHex: '#94a3b8', colorThree: 0x94a3b8, bgGlow1: 'rgba(148, 163, 184, 0.16)', bgGlow2: 'rgba(217, 119, 6, 0.08)', radio: 2.10, vel: 0.0048, saturn: false, roughness: 0.60, metalness: 0.06, normalScale: 0.55 },
-    2: { id: 'venus', dia: 'MARTES', nombre: 'VENUS - LUCERO DEL ALBA', sub: 'ATMÓSFERA VOLUMÉTRICA & SUPER-ROTACIÓN 3D', colorHex: '#ffd700', colorThree: 0xffd700, bgGlow1: 'rgba(255, 215, 0, 0.16)', bgGlow2: 'rgba(251, 146, 60, 0.10)', radio: 2.22, vel: 0.0028, saturn: false, roughness: 0.48, metalness: 0.02, normalScale: 0.32 },
-    3: { id: 'tierra', dia: 'MIÉRCOLES', nombre: 'TIERRA - BÓVEDA SHIELD', sub: 'CORDILLERAS GLOBALES & HIDROSFERA ACTIVA', colorHex: '#00f5ff', colorThree: 0x00f5ff, bgGlow1: 'rgba(0, 245, 255, 0.18)', bgGlow2: 'rgba(255, 0, 85, 0.10)', radio: 2.30, vel: 0.0032, saturn: false, roughness: 0.44, metalness: 0.03, normalScale: 0.70 },
-    4: { id: 'marte', dia: 'JUEVES', nombre: 'MARTE - PROTOCOLO DEFENSA', sub: 'VALLES MARINERIS & OLYMPUS MONS', colorHex: '#ff3b30', colorThree: 0xff3b30, bgGlow1: 'rgba(255, 59, 48, 0.20)', bgGlow2: 'rgba(255, 149, 0, 0.10)', radio: 2.30, vel: 0.0036, saturn: false, roughness: 0.52, metalness: 0.04, normalScale: 0.45 },
-    5: { id: 'jupiter', dia: 'VIERNES', nombre: 'JÚPITER - BARRERA GRAVITACIONAL', sub: 'ESTRATIFICACIÓN TROPOSFÉRICA & GRAN MANCHA ROJA', colorHex: '#f59e0b', colorThree: 0xf59e0b, bgGlow1: 'rgba(245, 158, 11, 0.18)', bgGlow2: 'rgba(217, 119, 6, 0.10)', radio: 2.65, vel: 0.0022, saturn: false, roughness: 0.46, metalness: 0.02, normalScale: 0.30 },
-    6: { id: 'saturno', dia: 'SÁBADO', nombre: 'SATURNO - ANILLOS DE PRIVACIDAD', sub: 'CINTURÓN DE METEORITOS 3D · 2,200 ASTEROIDES EN ÓRBITA', colorHex: '#e0c580', colorThree: 0xe0c580, bgGlow1: 'rgba(224, 197, 128, 0.20)', bgGlow2: 'rgba(139, 92, 246, 0.10)', radio: 2.26, vel: 0.0025, saturn: true, roughness: 0.48, metalness: 0.02, normalScale: 0.28 },
-    0: { id: 'urano', dia: 'DOMINGO', nombre: 'URANO - GIGANTE DE HIELO', sub: 'METANO TURQUESA & ANILLOS POLARES INCLINADOS', colorHex: '#4ef2d2', colorThree: 0x4ef2d2, bgGlow1: 'rgba(78, 242, 210, 0.18)', bgGlow2: 'rgba(56, 189, 248, 0.10)', radio: 2.25, vel: 0.0030, saturn: false, roughness: 0.42, metalness: 0.02, normalScale: 0.25 }
-  };
-
-  var planetaActual = null;
-  var forzarCinturonMeteoritos = false;
-
-  function aplicarPlaneta(diaNum) {
-    var p = CONFIG_PLANETAS[diaNum] !== undefined ? CONFIG_PLANETAS[diaNum] : (CONFIG_PLANETAS[new Date().getDay()] || CONFIG_PLANETAS[2]);
-    planetaActual = p;
-
-    var tex = TEXTURAS_FOTO[p.id] || generarTexturaPlaneta(p.id);
-    planetMat.map = tex;
-
-    // Relieves y capas atmosféricas fotorrealistas
-    if (p.id === 'tierra') {
-      planetMat.normalMap = earthNormalMap;
-      planetMat.normalScale = new THREE.Vector2(p.normalScale || 0.70, p.normalScale || 0.70);
-      planetMat.roughnessMap = earthSpecularMap;
-      planetMat.bumpMap = null;
-      if (earthCloudsMesh) earthCloudsMesh.visible = true;
-      if (venusCloudsMesh) venusCloudsMesh.visible = false;
-      if (neptuneCloudsMesh) neptuneCloudsMesh.visible = false;
-    } else {
-      var nMap = NORMAL_MAPS_CACHE[p.id];
-      if (nMap) {
-        planetMat.normalMap = nMap;
-        var ns = p.normalScale || 0.45;
-        planetMat.normalScale = new THREE.Vector2(ns, ns);
-      } else {
-        planetMat.normalMap = null;
-      }
-      planetMat.roughnessMap = null;
-      planetMat.bumpMap = null;
-      if (earthCloudsMesh) earthCloudsMesh.visible = false;
-      if (venusCloudsMesh) venusCloudsMesh.visible = (p.id === 'venus');
-      if (neptuneCloudsMesh) neptuneCloudsMesh.visible = (p.id === 'urano' || p.id === 'neptuno');
-    }
-
-    planetMat.roughness = p.roughness;
-    planetMat.metalness = p.metalness;
-    planetMat.needsUpdate = true;
-
-    var isMobile = window.innerWidth <= 960;
-    var baseScale = isMobile ? 0.85 : 1.05;
-    var s = (p.radio / 2.3) * baseScale;
-    globeGroup.scale.set(s, s, s);
-
-    atmosMat.uniforms.glowColor.value.setHex(p.colorThree);
-    coneMat.uniforms.beamColor.value.setHex(p.colorThree);
-    r1Mat.color.setHex(p.colorThree);
-    r2Mat.color.setHex(p.colorThree);
-    dustMat.color.setHex(p.colorThree);
-    pedestalLight.color.setHex(p.colorThree);
-    pedestalMaterials.forEach(function(m) { m.color.setHex(p.colorThree); });
-    if (rimSunLight) rimSunLight.color.setHex(p.colorThree);
-
-    var mostrarAnillos = p.saturn || forzarCinturonMeteoritos;
-    saturnGroup.visible = mostrarAnillos;
-    hudRingGroup.visible = !mostrarAnillos;
-
-    var btnMeteor = document.getElementById('btnToggleMeteoritos');
-    if (btnMeteor) {
-      btnMeteor.classList.toggle('active', mostrarAnillos);
-    }
-
-    document.body.style.setProperty('--planet-accent', p.colorHex);
-    document.body.style.setProperty('--planet-bg-glow1', p.bgGlow1);
-    document.body.style.setProperty('--planet-bg-glow2', p.bgGlow2);
-
-    var hudTitle = document.getElementById('hudMainTitle');
-    if (hudTitle) hudTitle.textContent = p.dia + ' · ' + p.nombre;
-
-    var miniBadge = document.getElementById('miniPlanetBadge');
-    if (miniBadge) miniBadge.style.background = p.colorHex;
-
-    var telemetrySub = document.querySelector('.hud-telemetry-tl .t-val');
-    if (telemetrySub) telemetrySub.textContent = p.sub;
-
-    document.querySelectorAll('.planet-tab[data-day]').forEach(function(btn) {
-      var d = btn.getAttribute('data-day');
-      if (d !== null && Number(d) === diaNum) btn.classList.add('active');
-      else btn.classList.remove('active');
-    });
-  }
-
-  document.querySelectorAll('.planet-tab[data-day]').forEach(function(btn) {
-    btn.addEventListener('click', function(e) {
-      e.stopPropagation();
-      var d = Number(this.getAttribute('data-day'));
-      aplicarPlaneta(d);
-      var today = new Date().getDay();
-      var p = CONFIG_PLANETAS[d];
-      if (p) {
-        try {
-          if (d === today) localStorage.setItem('boveda-palette', 'planeta-dia');
-          else localStorage.setItem('boveda-palette', p.id);
-        } catch(err) {}
-      }
-    });
-  });
-
-  var btnAutoDay = document.getElementById('btnAutoDay');
-  if (btnAutoDay) {
-    btnAutoDay.addEventListener('click', function(e) {
-      e.stopPropagation();
-      aplicarPlaneta(new Date().getDay());
-      try { localStorage.setItem('boveda-palette', 'planeta-dia'); } catch(err) {}
-    });
-  }
-
-  var btnToggleMeteoritos = document.getElementById('btnToggleMeteoritos');
-  if (btnToggleMeteoritos) {
-    btnToggleMeteoritos.addEventListener('click', function(e) {
-      e.stopPropagation();
-      forzarCinturonMeteoritos = !forzarCinturonMeteoritos;
-      this.classList.toggle('active', forzarCinturonMeteoritos);
-      var mostrar = (planetaActual && planetaActual.saturn) || forzarCinturonMeteoritos;
-      saturnGroup.visible = mostrar;
-      hudRingGroup.visible = !mostrar;
-    });
-  }
-
-  aplicarPlaneta(new Date().getDay());
-
-  // Rotación interactiva libre con ratón (arrastrar para girar el planeta en 360°)
-  var isDragging = false;
-  var previousMousePosition = { x: 0, y: 0 };
-  var dragVelX = 0, dragVelY = 0;
-  var mouseX = 0, mouseY = 0, targetRotX = 0.14, targetRotY = 0;
-
-  window.addEventListener('mousedown', function(e) {
-    if (e.target.closest('#earthCanvasWrap')) {
-      isDragging = true;
-      previousMousePosition = { x: e.clientX, y: e.clientY };
-    }
-  });
-
+  // Interacción suave con el mouse
+  var mouseX = 0, mouseY = 0;
   window.addEventListener('mousemove', function(e) {
-    if (isDragging) {
-      var deltaX = e.clientX - previousMousePosition.x;
-      var deltaY = e.clientY - previousMousePosition.y;
-      dragVelX = deltaX * 0.0055;
-      dragVelY = deltaY * 0.0055;
-      globeGroup.rotation.y += dragVelX;
-      globeGroup.rotation.x += dragVelY;
-      previousMousePosition = { x: e.clientX, y: e.clientY };
-    } else {
-      mouseX = (e.clientX / window.innerWidth) * 2 - 1;
-      mouseY = (e.clientY / window.innerHeight) * 2 - 1;
-      targetRotX = 0.14 + (mouseY * 0.12);
-      targetRotY = mouseX * 0.18;
-    }
-  });
-
-  window.addEventListener('mouseup', function() {
-    isDragging = false;
-  });
-
-  // Soporte para dispositivos táctiles (Touch)
-  window.addEventListener('touchstart', function(e) {
-    if (e.touches.length === 1 && e.target.closest('#earthCanvasWrap')) {
-      isDragging = true;
-      previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-    }
+    mouseX = (e.clientX / width - 0.5) * 0.4;
+    mouseY = (e.clientY / height - 0.5) * 0.4;
   }, { passive: true });
-
-  window.addEventListener('touchmove', function(e) {
-    if (isDragging && e.touches.length === 1) {
-      var deltaX = e.touches[0].clientX - previousMousePosition.x;
-      var deltaY = e.touches[0].clientY - previousMousePosition.y;
-      dragVelX = deltaX * 0.006;
-      dragVelY = deltaY * 0.006;
-      globeGroup.rotation.y += dragVelX;
-      globeGroup.rotation.x += dragVelY;
-      previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-    }
-  }, { passive: true });
-
-  window.addEventListener('touchend', function() {
-    isDragging = false;
-  });
 
   window.addEventListener('resize', function() {
-    var nw = window.innerWidth, nh = window.innerHeight;
-    camera.aspect = nw / nh;
+    width = window.innerWidth;
+    height = window.innerHeight;
+    camera.aspect = width / height;
     camera.updateProjectionMatrix();
-    renderer.setSize(nw, nh);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2.5));
-    updateGlobePlacement();
+    renderer.setSize(width, height);
+    group.position.set(width < 960 ? 0 : -1.8, 0.3, 0);
   });
 
-  var waveCanvas = document.getElementById('hudWaveCanvas');
-  var waveCtx = waveCanvas ? waveCanvas.getContext('2d') : null;
-  var waveStep = 0;
-  function dibujarOndaECG() {
-    if (!waveCtx) return;
-    waveStep += 0.08;
-    waveCtx.clearRect(0, 0, 80, 28);
-    waveCtx.beginPath();
-    waveCtx.strokeStyle = planetaActual ? planetaActual.colorHex : '#ff3b30';
-    waveCtx.lineWidth = 1.6;
-    for (var x = 0; x < 80; x++) {
-      var y = 14 + Math.sin(x * 0.18 + waveStep) * 4;
-      if (x > 32 && x < 46) {
-        y += Math.sin((x - 32) * 0.4) * 9;
-      }
-      if (x === 0) waveCtx.moveTo(x, y);
-      else waveCtx.lineTo(x, y);
-    }
-    waveCtx.stroke();
-  }
+  if (width < 960) group.position.set(0, 0.3, 0);
 
-  var hudClock = document.getElementById('hudLiveClock');
-  function actualizarReloj() {
-    if (!hudClock) return;
-    var d = new Date();
-    hudClock.textContent = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0') + ':' + String(d.getSeconds()).padStart(2, '0');
-  }
-  setInterval(actualizarReloj, 1000);
-  actualizarReloj();
-
-  // Bucle de animación continuo a 60fps con cálculo de rotación física
-  var trackerAngle = 0;
   function animate() {
     requestAnimationFrame(animate);
+    coreMesh.rotation.y += 0.005;
+    coreMesh.rotation.x += 0.002;
+    cubeMesh.rotation.y -= 0.007;
+    cubeMesh.rotation.z += 0.003;
+    ringMesh1.rotation.z += 0.004;
+    ringMesh2.rotation.z -= 0.003;
+    particleSystem.rotation.y += 0.0015;
 
-    if (!isDragging) {
-      if (Math.abs(dragVelX) > 0.0001 || Math.abs(dragVelY) > 0.0001) {
-        globeGroup.rotation.y += dragVelX;
-        globeGroup.rotation.x += dragVelY;
-        dragVelX *= 0.93;
-        dragVelY *= 0.93;
-      }
-      globeGroup.rotation.y += (planetaActual ? planetaActual.vel : 0.0034);
-      globeGroup.rotation.x += (targetRotX - globeGroup.rotation.x) * 0.04;
-      globeGroup.rotation.z = targetRotY * 0.25;
-    }
+    group.rotation.y += (mouseX - group.rotation.y) * 0.05;
+    group.rotation.x += (mouseY - group.rotation.x) * 0.05;
 
-    // Rotación del retículo de telemetría a lo largo del anillo orbital
-    trackerAngle += 0.014;
-    var trackRadius = GLOBE_RADIUS + 0.48;
-    trackerMesh.position.set(Math.cos(trackerAngle) * trackRadius, Math.sin(trackerAngle) * trackRadius, 0);
-
-    // Rotación de los anillos HUD y del pedestal
-    hudRingGroup.rotation.z += 0.0035;
-    pedestalGroup.rotation.z -= 0.002;
-    dustMesh.rotation.y += 0.0018;
-
-    if (earthCloudsMesh && earthCloudsMesh.visible) {
-      earthCloudsMesh.rotation.y += 0.0006;
-    }
-    if (venusCloudsMesh && venusCloudsMesh.visible) {
-      venusCloudsMesh.rotation.y += 0.0048;
-    }
-    if (neptuneCloudsMesh && neptuneCloudsMesh.visible) {
-      neptuneCloudsMesh.rotation.y += 0.0016;
-    }
-
-    if (saturnGroup && saturnGroup.visible) {
-      saturnGroup.rotation.z += 0.0012;
-      if (meteoritosMesh && meteoritoData && meteoritoData.length) {
-        for (var mi = 0; mi < NUM_METEORITOS; mi++) {
-          var m = meteoritoData[mi];
-          m.ang += m.velOrbital;
-          m.rotX += m.tumbleX;
-          m.rotY += m.tumbleY;
-          m.rotZ += m.tumbleZ;
-          dummyMeteor.position.set(Math.cos(m.ang) * m.dist, m.y, Math.sin(m.ang) * m.dist);
-          dummyMeteor.rotation.set(m.rotX, m.rotY, m.rotZ);
-          dummyMeteor.scale.set(m.scaleX, m.scaleY, m.scaleZ);
-          dummyMeteor.updateMatrix();
-          meteoritosMesh.setMatrixAt(mi, dummyMeteor.matrix);
-        }
-        meteoritosMesh.instanceMatrix.needsUpdate = true;
-      }
-    }
-    if (stars) {
-      stars.rotation.y += 0.0002;
-    }
-
-    dibujarOndaECG();
     renderer.render(scene, camera);
   }
-
   animate();
 })();
 
-// --- GESTIÓN DEL FORMULARIO DE ACCESO AJAX ---
-(function() {
-  var form = document.getElementById('loginForm');
-  var btn = document.getElementById('btnLogin');
-  var txtUser = document.getElementById('usuario');
-  var txtPass = document.getElementById('clave');
-  var chkRecordar = document.getElementById('chkRecordar');
-  if (!form || !btn) return;
-
-  var originalHTML = btn.innerHTML;
-  var animando = false;
-
-  try {
-    var savedUser = localStorage.getItem('boveda_saved_user');
-    if (savedUser && txtUser) {
-      txtUser.value = savedUser;
-      if (chkRecordar) chkRecordar.checked = true;
-      if (txtPass) setTimeout(function(){ txtPass.focus(); }, 50);
-    }
-  } catch(e) {}
-
-  form.addEventListener('submit', function(e) {
-    e.preventDefault();
-    if (animando) return;
-
-    var username = (txtUser ? txtUser.value : '').trim();
-    var password = txtPass ? txtPass.value : '';
-    if (!username || !password) return;
-
-    try {
-      if (chkRecordar && chkRecordar.checked) localStorage.setItem('boveda_saved_user', username);
-      else localStorage.removeItem('boveda_saved_user');
-    } catch(e) {}
-
-    animando = true;
-    btn.disabled = true;
-    btn.classList.add('btn-validando');
-    btn.innerHTML = '<span class="btn-label">VALIDANDO ACCESO…</span><svg viewBox="0 0 24 24" style="animation: spin 0.8s linear infinite; width:18px; height:18px;"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-dasharray="32" stroke-linecap="round" fill="none"/></svg>';
-
-    fetch('/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-      body: JSON.stringify({ username: username, password: password, ajax: '1' }),
-      credentials: 'same-origin'
-    })
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      if (data && data.ok) {
-        btn.classList.remove('btn-validando', 'btn-invalido');
-        btn.classList.add('btn-valido');
-        btn.innerHTML = '<span class="btn-label">¡AUTORIZADO!</span><svg viewBox="0 0 24 24" style="stroke-width:3.2; width:18px; height:18px;"><polyline points="20 6 9 17 4 12"/></svg>';
-        setTimeout(function() { window.location.href = data.redirect || '/'; }, 500);
-      } else {
-        mostrarError(data && data.error ? data.error : 'Credenciales inválidas');
-      }
-    })
-    .catch(function() { mostrarError('Error de enlace'); });
-  });
-
-  function mostrarError(msg) {
-    btn.classList.remove('btn-validando', 'btn-valido');
-    btn.classList.add('btn-invalido');
-    btn.innerHTML = '<span class="btn-label">' + (msg || 'DATOS INCORRECTOS') + '</span>';
-    if (txtPass) txtPass.select();
-    setTimeout(function() {
-      btn.classList.remove('btn-invalido');
-      btn.disabled = false;
-      btn.innerHTML = originalHTML;
-      animando = false;
-    }, 1800);
-  }
-})();
-
-// --- GESTIÓN DE ACCESO BIOMÉTRICO (WEBAUTHN / WINDOWS HELLO HUELLA DIGITAL) ---
-(function() {
-  var btnBio = document.getElementById('btnBiometria');
-  var divBio = document.getElementById('bioDivider');
-  var txtUser = document.getElementById('usuario');
-  if (!btnBio || typeof Biometria === 'undefined') return;
-
-  var originalBioHTML = btnBio.innerHTML;
-  var bioEscaneando = false;
-
-  Biometria.esCompatible().then(function(compatible) {
-    if (compatible) {
-      btnBio.style.display = 'flex';
-      if (divBio) divBio.style.display = 'flex';
-    }
-  }).catch(function() {});
-
-  btnBio.addEventListener('click', async function() {
-    if (bioEscaneando) return;
-    bioEscaneando = true;
-
-    var usuario = (txtUser ? txtUser.value : '').trim();
-
-    btnBio.classList.add('scanning');
-    btnBio.disabled = true;
-    var t = btnBio.querySelector('.bio-title');
-    var s = btnBio.querySelector('.bio-sub');
-    if (t) t.textContent = 'COLOCA TU DEDO EN EL SENSOR...';
-    if (s) s.textContent = 'Escaneando huella dactilar Windows Hello';
-
-    try {
-      var resultado = await Biometria.autenticar(usuario);
-      if (resultado && resultado.ok) {
-        btnBio.classList.remove('scanning');
-        btnBio.style.borderColor = '#10b981';
-        btnBio.style.background = 'rgba(16, 185, 129, 0.2)';
-        if (t) t.textContent = '¡HUELLA RECONOCIDA! BIENVENIDO';
-        if (s) s.textContent = (resultado.user ? resultado.user.username : '') + ' · Acceso concedido';
-        setTimeout(function() {
-          window.location.href = resultado.redirect || '/';
-        }, 550);
-      }
-    } catch(err) {
-      btnBio.classList.remove('scanning');
-      btnBio.style.borderColor = '#ef4444';
-      btnBio.style.background = 'rgba(239, 68, 68, 0.2)';
-      if (t) t.textContent = 'NO SE PUDO VERIFICAR HUELLA';
-      if (s) s.textContent = err.message || 'Intenta de nuevo o ingresa con tu contraseña';
-
-      setTimeout(function() {
-        btnBio.style.borderColor = '';
-        btnBio.style.background = '';
-        btnBio.innerHTML = originalBioHTML;
-        btnBio.disabled = false;
-        bioEscaneando = false;
-      }, 2500);
-    }
-  });
-})();
-
-// --- SISTEMA DE TEMAS DE MOTORES DE BASE DE DATOS Y TERMINAL PL/SQL EN VIVO ---
+// --- SISTEMA DE TEMAS DE MOTORES DE BASE DE DATOS, EDITORES Y LENGUAJES ---
 (function() {
   var DB_THEMES = {
     postgres: {
@@ -2494,23 +1555,244 @@
         "COMMIT;"
       ]
     },
-    planetas: {
-      id: 'planetas',
-      name: 'PLANETAS 3D',
-      fullName: 'SISTEMA SOLAR 3D · EXPLORADOR SEMANAL',
-      icon: '🪐',
-      accent: '#ff3b30',
-      accentRgb: '255, 59, 48',
-      glow: 'rgba(255, 59, 48, 0.35)',
-      chip: 'THREE.JS 3D',
-      iops: '60 FPS',
-      latency: 'WebGL 2.0',
-      code: []
+    cassandra: {
+      id: 'cassandra',
+      name: 'CASSANDRA',
+      fullName: 'APACHE CASSANDRA · DISTRIBUTED HIGH-THROUGHPUT NOSQL',
+      icon: '👁️',
+      image: '/login-themes/theme_cassandra.jpg',
+      accent: '#8b5cf6',
+      accentRgb: '139, 92, 246',
+      glow: 'rgba(139, 92, 246, 0.35)',
+      chip: 'CQL v5.0 PEER-TO-PEER',
+      iops: '890,000',
+      latency: '0.015 ms',
+      code: [
+        "-- [APACHE CASSANDRA v5.0 · HIGH-THROUGHPUT NOSQL]",
+        "CREATE KEYSPACE IF NOT EXISTS vault_cluster WITH replication = {",
+        "    'class': 'NetworkTopologyStrategy',",
+        "    'datacenter1': 3",
+        "};",
+        "CREATE TABLE IF NOT EXISTS vault_cluster.active_sessions (",
+        "    cluster_id  TEXT,",
+        "    user_uuid   UUID,",
+        "    token_hash  BLOB,",
+        "    last_ping   TIMESTAMP,",
+        "    PRIMARY KEY ((cluster_id), user_uuid)",
+        ") WITH CLUSTERING ORDER BY (user_uuid ASC);",
+        "SELECT * FROM vault_cluster.active_sessions WHERE cluster_id = 'NODE_CORE_01';"
+      ]
+    },
+    neo4j: {
+      id: 'neo4j',
+      name: 'NEO4J',
+      fullName: 'NEO4J ENTERPRISE · GRAPH CYPHER NEURAL DATA MATRIX',
+      icon: '🕸️',
+      image: '/login-themes/theme_neo4j.jpg',
+      accent: '#14b8a6',
+      accentRgb: '20, 184, 166',
+      glow: 'rgba(20, 184, 166, 0.35)',
+      chip: 'CYPHER GRAPH v5.18',
+      iops: '340,000',
+      latency: '0.025 ms',
+      code: [
+        "// [NEO4J v5.18 · GRAPH CYPHER ENGINE]",
+        "MATCH (usr:SecurityPrincipal {id: $principalId})",
+        "MATCH (vault:KeyVaultCluster {status: 'ACTIVE'})",
+        "WHERE (usr)-[:HAS_ROLE]->(:Role)-[:PERMITS]->(vault)",
+        "MERGE (session:ActiveSession {token: $tokenHash})",
+        "SET session.establishedAt = datetime(),",
+        "    session.telemetry = {latencyUs: 42, iops: 85000}",
+        "CREATE (usr)-[:AUTHENTICATED]->(session)-[:CONNECTED_TO]->(vault)",
+        "RETURN session.token, vault.endpoint;"
+      ]
+    },
+    vscode: {
+      id: 'vscode',
+      name: 'VS CODE',
+      fullName: 'VISUAL STUDIO CODE · HYPER-INTELLISENSE ENGINE',
+      icon: '🔷',
+      image: '/login-themes/theme_vscode.jpg',
+      accent: '#0284c7',
+      accentRgb: '2, 132, 199',
+      glow: 'rgba(2, 132, 199, 0.35)',
+      chip: 'TYPESCRIPT EXTENSION',
+      iops: '120 FPS UI',
+      latency: '0.005 ms LSP',
+      code: [
+        "// [VS CODE EXTENSION ENGINE · INTELLISENSE CORE]",
+        "import * as vscode from 'vscode';",
+        "export function activate(context: vscode.ExtensionContext) {",
+        "  const authProvider = vscode.authentication.registerAuthenticationProvider(",
+        "    'jira-vault-sso',",
+        "    'Bóveda Jira SSO Security Matrix',",
+        "    {",
+        "      async getSessions(scopes) {",
+        "        const token = await context.secrets.get('active_vault_token');",
+        "        return token ? [{ id: 'sess_active', accessToken: token, account: { id: 'admin', label: 'Admin' }, scopes }] : [];",
+        "      }",
+        "    }",
+        "  );",
+        "  context.subscriptions.push(authProvider);",
+        "}"
+      ]
+    },
+    neovim: {
+      id: 'neovim',
+      name: 'NEOVIM',
+      fullName: 'NEOVIM TACTICAL · LUA MODAL BUFFER MATRIX IDE',
+      icon: '🟩',
+      image: '/login-themes/theme_neovim.jpg',
+      accent: '#22c55e',
+      accentRgb: '34, 197, 94',
+      glow: 'rgba(34, 197, 94, 0.35)',
+      chip: 'LUA JIT 2.1 MODAL',
+      iops: '500,000 WPM',
+      latency: '0.001 ms IO',
+      code: [
+        "-- [NEOVIM v0.10 · LUA TACTICAL BUFFER ENGINE]",
+        "local api = vim.api",
+        "local vault_lsp = require('lspconfig').vault_analyzer",
+        "",
+        "api.nvim_create_autocmd('User', {",
+        "  pattern = 'VaultAuthRequested',",
+        "  callback = function(args)",
+        "    local key_hash = vim.fn.sha256(args.data.token)",
+        "    vim.notify('Bóveda Jira: Buffer sincronizado con éxito', vim.log.levels.INFO)",
+        "    api.nvim_set_var('vault_session_active', 1)",
+        "  end,",
+        "})"
+      ]
+    },
+    python: {
+      id: 'python',
+      name: 'PYTHON',
+      fullName: 'PYTHON 3.12 · ASYNCIO FAST SECURITY DAEMON',
+      icon: '🐍',
+      image: '/login-themes/theme_python.jpg',
+      accent: '#eab308',
+      accentRgb: '234, 179, 8',
+      glow: 'rgba(234, 179, 8, 0.35)',
+      chip: 'PYTHON v3.12 ASYNC',
+      iops: '380,000 REQ/S',
+      latency: '0.012 ms',
+      code: [
+        "# [PYTHON 3.12 · ASYNCIO SECURITY DAEMON]",
+        "import asyncio",
+        "from dataclasses import dataclass",
+        "from hashlib import sha256",
+        "",
+        "@dataclass(slots=True)",
+        "class AuthPayload:",
+        "    user_id: str",
+        "    client_ip: str",
+        "    nonce: bytes",
+        "",
+        "async def verify_cluster_handshake(payload: AuthPayload) -> dict:",
+        "    token_digest = sha256(payload.nonce + payload.user_id.encode()).hexdigest()",
+        "    await asyncio.sleep(0.001)  # Microsecond cluster sync",
+        "    return {'authorized': True, 'token': token_digest, 'pool': 'worker_pool_0'}"
+      ]
+    },
+    javascript: {
+      id: 'javascript',
+      name: 'JAVASCRIPT',
+      fullName: 'JAVASCRIPT & NODE.JS · V8 ENGINE EVENT LOOP CLUSTER',
+      icon: '🟨',
+      image: '/login-themes/theme_javascript.jpg',
+      accent: '#facc15',
+      accentRgb: '250, 204, 21',
+      glow: 'rgba(250, 204, 21, 0.35)',
+      chip: 'NODE.JS v24 V8',
+      iops: '540,000 IOPS',
+      latency: '0.008 ms',
+      code: [
+        "// [NODE.JS v24 · V8 EVENT LOOP CLUSTER]",
+        "import { createHash, randomBytes } from 'node:crypto';",
+        "",
+        "export async function handleVaultLogin(req, res) {",
+        "  const { username, signature } = req.body;",
+        "  const salt = randomBytes(16);",
+        "  const authHash = createHash('sha256').update(signature + salt).digest('hex');",
+        "  ",
+        "  res.setHeader('X-Cluster-Latency', '0.04ms');",
+        "  return res.status(200).json({",
+        "    ok: true,",
+        "    node: 'v8-edge-core-1',",
+        "    sessionHash: authHash",
+        "  });",
+        "}"
+      ]
+    },
+    rust: {
+      id: 'rust',
+      name: 'RUST',
+      fullName: 'RUST 2024 · MEMORY-SAFE ZERO-COST BORROW CHECKER',
+      icon: '🦀',
+      image: '/login-themes/theme_rust.jpg',
+      accent: '#f97316',
+      accentRgb: '249, 115, 22',
+      glow: 'rgba(249, 115, 22, 0.35)',
+      chip: 'RUST 2024 CARGO',
+      iops: '1,800,000 IOPS',
+      latency: '0.0005 ms',
+      code: [
+        "// [RUST 2024 · MEMORY-SAFE ZERO-COST ENGINE]",
+        "use std::sync::Arc;",
+        "use tokio::sync::RwLock;",
+        "",
+        "pub struct VaultClusterCore {",
+        "    pub node_id: &'static str,",
+        "    pub cipher_cache: Arc<RwLock<Vec<u8>>>,",
+        "}",
+        "",
+        "impl VaultClusterCore {",
+        "    pub async fn authenticate_session(&self, token: &[u8; 32]) -> Result<bool, &'static str> {",
+        "        let guard = self.cipher_cache.read().await;",
+        "        // Verificación a nivel de microsegundo sin Garbage Collector",
+        "        Ok(guard.starts_with(token))",
+        "    }",
+        "}"
+      ]
+    },
+    golang: {
+      id: 'golang',
+      name: 'GOLANG',
+      fullName: 'GO 1.23 · CONCURRENCY GOROUTINE PIPELINE',
+      icon: '🩵',
+      image: '/login-themes/theme_golang.jpg',
+      accent: '#38bdf8',
+      accentRgb: '56, 189, 248',
+      glow: 'rgba(56, 189, 248, 0.35)',
+      chip: 'GO v1.23 CHANNELS',
+      iops: '1,450,000 IOPS',
+      latency: '0.002 ms',
+      code: [
+        "// [GO 1.23 · GOROUTINES CONCURRENCY PIPELINE]",
+        "package vault",
+        "",
+        "import (",
+        "    "crypto/sha256"",
+        "    "net/http"",
+        "    "time"",
+        ")",
+        "",
+        "type AuthResult struct {",
+        "    Authorized bool          `json:"authorized"`",
+        "    Latency    time.Duration `json:"latency"`",
+        "}",
+        "",
+        "func HandleAuthPipeline(w http.ResponseWriter, r *http.Request) {",
+        "    start := time.Now()",
+        "    h := sha256.Sum256([]byte(r.Header.Get("X-Vault-Token")))",
+        "    _ = h",
+        "    w.WriteHeader(http.StatusOK)",
+        "}"
+      ]
     }
   };
 
   var backdrop = document.getElementById('dbThemeBackdrop');
-  var earthWrap = document.getElementById('earthCanvasWrap');
   var mainTitle = document.getElementById('hudMainTitle');
   var termBox = document.getElementById('hudPlsqlTerminal');
   var termIcon = document.getElementById('hudTermIcon');
@@ -2520,27 +1802,33 @@
   var termBody = document.getElementById('hudTermBody');
   var termIops = document.getElementById('hudTermIops');
   var termLatency = document.getElementById('hudTermLatency');
-  var planetsBar = document.getElementById('hudPlanetsBar');
   var switcher = document.getElementById('hudEngineSwitcher');
   var btnAutoRotar = document.getElementById('btnAutoRotar');
+  var aebIcon = document.getElementById('aebIcon');
+  var aebTxt = document.getElementById('aebTxt');
 
-  var currentTheme = localStorage.getItem('boveda_login_theme') || 'postgres';
+  var savedTheme = localStorage.getItem('boveda_login_theme');
+  if (!savedTheme || savedTheme === 'planetas' || !DB_THEMES[savedTheme]) {
+    savedTheme = 'postgres';
+  }
+  var currentTheme = savedTheme;
   var autoRotate = localStorage.getItem('boveda_theme_autorotate') === 'true';
   var rotateTimer = null;
 
-  // Resaltado de sintaxis
+  // Resaltador de sintaxis multilingüe para terminal
   function highlightLine(line) {
     if (!line) return '';
-    if (line.trim().startsWith('--') || line.trim().startsWith('//')) {
+    var trimmed = line.trim();
+    if (trimmed.startsWith('--') || trimmed.startsWith('//') || trimmed.startsWith('#')) {
       return '<span class="plsql-cm">' + escapeHtml(line) + '</span>';
     }
     var s = escapeHtml(line);
-    s = s.replace(/(['"][^'"]*['"])/g, '<span class="plsql-str">$1</span>');
-    var kwRegex = /\b(CREATE|OR|REPLACE|PACKAGE|BODY|PROCEDURE|FUNCTION|RETURNS|TABLE|DECLARE|BEGIN|END|IS|AS|IF|THEN|OPEN|FETCH|CLOSE|INTO|CURSOR|SELECT|INSERT|FROM|WHERE|FOR|UPDATE|COMMIT|RETURN|QUERY|LANGUAGE|SET|TRANSACTION|OUTPUT|NOCOUNT|WITH|ROWLOCK|UPDLOCK|HOLDLOCK|aggregate|match|lookup|project|multi|hgetall|expire|exec)\b/gi;
+    s = s.replace(/(['"`][^'"`]*['"`])/g, '<span class="plsql-str">$1</span>');
+    var kwRegex = /\b(CREATE|OR|REPLACE|PACKAGE|BODY|PROCEDURE|FUNCTION|RETURNS|TABLE|DECLARE|BEGIN|END|IS|AS|IF|THEN|OPEN|FETCH|CLOSE|INTO|CURSOR|SELECT|INSERT|FROM|WHERE|FOR|UPDATE|COMMIT|RETURN|QUERY|LANGUAGE|SET|TRANSACTION|OUTPUT|NOCOUNT|WITH|ROWLOCK|UPDLOCK|HOLDLOCK|import|export|from|async|await|const|let|var|function|def|class|pub|fn|impl|struct|type|package|return|match|MERGE|MATCH|KEYSPACE|PRAGMA)\b/gi;
     s = s.replace(kwRegex, '<span class="plsql-kw">$1</span>');
-    var typeRegex = /\b(VARCHAR2|VARCHAR|NUMBER|BOOLEAN|RAW|BYTEA|INT|INTEGER|INET|TEXT|BIT|NVARCHAR|VARBINARY|MAX|SYSUTCDATETIME|ROWTYPE)\b/gi;
+    var typeRegex = /\b(VARCHAR2|VARCHAR|NUMBER|BOOLEAN|RAW|BYTEA|INT|INTEGER|INET|TEXT|BIT|NVARCHAR|VARBINARY|MAX|SYSUTCDATETIME|ROWTYPE|UUID|BLOB|TIMESTAMP|Result|Option|String|Arc|RwLock|Duration|Response|Request)\b/gi;
     s = s.replace(typeRegex, '<span class="plsql-type">$1</span>');
-    var fnRegex = /\b(ORA_HASH|DBMS_CRYPTO|VERIFY_SIGNATURE|clock_timestamp|db|redis)\b/gi;
+    var fnRegex = /\b(ORA_HASH|DBMS_CRYPTO|VERIFY_SIGNATURE|clock_timestamp|db|redis|sha256|createHash|randomBytes|datetime)\b/gi;
     s = s.replace(fnRegex, '<span class="plsql-fn">$1</span>');
     return s;
   }
@@ -2574,10 +1862,9 @@
 
   function typeNext() {
     if (currentLineIdx >= activeLines.length) {
-      // Bloque finalizado: breve pausa y recomenzar
       typeTimer = setTimeout(function() {
         startTypewriter(activeLines);
-      }, 4000);
+      }, 4500);
       return;
     }
 
@@ -2596,10 +1883,10 @@
       renderedLines.push(fullLine);
       currentLineIdx++;
       currentCharIdx = 0;
-      var lineDelay = (fullLine.trim().startsWith('--') || fullLine.trim().startsWith('//')) ? 220 : 90;
+      var lineDelay = (fullLine.trim().startsWith('--') || fullLine.trim().startsWith('//') || fullLine.trim().startsWith('#')) ? 200 : 80;
       typeTimer = setTimeout(typeNext, lineDelay);
     } else {
-      var charSpeed = Math.floor(Math.random() * 26) + 14;
+      var charSpeed = Math.floor(Math.random() * 24) + 12;
       typeTimer = setTimeout(typeNext, charSpeed);
     }
   }
@@ -2612,9 +1899,7 @@
     if (persist) {
       try {
         localStorage.setItem('boveda_login_theme', themeId);
-        if (themeId !== 'planetas') {
-          localStorage.setItem('boveda_db_engine', themeId);
-        }
+        localStorage.setItem('boveda_db_engine', themeId);
       } catch(e) {}
     }
 
@@ -2622,50 +1907,49 @@
     if (switcher) {
       var tabs = switcher.querySelectorAll('.engine-tab[data-engine]');
       tabs.forEach(function(tb) {
-        tb.classList.toggle('active', tb.getAttribute('data-engine') === themeId);
+        var isThis = tb.getAttribute('data-engine') === themeId;
+        tb.classList.toggle('active', isThis);
+        if (isThis && persist) {
+          tb.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        }
       });
     }
 
-    // Variables de color dinámicas aplicadas en todo el login
+    // Actualizar badge en la tarjeta de login
+    if (aebIcon) aebIcon.textContent = theme.icon;
+    if (aebTxt) aebTxt.textContent = theme.name;
+
+    // Actualizar color dinámico en todo el documento
     document.documentElement.style.setProperty('--planet-accent', theme.accent);
     document.documentElement.style.setProperty('--p1', theme.accent);
     document.documentElement.style.setProperty('--accent-rgb', theme.accentRgb);
-    if (themeId !== 'planetas') {
-      document.documentElement.setAttribute('data-db-engine', themeId);
+    document.documentElement.setAttribute('data-db-engine', themeId);
+
+    // Actualizar fondo ambiental
+    if (backdrop) {
+      backdrop.style.backgroundImage = "url('" + theme.image + "')";
+      backdrop.classList.add('active');
     }
 
-    if (themeId === 'planetas') {
-      if (backdrop) backdrop.classList.remove('active');
-      if (earthWrap) {
-        earthWrap.style.opacity = '1';
-        earthWrap.style.pointerEvents = 'auto';
-      }
-      if (planetsBar) planetsBar.style.display = 'flex';
-      if (termBox) termBox.style.display = 'none';
-      stopTypewriter();
-    } else {
-      if (backdrop) {
-        backdrop.style.backgroundImage = "url('" + theme.image + "')";
-        backdrop.classList.add('active');
-      }
-      if (earthWrap) {
-        earthWrap.style.opacity = '0';
-        earthWrap.style.pointerEvents = 'none';
-      }
-      if (planetsBar) planetsBar.style.display = 'none';
-      if (termBox) {
-        termBox.style.display = 'flex';
-        if (termIcon) termIcon.textContent = theme.icon;
-        if (termEngine) termEngine.textContent = theme.fullName;
-        if (termChip) termChip.textContent = theme.chip;
-        if (termIops) termIops.textContent = theme.iops;
-        if (termLatency) termLatency.textContent = theme.latency;
-      }
-      if (mainTitle) {
-        mainTitle.textContent = theme.fullName;
-      }
-      startTypewriter(theme.code);
+    // Actualizar color del holograma 3D Three.js
+    if (window.updateHologramColor) {
+      window.updateHologramColor(theme.accent);
     }
+
+    // Actualizar Terminal Holográfico
+    if (termBox) {
+      termBox.style.display = 'flex';
+      if (termIcon) termIcon.textContent = theme.icon;
+      if (termEngine) termEngine.textContent = theme.fullName;
+      if (termChip) termChip.textContent = theme.chip;
+      if (termIops) termIops.textContent = theme.iops;
+      if (termLatency) termLatency.textContent = theme.latency;
+    }
+    if (mainTitle) {
+      mainTitle.textContent = theme.fullName;
+    }
+
+    startTypewriter(theme.code);
   }
 
   // Delegación de eventos del selector
@@ -2697,9 +1981,22 @@
         aplicarTema(engineId, true);
       }
     });
+
+    // Desplazamiento horizontal fluido con la rueda del ratón
+    switcher.addEventListener('wheel', function(e) {
+      if (e.deltaY !== 0) {
+        e.preventDefault();
+        switcher.scrollLeft += e.deltaY;
+      }
+    }, { passive: false });
   }
 
-  var engineKeys = ['postgres', 'oracle', 'sqlserver', 'mysql', 'mongodb', 'redis', 'sqlite', 'planetas'];
+  var engineKeys = [
+    'postgres', 'oracle', 'sqlserver', 'mysql', 'mongodb', 'redis', 'sqlite', 'cassandra', 'neo4j',
+    'vscode', 'neovim',
+    'python', 'javascript', 'rust', 'golang'
+  ];
+
   function rotarSiguiente() {
     var curIdx = engineKeys.indexOf(currentTheme);
     var nextIdx = (curIdx + 1) % engineKeys.length;
@@ -2708,19 +2005,22 @@
 
   function iniciarAutoRotacion() {
     detenerAutoRotacion();
-    rotateTimer = setInterval(rotarSiguiente, 15000);
+    rotateTimer = setInterval(rotarSiguiente, 8000);
   }
 
   function detenerAutoRotacion() {
-    if (rotateTimer) clearInterval(rotateTimer);
-    rotateTimer = null;
+    if (rotateTimer) {
+      clearInterval(rotateTimer);
+      rotateTimer = null;
+    }
   }
 
-  // Inicializar estado guardado
-  if (btnAutoRotar && autoRotate) {
-    btnAutoRotar.classList.add('active');
+  // Inicialización
+  aplicarTema(currentTheme, false);
+
+  if (autoRotate) {
+    if (btnAutoRotar) btnAutoRotar.classList.add('active');
     iniciarAutoRotacion();
   }
-  aplicarTema(currentTheme, false);
 })();
 </script>
