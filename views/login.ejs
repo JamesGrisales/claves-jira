@@ -31,9 +31,15 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 4px;
+    margin-bottom: 6px;
     z-index: 50;
     pointer-events: auto;
+    transform: perspective(1400px) rotateY(-8deg) rotateX(1.5deg) translateZ(8px);
+    transform-style: preserve-3d;
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .login-top-controls:hover {
+    transform: perspective(1400px) rotateY(-4.5deg) rotateX(0.8deg) translateZ(16px);
   }
   .login-top-controls .navbar,
   body.guest .navbar {
@@ -423,20 +429,33 @@
     position: relative;
     width: 100%;
     max-width: 440px;
-    background: rgba(11, 17, 28, 0.62) !important;
+    background: rgba(10, 16, 28, 0.76) !important;
     backdrop-filter: blur(34px) saturate(200%);
     -webkit-backdrop-filter: blur(34px) saturate(200%);
-    border: 1px solid var(--planet-accent, rgba(255, 59, 48, 0.55)) !important;
+    border: 1px solid var(--planet-accent, rgba(0, 245, 255, 0.6)) !important;
     border-radius: 22px !important;
-    padding: 32px 34px 28px;
-    box-shadow: 
-      0 30px 80px -15px rgba(0, 0, 0, 0.92), 
-      0 0 35px -5px var(--planet-accent, rgba(255, 59, 48, 0.35)), 
-      inset 0 1px 1px rgba(255, 255, 255, 0.25),
-      inset 0 0 20px var(--planet-accent, rgba(255, 59, 48, 0.08)) !important;
+    padding: 30px 34px 26px;
     box-sizing: border-box;
+    /* Opción C: Ángulo Táctico Tipo Cabina (~8° sutil estático) */
+    transform: perspective(1400px) rotateY(-8deg) rotateX(1.5deg) translateZ(8px);
+    transform-style: preserve-3d;
+    box-shadow: 
+      -18px 24px 60px -10px rgba(0, 0, 0, 0.95), 
+      -5px 0 34px -4px var(--planet-accent, rgba(0, 245, 255, 0.38)), 
+      inset 1px 1px 2px rgba(255, 255, 255, 0.4),
+      inset 0 0 25px var(--planet-accent, rgba(0, 245, 255, 0.08)) !important;
     overflow: hidden;
-    animation: panelIn .5s ease;
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease, border-color 0.35s ease;
+    animation: panelIn 0.5s ease;
+  }
+
+  .auth-card-glass:hover {
+    transform: perspective(1400px) rotateY(-4.5deg) rotateX(0.8deg) translateZ(16px);
+    box-shadow: 
+      -22px 28px 70px -10px rgba(0, 0, 0, 0.98), 
+      -7px 0 42px -2px var(--planet-accent, rgba(0, 245, 255, 0.55)), 
+      inset 1px 1px 3px rgba(255, 255, 255, 0.5),
+      inset 0 0 30px var(--planet-accent, rgba(0, 245, 255, 0.12)) !important;
   }
 
   
@@ -448,7 +467,8 @@
     pointer-events: none;
     z-index: 10;
     mix-blend-mode: overlay;
-    transition: opacity 0.3s ease;
+    background: radial-gradient(circle at 18% 28%, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.04) 40%, transparent 68%);
+    opacity: 0.9;
   }
   .auth-card-glass .auth-card-top-bar {
     transform: translateZ(28px);
