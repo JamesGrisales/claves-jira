@@ -2083,28 +2083,14 @@ app.post("/informe/enviar-email", requireLogin, express.json({ limit: "1mb" }), 
       });
       return res.json({ ok: true, mensaje: "Informe enviado exitosamente desde tu cuenta de Outlook." });
     } catch (mapiErr) {
-      console.warn("MAPI no pudo enviar directo, intentando fallback SMTP:", mapiErr.message);
+      console.warn("MAPI COM directo no disponible en este equipo, preparando envío universal vía Outlook:", mapiErr.message);
 
-      // Si MAPI falla, intentar SMTP si tiene credenciales
-      const finalHost = (clientSmtp && clientSmtp.host) || process.env.OUTLOOK_HOST || "smtp.office365.com";
-      const finalPort = parseInt((clientSmtp && clientSmtp.port) || process.env.OUTLOOK_PORT || 587, 10);
-      const finalUser = (clientSmtp && clientSmtp.user) || process.env.OUTLOOK_USER || "jgrisales@jaivana.co";
-      const finalPass = (clientSmtp && clientSmtp.pass) || process.env.OUTLOOK_PASS;
-
-      if (!finalPass) {
-        throw new Error(mapiErr.message || "No se pudo enviar el correo directamente a través de Outlook.");
-      }
-
-      const nodemailer = require("nodemailer");
-      const transporter = nodemailer.createTransport({
-        host: finalHost,
-        port: finalPort,
-        secure: finalPort === 465,
-        auth: { user: finalUser, pass: finalPass },
-        tls: { ciphers: "SSLv3", rejectUnauthorized: false }
-      });
-
+      const MailComposer = require("nodemailer/lib/mail-composer");
       const fs = require("fs");
+      const path = require("path");
+      const os = require("os");
+      const { exec } = require("child_process");
+
       const logoPath = path.join(__dirname, "assets", "jaivana-signature.png");
       const attachments = [
         {
@@ -2114,10 +2100,7 @@ app.post("/informe/enviar-email", requireLogin, express.json({ limit: "1mb" }), 
         }
       ];
 
-      let logoTag = `<div style="background:#2b2b2b; display:inline-block; padding:10px 24px; border-radius:8px; margin-top:12px; color:#ffffff; font-weight:bold; font-size:22px; font-family:sans-serif;">
-        Jaivaná<span style="color:#e11d48; margin-left:4px;">▲</span>
-      </div>`;
-
+      let logoTag = "";
       if (fs.existsSync(logoPath)) {
         attachments.push({
           filename: "jaivana-logo.png",
@@ -2125,6 +2108,10 @@ app.post("/informe/enviar-email", requireLogin, express.json({ limit: "1mb" }), 
           cid: "jaivana_signature_img"
         });
         logoTag = `<div style="margin-top:12px; max-width:560px;"><img src="cid:jaivana_signature_img" alt="Jaivaná" width="560" style="width:100%; max-width:560px; height:auto; display:block; border:0;" /></div>`;
+      } else {
+        logoTag = `<div style="background:#2b2b2b; display:inline-block; padding:10px 24px; border-radius:8px; margin-top:12px; color:#ffffff; font-weight:bold; font-size:22px; font-family:sans-serif;">
+          Jaivaná<span style="color:#e11d48; margin-left:4px;">▲</span>
+        </div>`;
       }
 
       const htmlCompleto = `
@@ -2139,11 +2126,12 @@ app.post("/informe/enviar-email", requireLogin, express.json({ limit: "1mb" }), 
         </div>
       `;
 
-      const toList = Array.isArray(to) ? to.join(", ") : to;
-      const ccList = cc ? (Array.isArray(cc) ? cc.join(", ") : cc) : undefined;
+      const toList = Array.isArray(to) ? to.join("; ") : to;
+      const ccList = cc ? (Array.isArray(cc) ? cc.join("; ") : cc) : undefined;
+      const userEmail = (clientSmtp && clientSmtp.user) || process.env.OUTLOOK_USER || "jgrisales@jaivana.co";
 
-      const info = await transporter.sendMail({
-        from: `"James Grisales" <${finalUser}>`,
+      const mail = new MailComposer({
+        from: `"${tecnicoNombre}" <${userEmail}>`,
         to: toList,
         cc: ccList,
         subject: asunto || `INFORME FACTURACION ELECTRONICA - ${new Date().toLocaleDateString("es-CO")}`,
@@ -2151,7 +2139,25 @@ app.post("/informe/enviar-email", requireLogin, express.json({ limit: "1mb" }), 
         attachments
       });
 
-      return res.json({ ok: true, messageId: info.messageId });
+      const emlBuffer = await mail.compile().build();
+
+      // Guardar y abrir localmente con Start-Process en Windows si corre en local
+      try {
+        const tempEmlPath = path.join(os.tmpdir(), `INFORME_OUTLOOK_${Date.now()}.eml`);
+        fs.writeFileSync(tempEmlPath, emlBuffer);
+        exec(`start "" "${tempEmlPath}"`, (err) => {
+          if (err) console.warn("Aviso al invocar start en Windows:", err.message);
+        });
+      } catch (e) {}
+
+      return res.json({
+        ok: true,
+        abrirEml: true,
+        metodo: "draft_desktop",
+        emlBase64: emlBuffer.toString("base64"),
+        filename: `INFORME_OUTLOOK_${new Date().toISOString().slice(0,10)}.eml`,
+        mensaje: "Correo preparado y abierto en tu Outlook con el PDF adjunto y la firma oficial listos para enviar."
+      });
     }
   } catch (err) {
     console.error("Error al enviar informe por correo:", err);
@@ -2241,6 +2247,70 @@ app.post("/informe/abrir-outlook", requireLogin, express.json({ limit: "1mb" }),
   } catch (err) {
     console.error("Error al preparar correo Outlook:", err);
     res.status(500).json({ error: err.message || "Error al preparar el correo." });
+  }
+});
+
+app.post("/informe/actualizar-banner", requireLogin, express.json({ limit: "15mb" }), async (req, res) => {
+  try {
+    const { imagenBase64, restaurar } = req.body || {};
+    const fs = require("fs");
+    const path = require("path");
+
+    const pathsToUpdate = [
+      path.join(__dirname, "assets", "jaivana-signature.png"),
+      path.join(__dirname, "public", "img", "jaivana-signature.png"),
+      path.join(__dirname, "..", "assets", "jaivana-signature.png"),
+      path.join(__dirname, "..", "public", "img", "jaivana-signature.png"),
+      path.join(__dirname, "boveda_node", "assets", "jaivana-signature.png"),
+      path.join(__dirname, "boveda_node", "public", "img", "jaivana-signature.png")
+    ];
+
+    if (restaurar) {
+      const defaultCandidates = [
+        path.join(__dirname, "assets", "jaivana-signature-default.png"),
+        path.join(__dirname, "public", "img", "jaivana-signature-default.png"),
+        path.join(__dirname, "..", "assets", "jaivana-signature-default.png"),
+        path.join(__dirname, "..", "public", "img", "jaivana-signature-default.png")
+      ];
+      let defaultBuf = null;
+      for (const dc of defaultCandidates) {
+        if (fs.existsSync(dc)) {
+          defaultBuf = fs.readFileSync(dc);
+          break;
+        }
+      }
+      if (!defaultBuf) {
+        return res.status(404).json({ error: "No se encontró el archivo de respaldo original del banner." });
+      }
+      for (const p of pathsToUpdate) {
+        try {
+          if (fs.existsSync(path.dirname(p))) {
+            fs.writeFileSync(p, defaultBuf);
+          }
+        } catch (e) {}
+      }
+      return res.json({ ok: true, mensaje: "Banner oficial de Jaivaná restaurado con éxito." });
+    }
+
+    if (!imagenBase64) {
+      return res.status(400).json({ error: "No se proporcionó imagen para el banner." });
+    }
+
+    const matches = imagenBase64.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+    const buffer = matches ? Buffer.from(matches[2], "base64") : Buffer.from(imagenBase64, "base64");
+
+    for (const p of pathsToUpdate) {
+      try {
+        if (fs.existsSync(path.dirname(p))) {
+          fs.writeFileSync(p, buffer);
+        }
+      } catch (e) {}
+    }
+
+    return res.json({ ok: true, mensaje: "Banner de firma actualizado exitosamente." });
+  } catch (err) {
+    console.error("Error al actualizar banner:", err);
+    res.status(500).json({ error: err.message || "Error al actualizar banner." });
   }
 });
 

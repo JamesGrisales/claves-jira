@@ -91,21 +91,43 @@ function enviarViaOutlookMapi({ to, cc, asunto, mensajeHtml, tecnico, cargo, pdf
       const psFile = path.join(os.tmpdir(), `send_mail_${tempId}.ps1`);
       fs.writeFileSync(psFile, psScript, "utf8");
 
-      exec(`powershell -ExecutionPolicy Bypass -File "${psFile}"`, { encoding: "utf8" }, (err, stdout, stderr) => {
-        // Limpieza de archivos temporales
+      // Ejecución con reintento automático en 32-bit si 64-bit da REGDB_E_CLASSNOTREG (Office 32-bit)
+      const sys32Ps = "powershell";
+      const sys64Ps = "C:\\Windows\\SysWOW64\\WindowsPowerShell\\v1.0\\powershell.exe";
+
+      exec(`${sys32Ps} -ExecutionPolicy Bypass -File "${psFile}"`, { encoding: "utf8" }, (err, stdout, stderr) => {
+        const outStr = (stdout || "") + (stderr || "") || (err && err.message) || "";
+        const esClassNotReg = outStr.includes("80040154") || outStr.includes("REGDB_E_CLASSNOTREG") || outStr.includes("Clase no registrada");
+
+        if ((err || outStr.includes("ERROR_MAPI")) && esClassNotReg && fs.existsSync(sys64Ps)) {
+          // Reintentar con PowerShell de 32-bit por si el usuario tiene instalado Office de 32 bits
+          exec(`"${sys64Ps}" -ExecutionPolicy Bypass -File "${psFile}"`, { encoding: "utf8" }, (err32, stdout32, stderr32) => {
+            limpiarTemp();
+            const out32 = (stdout32 || "") + (stderr32 || "") || (err32 && err32.message) || "";
+            if (err32 || out32.includes("ERROR_MAPI")) {
+              return reject(new Error(out32.replace(/ERROR_MAPI:/g, "").trim()));
+            }
+            resolve({ ok: true, mensaje: "Correo enviado exitosamente vía Outlook (32-bit)." });
+          });
+          return;
+        }
+
+        limpiarTemp();
+
+        if (err || outStr.includes("ERROR_MAPI")) {
+          return reject(new Error(outStr.replace(/ERROR_MAPI:/g, "").trim()));
+        }
+
+        resolve({ ok: true, mensaje: "Correo enviado exitosamente vía Outlook." });
+      });
+
+      function limpiarTemp() {
         try { if (fs.existsSync(psFile)) fs.unlinkSync(psFile); } catch(e){}
         try { if (fs.existsSync(jsonFile)) fs.unlinkSync(jsonFile); } catch(e){}
         setTimeout(() => {
           try { if (fs.existsSync(tempPdf)) fs.unlinkSync(tempPdf); } catch(e){}
         }, 8000);
-
-        if (err || (stdout && stdout.includes("ERROR_MAPI"))) {
-          const msg = (stdout || "") + (stderr || "") || (err && err.message);
-          return reject(new Error(msg.replace(/ERROR_MAPI:/g, "").trim()));
-        }
-
-        resolve({ ok: true, mensaje: "Correo enviado exitosamente vía Outlook." });
-      });
+      }
     } catch (e) {
       reject(e);
     }
@@ -117,14 +139,21 @@ function enviarViaOutlookMapi({ to, cc, asunto, mensajeHtml, tecnico, cargo, pdf
  */
 function verificarOutlookMapi() {
   return new Promise((resolve) => {
-    const psCmd = `powershell -ExecutionPolicy Bypass -Command "try { $o = New-Object -ComObject Outlook.Application; Write-Output ('OUTLOOK_VERSION=' + $o.Version) } catch { Write-Output 'NO_OUTLOOK' }"`;
+    const psCmd = `powershell -ExecutionPolicy Bypass -Command "try { $o = New-Object -ComObject Outlook.Application; Write-Output ('OUTLOOK_VERSION=' + $o.Version) } catch { try { $p = Start-Process 'C:\Windows\SysWOW64\WindowsPowerShell\v1.0\powershell.exe' -ArgumentList '-Command \"$o = New-Object -ComObject Outlook.Application; Write-Output (\'OUTLOOK_VERSION=\' + $o.Version)\"' -Wait -NoNewWindow -PassThru; } catch {} Write-Output 'NO_OUTLOOK' }"`;
     exec(psCmd, { encoding: "utf8", timeout: 6000 }, (err, stdout) => {
       const out = (stdout || "").trim();
       if (out.includes("OUTLOOK_VERSION=")) {
         const ver = out.split("OUTLOOK_VERSION=")[1].trim();
         return resolve({ disponible: true, version: ver });
       }
-      resolve({ disponible: false, version: null });
+      // Verificar si tiene New Outlook o app moderna instalada
+      exec('powershell -ExecutionPolicy Bypass -Command "if (Get-Process olk -ErrorAction SilentlyContinue) { Write-Output \"NEW_OUTLOOK\" } else { Write-Output \"NO_PROCESS\" }"', { encoding: "utf8", timeout: 4000 }, (e2, s2) => {
+        const o2 = (s2 || "").trim();
+        if (o2.includes("NEW_OUTLOOK")) {
+          return resolve({ disponible: true, version: "New Outlook (App)", esNewOutlook: true });
+        }
+        resolve({ disponible: false, version: null });
+      });
     });
   });
 }

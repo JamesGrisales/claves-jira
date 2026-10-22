@@ -117,7 +117,7 @@
   <div class="top">
     <div style="display:flex; align-items:center; gap:10px;">
       <h1>Informe diario</h1>
-      <span class="inf-version-badge" style="background:rgba(2,132,199,0.14); color:#0284c7; border:1px solid rgba(2,132,199,0.32); font-size:11px; font-weight:800; padding:2px 8px; border-radius:12px; letter-spacing:0.4px;" title="Versión activa de la Suite de Informes">v2.5.0</span>
+      <span class="inf-version-badge" style="background:rgba(2,132,199,0.14); color:#0284c7; border:1px solid rgba(2,132,199,0.32); font-size:11px; font-weight:800; padding:2px 8px; border-radius:12px; letter-spacing:0.4px;" title="Versión activa de la Suite de Informes">v2.5.1</span>
     </div>
     <div class="acciones" style="display:flex; align-items:center; gap:8px;">
       <button type="button" class="secondary" id="btnEjemplo" title="Vuelve a los datos del informe de ejemplo">Restablecer</button>
@@ -235,7 +235,7 @@
         <div>
           <div style="display:flex; align-items:center; gap:8px;">
             <h3 style="margin:0; font-size:18px; font-weight:700; color:var(--text); letter-spacing:-0.01em;">Enviar informe por correo (Outlook)</h3>
-            <span class="inf-version-badge" style="background:linear-gradient(135deg, rgba(2,132,199,0.22), rgba(14,165,233,0.12)); border:1px solid rgba(2,132,199,0.4); color:#0284c7; font-size:11px; font-weight:800; padding:2px 8px; border-radius:12px; letter-spacing:0.5px;" title="Versión del módulo de correo y reportes">v2.5.0</span>
+            <span class="inf-version-badge" style="background:linear-gradient(135deg, rgba(2,132,199,0.22), rgba(14,165,233,0.12)); border:1px solid rgba(2,132,199,0.4); color:#0284c7; font-size:11px; font-weight:800; padding:2px 8px; border-radius:12px; letter-spacing:0.5px;" title="Versión del módulo de correo y reportes">v2.5.1</span>
           </div>
           <span style="font-size:12px; color:var(--muted);">Envío corporativo directo con PDF adjunto y firma institucional de Jaivaná</span>
         </div>
@@ -326,7 +326,7 @@
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
               <div style="display:flex; align-items:center; gap:6px;">
                 <span style="color:var(--muted); font-size:11px; text-transform:uppercase; font-weight:700; letter-spacing:0.5px;">Firma del Correo (Outlook):</span>
-                <span class="badge-app-version" style="background:rgba(2,132,199,0.18); color:#0284c7; border:1px solid rgba(2,132,199,0.35); font-size:10.5px; font-weight:800; padding:1px 7px; border-radius:6px; letter-spacing:0.3px;" title="Versión de la firma corporativa">v2.5.0</span>
+                <span class="badge-app-version" style="background:rgba(2,132,199,0.18); color:#0284c7; border:1px solid rgba(2,132,199,0.35); font-size:10.5px; font-weight:800; padding:1px 7px; border-radius:6px; letter-spacing:0.3px;" title="Versión de la firma corporativa">v2.5.1</span>
               </div>
               <div style="display:flex; align-items:center; gap:6px;">
                 <span style="font-size:11px; color:#10b981; font-weight:600; display:flex; align-items:center; gap:3px;" id="badgeFirmaStatus">
@@ -349,15 +349,19 @@
             </div>
           </div>
 
-          <!-- Banner Oficial Jaivaná -->
+          <!-- Banner Oficial Jaivaná (Actualizable) -->
           <div>
-            <div style="border-radius:6px; overflow:hidden; border:1px solid rgba(255,255,255,0.1); background:#333; box-shadow:0 2px 8px rgba(0,0,0,0.25);">
-              <img src="/img/jaivana-signature.png" alt="Jaivaná" style="width:100%; height:auto; display:block;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <div style="border-radius:6px; overflow:hidden; border:1px solid rgba(255,255,255,0.1); background:#333; box-shadow:0 2px 8px rgba(0,0,0,0.25); position:relative;">
+              <img id="imgBannerFirma" src="/img/jaivana-signature.png" alt="Jaivaná" style="width:100%; height:auto; display:block;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
               <span style="display:none; color:#fff; font-weight:bold; font-size:14px; letter-spacing:1px; padding:8px 14px;">Jaivaná<span style="color:#ef4444; margin-left:3px;">▲</span></span>
             </div>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px; font-size:10.5px; color:var(--muted);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px; font-size:10.5px; color:var(--muted); flex-wrap:wrap; gap:4px;">
               <span>Banner Oficial Jaivaná</span>
-              <span style="opacity:0.8;">Outlook Windows</span>
+              <div style="display:flex; gap:8px; align-items:center;">
+                <label for="inputSubirBanner" style="cursor:pointer; color:var(--accent); font-weight:700; text-decoration:underline; margin:0;" title="Subir una nueva imagen para el banner de la firma">📷 Cambiar Banner</label>
+                <input type="file" id="inputSubirBanner" accept="image/png,image/jpeg,image/jpg,image/webp" style="display:none;">
+                <button type="button" id="btnRestaurarBanner" style="background:transparent; border:none; color:var(--muted); font-size:10.5px; cursor:pointer; padding:1px 4px; text-decoration:underline;" title="Volver al banner oficial predeterminado de Jaivaná">↺ Restaurar</button>
+              </div>
             </div>
           </div>
         </div>
@@ -427,7 +431,7 @@
         <button type="button" class="secondary" id="btnIrAConfig" style="font-size:12.5px; padding:7px 12px;" title="Ver o editar configuración">⚙ Cuenta</button>
         <button type="button" class="secondary" id="btnAbrirOutlookApp" style="font-size:12.5px; padding:7px 12px;" title="Ver borrador en tu aplicación de Outlook antes de enviar">✉ Ver borrador</button>
         <button type="button" class="secondary" id="btnOutlookWeb" style="font-size:12.5px; padding:7px 12px;" title="Abrir en el navegador (Outlook Web)">🌐 Web</button>
-        <span style="font-size:11px; color:var(--muted); font-weight:600; padding:2px 8px; border-radius:6px; background:rgba(255,255,255,0.04); border:1px solid var(--panel-edge);" title="Versión de compilación activa">Build <strong style="color:var(--text);">v2.5.0</strong></span>
+        <span style="font-size:11px; color:var(--muted); font-weight:600; padding:2px 8px; border-radius:6px; background:rgba(255,255,255,0.04); border:1px solid var(--panel-edge);" title="Versión de compilación activa">Build <strong style="color:var(--text);">v2.5.1</strong></span>
       </div>
       <div style="display:flex; gap:10px; align-items:center;">
         <button type="button" class="secondary" id="btnCancelarEmail" style="padding:8px 16px;">Cancelar</button>
@@ -907,7 +911,7 @@ setInterval(sincronizarServidor, 15000);
   var KEY_CONTACTS_CC = 'boveda_informe_cc';
   var KEY_FIRMA_NOMBRE = 'boveda_firma_nombre';
   var KEY_FIRMA_CARGO = 'boveda_firma_cargo';
-  var APP_VERSION = 'v2.5.0';
+  var APP_VERSION = 'v2.5.1';
 
   var mCorreo = $('modalCorreo');
   var bAbrir = $('btnAbrirModalCorreo');
@@ -931,6 +935,9 @@ setInterval(sincronizarServidor, 15000);
   var inpFirmaCargo = $('firmanteCargoInput');
   var badgeFirmaStatus = $('badgeFirmaStatus');
   var btnRestablecerFirma = $('btnRestablecerFirma');
+  var inputSubirBanner = $('inputSubirBanner');
+  var btnRestaurarBanner = $('btnRestaurarBanner');
+  var imgBannerFirma = $('imgBannerFirma');
 
   var smtpUser = $('smtpUser'), smtpPass = $('smtpPass'), smtpHost = $('smtpHost'), smtpPort = $('smtpPort'), smtpFromName = $('smtpFromName');
   var btnProbarSmtp = $('btnProbarSmtp'), btnGuardarSmtp = $('btnGuardarSmtp'), smtpStatus = $('smtpStatus');
@@ -1154,6 +1161,63 @@ setInterval(sincronizarServidor, 15000);
     });
   }
 
+  // Actualizar Banner de Firma
+  if (inputSubirBanner) {
+    inputSubirBanner.addEventListener('change', function(e){
+      var file = e.target.files && e.target.files[0];
+      if (!file) return;
+      if (!file.type.startsWith('image/')) {
+        alert('Por favor selecciona un archivo de imagen válido (PNG, JPG, WEBP).');
+        return;
+      }
+      var reader = new FileReader();
+      reader.onload = async function(evt){
+        var base64 = evt.target.result;
+        try {
+          toast('Subiendo nuevo banner…');
+          var r = await fetch('/informe/actualizar-banner', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ imagenBase64: base64 })
+          });
+          var d = await r.json();
+          if (!r.ok) throw new Error(d.error || 'Error al actualizar el banner');
+          if (imgBannerFirma) {
+            imgBannerFirma.src = '/img/jaivana-signature.png?t=' + Date.now();
+            imgBannerFirma.style.display = 'block';
+          }
+          toast('🚀 Banner de firma actualizado con éxito');
+        } catch(err) {
+          alert('Error al guardar el banner: ' + err.message);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // Restaurar Banner Original
+  if (btnRestaurarBanner) {
+    btnRestaurarBanner.addEventListener('click', async function(){
+      if (!confirm('¿Deseas restaurar el banner oficial original de Jaivaná?')) return;
+      try {
+        var r = await fetch('/informe/actualizar-banner', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ restaurar: true })
+        });
+        var d = await r.json();
+        if (!r.ok) throw new Error(d.error || 'Error al restaurar el banner');
+        if (imgBannerFirma) {
+          imgBannerFirma.src = '/img/jaivana-signature.png?t=' + Date.now();
+          imgBannerFirma.style.display = 'block';
+        }
+        toast('✓ Banner oficial original de Jaivaná restaurado');
+      } catch(err) {
+        alert('Error al restaurar: ' + err.message);
+      }
+    });
+  }
+
   function cerrarModalCorreo(){
     mCorreo.style.display = 'none';
   }
@@ -1262,8 +1326,31 @@ setInterval(sincronizarServidor, 15000);
           throw new Error(data.error || 'No se pudo enviar el correo');
         }
 
+        if (data.abrirEml && data.emlBase64) {
+          try {
+            var byteCharacters = atob(data.emlBase64);
+            var byteNumbers = new Array(byteCharacters.length);
+            for (var i = 0; i < byteCharacters.length; i++) {
+              byteNumbers[i] = byteCharacters.charCodeAt(i);
+            }
+            var byteArray = new Uint8Array(byteNumbers);
+            var blob = new Blob([byteArray], { type: 'message/rfc822' });
+            var a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = data.filename || 'INFORME_OUTLOOK.eml';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setTimeout(function(){ URL.revokeObjectURL(a.href); }, 2000);
+          } catch(e){}
+        }
+
         cerrarModalCorreo();
-        toast('🚀 ¡Informe enviado con éxito desde jgrisales@jaivana.co!');
+        if (data.abrirEml) {
+          toast('✉ Correo preparado y abierto en Outlook con el PDF adjunto listo para enviar');
+        } else {
+          toast('🚀 ' + (data.mensaje || '¡Informe enviado con éxito desde Outlook!'));
+        }
       } catch(err) {
         txtErr.style.display = 'block';
         txtErr.textContent = err.message;
