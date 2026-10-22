@@ -1251,6 +1251,17 @@ body:not(.guest) .navbar{
 :root[data-nav-style="superior"] .nav-tabs a .nav-ic{ width:22px !important; height:22px !important; margin-right:6px !important; border-radius:6px !important; }
 :root[data-nav-style="superior"] .nav-tabs a .nav-ic svg{ width:13px !important; height:13px !important; }
 :root[data-nav-style="superior"] .nav-tabs a .nav-txt{ display:inline !important; font-size:13px !important; }
+:root[data-nav-style="superior"] .nav-tabs a .nav-db-side {
+  margin-left: 6px !important;
+  margin-right: 0 !important;
+  width: 18px !important;
+  height: 18px !important;
+  font-size: 9.5px !important;
+  flex-shrink: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
 :root[data-nav-style="superior"] body:not(.guest) .nav-account{ flex-direction:row !important; align-items:center !important; border-top:none !important; padding-top:0 !important; gap:8px !important; flex-shrink:0 !important; }
 :root[data-nav-style="superior"] .user-card{ height:36px !important; padding:2px 8px !important; border-radius:10px !important; }
 :root[data-nav-style="superior"] .user-card .who{ display:none !important; }
@@ -1519,6 +1530,445 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
 .seg button.plain{ padding:7px 4px; border-radius:8px; font-size:12.5px; font-weight:600; color:var(--muted); display:flex; align-items:center; justify-content:center; gap:5px; transition:background-color .15s ease, color .15s ease; }
 .seg button.plain:hover{ color:var(--text); }
 .seg button.plain.on{ background:var(--panel); color:var(--accent-dark); box-shadow:0 1px 4px rgba(15,27,51,.14); }
+
+
+/* =====================================================================
+   MODO 6: DOCK FLOTANTE CYBER-GLASSMORPHIC (Estilo macOS + HUD Sci-Fi)
+   ===================================================================== */
+:root[data-nav-style="cyber-dock"] body:not(.guest) {
+  padding: 22px 24px 105px 24px !important;
+}
+:root[data-nav-style="cyber-dock"] #sbOpen { display: none !important; }
+:root[data-nav-style="cyber-dock"] .sb-backdrop { display: none !important; }
+
+/* El navbar se convierte en una cápsula horizontal flotante en la parte inferior */
+:root[data-nav-style="cyber-dock"] body:not(.guest) .navbar {
+  position: fixed !important;
+  bottom: 16px !important;
+  left: 50% !important;
+  top: auto !important;
+  right: auto !important;
+  transform: translateX(-50%) !important;
+  width: auto !important;
+  min-width: 320px !important;
+  max-width: min(1100px, 96vw) !important;
+  height: 64px !important;
+  padding: 6px 14px !important;
+  border-radius: 24px !important;
+  background: rgba(9, 14, 25, 0.78) !important;
+  backdrop-filter: blur(28px) saturate(2.0) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(2.0) !important;
+  border: 1px solid rgba(var(--accent-rgb), 0.45) !important;
+  box-shadow: 0 16px 45px rgba(0, 0, 0, 0.75), 0 0 30px rgba(var(--accent-rgb), 0.22), inset 0 1px 0 rgba(255,255,255,0.2) !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 6px !important;
+  z-index: 450 !important;
+  overflow: visible !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  transition: all 0.3s cubic-bezier(0.34, 1.3, 0.64, 1) !important;
+}
+
+:root[data-nav-style="cyber-dock"] .navbar:hover {
+  border-color: var(--accent) !important;
+  box-shadow: 0 20px 55px rgba(0, 0, 0, 0.85), 0 0 40px rgba(var(--accent-rgb), 0.35), inset 0 1px 0 rgba(255,255,255,0.3) !important;
+}
+
+/* Ocultar elementos innecesarios en el dock horizontal para mantenerlo limpio */
+:root[data-nav-style="cyber-dock"] .brand,
+:root[data-nav-style="cyber-dock"] .cmd-trigger,
+:root[data-nav-style="cyber-dock"] .sb-close,
+:root[data-nav-style="cyber-dock"] .user-card,
+:root[data-nav-style="cyber-dock"] .acc-actions {
+  display: none !important;
+}
+
+:root[data-nav-style="cyber-dock"] .nav-account {
+  border: none !important;
+  padding: 0 0 0 6px !important;
+  margin: 0 0 0 4px !important;
+  border-left: 1px solid rgba(255,255,255,0.12) !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 4px !important;
+}
+
+:root[data-nav-style="cyber-dock"] .acc-foot {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 4px !important;
+}
+
+:root[data-nav-style="cyber-dock"] .acc-out {
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 12px !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+:root[data-nav-style="cyber-dock"] .acc-out span { display: none !important; }
+
+/* Contenedor horizontal de pestañas */
+:root[data-nav-style="cyber-dock"] .nav-tabs {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 4px !important;
+  overflow-x: auto !important;
+  overflow-y: visible !important;
+  padding: 4px 2px !important;
+  scrollbar-width: none !important;
+}
+:root[data-nav-style="cyber-dock"] .nav-tabs::-webkit-scrollbar { display: none !important; }
+
+/* Icono individual en el Cyber-Dock con física de lupa (magnification) */
+:root[data-nav-style="cyber-dock"] .nav-tabs a {
+  position: relative !important;
+  width: 44px !important;
+  height: 44px !important;
+  border-radius: 14px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  padding: 0 !important;
+  color: var(--text) !important;
+  text-decoration: none !important;
+  transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.18s ease, border-color 0.18s ease, box-shadow 0.22s ease !important;
+  flex-shrink: 0 !important;
+}
+
+:root[data-nav-style="cyber-dock"] .nav-tabs a .nav-txt {
+  display: none !important;
+}
+
+:root[data-nav-style="cyber-dock"] .nav-tabs a .nav-ic {
+  width: 22px !important;
+  height: 22px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+:root[data-nav-style="cyber-dock"] .nav-tabs a .nav-ic svg {
+  width: 20px !important;
+  height: 20px !important;
+}
+
+/* Efecto Lupa al posar el cursor sobre cada icono */
+:root[data-nav-style="cyber-dock"] .nav-tabs a:hover {
+  transform: translateY(-8px) scale(1.28) !important;
+  z-index: 100 !important;
+  background: rgba(var(--accent-rgb), 0.22) !important;
+  border-color: var(--accent) !important;
+  box-shadow: 0 12px 24px rgba(0,0,0,0.5), 0 0 18px var(--accent) !important;
+}
+
+:root[data-nav-style="cyber-dock"] .nav-tabs a.active {
+  background: rgba(var(--accent-rgb), 0.18) !important;
+  border-color: rgba(var(--accent-rgb), 0.7) !important;
+  box-shadow: 0 0 14px rgba(var(--accent-rgb), 0.4) !important;
+}
+
+/* Micro-LED de telemetría inferior indicando pestaña activa */
+:root[data-nav-style="cyber-dock"] .nav-tabs a.active::after {
+  content: '' !important;
+  position: absolute !important;
+  bottom: 2px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  width: 5px !important;
+  height: 5px !important;
+  border-radius: 50% !important;
+  background: var(--accent) !important;
+  box-shadow: 0 0 8px var(--accent), 0 0 14px var(--accent) !important;
+}
+
+/* Orbe de base de datos fijado en la esquina superior del icono */
+:root[data-nav-style="cyber-dock"] .nav-tabs a .nav-db-side {
+  position: absolute !important;
+  top: -3px !important;
+  right: -3px !important;
+  width: 17px !important;
+  height: 17px !important;
+  font-size: 9.5px !important;
+  border-radius: 50% !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: 0 0 8px rgba(var(--accent-rgb), 0.6) !important;
+  border: 1px solid rgba(255,255,255,0.4) !important;
+  z-index: 5 !important;
+}
+
+/* Tooltip elegante arriba del icono */
+:root[data-nav-style="cyber-dock"] .nav-tabs a::before {
+  content: attr(data-title) !important;
+  position: absolute !important;
+  bottom: calc(100% + 12px) !important;
+  left: 50% !important;
+  transform: translateX(-50%) translateY(4px) !important;
+  padding: 4px 10px !important;
+  border-radius: 8px !important;
+  background: rgba(8, 14, 26, 0.94) !important;
+  border: 1px solid rgba(var(--accent-rgb), 0.5) !important;
+  color: #fff !important;
+  font-family: var(--sans) !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.02em !important;
+  white-space: nowrap !important;
+  pointer-events: none !important;
+  opacity: 0 !important;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.6), 0 0 12px rgba(var(--accent-rgb), 0.3) !important;
+  transition: opacity 0.18s ease, transform 0.18s ease !important;
+  z-index: 200 !important;
+}
+:root[data-nav-style="cyber-dock"] .nav-tabs a:hover::before {
+  opacity: 1 !important;
+  transform: translateX(-50%) translateY(0) !important;
+}
+
+
+/* =====================================================================
+   MODO 7: MATRIZ HEXAGONAL DE CENTRO DE COMANDO (Hex Core Command Grid)
+   ===================================================================== */
+:root[data-nav-style="hex-matrix"] body:not(.guest) {
+  padding: 22px 24px 70px 24px !important;
+}
+:root[data-nav-style="hex-matrix"] #sbOpen { display: none !important; }
+:root[data-nav-style="hex-matrix"] .sb-backdrop { display: none !important; }
+
+/* El navbar se convierte en una matriz holográfica lateral flotante */
+:root[data-nav-style="hex-matrix"] body:not(.guest) .navbar {
+  position: fixed !important;
+  top: 75px !important;
+  left: 14px !important;
+  bottom: auto !important;
+  width: 290px !important;
+  max-height: calc(100vh - 95px) !important;
+  border-radius: 20px !important;
+  padding: 16px 14px !important;
+  background: rgba(8, 13, 24, 0.88) !important;
+  backdrop-filter: blur(28px) saturate(2.1) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(2.1) !important;
+  border: 1px solid rgba(var(--accent-rgb), 0.45) !important;
+  box-shadow: 0 16px 45px rgba(0, 0, 0, 0.75), 0 0 25px rgba(var(--accent-rgb), 0.25) !important;
+  z-index: 260 !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  transform: none !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+  overflow-y: auto !important;
+}
+
+:root[data-nav-style="hex-matrix"] .brand {
+  border-bottom: 1px solid rgba(255,255,255,0.08) !important;
+  padding-bottom: 10px !important;
+}
+
+/* Grilla hexagonal de módulos */
+:root[data-nav-style="hex-matrix"] .nav-tabs {
+  display: grid !important;
+  grid-template-columns: repeat(2, 1fr) !important;
+  gap: 8px !important;
+  padding: 4px 0 !important;
+}
+
+:root[data-nav-style="hex-matrix"] .nav-tabs a {
+  position: relative !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  padding: 12px 6px 10px !important;
+  border-radius: 14px !important;
+  background: rgba(255, 255, 255, 0.035) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  text-decoration: none !important;
+  color: var(--text) !important;
+  transition: all 0.22s var(--spring) !important;
+}
+
+:root[data-nav-style="hex-matrix"] .nav-tabs a:hover {
+  background: rgba(var(--accent-rgb), 0.16) !important;
+  border-color: var(--accent) !important;
+  transform: translateY(-2px) scale(1.03) !important;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.5), 0 0 16px rgba(var(--accent-rgb), 0.4) !important;
+}
+
+:root[data-nav-style="hex-matrix"] .nav-tabs a.active {
+  background: rgba(var(--accent-rgb), 0.22) !important;
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 18px rgba(var(--accent-rgb), 0.4) !important;
+}
+
+:root[data-nav-style="hex-matrix"] .nav-tabs a .nav-txt .nav-tit {
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  margin-top: 4px !important;
+  display: block !important;
+}
+:root[data-nav-style="hex-matrix"] .nav-tabs a .nav-txt .nav-sub {
+  display: none !important;
+}
+
+:root[data-nav-style="hex-matrix"] .nav-tabs a .nav-db-side {
+  position: absolute !important;
+  top: 4px !important;
+  right: 4px !important;
+  width: 17px !important;
+  height: 17px !important;
+  font-size: 9px !important;
+}
+
+
+/* =====================================================================
+   MODO 8: ISLA DINÁMICA TÁCTICA & HUD ORBITAL (Dynamic Island Pill)
+   ===================================================================== */
+:root[data-nav-style="dynamic-island"] body:not(.guest) {
+  padding: 85px 24px 70px 24px !important;
+}
+:root[data-nav-style="dynamic-island"] #sbOpen { display: none !important; }
+:root[data-nav-style="dynamic-island"] .sb-backdrop { display: none !important; }
+
+/* El navbar se convierte en una Cápsula / Isla Dinámica en el centro superior */
+:root[data-nav-style="dynamic-island"] body:not(.guest) .navbar {
+  position: fixed !important;
+  top: 10px !important;
+  left: 50% !important;
+  bottom: auto !important;
+  right: auto !important;
+  transform: translateX(-50%) !important;
+  width: min(880px, 95vw) !important;
+  height: 52px !important;
+  border-radius: 999px !important;
+  padding: 6px 14px !important;
+  background: rgba(9, 14, 26, 0.88) !important;
+  backdrop-filter: blur(28px) saturate(2.0) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(2.0) !important;
+  border: 1px solid rgba(var(--accent-rgb), 0.45) !important;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.7), 0 0 25px rgba(var(--accent-rgb), 0.25) !important;
+  z-index: 500 !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 8px !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  overflow: hidden !important;
+  transition: all 0.3s cubic-bezier(0.34, 1.25, 0.64, 1) !important;
+}
+
+:root[data-nav-style="dynamic-island"] .navbar:hover,
+:root[data-nav-style="dynamic-island"] .navbar.expanded {
+  height: 62px !important;
+  border-color: var(--accent) !important;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.85), 0 0 35px rgba(var(--accent-rgb), 0.4) !important;
+}
+
+:root[data-nav-style="dynamic-island"] .brand {
+  padding: 0 !important;
+  border: none !important;
+  flex-shrink: 0 !important;
+}
+:root[data-nav-style="dynamic-island"] .brand .brand-title {
+  display: none !important;
+}
+:root[data-nav-style="dynamic-island"] .cmd-trigger {
+  display: none !important;
+}
+:root[data-nav-style="dynamic-island"] .sb-close,
+:root[data-nav-style="dynamic-island"] .user-card,
+:root[data-nav-style="dynamic-island"] .acc-actions {
+  display: none !important;
+}
+
+:root[data-nav-style="dynamic-island"] .nav-tabs {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 5px !important;
+  flex: 1 !important;
+  overflow-x: auto !important;
+  scrollbar-width: none !important;
+  padding: 0 4px !important;
+}
+:root[data-nav-style="dynamic-island"] .nav-tabs::-webkit-scrollbar { display: none !important; }
+
+:root[data-nav-style="dynamic-island"] .nav-tabs a {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 5px 11px !important;
+  border-radius: 999px !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: var(--text) !important;
+  text-decoration: none !important;
+  white-space: nowrap !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  flex-shrink: 0 !important;
+  transition: all 0.2s ease !important;
+}
+
+:root[data-nav-style="dynamic-island"] .nav-tabs a:hover {
+  background: rgba(var(--accent-rgb), 0.2) !important;
+  border-color: var(--accent) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 0 14px rgba(var(--accent-rgb), 0.4) !important;
+}
+
+:root[data-nav-style="dynamic-island"] .nav-tabs a.active {
+  background: rgba(var(--accent-rgb), 0.28) !important;
+  border-color: var(--accent) !important;
+  color: #fff !important;
+  box-shadow: 0 0 16px rgba(var(--accent-rgb), 0.5) !important;
+}
+
+:root[data-nav-style="dynamic-island"] .nav-tabs a .nav-txt .nav-tit {
+  font-size: 11.5px !important;
+}
+:root[data-nav-style="dynamic-island"] .nav-tabs a .nav-txt .nav-sub {
+  display: none !important;
+}
+
+:root[data-nav-style="dynamic-island"] .nav-tabs a .nav-db-side {
+  width: 17px !important;
+  height: 17px !important;
+  font-size: 9px !important;
+  margin-left: 2px !important;
+}
+
+:root[data-nav-style="dynamic-island"] .nav-account {
+  border: none !important;
+  padding: 0 !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 6px !important;
+  flex-shrink: 0 !important;
+}
+:root[data-nav-style="dynamic-island"] .acc-foot {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 4px !important;
+}
+:root[data-nav-style="dynamic-island"] .acc-out span { display: none !important; }
 
 /* Selector de Estilo de Menú */
 .nav-style-grid{ display:grid; grid-template-columns:repeat(2, 1fr); gap:8px; margin-top:6px; }
@@ -3049,7 +3499,22 @@ button:hover, .btn:hover, .iconbtn:hover, .acc-btn:hover {
         <b>Superior</b>
         <small>Top Navbar</small>
       </button>
-      <button type="button" class="nav-style-btn" data-nav="rueda" style="grid-column: span 2;">
+            <button type="button" class="nav-style-btn" data-nav="cyber-dock">
+        <span class="nav-s-icon">🛸</span>
+        <b>Cyber-Dock</b>
+        <small>Dock Glassmorphism</small>
+      </button>
+      <button type="button" class="nav-style-btn" data-nav="hex-matrix">
+        <span class="nav-s-icon">🔷</span>
+        <b>Matriz Hex</b>
+        <small>Malla Táctica</small>
+      </button>
+      <button type="button" class="nav-style-btn" data-nav="dynamic-island">
+        <span class="nav-s-icon">💊</span>
+        <b>Isla Dinámica</b>
+        <small>Cápsula HUD Top</small>
+      </button>
+      <button type="button" class="nav-style-btn" data-nav="rueda">
         <span class="nav-s-icon">🧭</span>
         <b>Rueda Holográfica</b>
         <small>Dial Cyberpunk 180°</small>
@@ -3349,6 +3814,60 @@ button:hover, .btn:hover, .iconbtn:hover, .acc-btn:hover {
           <button type="button" class="nc-select-btn">Seleccionar</button>
         </div>
 
+        <!-- Opción 6: Dock Flotante Cyber-Glassmorphic -->
+        <div class="nav-card" data-nav-target="cyber-dock">
+          <div class="nc-head">
+            <span class="nc-tag">FUTURISTA · DOCK</span>
+            <div class="nc-radio"><span class="nc-radio-dot"></span></div>
+          </div>
+          <div class="nc-info">
+            <h3 class="nc-title">Dock Flotante Cyber</h3>
+            <p class="nc-desc">Barra inferior horizontal estilo macOS con efecto lupa en iconos, micro-LEDs y máxima amplitud de pantalla.</p>
+          </div>
+          <ul class="nc-features">
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span>Libera el 100% del ancho para tablas y editores</span></li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span>Física de lupa (magnification) al posar el ratón</span></li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span>Orbes de base de datos fijados en cada módulo</span></li>
+          </ul>
+          <button type="button" class="nc-select-btn">Seleccionar</button>
+        </div>
+
+        <!-- Opción 7: Matriz Hexagonal de Centro de Comando -->
+        <div class="nav-card" data-nav-target="hex-matrix">
+          <div class="nc-head">
+            <span class="nc-tag">TACTICAL · MATRIX</span>
+            <div class="nc-radio"><span class="nc-radio-dot"></span></div>
+          </div>
+          <div class="nc-info">
+            <h3 class="nc-title">Matriz Hexagonal</h3>
+            <p class="nc-desc">Panel lateral en panal de colmena con nodos agrupados por Núcleo de Datos, Soporte y Auditoría.</p>
+          </div>
+          <ul class="nc-features">
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span>Agrupación táctica por núcleos funcionales</span></li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span>Estética de centro de operaciones y ciberseguridad</span></li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span>Orbes y resplandores holográficos dinámicos</span></li>
+          </ul>
+          <button type="button" class="nc-select-btn">Seleccionar</button>
+        </div>
+
+        <!-- Opción 8: Isla Dinámica Táctica & HUD Orbital -->
+        <div class="nav-card" data-nav-target="dynamic-island">
+          <div class="nc-head">
+            <span class="nc-tag">ELITE · DYNAMIC ISLAND</span>
+            <div class="nc-radio"><span class="nc-radio-dot"></span></div>
+          </div>
+          <div class="nc-info">
+            <h3 class="nc-title">Isla Dinámica Táctica</h3>
+            <p class="nc-desc">Cápsula superior central que se expande fluidamente en un HUD de comando con reloj militar y telemetría en vivo.</p>
+          </div>
+          <ul class="nc-features">
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span>Ultra compacta en reposo: no tapa nada de contenido</span></li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span>Expansión fluida al pasar el ratón con chips de módulos</span></li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span>Telemetría en tiempo real: reloj militar y motor BD</span></li>
+          </ul>
+          <button type="button" class="nc-select-btn">Seleccionar</button>
+        </div>
+
         <!-- Opción 5: Rueda Holográfica Cyberpunk -->
         <div class="nav-card" data-nav-target="rueda">
           <div class="nc-head">
@@ -3529,6 +4048,9 @@ button:hover, .btn:hover, .iconbtn:hover, .acc-btn:hover {
     var navNames = {
       'oculto': 'Zen Oculto',
       'dock': 'Mini-Dock',
+      'cyber-dock': 'Cyber-Dock Flotante',
+      'hex-matrix': 'Matriz Hexagonal HUD',
+      'dynamic-island': 'Isla Dinámica Táctica',
       'rueda': 'Rueda Holográfica',
       'fija': 'Barra Fija',
       'superior': 'Barra Superior'
