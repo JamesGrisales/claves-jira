@@ -111,4 +111,21 @@ function enviarViaOutlookMapi({ to, cc, asunto, mensajeHtml, tecnico, pdfBuffer,
   });
 }
 
-module.exports = { enviarViaOutlookMapi };
+/**
+ * Verifica si Outlook Desktop (MAPI COM) está instalado y disponible en Windows.
+ */
+function verificarOutlookMapi() {
+  return new Promise((resolve) => {
+    const psCmd = `powershell -ExecutionPolicy Bypass -Command "try { $o = New-Object -ComObject Outlook.Application; Write-Output ('OUTLOOK_VERSION=' + $o.Version) } catch { Write-Output 'NO_OUTLOOK' }"`;
+    exec(psCmd, { encoding: "utf8", timeout: 6000 }, (err, stdout) => {
+      const out = (stdout || "").trim();
+      if (out.includes("OUTLOOK_VERSION=")) {
+        const ver = out.split("OUTLOOK_VERSION=")[1].trim();
+        return resolve({ disponible: true, version: ver });
+      }
+      resolve({ disponible: false, version: null });
+    });
+  });
+}
+
+module.exports = { enviarViaOutlookMapi, verificarOutlookMapi };

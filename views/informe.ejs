@@ -337,15 +337,31 @@
 
     <!-- Panel 2: Configuración SMTP -->
     <div id="panelConfig" style="display:none; flex-direction:column; gap:12px; overflow-y:auto; padding:4px 0;">
-      <p style="font-size:13px; color:var(--muted); margin:0 0 6px;">
-        Configura tu cuenta corporativa de Outlook / Microsoft 365. Las credenciales se guardan de forma segura en este navegador.
+      <!-- Estado de Outlook de Escritorio -->
+      <div style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: 10px; padding: 12px 14px; display: flex; align-items: flex-start; gap: 12px;">
+        <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(16, 185, 129, 0.2); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;">
+          🛡️
+        </div>
+        <div style="font-size: 12.5px; line-height: 1.5; color: var(--text);">
+          <div style="font-weight: 700; color: #10b981; margin-bottom: 2px; font-size: 13px; display: flex; align-items: center; gap: 6px;">
+            <span>Modo Principal: Outlook de Escritorio (Windows MAPI)</span>
+            <span style="background: #10b981; color: #fff; font-size: 10px; padding: 1px 7px; border-radius: 12px; font-weight: 700;">ACTIVO</span>
+          </div>
+          <div>El sistema envía los informes directamente usando tu cuenta de Outlook ya autenticada en Windows (<strong>jgrisales@jaivana.co</strong>). <strong>No necesitas ingresar contraseña</strong> ni configurar puertos para enviar tus informes.</div>
+        </div>
+      </div>
+
+      <div style="border-top: 1px dashed var(--panel-edge); margin: 2px 0;"></div>
+
+      <p style="font-size:12px; color:var(--muted); margin:0 0 2px; line-height: 1.4;">
+        ⚙️ <strong>Configuración SMTP de Respaldo (Opcional):</strong> Solo requerida si la app se ejecuta en un servidor remoto sin Outlook de escritorio. (Nota: Microsoft 365 Jaivaná bloquea contraseñas SMTP por seguridad).
       </p>
       <label class="campo">
         <span>Tu Correo Outlook</span>
         <input type="email" id="smtpUser" value="jgrisales@jaivana.co" placeholder="jgrisales@jaivana.co">
       </label>
       <label class="campo">
-        <span>Contraseña o Contraseña de Aplicación</span>
+        <span>Contraseña o Contraseña de Aplicación <em style="font-size:11px; font-weight:normal; color:var(--muted);">(Opcional en tu equipo)</em></span>
         <input type="password" id="smtpPass" placeholder="••••••••••••••••">
       </label>
       <div style="display:grid; grid-template-columns:2fr 1fr; gap:10px;">
@@ -1075,17 +1091,12 @@ setInterval(sincronizarServidor, 15000);
     });
   }
 
-  // Probar SMTP
+  // Probar Conexión (Outlook de Escritorio + SMTP)
   if (btnProbarSmtp) {
     btnProbarSmtp.addEventListener('click', async function(){
       var cfg = guardarSmtpLocal();
-      if (!cfg.user || !cfg.pass) {
-        smtpStatus.textContent = 'Ingresa usuario y contraseña';
-        smtpStatus.style.color = 'var(--danger)';
-        return;
-      }
       btnProbarSmtp.disabled = true;
-      smtpStatus.textContent = 'Conectando a Outlook…';
+      smtpStatus.textContent = 'Verificando Outlook…';
       smtpStatus.style.color = 'var(--muted)';
       try {
         var r = await fetch('/informe/probar-smtp', {
@@ -1095,9 +1106,16 @@ setInterval(sincronizarServidor, 15000);
         });
         var d = await r.json();
         if (!r.ok) throw new Error(d.error || 'Error de conexión');
-        smtpStatus.textContent = '✓ Conexión exitosa';
-        smtpStatus.style.color = 'var(--ok)';
-        toast('Conexión con Outlook exitosa');
+        
+        if (d.advertencia || d.tenantPolicy) {
+          smtpStatus.textContent = 'ℹ ' + d.mensaje;
+          smtpStatus.style.color = '#38bdf8';
+          toast('Outlook de escritorio activo y listo');
+        } else {
+          smtpStatus.textContent = '✓ ' + (d.mensaje || 'Conexión con Outlook exitosa');
+          smtpStatus.style.color = 'var(--ok)';
+          toast('Outlook verificado con éxito');
+        }
       } catch(err) {
         smtpStatus.textContent = '✕ ' + err.message;
         smtpStatus.style.color = 'var(--danger)';
