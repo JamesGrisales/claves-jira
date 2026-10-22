@@ -1520,7 +1520,14 @@ body:not(.guest) .nav-account .user-card .avatar{
 
 
 /* ---------- 7) PANEL DE APARIENCIA ---------- */
-.pal-panel{ display:none; position:fixed; z-index:750; width:330px; max-height:85vh; overflow-y:auto; scrollbar-width:thin; padding:16px; background:var(--panel); border:1px solid var(--panel-edge); border-radius:16px; box-shadow:var(--shadow-lg); left:calc(var(--sb-w) + 10px); bottom:14px; }
+.pal-panel{
+  display:none;
+  position:fixed;
+  z-index:750;
+  width:360px;
+  max-height:85vh;
+  backdrop-filter:blur(24px);
+  -webkit-backdrop-filter:blur(24px); max-height:85vh; overflow-y:auto; scrollbar-width:thin; padding:16px; background:var(--panel); border:1px solid var(--panel-edge); border-radius:16px; box-shadow:var(--shadow-lg); left:calc(var(--sb-w) + 10px); bottom:14px; }
 .pal-panel.open{ display:block; animation:panelIn .2s var(--ease); }
 body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:auto; top:75px; }
 .pal-panel h4{ margin:0 0 2px; font-size:15px; font-weight:800; }
@@ -1530,6 +1537,138 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
 .seg button.plain{ padding:7px 4px; border-radius:8px; font-size:12.5px; font-weight:600; color:var(--muted); display:flex; align-items:center; justify-content:center; gap:5px; transition:background-color .15s ease, color .15s ease; }
 .seg button.plain:hover{ color:var(--text); }
 .seg button.plain.on{ background:var(--panel); color:var(--accent-dark); box-shadow:0 1px 4px rgba(15,27,51,.14); }
+
+/* Selector de Estilo de Menú en el panel de Apariencia */
+.nav-style-grid{
+  display:grid !important;
+  grid-template-columns:repeat(2, 1fr) !important;
+  gap:7px !important;
+  margin-top:6px !important;
+}
+.nav-style-btn{
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:flex-start !important;
+  gap:2px !important;
+  padding:8px 10px !important;
+  border-radius:12px !important;
+  background:var(--panel-alt) !important;
+  border:1px solid var(--panel-edge) !important;
+  color:var(--text) !important;
+  font-family:var(--sans) !important;
+  cursor:pointer !important;
+  text-align:left !important;
+  transition:all .2s ease !important;
+  position:relative !important;
+  overflow:hidden !important;
+  box-shadow:none !important;
+}
+.nav-style-btn:hover{
+  border-color:var(--accent) !important;
+  background:rgba(var(--accent-rgb), 0.08) !important;
+  transform:translateY(-1px) !important;
+  color:var(--text) !important;
+}
+.nav-style-btn.on{
+  border-color:var(--accent) !important;
+  background:rgba(var(--accent-rgb), 0.16) !important;
+  box-shadow:0 0 14px -2px rgba(var(--accent-rgb), 0.45) !important;
+  color:var(--text) !important;
+}
+.nav-style-btn.on::after{
+  content:'✓' !important;
+  position:absolute !important;
+  top:6px !important;
+  right:8px !important;
+  font-size:11px !important;
+  font-weight:800 !important;
+  color:var(--accent) !important;
+}
+.nav-style-btn .nav-s-icon{
+  font-size:16px !important;
+  margin-bottom:2px !important;
+  line-height:1 !important;
+}
+.nav-style-btn b{
+  font-size:11.5px !important;
+  font-weight:700 !important;
+  color:var(--text) !important;
+  line-height:1.2 !important;
+}
+.nav-style-btn.on b{
+  color:#fff !important;
+}
+.nav-style-btn small{
+  font-size:9.5px !important;
+  color:var(--muted) !important;
+  line-height:1.2 !important;
+}
+
+/* Círculos de Colores / Swatches Cósmicos y Clásicos */
+.swatches{
+  display:grid !important;
+  grid-template-columns:repeat(4, 1fr) !important;
+  gap:10px 6px !important;
+  margin-top:6px !important;
+}
+.sw{
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  gap:5px !important;
+  font-size:11px !important;
+  font-weight:600 !important;
+  color:var(--muted) !important;
+  background:none !important;
+  border:none !important;
+  cursor:pointer !important;
+  padding:4px 0 !important;
+  box-shadow:none !important;
+  border-radius:8px !important;
+}
+.sw:hover{
+  color:var(--text) !important;
+  background:none !important;
+}
+.sw .dot{
+  width:34px !important;
+  height:34px !important;
+  border-radius:50% !important;
+  background:linear-gradient(135deg, var(--a), var(--b)) !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  box-shadow:0 0 0 1px var(--panel-edge), 0 2px 8px rgba(0,0,0,0.25) !important;
+  transition:transform .2s var(--spring), box-shadow .2s ease !important;
+}
+.sw:hover .dot{
+  transform:scale(1.15) !important;
+  box-shadow:0 0 0 2px var(--accent), 0 4px 12px rgba(0,0,0,0.35) !important;
+}
+.sw .dot svg{
+  width:16px !important;
+  height:16px !important;
+  stroke:#fff !important;
+  stroke-width:3 !important;
+  fill:none !important;
+  stroke-linecap:round !important;
+  stroke-linejoin:round !important;
+  opacity:0 !important;
+  transform:scale(.4) !important;
+  transition:all .2s var(--spring) !important;
+}
+.sw.on{
+  color:var(--text) !important;
+}
+.sw.on .dot{
+  box-shadow:0 0 0 2px var(--panel), 0 0 0 4px var(--a), 0 0 14px var(--a) !important;
+  transform:scale(1.08) !important;
+}
+.sw.on .dot svg{
+  opacity:1 !important;
+  transform:scale(1) !important;
+}
+
 
 
 /* =====================================================================
@@ -3384,42 +3523,42 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
     </div>
     <div class="pal-sec">Estilo de Menú</div>
     <div class="nav-style-grid" id="navStyleSeg">
-      <button type="button" class="nav-style-btn" data-nav="oculto">
+      <button type="button" class="plain nav-style-btn" data-nav="oculto">
         <span class="nav-s-icon">🫥</span>
         <b>Zen Oculto</b>
         <small>100% Pantalla</small>
       </button>
-      <button type="button" class="nav-style-btn" data-nav="dock">
+      <button type="button" class="plain nav-style-btn" data-nav="dock">
         <span class="nav-s-icon">📱</span>
         <b>Mini-Dock</b>
         <small>70px + Hover / Flecha</small>
       </button>
-      <button type="button" class="nav-style-btn" data-nav="fija">
+      <button type="button" class="plain nav-style-btn" data-nav="fija">
         <span class="nav-s-icon">📑</span>
         <b>Barra Fija</b>
         <small>Lateral 240px</small>
       </button>
-      <button type="button" class="nav-style-btn" data-nav="superior">
+      <button type="button" class="plain nav-style-btn" data-nav="superior">
         <span class="nav-s-icon">💻</span>
         <b>Superior</b>
         <small>Top Navbar</small>
       </button>
-            <button type="button" class="nav-style-btn" data-nav="cyber-dock">
+            <button type="button" class="plain nav-style-btn" data-nav="cyber-dock">
         <span class="nav-s-icon">🛸</span>
         <b>Cyber-Dock</b>
         <small>Dock Glassmorphism</small>
       </button>
-      <button type="button" class="nav-style-btn" data-nav="hex-matrix">
+      <button type="button" class="plain nav-style-btn" data-nav="hex-matrix">
         <span class="nav-s-icon">🔷</span>
         <b>Matriz Hex</b>
         <small>Malla Táctica</small>
       </button>
-      <button type="button" class="nav-style-btn" data-nav="dynamic-island">
+      <button type="button" class="plain nav-style-btn" data-nav="dynamic-island">
         <span class="nav-s-icon">💊</span>
         <b>Isla Dinámica</b>
         <small>Cápsula HUD Top</small>
       </button>
-      <button type="button" class="nav-style-btn" data-nav="rueda">
+      <button type="button" class="plain nav-style-btn" data-nav="rueda">
         <span class="nav-s-icon">🧭</span>
         <b>Rueda Holográfica</b>
         <small>Dial Cyberpunk 180°</small>
