@@ -215,8 +215,8 @@
   /* Bloque de Telemetría: Inferior Derecha (con gráfico ECG / Wave) */
   .hud-telemetry-br {
     position: absolute;
-    bottom: 34px;
-    right: 42px;
+    bottom: 74px;
+    right: 32px;
     z-index: 10;
     text-align: right;
     font-family: var(--mono);
@@ -1863,19 +1863,19 @@
         "package vault",
         "",
         "import (",
-        "    "crypto/sha256"",
-        "    "net/http"",
-        "    "time"",
+        "    \"crypto/sha256\",",
+        "    \"net/http\",",
+        "    \"time\",",
         ")",
         "",
         "type AuthResult struct {",
-        "    Authorized bool          `json:"authorized"`",
-        "    Latency    time.Duration `json:"latency"`",
+        "    Authorized bool          `json:\"authorized\"`",
+        "    Latency    time.Duration `json:\"latency\"`",
         "}",
         "",
         "func HandleAuthPipeline(w http.ResponseWriter, r *http.Request) {",
         "    start := time.Now()",
-        "    h := sha256.Sum256([]byte(r.Header.Get("X-Vault-Token")))",
+        "    h := sha256.Sum256([]byte(r.Header.Get(\"X-Vault-Token\")))",
         "    _ = h",
         "    w.WriteHeader(http.StatusOK)",
         "}"
@@ -2114,4 +2114,151 @@
     iniciarAutoRotacion();
   }
 })();
+
+// --- GESTIÓN DE ACCESO BIOMÉTRICO (WEBAUTHN / WINDOWS HELLO HUELLA DIGITAL) ---
+(function initBiometriaLogin() {
+  var btnBio = document.getElementById('btnBiometria');
+  var divBio = document.getElementById('bioDivider');
+  var txtUser = document.getElementById('usuario');
+  if (!btnBio || typeof Biometria === 'undefined') return;
+
+  var originalBioHTML = btnBio.innerHTML;
+  var bioEscaneando = false;
+
+  // Siempre mostrar si el navegador soporta WebAuthn o si está en localhost
+  Biometria.esCompatible().then(function(compatible) {
+    if (compatible) {
+      btnBio.style.display = 'flex';
+      if (divBio) divBio.style.display = 'flex';
+    } else {
+      btnBio.style.display = 'flex';
+      if (divBio) divBio.style.display = 'flex';
+    }
+  }).catch(function() {
+    btnBio.style.display = 'flex';
+    if (divBio) divBio.style.display = 'flex';
+  });
+
+  btnBio.addEventListener('click', async function() {
+    if (bioEscaneando) return;
+    bioEscaneando = true;
+
+    var usuario = (txtUser ? txtUser.value : '').trim();
+
+    btnBio.classList.add('scanning');
+    btnBio.disabled = true;
+    var t = btnBio.querySelector('.bio-title');
+    var s = btnBio.querySelector('.bio-sub');
+    if (t) t.textContent = 'COLOCA TU DEDO EN EL SENSOR...';
+    if (s) s.textContent = 'Escaneando huella dactilar Windows Hello';
+
+    try {
+      var resultado = await Biometria.autenticar(usuario);
+      if (resultado && resultado.ok) {
+        btnBio.classList.remove('scanning');
+        btnBio.style.borderColor = '#10b981';
+        btnBio.style.background = 'rgba(16, 185, 129, 0.2)';
+        if (t) t.textContent = '¡HUELLA RECONOCIDA! AUTORIZADO';
+        if (s) s.textContent = (resultado.user ? resultado.user.username : '') + ' · Acceso concedido';
+        setTimeout(function() {
+          window.location.href = resultado.redirect || '/';
+        }, 500);
+      } else {
+        throw new Error((resultado && resultado.error) || 'Huella no reconocida.');
+      }
+    } catch(err) {
+      console.error('Error biometría:', err);
+      btnBio.classList.remove('scanning');
+      btnBio.style.borderColor = '#ef4444';
+      btnBio.style.background = 'rgba(239, 68, 68, 0.2)';
+      if (t) t.textContent = 'NO SE PUDO VERIFICAR HUELLA';
+      if (s) s.textContent = err.message || 'Intenta de nuevo o ingresa con tu contraseña';
+
+      setTimeout(function() {
+        btnBio.style.borderColor = '';
+        btnBio.style.background = '';
+        btnBio.innerHTML = originalBioHTML;
+        btnBio.disabled = false;
+        bioEscaneando = false;
+      }, 2800);
+    }
+  });
+})();
+
+// --- ENVÍO DE FORMULARIO DE ACCESO (AJAX CON FEEDBACK EN VIVO) ---
+(function initLoginForm() {
+  var form = document.getElementById('loginForm');
+  var btn = document.getElementById('btnLogin');
+  var txtUser = document.getElementById('usuario');
+  var txtPass = document.getElementById('clave');
+  var chkRecordar = document.getElementById('chkRecordar');
+  if (!form || !btn) return;
+
+  var originalHTML = btn.innerHTML;
+  var animando = false;
+
+  try {
+    var savedUser = localStorage.getItem('boveda_saved_user');
+    if (savedUser && txtUser) {
+      txtUser.value = savedUser;
+      if (chkRecordar) chkRecordar.checked = true;
+      if (txtPass) setTimeout(function(){ txtPass.focus(); }, 60);
+    }
+  } catch(e) {}
+
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+    if (animando) return;
+
+    var username = (txtUser ? txtUser.value : '').trim();
+    var password = txtPass ? txtPass.value : '';
+    if (!username || !password) return;
+
+    try {
+      if (chkRecordar && chkRecordar.checked) localStorage.setItem('boveda_saved_user', username);
+      else localStorage.removeItem('boveda_saved_user');
+    } catch(e) {}
+
+    animando = true;
+    btn.disabled = true;
+    btn.classList.add('btn-validando');
+    btn.innerHTML = '<span class="btn-label">VALIDANDO ACCESO…</span><svg viewBox="0 0 24 24" style="animation: spin 0.8s linear infinite; width:18px; height:18px;"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-dasharray="32" stroke-linecap="round" fill="none"/></svg>';
+
+    fetch('/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+      body: JSON.stringify({ username: username, password: password, ajax: '1' }),
+      credentials: 'same-origin'
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data && data.ok) {
+        btn.classList.remove('btn-validando', 'btn-invalido');
+        btn.classList.add('btn-valido');
+        btn.innerHTML = '<span class="btn-label">¡AUTORIZADO!</span><svg viewBox="0 0 24 24" style="stroke-width:3.2; width:18px; height:18px;"><polyline points="20 6 9 17 4 12"/></svg>';
+        setTimeout(function() { window.location.href = data.redirect || '/'; }, 450);
+      } else {
+        mostrarError(data && data.error ? data.error : 'Usuario o contraseña incorrectos');
+      }
+    })
+    .catch(function(err) {
+      console.error(err);
+      mostrarError('Error al contactar con el servidor');
+    });
+  });
+
+  function mostrarError(msg) {
+    btn.classList.remove('btn-validando', 'btn-valido');
+    btn.classList.add('btn-invalido');
+    btn.innerHTML = '<span class="btn-label">' + (msg || 'DATOS INCORRECTOS') + '</span>';
+    if (txtPass) txtPass.select();
+    setTimeout(function() {
+      btn.classList.remove('btn-invalido');
+      btn.disabled = false;
+      btn.innerHTML = originalHTML;
+      animando = false;
+    }, 2000);
+  }
+})();
+
 </script>
