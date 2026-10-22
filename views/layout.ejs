@@ -2134,37 +2134,7 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
    ===================================================================== */
 :root[data-nav-style="dynamic-island"] body:not(.guest) {
   position: relative !important;
-  padding: 16px 24px 70px 24px !important;
-}
-
-/* Distribución unificada de la Topbar en Isla Dinámica */
-:root[data-nav-style="dynamic-island"] .topbar {
-  display: flex !important;
-  align-items: flex-start !important;
-  justify-content: space-between !important;
-  min-height: 84px !important;
-  margin-bottom: 12px !important;
-  position: relative !important;
-  z-index: 100 !important;
-}
-
-:root[data-nav-style="dynamic-island"] .topbar-right {
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: flex-end !important;
-  gap: 5px !important;
-  margin-left: auto !important;
-}
-
-:root[data-nav-style="dynamic-island"] .topbar-right .clock {
-  order: 1 !important;
-  margin: 0 !important;
-}
-
-:root[data-nav-style="dynamic-island"] .topbar-right #topbarDbDropdown {
-  order: 2 !important;
-  align-self: flex-end !important;
-  margin-top: 1px !important;
+  padding: 84px 24px 50px 24px !important;
 }
 :root[data-nav-style="dynamic-island"] #sbOpen { display: none !important; }
 :root[data-nav-style="dynamic-island"] .sb-backdrop { display: none !important; }
@@ -2172,7 +2142,7 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
 /* El navbar se convierte en una Cápsula / Isla Dinámica PANORÁMICA en el centro superior */
 :root[data-nav-style="dynamic-island"] body:not(.guest) .navbar {
   position: absolute !important;
-  top: 10px !important;
+  top: 12px !important;
   left: 50% !important;
   bottom: auto !important;
   right: auto !important;
@@ -2180,9 +2150,9 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
   width: max-content !important;
   max-width: calc(100vw - 32px) !important;
   min-width: 340px !important;
-  height: 54px !important;
+  height: 52px !important;
   border-radius: 999px !important;
-  padding: 5px 12px !important;
+  padding: 4px 12px !important;
   background: rgba(9, 14, 26, 0.90) !important;
   backdrop-filter: blur(28px) saturate(2.0) !important;
   -webkit-backdrop-filter: blur(28px) saturate(2.0) !important;
@@ -2201,13 +2171,48 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
   scrollbar-width: none !important;
   transition: all 0.3s cubic-bezier(0.34, 1.25, 0.64, 1) !important;
 }
+
 :root[data-nav-style="dynamic-island"] body:not(.guest) .navbar::-webkit-scrollbar { display: none !important; }
 
 :root[data-nav-style="dynamic-island"] .navbar:hover,
 :root[data-nav-style="dynamic-island"] .navbar.expanded {
-  height: 58px !important;
+  height: 54px !important;
   border-color: var(--accent) !important;
   box-shadow: 0 18px 48px rgba(0, 0, 0, 0.88), 0 0 35px rgba(var(--accent-rgb), 0.45) !important;
+}
+
+/* En Dynamic Island, la topbar queda limpia y perfectamente visible debajo de la cápsula */
+:root[data-nav-style="dynamic-island"] .topbar {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  margin-top: 4px !important;
+  margin-bottom: 16px !important;
+  position: relative !important;
+  z-index: 100 !important;
+}
+
+:root[data-nav-style="dynamic-island"] .topbar-left {
+  display: flex !important;
+  align-items: center !important;
+}
+
+:root[data-nav-style="dynamic-island"] .topbar-right {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 12px !important;
+  margin-left: auto !important;
+}
+
+:root[data-nav-style="dynamic-island"] .topbar-right .clock {
+  order: 2 !important;
+  margin: 0 !important;
+}
+
+:root[data-nav-style="dynamic-island"] .topbar-right #topbarDbDropdown {
+  order: 1 !important;
+  margin-top: 0 !important;
 }
 
 :root[data-nav-style="dynamic-island"] .brand {
@@ -4759,6 +4764,7 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
       document.body.style.overflow = '';
     }
     if ($('btnOpenNavModal')) $('btnOpenNavModal').addEventListener('click', openNavModal);
+    if ($('brandBadge')) { $('brandBadge').addEventListener('click', openNavModal); $('brandBadge').style.cursor = 'pointer'; $('brandBadge').setAttribute('title', 'Cambiar estilo de navegación y menú'); }
     if ($('palOpenNavModal')) $('palOpenNavModal').addEventListener('click', function(e){
       e.stopPropagation();
       togglePal(false);
