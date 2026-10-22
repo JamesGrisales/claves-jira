@@ -4806,6 +4806,21 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
     })();
 
 
+    
+    /* Scroll horizontal con rueda del ratón en barras horizontales */
+    var nt = $('navTabs');
+    if (nt) {
+      nt.addEventListener('wheel', function(e){
+        var st = root.getAttribute('data-nav-style') || 'oculto';
+        if (st === 'superior' || st === 'dynamic-island' || st === 'cyber-dock') {
+          if (e.deltaY !== 0) {
+            e.preventDefault();
+            nt.scrollLeft += e.deltaY;
+          }
+        }
+      }, { passive: false });
+    }
+
     /* ===== EXTRAS INTERACTIVOS ===== */
 
     /* ----- Barra de progreso de scroll ----- */
