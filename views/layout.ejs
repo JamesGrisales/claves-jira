@@ -3254,6 +3254,92 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
 }
 
 /* SQLite: Púrpura Neón Láser */
+
+/* Nuevos Orbes: Cassandra, Neo4j, Editores y Lenguajes */
+.db-orb-cas {
+  --orb-glow: rgba(99, 102, 241, 0.55);
+  --orb-glow-soft: rgba(67, 56, 202, 0.35);
+  --orb-inner: rgba(99, 102, 241, 0.3);
+  border-color: rgba(99, 102, 241, 0.6);
+  background: radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.35), rgba(67, 56, 202, 0.15) 60%, rgba(14, 10, 32, 0.85));
+}
+.db-orb-neo {
+  --orb-glow: rgba(2, 132, 199, 0.55);
+  --orb-glow-soft: rgba(3, 105, 161, 0.35);
+  --orb-inner: rgba(2, 132, 199, 0.3);
+  border-color: rgba(2, 132, 199, 0.6);
+  background: radial-gradient(circle at 30% 30%, rgba(2, 132, 199, 0.35), rgba(3, 105, 161, 0.15) 60%, rgba(4, 15, 30, 0.85));
+}
+.db-orb-vsc {
+  --orb-glow: rgba(0, 122, 204, 0.55);
+  --orb-glow-soft: rgba(0, 89, 153, 0.35);
+  --orb-inner: rgba(0, 122, 204, 0.3);
+  border-color: rgba(0, 122, 204, 0.6);
+  background: radial-gradient(circle at 30% 30%, rgba(0, 122, 204, 0.35), rgba(0, 89, 153, 0.15) 60%, rgba(4, 12, 28, 0.85));
+}
+.db-orb-nvim {
+  --orb-glow: rgba(34, 197, 94, 0.55);
+  --orb-glow-soft: rgba(21, 128, 61, 0.35);
+  --orb-inner: rgba(34, 197, 94, 0.3);
+  border-color: rgba(34, 197, 94, 0.6);
+  background: radial-gradient(circle at 30% 30%, rgba(34, 197, 94, 0.35), rgba(21, 128, 61, 0.15) 60%, rgba(4, 25, 12, 0.85));
+}
+.db-orb-py {
+  --orb-glow: rgba(234, 179, 8, 0.55);
+  --orb-glow-soft: rgba(37, 99, 235, 0.35);
+  --orb-inner: rgba(234, 179, 8, 0.3);
+  border-color: rgba(234, 179, 8, 0.6);
+  background: radial-gradient(circle at 30% 30%, rgba(234, 179, 8, 0.35), rgba(37, 99, 235, 0.2) 60%, rgba(18, 16, 28, 0.85));
+}
+.db-orb-js {
+  --orb-glow: rgba(250, 204, 21, 0.55);
+  --orb-glow-soft: rgba(202, 138, 4, 0.35);
+  --orb-inner: rgba(250, 204, 21, 0.3);
+  border-color: rgba(250, 204, 21, 0.6);
+  background: radial-gradient(circle at 30% 30%, rgba(250, 204, 21, 0.35), rgba(202, 138, 4, 0.15) 60%, rgba(28, 24, 4, 0.85));
+}
+.db-orb-java {
+  --orb-glow: rgba(249, 115, 22, 0.55);
+  --orb-glow-soft: rgba(194, 65, 12, 0.35);
+  --orb-inner: rgba(249, 115, 22, 0.3);
+  border-color: rgba(249, 115, 22, 0.6);
+  background: radial-gradient(circle at 30% 30%, rgba(249, 115, 22, 0.35), rgba(194, 65, 12, 0.15) 60%, rgba(30, 14, 4, 0.85));
+}
+.db-orb-rust {
+  --orb-glow: rgba(234, 88, 12, 0.55);
+  --orb-glow-soft: rgba(154, 52, 18, 0.35);
+  --orb-inner: rgba(234, 88, 12, 0.3);
+  border-color: rgba(234, 88, 12, 0.6);
+  background: radial-gradient(circle at 30% 30%, rgba(234, 88, 12, 0.35), rgba(154, 52, 18, 0.15) 60%, rgba(30, 12, 4, 0.85));
+}
+.db-orb-go {
+  --orb-glow: rgba(56, 189, 248, 0.55);
+  --orb-glow-soft: rgba(2, 132, 199, 0.35);
+  --orb-inner: rgba(56, 189, 248, 0.3);
+  border-color: rgba(56, 189, 248, 0.6);
+  background: radial-gradient(circle at 30% 30%, rgba(56, 189, 248, 0.35), rgba(2, 132, 199, 0.15) 60%, rgba(4, 18, 32, 0.85));
+}
+
+.tbm-cat-hdr {
+  font-family: var(--sans);
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  padding: 6px 8px 3px;
+  margin-top: 5px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  user-select: none;
+}
+.tbm-cat-hdr:first-of-type {
+  border-top: none;
+  margin-top: 0;
+}
+
 .db-orb-sqlite {
   --orb-glow: rgba(168, 85, 247, 0.55);
   --orb-glow-soft: rgba(124, 58, 237, 0.35);
@@ -3354,7 +3440,10 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
   position: absolute;
   top: calc(100% + 8px);
   right: 0;
-  min-width: 235px;
+  min-width: 260px;
+  max-height: 480px;
+  overflow-y: auto;
+  scrollbar-width: thin;
   background: rgba(8, 14, 26, 0.96);
   border: 1px solid rgba(var(--accent-rgb), 0.4);
   border-radius: 12px;
@@ -4100,7 +4189,9 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
           <svg class="tbe-arrow" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
         </button>
         <div class="topbar-db-menu" id="topbarDbMenu">
-          <div class="tbm-header">Motor de BD & Color del Sistema</div>
+          <div class="tbm-header">Motor, Editor & Lenguaje del Sistema</div>
+
+          <div class="tbm-cat-hdr">🗄️ MOTORES DE BASE DE DATOS</div>
           <button type="button" class="tbm-item" data-engine-pick="postgres">
             <span class="db-orb db-orb-sm db-orb-pg">🐘</span>
             <div class="tbm-info"><div class="tbm-title">PostgreSQL 16</div><small>Cian Neón · Relacional ACID</small></div>
@@ -4129,8 +4220,47 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
             <span class="db-orb db-orb-sm db-orb-sqlite">💾</span>
             <div class="tbm-info"><div class="tbm-title">SQLite Embedded</div><small>Púrpura Neón · Zero-Conf</small></div>
           </button>
-        </div>
-      </div>
+          <button type="button" class="tbm-item" data-engine-pick="cassandra">
+            <span class="db-orb db-orb-sm db-orb-cas">🪐</span>
+            <div class="tbm-info"><div class="tbm-title">Apache Cassandra</div><small>Índigo Ciber · Wide-Column</small></div>
+          </button>
+          <button type="button" class="tbm-item" data-engine-pick="neo4j">
+            <span class="db-orb db-orb-sm db-orb-neo">🕸️</span>
+            <div class="tbm-info"><div class="tbm-title">Neo4j Graph DB</div><small>Cobalto Neón · Graph Nodes</small></div>
+          </button>
+
+          <div class="tbm-cat-hdr">💻 EDITORES DE CÓDIGO</div>
+          <button type="button" class="tbm-item" data-engine-pick="vscode">
+            <span class="db-orb db-orb-sm db-orb-vsc">💙</span>
+            <div class="tbm-info"><div class="tbm-title">VS Code</div><small>Azul Eléctrico · Editor Matrix</small></div>
+          </button>
+          <button type="button" class="tbm-item" data-engine-pick="neovim">
+            <span class="db-orb db-orb-sm db-orb-nvim">🟢</span>
+            <div class="tbm-info"><div class="tbm-title">Neovim / Vim</div><small>Verde Menta Neón · Terminal Core</small></div>
+          </button>
+
+          <div class="tbm-cat-hdr">⚡ LENGUAJES DE PROGRAMACIÓN</div>
+          <button type="button" class="tbm-item" data-engine-pick="python">
+            <span class="db-orb db-orb-sm db-orb-py">🐍</span>
+            <div class="tbm-info"><div class="tbm-title">Python</div><small>Oro & Zafiro · Data Intelligence</small></div>
+          </button>
+          <button type="button" class="tbm-item" data-engine-pick="javascript">
+            <span class="db-orb db-orb-sm db-orb-js">🟨</span>
+            <div class="tbm-info"><div class="tbm-title">JavaScript / Node</div><small>Amarillo Neón · V8 Engine</small></div>
+          </button>
+          <button type="button" class="tbm-item" data-engine-pick="java">
+            <span class="db-orb db-orb-sm db-orb-java">☕</span>
+            <div class="tbm-info"><div class="tbm-title">Java JVM</div><small>Naranja Fuego · JVM Enterprise</small></div>
+          </button>
+          <button type="button" class="tbm-item" data-engine-pick="rust">
+            <span class="db-orb db-orb-sm db-orb-rust">🦀</span>
+            <div class="tbm-info"><div class="tbm-title">Rust Systems</div><small>Cobre & Fuego · Memory-Safe</small></div>
+          </button>
+          <button type="button" class="tbm-item" data-engine-pick="golang">
+            <span class="db-orb db-orb-sm db-orb-go">🩵</span>
+            <div class="tbm-info"><div class="tbm-title">Go / Golang</div><small>Azul Celeste · Goroutines Pipeline</small></div>
+          </button>
+        </div>      </div>
       <%- clockBox %>
     </div>
   </div>
@@ -5169,10 +5299,22 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
         mysql:     { name:'MySQL / MariaDB', icon:'🐬', cls:'db-orb-my', c1:'#06b6d4', c2:'#0284c7', rgb:'6, 182, 212' },
         mongodb:   { name:'MongoDB Document', icon:'🍃', cls:'db-orb-mg', c1:'#10b981', c2:'#059669', rgb:'16, 185, 129' },
         redis:     { name:'Redis Cache', icon:'⚡', cls:'db-orb-rd', c1:'#ef4444', c2:'#b91c1c', rgb:'239, 68, 68' },
-        sqlite:    { name:'SQLite Embedded', icon:'💾', cls:'db-orb-sqlite', c1:'#a855f7', c2:'#7c3aed', rgb:'168, 85, 247' }
+        sqlite:    { name:'SQLite Embedded', icon:'💾', cls:'db-orb-sqlite', c1:'#a855f7', c2:'#7c3aed', rgb:'168, 85, 247' },
+        cassandra: { name:'Apache Cassandra', icon:'🪐', cls:'db-orb-cas', c1:'#6366f1', c2:'#4338ca', rgb:'99, 102, 241' },
+        neo4j:     { name:'Neo4j Graph DB', icon:'🕸️', cls:'db-orb-neo', c1:'#0284c7', c2:'#0369a1', rgb:'2, 132, 199' },
+        vscode:    { name:'VS Code', icon:'💙', cls:'db-orb-vsc', c1:'#007acc', c2:'#005999', rgb:'0, 122, 204' },
+        neovim:    { name:'Neovim / Vim', icon:'🟢', cls:'db-orb-nvim', c1:'#22c55e', c2:'#15803d', rgb:'34, 197, 94' },
+        python:    { name:'Python', icon:'🐍', cls:'db-orb-py', c1:'#eab308', c2:'#2563eb', rgb:'234, 179, 8' },
+        javascript:{ name:'JavaScript / Node', icon:'🟨', cls:'db-orb-js', c1:'#facc15', c2:'#ca8a04', rgb:'250, 204, 21' },
+        java:      { name:'Java JVM', icon:'☕', cls:'db-orb-java', c1:'#f97316', c2:'#c2410c', rgb:'249, 115, 22' },
+        rust:      { name:'Rust Systems', icon:'🦀', cls:'db-orb-rust', c1:'#ea580c', c2:'#9a3412', rgb:'234, 88, 12' },
+        golang:    { name:'Go / Golang', icon:'🩵', cls:'db-orb-go', c1:'#38bdf8', c2:'#0284c7', rgb:'56, 189, 248' }
       };
 
-      var ENGINE_CLASSES = ['db-orb-pg', 'db-orb-ora', 'db-orb-sql', 'db-orb-my', 'db-orb-mg', 'db-orb-rd', 'db-orb-sqlite'];
+      var ENGINE_CLASSES = [
+        'db-orb-pg', 'db-orb-ora', 'db-orb-sql', 'db-orb-my', 'db-orb-mg', 'db-orb-rd', 'db-orb-sqlite',
+        'db-orb-cas', 'db-orb-neo', 'db-orb-vsc', 'db-orb-nvim', 'db-orb-py', 'db-orb-js', 'db-orb-java', 'db-orb-rust', 'db-orb-go'
+      ];
 
       function actualizarOrbeElemento(orb, eng) {
         orb.textContent = eng.icon;

@@ -24,20 +24,65 @@
     background-color: #000000 !important;
   }
 
-  /* Barra superior flotante de invitado: NO empuja la pantalla */
+  /* Barra superior de invitado: Montada ENCIMA de la tarjeta de login */
+  .login-top-controls {
+    width: 100%;
+    max-width: 440px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 4px;
+    z-index: 50;
+    pointer-events: auto;
+  }
+  .login-top-controls .navbar,
   body.guest .navbar {
-    position: absolute !important;
-    top: 14px !important;
-    left: 24px !important;
-    z-index: 80 !important;
+    position: static !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+    max-width: 440px !important;
+    margin: 0 !important;
+    padding: 0 !important;
     background: transparent !important;
     border: none !important;
     box-shadow: none !important;
-    padding: 0 !important;
+    gap: 8px !important;
+    z-index: 50 !important;
+  }
+  body.guest .navbar .clock {
     margin: 0 !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    gap: 10px !important;
+    padding: 6px 14px 6px 10px !important;
+    background: rgba(10, 16, 28, 0.78) !important;
+    border: 1px solid var(--planet-accent, rgba(0, 245, 255, 0.35)) !important;
+    border-radius: 999px !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5), 0 0 12px var(--planet-accent, rgba(0, 245, 255, 0.15)) !important;
+  }
+  body.guest .navbar .theme-toggle {
+    margin: 0 !important;
+    width: 36px !important;
+    height: 36px !important;
+    background: rgba(10, 16, 28, 0.78) !important;
+    border: 1px solid var(--planet-accent, rgba(0, 245, 255, 0.35)) !important;
+    border-radius: 10px !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5) !important;
+    transition: all 0.2s ease !important;
+  }
+  body.guest .navbar .theme-toggle:hover {
+    border-color: var(--planet-accent, #00f5ff) !important;
+    box-shadow: 0 0 16px var(--planet-accent, rgba(0, 245, 255, 0.45)) !important;
+    transform: translateY(-1.5px) !important;
+  }
+  body.guest .pal-panel {
+    top: 60px !important;
+    right: 50px !important;
+    left: auto !important;
+    transform: none !important;
   }
 
   /* Wrap abarca el 100% de la ventana sin crear barras ni empujar */
@@ -363,11 +408,13 @@
     width: 100%;
     height: 100%;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 40px 50px 30px 20px;
+    padding: 20px 40px;
     box-sizing: border-box;
     z-index: 10;
+    gap: 8px;
   }
 
   .auth-card-glass {
@@ -1160,6 +1207,7 @@
 
   <!-- MITAD DERECHA: TARJETA DE LOGIN FUTURISTA -->
   <div class="cyber-login-col">
+    <div class="login-top-controls" id="loginTopControls"></div>
     <div class="auth-card-glass">
       <div class="card-sheen"></div>
 
@@ -1245,6 +1293,24 @@
 <script src="/biometria.js"></script>
 
 <script>
+
+// --- UBICAR BARRA DE INVITADO (RELOJ, APARIENCIA, TEMA) ENCIMA DEL LOGIN ---
+(function mountGuestNavAboveLogin() {
+  function moveNav() {
+    var nb = document.querySelector('body.guest .navbar');
+    var target = document.getElementById('loginTopControls');
+    if (nb && target && nb.parentNode !== target) {
+      target.appendChild(nb);
+    }
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', moveNav);
+  } else {
+    moveNav();
+  }
+  setTimeout(moveNav, 50);
+})();
+
 // --- MOTOR 3D HOLOGRÁFICO CYBERNETIC DATA CORE (THREE.JS) ---
 (function initCyberDataCore() {
   var container = document.getElementById('earthCanvasWrap');
@@ -1906,7 +1972,7 @@
   var autoRotate = localStorage.getItem('boveda_theme_autorotate') === 'true';
   var rotateTimer = null;
 
-  // Resaltador de sintaxis multilingüe para terminal
+  // Resaltador de sintaxis multilingüe para terminal (protección contra colisión HTML)
   function highlightLine(line) {
     if (!line) return '';
     var trimmed = line.trim();
@@ -1914,13 +1980,27 @@
       return '<span class="plsql-cm">' + escapeHtml(line) + '</span>';
     }
     var s = escapeHtml(line);
-    s = s.replace(/(['"`][^'"`]*['"`])/g, '<span class="plsql-str">$1</span>');
-    var kwRegex = /\b(CREATE|OR|REPLACE|PACKAGE|BODY|PROCEDURE|FUNCTION|RETURNS|TABLE|DECLARE|BEGIN|END|IS|AS|IF|THEN|OPEN|FETCH|CLOSE|INTO|CURSOR|SELECT|INSERT|FROM|WHERE|FOR|UPDATE|COMMIT|RETURN|QUERY|LANGUAGE|SET|TRANSACTION|OUTPUT|NOCOUNT|WITH|ROWLOCK|UPDLOCK|HOLDLOCK|import|export|from|async|await|const|let|var|function|def|class|pub|fn|impl|struct|type|package|return|match|record|public|private|protected|static|final|new|try|catch|throw|throws|MERGE|MATCH|KEYSPACE|PRAGMA)\b/gi;
-    s = s.replace(kwRegex, '<span class="plsql-kw">$1</span>');
-    var typeRegex = /\b(VARCHAR2|VARCHAR|NUMBER|BOOLEAN|RAW|BYTEA|INT|INTEGER|INET|TEXT|BIT|NVARCHAR|VARBINARY|MAX|SYSUTCDATETIME|ROWTYPE|UUID|BLOB|TIMESTAMP|Result|Option|String|Arc|RwLock|Duration|Response|Request)\b/gi;
-    s = s.replace(typeRegex, '<span class="plsql-type">$1</span>');
-    var fnRegex = /\b(ORA_HASH|DBMS_CRYPTO|VERIFY_SIGNATURE|clock_timestamp|db|redis|sha256|createHash|randomBytes|datetime)\b/gi;
-    s = s.replace(fnRegex, '<span class="plsql-fn">$1</span>');
+    // Reemplazo estricto de strings por tipo de comilla sin cruces
+    s = s.replace(/("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|`[^`]*`)/g, '<span class="plsql-str">$1</span>');
+    var kwRegex = /\b(CREATE|OR|REPLACE|PACKAGE|BODY|PROCEDURE|FUNCTION|RETURNS|TABLE|DECLARE|BEGIN|END|IS|AS|IF|THEN|OPEN|FETCH|CLOSE|INTO|CURSOR|SELECT|INSERT|FROM|WHERE|FOR|UPDATE|COMMIT|RETURN|QUERY|LANGUAGE|SET|TRANSACTION|OUTPUT|NOCOUNT|WITH|ROWLOCK|UPDLOCK|HOLDLOCK|import|export|from|async|await|const|let|var|function|def|class|pub|fn|impl|struct|type|package|return|match|record|public|private|protected|static|final|new|try|catch|throw|throws|MERGE|MATCH|KEYSPACE|PRAGMA)\b/g;
+    s = s.replace(kwRegex, function(m, p1, offset, full) {
+      // Evitar reemplazar dentro de tags span class="..."
+      var prev = full.slice(Math.max(0, offset - 15), offset);
+      if (prev.includes('class="') || prev.includes('span')) return m;
+      return '<span class="plsql-kw">' + m + '</span>';
+    });
+    var typeRegex = /\b(VARCHAR2|VARCHAR|NUMBER|BOOLEAN|RAW|BYTEA|INT|INTEGER|INET|TEXT|BIT|NVARCHAR|VARBINARY|MAX|SYSUTCDATETIME|ROWTYPE|UUID|BLOB|TIMESTAMP|Result|Option|String|Arc|RwLock|Duration|Response|Request)\b/g;
+    s = s.replace(typeRegex, function(m, p1, offset, full) {
+      var prev = full.slice(Math.max(0, offset - 15), offset);
+      if (prev.includes('class="') || prev.includes('span')) return m;
+      return '<span class="plsql-type">' + m + '</span>';
+    });
+    var fnRegex = /\b(ORA_HASH|DBMS_CRYPTO|VERIFY_SIGNATURE|clock_timestamp|db|redis|sha256|createHash|randomBytes|datetime)\b/g;
+    s = s.replace(fnRegex, function(m, p1, offset, full) {
+      var prev = full.slice(Math.max(0, offset - 15), offset);
+      if (prev.includes('class="') || prev.includes('span')) return m;
+      return '<span class="plsql-fn">' + m + '</span>';
+    });
     return s;
   }
 
