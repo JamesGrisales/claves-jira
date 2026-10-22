@@ -34,7 +34,7 @@
     margin-bottom: 6px;
     z-index: 50;
     pointer-events: auto;
-    transform: perspective(1400px) rotateY(-8deg) rotateX(1.5deg) translateZ(8px);
+    transform: perspective(1400px) rotateY(-8.5deg) rotateX(1.8deg) translateZ(10px) !important;
     transform-style: preserve-3d;
     transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   }
@@ -437,7 +437,7 @@
     padding: 30px 34px 26px;
     box-sizing: border-box;
     /* Opción C: Ángulo Táctico Tipo Cabina (~8° sutil estático) */
-    transform: perspective(1400px) rotateY(-8deg) rotateX(1.5deg) translateZ(8px);
+    transform: perspective(1400px) rotateY(-8.5deg) rotateX(1.8deg) translateZ(10px) !important;
     transform-style: preserve-3d;
     box-shadow: 
       -18px 24px 60px -10px rgba(0, 0, 0, 0.95), 
@@ -2250,65 +2250,8 @@
 })();
 
 
-// --- CONTROLADOR 3D INTERACTIVO CON PERSPECTIVA HOLOGRÁFICA ---
-(function init3DCardTilt() {
-  var col = document.querySelector('.cyber-login-col');
-  var card = document.querySelector('.auth-card-glass');
-  var glare = document.querySelector('.card-glare-3d');
-  if (!col || !card) return;
-
-  var rect = null;
-  var rafId = null;
-  var targetRotX = 0, targetRotY = 0;
-  var currentRotX = 0, currentRotY = 0;
-
-  function updateRect() {
-    rect = card.getBoundingClientRect();
-  }
-
-  window.addEventListener('resize', updateRect);
-  setTimeout(updateRect, 300);
-
-  col.addEventListener('mousemove', function(e) {
-    if (!rect) updateRect();
-    var cardCenterX = rect.left + rect.width / 2;
-    var cardCenterY = rect.top + rect.height / 2;
-
-    var diffX = (e.clientX - cardCenterX) / (window.innerWidth / 2);
-    var diffY = (e.clientY - cardCenterY) / (window.innerHeight / 2);
-
-    targetRotY = Math.max(-13, Math.min(13, diffX * 15));
-    targetRotX = Math.max(-13, Math.min(13, -diffY * 15));
-
-    if (glare) {
-      var gx = ((e.clientX - rect.left) / rect.width) * 100;
-      var gy = ((e.clientY - rect.top) / rect.height) * 100;
-      glare.style.background = 'radial-gradient(circle at ' + gx + '% ' + gy + '%, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.05) 45%, transparent 70%)';
-    }
-
-    if (!rafId) rafId = requestAnimationFrame(renderTilt);
-  });
-
-  col.addEventListener('mouseleave', function() {
-    targetRotX = 0;
-    targetRotY = 0;
-    if (glare) glare.style.background = 'none';
-    if (!rafId) rafId = requestAnimationFrame(renderTilt);
-  });
-
-  function renderTilt() {
-    currentRotX += (targetRotX - currentRotX) * 0.12;
-    currentRotY += (targetRotY - currentRotY) * 0.12;
-
-    card.style.transform = 'perspective(1200px) rotateX(' + currentRotX.toFixed(2) + 'deg) rotateY(' + currentRotY.toFixed(2) + 'deg) translateZ(12px)';
-
-    if (Math.abs(targetRotX - currentRotX) > 0.04 || Math.abs(targetRotY - currentRotY) > 0.04) {
-      rafId = requestAnimationFrame(renderTilt);
-    } else {
-      rafId = null;
-    }
-  }
-})();
+// --- PERSPECTIVA 3D ESTÁTICA TIPO CABINA (OPCIÓN C) ---
+// Fijada a -8.5° en CSS para estabilidad perfecta permanente.
 
 // --- GESTIÓN DE ACCESO BIOMÉTRICO (WEBAUTHN / WINDOWS HELLO HUELLA DIGITAL) ---
 (function initBiometriaLogin() {
