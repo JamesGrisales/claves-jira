@@ -25,15 +25,16 @@ function enviarViaOutlookMapi({ to, cc, asunto, mensajeHtml, tecnico, pdfBuffer,
       const finalSubject = asunto || `INFORME FACTURACION ELECTRONICA - ${new Date().toLocaleDateString("es-CO")}`;
       const tecnicoNombre = tecnico || "James Grisales";
 
+      // Formato HTML del correo con la firma oficial de Jaivaná en tamaño adecuado (banner ancho)
       const htmlCompleto = `
-        <div style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 11pt; color: #1e293b; line-height: 1.5;">
+        <div style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 11.5pt; color: #1e293b; line-height: 1.6;">
           ${mensajeHtml}
           <br><br>
-          <div style="margin-top: 15px; border-top: 1px solid #cbd5e1; padding-top: 12px; font-size: 10.5pt; color: #334155;">
-            <strong style="font-size: 11.5pt; color: #0f172a;">${tecnicoNombre}</strong><br>
-            <span style="color: #64748b;">Analista de Soporte</span><br><br>
-            <div style="background: #2b2b2b; display: inline-block; padding: 10px 22px; border-radius: 6px;">
-              <span style="color: #ffffff; font-weight: bold; font-size: 20px; font-family: sans-serif; letter-spacing: 0.5px;">Jaivaná<span style="color: #e11d48; margin-left: 4px;">▲</span></span>
+          <div style="margin-top: 18px; border-top: 1px solid #cbd5e1; padding-top: 14px; font-size: 11pt; color: #334155;">
+            <strong style="font-size: 12pt; color: #0f172a;">${tecnicoNombre}</strong><br>
+            <span style="color: #64748b; font-size: 10.5pt;">Analista de Soporte</span><br><br>
+            <div style="margin-top: 6px; max-width: 560px;">
+              <img src="cid:jaivana_signature_img" alt="Jaivaná" width="560" style="width: 100%; max-width: 560px; height: auto; display: block; border: 0;" />
             </div>
           </div>
         </div>
@@ -61,7 +62,6 @@ function enviarViaOutlookMapi({ to, cc, asunto, mensajeHtml, tecnico, pdfBuffer,
           if ($data.to) { $mail.To = $data.to }
           if ($data.cc) { $mail.CC = $data.cc }
           $mail.Subject = $data.subject
-          $mail.HTMLBody = $data.htmlBody
 
           if (Test-Path $data.pdfPath) {
             $mail.Attachments.Add($data.pdfPath) | Out-Null
@@ -71,7 +71,13 @@ function enviarViaOutlookMapi({ to, cc, asunto, mensajeHtml, tecnico, pdfBuffer,
             $attachment = $mail.Attachments.Add($data.logoPath)
             # 0x3712001F es PR_ATTACH_CONTENT_ID para imagen incrustada
             $attachment.PropertyAccessor.SetProperty("http://schemas.microsoft.com/mapi/proptag/0x3712001F", "jaivana_signature_img") | Out-Null
+            # 0x7FFE000B es PR_ATTACHMENT_HIDDEN para que no aparezca en la lista de archivos adjuntos
+            try {
+              $attachment.PropertyAccessor.SetProperty("http://schemas.microsoft.com/mapi/proptag/0x7FFE000B", $true) | Out-Null
+            } catch {}
           }
+
+          $mail.HTMLBody = $data.htmlBody
 
           $mail.Send()
           Write-Output "ENVIADO_EXITOSO"

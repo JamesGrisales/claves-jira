@@ -2086,9 +2086,7 @@ app.post("/informe/enviar-email", requireLogin, express.json({ limit: "1mb" }), 
           path: logoPath,
           cid: "jaivana_signature_img"
         });
-        logoTag = `<div style="background:#2b2b2b; display:inline-block; padding:10px 24px; border-radius:8px; margin-top:12px;">
-          <img src="cid:jaivana_signature_img" alt="Jaivaná" style="height:36px; display:block;" />
-        </div>`;
+        logoTag = `<div style="margin-top:12px; max-width:560px;"><img src="cid:jaivana_signature_img" alt="Jaivaná" width="560" style="width:100%; max-width:560px; height:auto; display:block; border:0;" /></div>`;
       }
 
       const htmlCompleto = `
@@ -2153,9 +2151,7 @@ app.post("/informe/abrir-outlook", requireLogin, express.json({ limit: "1mb" }),
         path: logoPath,
         cid: "jaivana_signature_img"
       });
-      logoTag = `<div style="background:#2b2b2b; display:inline-block; padding:10px 24px; border-radius:8px; margin-top:12px;">
-        <img src="cid:jaivana_signature_img" alt="Jaivaná" style="height:36px; display:block;" />
-      </div>`;
+      logoTag = `<div style="margin-top:12px; max-width:560px;"><img src="cid:jaivana_signature_img" alt="Jaivaná" width="560" style="width:100%; max-width:560px; height:auto; display:block; border:0;" /></div>`;
     } else {
       logoTag = `<div style="background:#2b2b2b; display:inline-block; padding:10px 24px; border-radius:8px; margin-top:12px; color:#ffffff; font-weight:bold; font-size:22px; font-family:sans-serif;">
         Jaivaná<span style="color:#e11d48; margin-left:4px;">▲</span>
