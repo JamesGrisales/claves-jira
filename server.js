@@ -109,7 +109,7 @@ app.use(compression({ level: 6 }));
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 // Cache de plantillas compiladas en memoria (evita leer y compilar disco en cada petición)
-app.set("view cache", true);
+app.set("view cache", false);
 
 app.use(expressLayouts);
 app.set("layout", "layout");

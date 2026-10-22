@@ -91,6 +91,11 @@
   .toast.show{ opacity:1; transform:translateX(-50%) translateY(0) scale(1); }
 
   /* Estilos del modal de correo Outlook - Ampliado y Espacioso */
+  #modalCorreo .modal-box {
+    width: min(940px, 96vw) !important;
+    max-width: 940px !important;
+    max-height: 94vh !important;
+  }
   .em-tabs { display:flex; gap:8px; border-bottom:1px solid var(--panel-edge); padding-bottom:8px; margin-bottom:12px; }
   .em-tab-btn { background:transparent; border:none; box-shadow:none; color:var(--muted); font-size:13.5px; font-weight:700; padding:8px 18px; border-bottom:2px solid transparent; border-radius:0; cursor:pointer; transition:all .15s ease; }
   .em-tab-btn.active { color:var(--accent); border-bottom-color:var(--accent); }
