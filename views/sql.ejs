@@ -207,7 +207,7 @@
   .rp.on textarea { width: 100%; border-radius: 10px; border: 1px solid var(--panel-edge); padding: 10px 12px; background: var(--bg); font-family: var(--mono); color: var(--text); font-size: 13px; line-height: 1.5; outline: none; box-sizing: border-box; }
   .rp.on textarea:focus { border-color: var(--accent); }
 
-  #pq.rp.on, #mx.rp.on, #ls.rp.on { flex: none; min-height: 0; margin-top: 0; margin-bottom: 12px; padding: 0; border: none; background: transparent; width: 100%; }
+  #pq.rp.on, #mx.rp.on, #ls.rp.on, #ew.rp.on { flex: none; min-height: 0; margin-top: 0; margin-bottom: 12px; padding: 0; border: none; background: transparent; width: 100%; }
   #pq.rp.on .rp-row, #mx.rp.on .rp-row, #ls.rp.on .rp-row { margin: 0; width: 100%; align-items: stretch; }
   #pq.rp.on .rp-row:has(textarea), #mx.rp.on .rp-row:has(textarea), #ls.rp.on .rp-row:has(textarea) { flex: none; min-height: 0; display: flex; margin: 0; width: 100%; }
 
@@ -1233,6 +1233,7 @@
           <button type="button" id="btnSN" title="Todas las sentencias de SQL listas para insertar"><svg viewBox="0 0 24 24" style="width:15px;height:15px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Sentencias</button>
           <button type="button" id="btnMX" title="Insert, Update o Delete masivo pegando datos de Excel"><svg viewBox="0 0 24 24" style="width:15px;height:15px;"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/><path d="M9 3v18"/><path d="M15 3v18"/></svg>Masivo Excel</button>
           <button type="button" id="btnPQ" title="Cambio de asesor: pegas NIT, sede y código de vendedor"><svg viewBox="0 0 24 24" style="width:15px;height:15px;"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>Procesar querys</button>
+          <button type="button" id="btnEW" title="Envolver consulta en UPDATE/INSERT con escape automático de comillas simples (' -> '')"><svg viewBox="0 0 24 24" style="width:15px;height:15px;"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>Envolver en UPDATE (' ')</button>
         </div>
       </div>
     </div>
@@ -1338,6 +1339,78 @@
     </div>
     
     <div class="ed-main" style="flex:1; display:flex; flex-direction:column; min-width:0; position:relative;">
+  <!-- PANEL: Envolver en UPDATE con Escape de comillas (' -> '') -->
+  <div class="rp" id="ew">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; padding:0 4px; flex-wrap:wrap; gap:8px;">
+      <span style="font-size:13px; font-weight:700; color:var(--text); display:inline-flex; align-items:center; gap:6px;">
+        🔄 Envolver Consulta en UPDATE / INSERT (Escape automático de comillas <code style="color:#38bdf8;">'</code> → <code style="color:#4ade80;">''</code>)
+      </span>
+      <div style="display:inline-flex; align-items:center; gap:8px;">
+        <span class="cnt" id="ewEscapeCnt" style="font-size:12px; font-weight:600; color:var(--accent);">0 comillas escapadas</span>
+        <button type="button" class="secondary btn-sm" id="ewCerrar" title="Cerrar panel">✖</button>
+      </div>
+    </div>
+
+    <!-- Fila de opciones de tabla, campo y condición -->
+    <div class="rp-row" style="flex-wrap:wrap; gap:10px; margin-bottom:10px;">
+      <div style="display:flex; align-items:center; gap:6px;">
+        <span class="presets">Modo:</span>
+        <select id="ewModo">
+          <option value="update" selected>UPDATE completo</option>
+          <option value="insert">INSERT completo</option>
+          <option value="cadena">Solo cadena escapada ('...')</option>
+        </select>
+      </div>
+
+      <div style="display:flex; align-items:center; gap:6px;" id="ewWrapTabla">
+        <span class="presets">Tabla:</span>
+        <input type="text" id="ewTabla" value="consultas" placeholder="Nombre de tabla" style="width:130px;" autocomplete="off" spellcheck="false">
+      </div>
+
+      <div style="display:flex; align-items:center; gap:6px;" id="ewWrapCampo">
+        <span class="presets">Campo:</span>
+        <input type="text" id="ewCampo" value="query" placeholder="Nombre de columna" style="width:120px;" autocomplete="off" spellcheck="false">
+      </div>
+
+      <div style="display:flex; align-items:center; gap:6px; flex:1; min-width:200px;" id="ewWrapWhere">
+        <span class="presets">WHERE:</span>
+        <input type="text" id="ewWhere" value="id = 1" placeholder="ej: id = 123 o codigo = 'FAC_01'" style="flex:1;" autocomplete="off" spellcheck="false">
+      </div>
+    </div>
+
+    <!-- Opciones adicionales -->
+    <div class="rp-row" style="margin-bottom:10px; flex-wrap:wrap; gap:12px; align-items:center;">
+      <label class="chk" title="Agrega punto y coma al final de la sentencia"><input type="checkbox" id="ewPuntoComa" checked> Punto y coma final (;)</label>
+      <label class="chk" title="Elimina el punto y coma interno de la consulta para que no interfiera"><input type="checkbox" id="ewQuitarPuntoComaInterno" checked> Quitar ';' interno al final de la query</label>
+      <button type="button" class="secondary btn-sm" id="ewCargarEditor" title="Toma el texto actual del editor SQL principal">⬇ Cargar desde Editor Principal</button>
+      <button type="button" class="secondary btn-sm" id="ewLimpiar" title="Limpiar campos">Limpiar</button>
+    </div>
+
+    <!-- Área de entrada y salida -->
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; width:100%; margin-bottom:10px;">
+      <div style="display:flex; flex-direction:column; gap:6px;">
+        <span style="font-size:11.5px; font-weight:700; color:var(--muted); text-transform:uppercase;">1. Tu Consulta Original (con comillas simples ' '):</span>
+        <textarea id="ewEntrada" spellcheck="false" wrap="off" placeholder="Pega o escribe aquí la consulta SQL...&#10;ejemplo:&#10;SELECT * FROM facturas WHERE estado = 'ACTIVO' AND tipo = 'FC';" style="width:100% !important; height:240px !important; min-height:180px; font-family:var(--mono); font-size:12.5px; box-sizing:border-box;"></textarea>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:6px;">
+        <span style="font-size:11.5px; font-weight:700; color:var(--accent); text-transform:uppercase;">2. Sentencia Generada (con comillas duplicadas '' ''):</span>
+        <textarea id="ewSalida" readonly spellcheck="false" wrap="off" placeholder="Aquí aparecerá el UPDATE listo para ejecutar..." style="width:100% !important; height:240px !important; min-height:180px; font-family:var(--mono); font-size:12.5px; background:var(--panel-alt); color:var(--text); box-sizing:border-box;"></textarea>
+      </div>
+    </div>
+
+    <!-- Botones de Acción -->
+    <div class="rp-row" style="margin-top:4px; gap:10px;">
+      <button type="button" id="ewCopiar" style="font-weight:700;">📋 Copiar resultado al portapapeles</button>
+      <button type="button" class="secondary" id="ewInsertar" title="Reemplaza o inserta la sentencia generada en tu editor principal">⬇ Enviar al Editor Principal</button>
+      <span class="cnt" id="ewStatus" style="margin-left:auto; font-weight:600;"></span>
+    </div>
+
+    <div class="ls-hint" style="margin-top:8px;">
+      💡 <strong>¿Cómo funciona?</strong> Toma cualquier consulta SQL y duplica automáticamente cada comilla simple interna (<code>'</code> → <code>''</code>), envolviéndola en el <code>UPDATE</code> o <code>INSERT</code> de la tabla que indiques para que la base de datos la almacene sin error de sintaxis.
+    </div>
+  </div>
+
   <div class="rp" id="rp">
     <div class="rp-row">
       <input type="text" id="rpBuscar" placeholder="Buscar…" autocomplete="off" spellcheck="false">
@@ -4749,14 +4822,15 @@ if (edLayout) {
   }
 }
 
-var PANELES = { btnRP: 'rp', btnLS: 'ls', btnSN: 'sn', btnMX: 'mx', btnPQ: 'pq', btnRV: 'rv' };
+var PANELES = { btnRP: 'rp', btnLS: 'ls', btnSN: 'sn', btnMX: 'mx', btnPQ: 'pq', btnRV: 'rv', btnEW: 'ew' };
 var NOMBRES_MODOS = {
   rp: 'Buscar / Reemplazar',
   ls: 'Lista datos',
   sn: 'Sentencias',
   mx: 'Masivo Excel',
   pq: 'Procesar querys',
-  rv: 'Revisar SQL'
+  rv: 'Revisar SQL',
+  ew: 'Envolver en UPDATE'
 };
 
 function actualizarBotonesPaneles() {
@@ -5485,6 +5559,151 @@ entrada.addEventListener('keydown', function(e){
   else if ((e.ctrlKey || e.metaKey) && !e.shiftKey && k === 'h') { e.preventDefault(); $('btnRP').click(); }
   else if ((e.ctrlKey || e.metaKey) && !e.shiftKey && k === 'm') { e.preventDefault(); if ($('btnToggleOpciones')) $('btnToggleOpciones').click(); }
 });
+/* ==========================================================================
+   HERRAMIENTA: Envolver en UPDATE / INSERT con Escape de comillas (' -> '')
+   ========================================================================== */
+function ewGenerar(){
+  var texto = ($('ewEntrada') ? $('ewEntrada').value || '' : '').trim();
+  if (!texto) {
+    if ($('ewSalida')) $('ewSalida').value = '';
+    if ($('ewEscapeCnt')) $('ewEscapeCnt').textContent = '0 comillas escapadas';
+    if ($('ewStatus')) $('ewStatus').textContent = '';
+    return;
+  }
+
+  // 1. Quitar punto y coma interno si está marcado
+  if ($('ewQuitarPuntoComaInterno') && $('ewQuitarPuntoComaInterno').checked) {
+    texto = texto.replace(/;\s*$/, '');
+  }
+
+  // 2. Contar comillas simples para informar al usuario
+  var cantComillas = 0;
+  for (var i = 0; i < texto.length; i++) {
+    if (texto[i] === "'") cantComillas++;
+  }
+  if ($('ewEscapeCnt')) {
+    $('ewEscapeCnt').textContent = cantComillas + (cantComillas === 1 ? ' comilla escapada' : ' comillas escapadas');
+  }
+
+  // 3. Duplicar cada comilla simple (' -> '')
+  var escapado = texto.replace(/'/g, "''");
+
+  var modo = $('ewModo') ? $('ewModo').value : 'update';
+  var tabla = ($('ewTabla') ? $('ewTabla').value || 'consultas' : 'consultas').trim();
+  var campo = ($('ewCampo') ? $('ewCampo').value || 'query' : 'query').trim();
+  var where = ($('ewWhere') ? $('ewWhere').value || '' : '').trim();
+  var pComa = ($('ewPuntoComa') && $('ewPuntoComa').checked) ? ';' : '';
+
+  var resultado = '';
+  if (modo === 'update') {
+    resultado = 'UPDATE ' + tabla + '\n' +
+                'SET ' + campo + " = '" + escapado + "'";
+    if (where) {
+      resultado += '\nWHERE ' + where;
+    }
+    resultado += pComa;
+  } else if (modo === 'insert') {
+    resultado = 'INSERT INTO ' + tabla + ' (' + campo + ')\n' +
+                "VALUES ('" + escapado + "')" + pComa;
+  } else {
+    // Solo cadena escapada
+    resultado = "'" + escapado + "'" + pComa;
+  }
+
+  if ($('ewSalida')) $('ewSalida').value = resultado;
+  if ($('ewStatus')) $('ewStatus').textContent = 'Listo (' + resultado.length.toLocaleString('es-CO') + ' car.)';
+}
+
+if ($('btnEW')) {
+  $('btnEW').addEventListener('click', function(){
+    var p = $('ew');
+    if (!p) return;
+    var estaAbierto = p.classList.toggle('on');
+    if (estaAbierto) {
+      if (!$('ewEntrada').value.trim() && entrada && entrada.value.trim()) {
+        var selTxt = '';
+        if (typeof entrada.selectionStart === 'number' && typeof entrada.selectionEnd === 'number' && entrada.selectionStart !== entrada.selectionEnd) {
+          selTxt = entrada.value.substring(entrada.selectionStart, entrada.selectionEnd);
+        }
+        $('ewEntrada').value = selTxt || entrada.value.trim();
+      }
+      ewGenerar();
+      setTimeout(function(){ $('ewEntrada').focus(); }, 40);
+    }
+    actualizarBotonesPaneles();
+  });
+}
+
+if ($('ewCerrar')) {
+  $('ewCerrar').addEventListener('click', function(){
+    if ($('ew')) $('ew').classList.remove('on');
+    actualizarBotonesPaneles();
+    if (entrada) entrada.focus();
+  });
+}
+
+['ewEntrada', 'ewTabla', 'ewCampo', 'ewWhere'].forEach(function(id){
+  if ($(id)) $(id).addEventListener('input', ewGenerar);
+});
+
+['ewModo', 'ewPuntoComa', 'ewQuitarPuntoComaInterno'].forEach(function(id){
+  if ($(id)) {
+    $(id).addEventListener('change', function(){
+      var m = $('ewModo') ? $('ewModo').value : 'update';
+      if ($('ewWrapTabla')) $('ewWrapTabla').style.display = m === 'cadena' ? 'none' : 'flex';
+      if ($('ewWrapCampo')) $('ewWrapCampo').style.display = m === 'cadena' ? 'none' : 'flex';
+      if ($('ewWrapWhere')) $('ewWrapWhere').style.display = m === 'update' ? 'flex' : 'none';
+      ewGenerar();
+    });
+  }
+});
+
+if ($('ewCargarEditor')) {
+  $('ewCargarEditor').addEventListener('click', function(){
+    if (entrada && entrada.value.trim()) {
+      var selTxt = '';
+      if (typeof entrada.selectionStart === 'number' && typeof entrada.selectionEnd === 'number' && entrada.selectionStart !== entrada.selectionEnd) {
+        selTxt = entrada.value.substring(entrada.selectionStart, entrada.selectionEnd);
+      }
+      $('ewEntrada').value = selTxt || entrada.value.trim();
+      ewGenerar();
+      toast('Consulta cargada desde el editor');
+    } else {
+      toast('El editor principal está vacío');
+    }
+  });
+}
+
+if ($('ewLimpiar')) {
+  $('ewLimpiar').addEventListener('click', function(){
+    if ($('ewEntrada')) $('ewEntrada').value = '';
+    if ($('ewSalida')) $('ewSalida').value = '';
+    ewGenerar();
+    if ($('ewEntrada')) $('ewEntrada').focus();
+  });
+}
+
+if ($('ewCopiar')) {
+  $('ewCopiar').addEventListener('click', function(){
+    var res = $('ewSalida') ? $('ewSalida').value : '';
+    if (!res) { toast('No hay nada que copiar'); return; }
+    copiar(res, 'UPDATE generado copiado');
+  });
+}
+
+if ($('ewInsertar')) {
+  $('ewInsertar').addEventListener('click', function(){
+    var res = $('ewSalida') ? $('ewSalida').value : '';
+    if (!res) { toast('Genera primero la consulta'); return; }
+    if (entrada) entrada.value = res;
+    if ($('ew')) $('ew').classList.remove('on');
+    actualizarBotonesPaneles();
+    procesar();
+    if (entrada) entrada.focus();
+    toast('UPDATE insertado en el editor');
+  });
+}
+
 document.addEventListener('keydown', function(e){
   var k = e.key.toLowerCase();
   if ((e.ctrlKey || e.metaKey) && e.shiftKey && k === 'f' && e.target !== entrada) { e.preventDefault(); clearTimeout(temporizador); formatearEditor(); }
