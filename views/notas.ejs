@@ -1275,7 +1275,16 @@ function toggleRow(id){
 // ---------------------------------------------------------------------------
 // Editor interactivo en vivo (resaltado SQL + números de línea sincronizados)
 // ---------------------------------------------------------------------------
-const LIMITE_RESALTADO_NOTA = 250000;
+const LIMITE_RESALTADO_NOTA = 50000;
+
+function contarLineas(val){
+  if (!val) return 0;
+  let c = 1;
+  for (let i = 0; i < val.length; i++) {
+    if (val.charCodeAt(i) === 10) c++;
+  }
+  return c;
+}
 
 function resaltarTextoNota(texto){
   if (!texto) return ' ';
@@ -1296,12 +1305,21 @@ function resaltarTextoNota(texto){
 
 function obtenerPosCursor(ta){
   const pos = (ta && typeof ta.selectionStart === 'number') ? ta.selectionStart : 0;
-  const sub = (ta ? ta.value || '' : '').slice(0, pos);
-  const lns = sub.split('\n');
-  return { linea: lns.length, col: lns[lns.length - 1].length + 1 };
+  const val = ta ? ta.value || '' : '';
+  let linea = 1;
+  let ultimoSalto = -1;
+  for (let i = 0; i < pos; i++) {
+    if (val.charCodeAt(i) === 10) {
+      linea++;
+      ultimoSalto = i;
+    }
+  }
+  return { linea: linea, col: pos - ultimoSalto };
 }
 
-function actualizarEditorNota(ta){
+let timerEditorHighlight = null;
+
+function actualizarEditorNota(ta, diferido){
   if (!ta) return;
   const frame = ta.closest('.nt-ed-frame');
   if (!frame) return;
@@ -1313,7 +1331,7 @@ function actualizarEditorNota(ta){
   const posEl = frame.querySelector('.nt-ed-pos');
 
   const val = ta.value || '';
-  const nLineas = val.split('\n').length;
+  const nLineas = contarLineas(val);
 
   if (statusEl) {
     statusEl.textContent = nLineas.toLocaleString('es-CO') + (nLineas === 1 ? ' línea' : ' líneas');
@@ -1343,9 +1361,19 @@ function actualizarEditorNota(ta){
     if (val.length > LIMITE_RESALTADO_NOTA) {
       box.classList.add('plain');
       capa.textContent = '';
+      if (statusEl && !statusEl.textContent.includes('modo rápido')) {
+        statusEl.textContent += ' · modo rápido';
+      }
     } else {
       box.classList.remove('plain');
-      capa.innerHTML = resaltarTextoNota(val);
+      if (diferido) {
+        clearTimeout(timerEditorHighlight);
+        timerEditorHighlight = setTimeout(function(){
+          if (ta && capa) capa.innerHTML = resaltarTextoNota(ta.value || '');
+        }, 120);
+      } else {
+        capa.innerHTML = resaltarTextoNota(val);
+      }
     }
   }
 
@@ -1371,7 +1399,7 @@ function sincronizarScrollEditor(ta){
 // Delegación global de eventos para los editores de notas
 document.addEventListener('input', function(e){
   if (e.target && e.target.classList && e.target.classList.contains('nt-ed-input')) {
-    actualizarEditorNota(e.target);
+    actualizarEditorNota(e.target, true);
   }
 });
 
@@ -1495,13 +1523,33 @@ async function copiarAlPortapapeles(texto){
 
 async function copiarNota(id){
   let texto;
+  const editPanel = document.getElementById('edit-' + id);
+  const isEditing = editPanel && editPanel.classList.contains('open');
+  const ta = isEditing ? editPanel.querySelector('textarea') : null;
+
+  if (isEditing && ta) {
+    const s = ta.selectionStart;
+    const e = ta.selectionEnd;
+    if (typeof s === 'number' && typeof e === 'number' && s !== e) {
+      texto = ta.value.substring(s, e);
+      const cantLineas = contarLineas(texto);
+      await copiarAlPortapapeles(texto);
+      showToast(cantLineas > 1 ? ('Selección copiada (' + cantLineas.toLocaleString('es-CO') + ' líneas)') : 'Selección copiada');
+      return;
+    }
+    texto = ta.value;
+    await copiarAlPortapapeles(texto);
+    showToast('Contenido del editor copiado');
+    return;
+  }
+
   const sel = window.getSelection();
   const selText = sel ? sel.toString().trim() : '';
   const cont = document.getElementById('texto-' + id);
 
   if (selText && cont && sel.anchorNode && cont.contains(sel.anchorNode)) {
     texto = selText;
-    const cantLineas = texto.split('\n').length;
+    const cantLineas = contarLineas(texto);
     await copiarAlPortapapeles(texto);
     showToast(cantLineas > 1 ? ('Selección copiada (' + cantLineas.toLocaleString('es-CO') + ' líneas)') : 'Selección copiada');
     return;
