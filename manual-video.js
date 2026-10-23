@@ -226,38 +226,204 @@ async function preguntarIA({ sistema, contenido, maxTokens }) {
   return texto;
 }
 
+function dimensionesJpeg(ruta) {
+  try {
+    const buf = fs.readFileSync(ruta);
+    let i = 2;
+    while (i < buf.length - 8) {
+      if (buf[i] !== 0xFF) { i++; continue; }
+      const marker = buf[i + 1];
+      if (marker >= 0xC0 && marker <= 0xC3) {
+        const height = buf.readUInt16BE(i + 5);
+        const width = buf.readUInt16BE(i + 7);
+        return { width, height };
+      }
+      const len = buf.readUInt16BE(i + 2);
+      i += 2 + len;
+    }
+  } catch (e) {}
+  return { width: 1920, height: 1080 };
+}
+
+async function anotarCaptura({ rutaImagen, box, click }) {
+  if (!fs.existsSync(rutaImagen)) return false;
+  if (!box && !click) return false;
+
+  const { width: W, height: H } = dimensionesJpeg(rutaImagen);
+  const glowPath = path.join(__dirname, "assets", "manual-click-glow.png");
+  const cursorPath = path.join(__dirname, "assets", "manual-mouse-cursor.png");
+
+  if (!fs.existsSync(glowPath) || !fs.existsSync(cursorPath)) {
+    try {
+      require("./generar-assets-manual").generarAssets();
+    } catch (e) {}
+  }
+
+  const tieneGlow = fs.existsSync(glowPath);
+  const tieneCursor = fs.existsSync(cursorPath);
+
+  let filter = "";
+  let inputs = ["-hide_banner", "-y", "-i", rutaImagen];
+  let nextInputIdx = 1;
+  let currentLayer = "0:v";
+
+  // 1. Recuadro rojo alrededor de la opción, botón o campo clicado
+  if (Array.isArray(box) && box.length === 4) {
+    const ymin = Number(box[0]), xmin = Number(box[1]), ymax = Number(box[2]), xmax = Number(box[3]);
+    if (ymax > ymin && xmax > xmin && ymin >= 0 && xmin >= 0 && ymax <= 1000 && xmax <= 1000) {
+      let bx = Math.round((xmin / 1000) * W);
+      let by = Math.round((ymin / 1000) * H);
+      let bw = Math.round(((xmax - xmin) / 1000) * W);
+      let bh = Math.round(((ymax - ymin) / 1000) * H);
+
+      // Pequeño margen de 3px para enmarcar con comodidad el texto o botón sin tocarlo
+      bx = Math.max(0, bx - 3);
+      by = Math.max(0, by - 3);
+      bw = Math.min(W - bx, bw + 6);
+      bh = Math.min(H - by, bh + 6);
+
+      const boxLayer = "vbox";
+      filter += `[${currentLayer}]drawbox=x=${bx}:y=${by}:w=${bw}:h=${bh}:color=#e11d48@0.96:t=4[${boxLayer}];`;
+      currentLayer = boxLayer;
+    }
+  }
+
+  // 2. Coordenadas del clic
+  let cx = null, cy = null;
+  if (Array.isArray(click) && click.length === 2) {
+    const cyRaw = Number(click[0]), cxRaw = Number(click[1]);
+    if (cyRaw >= 0 && cyRaw <= 1000 && cxRaw >= 0 && cxRaw <= 1000) {
+      cx = Math.round((cxRaw / 1000) * W);
+      cy = Math.round((cyRaw / 1000) * H);
+    }
+  } else if (Array.isArray(box) && box.length === 4) {
+    const ymin = Number(box[0]), xmin = Number(box[1]), ymax = Number(box[2]), xmax = Number(box[3]);
+    cx = Math.round(((xmin + xmax) / 2000) * W);
+    cy = Math.round(((ymin + ymax) / 2000) * H);
+  }
+
+  // 3. Superponer la bolita roja difuminada (glow) y el cursor de ratón
+  if (cx !== null && cy !== null) {
+    const glowR = 48; // Radio del glow de 96x96
+    const gx = Math.max(0, Math.min(W - 96, cx - glowR));
+    const gy = Math.max(0, Math.min(H - 96, cy - glowR));
+
+    if (tieneGlow) {
+      inputs.push("-i", glowPath);
+      const glowLayer = "vglow";
+      filter += `[${currentLayer}][${nextInputIdx}:v]overlay=x=${gx}:y=${gy}[${glowLayer}];`;
+      currentLayer = glowLayer;
+      nextInputIdx++;
+    }
+
+    if (tieneCursor) {
+      inputs.push("-i", cursorPath);
+      const cursorLayer = "vcursor";
+      const mx = Math.max(0, Math.min(W - 32, cx));
+      const my = Math.max(0, Math.min(H - 32, cy));
+      filter += `[${currentLayer}][${nextInputIdx}:v]overlay=x=${mx}:y=${my}[${cursorLayer}];`;
+      currentLayer = cursorLayer;
+      nextInputIdx++;
+    }
+  }
+
+  if (!filter) return false;
+  filter = filter.replace(/;$/, "");
+
+  const tempDest = rutaImagen.replace(/\.jpg$/i, "_annotated.jpg");
+  inputs.push("-filter_complex", filter);
+  if (currentLayer !== "0:v") {
+    inputs.push("-map", `[${currentLayer}]`);
+  }
+  inputs.push("-q:v", "2", tempDest);
+
+  try {
+    await correrFfmpeg(inputs);
+    if (fs.existsSync(tempDest) && fs.statSync(tempDest).size > 0) {
+      fs.copyFileSync(tempDest, rutaImagen);
+      fs.unlinkSync(tempDest);
+      return true;
+    }
+  } catch (e) {
+    console.error("Aviso al anotar captura con ffmpeg:", e.message);
+    try { if (fs.existsSync(tempDest)) fs.unlinkSync(tempDest); } catch(err){}
+  }
+  return false;
+}
+
 function sistemaPaso(estilo) {
   const forma =
     estilo === "instruccion"
-      ? "en modo imperativo directo de instrucción técnica detallada (ej: «1. Haz clic en la pestaña 'Ventas'. 2. En el campo 'Cliente', ingresa 'Juan Pérez'. 3. Pulsa el botón 'Guardar'.»)"
-      : "narrado en primera persona del plural con tono técnico profesional y descriptivo (ej: «Nos dirigimos a la pestaña 'Ventas', seleccionamos el campo 'Cliente' e ingresamos 'Juan Pérez', y pulsamos el botón 'Guardar'.»)";
+      ? "en modo imperativo directo de instrucción técnica concisa y precisa (ej: «1. En el menú superior, haz clic en 'Procesar Datos Masivos'. 2. En el campo 'NIT', ingresa '900123456'.»)"
+      : "narrado en primera persona del plural con tono técnico profesional, ágil y directo (ej: «Nos dirigimos al menú superior y seleccionamos 'Procesar Datos Masivos'. En el campo 'NIT', ingresamos '900123456'.»)";
 
   return (
-    "Eres un redactor experto de manuales de usuario y documentación técnica de software con un nivel de minuciosidad, precisión y detalle quirúrgico.\n" +
+    "Eres un redactor experto de manuales de usuario y documentación técnica de software con precisión quirúrgica.\n" +
     "Se te entregan capturas de pantalla secuenciales de un procedimiento en video:\n" +
-    "  - Captura(s) previas: Muestran el movimiento y posición exacta del cursor sobre los elementos de la interfaz.\n" +
-    "  - Captura DESPUÉS del cambio: Muestra el estado exacto de la interfaz resultante tras la acción.\n\n" +
-    "INSTRUCCIONES OBLIGATORIAS DE MÁXIMA PRECISIÓN Y MINUCIOSIDAD:\n" +
-    "1. MINUCIOSIDAD EXHAUSTIVA: No omitas ningún paso. Narra detalladamente la acción realizada y su efecto visual en pantalla. Explica el camino que sigue el usuario de forma que cualquier persona pueda replicarlo paso a paso sin perderse.\n" +
-    "2. EXTRACCIÓN LITERAL DE DATOS: Lee con extrema atención todo el texto visible. Si el usuario escribe datos, busca términos o selecciona valores de listas o casillas, EXTRAE Y CITA ENTRE COMILLAS el texto o número exacto (ej: «En el campo 'Referencia', digitamos 'FAC-2024-001'» o «Seleccionamos la opción 'Aprobado'»).\n" +
-    "3. NOMBRES EXACTOS DE LA INTERFAZ: Utiliza los nombres literales y precisos de todos los elementos (botones, pestañas, menús desplegables, encabezados de columnas, iconos, casillas de verificación, ventanas modales) tal como aparecen escritos en la imagen.\n" +
-    "4. SECUENCIA Y RESULTADO: Describe la causa y la consecuencia inmediata (ej: «Hacemos clic en el icono de lupa 'Buscar' y el sistema carga la tabla de resultados con los registros filtrados»).\n" +
+    "  - Captura(s) previas: Muestran el movimiento del cursor desplazándose y posándose exactamente sobre el elemento o campo interactuado.\n" +
+    "  - Captura DESPUÉS: Muestra el estado exacto de la interfaz resultante tras la acción.\n\n" +
+    "REGLAS OBLIGATORIAS DE REDACCIÓN Y ANÁLISIS ESPACIAL:\n" +
+    "1. FOCO EXCLUSIVO EN EL ELEMENTO CLICADO (REGLA DE ORO):\n" +
+    "   - Si en la pantalla se abre un menú desplegable (por ejemplo menús de ERPs, barras de herramientas, listas desplegables), modal o ventana con múltiples opciones, describe y detecta ÚNICAMENTE la opción o botón específico sobre el cual el usuario hace clic.\n" +
+    "   - NUNCA enumeres ni describas las demás opciones no seleccionadas que aparecen en el menú o pantalla.\n" +
+    "2. CERO RELLENO DE LOGIN O DATOS GENÉRICOS:\n" +
+    "   - No redactes sobre usuarios que ingresan ni inicios de sesión a menos que sea el objetivo específico del manual. Concéntrate exclusivamente en el procedimiento operativo y de negocio que se está ejecutando.\n" +
+    "3. DATOS Y TEXTOS DIGITADOS:\n" +
+    "   - Si el usuario escribe o digita información en un campo (ej: NIT, código, fecha, valor, nombre), extrae y cita textualmente entre comillas el texto o número exacto (ej: «En el campo 'Referencia', digitamos 'FAC-2024-001'»).\n" +
+    "4. DETECCIÓN DE COORDENADAS PARA RESALTADO VISUAL:\n" +
+    "   - `box`: Coordenadas `[ymin, xmin, ymax, xmax]` normalizadas de 0 a 1000 que encierran el botón, opción de menú o campo exacto sobre el que se hace clic o se edita.\n" +
+    "   - `click`: Coordenada `[click_y, click_x]` normalizada de 0 a 1000 del punto exacto donde la punta del cursor hace clic.\n" +
     "5. ESTILO: Redacta " + forma + ".\n" +
-    "6. REGLA ESTRICTA DE DESCARTE: ÚNICAMENTE responde 'OMITIR' si la captura final es completamente negra/vacía o si no existe absolutamente ningún cambio visible ni acción del usuario. En cualquier otro caso, redacta minuciosamente la acción."
+    "6. DESCARTE: Responde 'OMITIR' únicamente si la captura final es completamente negra o no existe absolutamente ningún cambio ni acción visible.\n\n" +
+    "FORMATO DE RESPUESTA OBLIGATORIO:\n" +
+    "Responde ÚNICAMENTE un objeto JSON válido con esta estructura exacta (sin formato markdown adicional):\n" +
+    "{\n" +
+    '  "descripcion": "Descripción concisa del paso...",\n' +
+    '  "elemento": "Nombre del elemento o menú clicado",\n' +
+    '  "tipo_accion": "clic" | "escribir" | "seleccionar" | "menu",\n' +
+    '  "texto_digitado": "Texto ingresado si aplica, o vacío",\n' +
+    '  "box": [ymin, xmin, ymax, xmax],\n' +
+    '  "click": [click_y, click_x]\n' +
+    "}"
   );
 }
 
 async function describirPaso({ previas, despues, numero, total, estilo }) {
-  const contenido = [{ type: "text", text: `Paso ${numero} de ${total}. Analiza las capturas para documentar minuciosamente la acción:` }];
+  const contenido = [{ type: "text", text: `Paso ${numero} de ${total}. Analiza las capturas para documentar la acción exacta y devolver las coordenadas del elemento clicado:` }];
   (previas || []).forEach((p) => {
     contenido.push({ type: "text", text: `Captura ${p.etiqueta}:` });
     contenido.push(imagenParaIA(p.ruta));
   });
-  contenido.push({ type: "text", text: "Captura DESPUÉS del cambio (estado resultante de la interfaz tras la acción):" });
+  contenido.push({ type: "text", text: "Captura DESPUÉS del cambio (estado resultante tras la acción):" });
   contenido.push(imagenParaIA(despues));
-  contenido.push({ type: "text", text: "Escribe la descripción minuciosa y precisa del paso, citando entre comillas cualquier dato o texto escrito o seleccionado." });
-  const t = await preguntarIA({ sistema: sistemaPaso(estilo), contenido, maxTokens: 1000 });
-  return t.replace(/^["«“\s]+|["»”\s]+$/g, "").replace(/^paso\s*\d+\s*[:.\-–]\s*/i, "").trim();
+  contenido.push({ type: "text", text: "Devuelve el objeto JSON con la descripción concisa y las coordenadas `box` y `click`." });
+  
+  const raw = await preguntarIA({ sistema: sistemaPaso(estilo), contenido, maxTokens: 1000 });
+
+  try {
+    const jsonMatch = /\{[\s\S]*\}/.exec(raw);
+    if (jsonMatch) {
+      const parsed = JSON.parse(jsonMatch[0]);
+      const desc = (parsed.descripcion || "").replace(/^["«“\s]+|["»”\s]+$/g, "").replace(/^paso\s*\d+\s*[:.\-–]\s*/i, "").trim();
+      return {
+        texto: desc,
+        elemento: parsed.elemento || "",
+        tipo_accion: parsed.tipo_accion || "clic",
+        texto_digitado: parsed.texto_digitado || "",
+        box: Array.isArray(parsed.box) && parsed.box.length === 4 ? parsed.box : null,
+        click: Array.isArray(parsed.click) && parsed.click.length === 2 ? parsed.click : null
+      };
+    }
+  } catch (err) {}
+
+  return {
+    texto: raw.replace(/^["«“\s]+|["»”\s]+$/g, "").replace(/^paso\s*\d+\s*[:.\-–]\s*/i, "").trim(),
+    elemento: "",
+    tipo_accion: "clic",
+    texto_digitado: "",
+    box: null,
+    click: null
+  };
 }
 
 async function redactarTitulo({ pasos, nombreVideo }) {
@@ -338,30 +504,43 @@ async function procesarVideoAuto({ archivo, dir, nombreVideo, sensibilidad, maxP
   }
   if (!pasos.length) throw new Error("No se pudieron sacar imágenes del video.");
 
-  // Descripción de cada paso con IA
+  // Descripción de cada paso con IA y resaltado visual automático
   if (iaActiva()) {
     let hechos = 0;
     let fallidos = 0;
-    avanza("Describiendo los pasos con IA", 0, pasos.length);
+    avanza("Describiendo y resaltando los pasos con IA", 0, pasos.length);
     await enParalelo(pasos, PARALELO, async (p, i) => {
+      const rutaPaso = path.join(dir, p.archivo);
       try {
-        p.texto = await describirPaso({
+        const info = await describirPaso({
           previas: p.previas,
-          despues: path.join(dir, p.archivo),
+          despues: rutaPaso,
           numero: i + 1,
           total: pasos.length,
           estilo,
         });
+
+        p.texto = info.texto || "";
+        p.elemento = info.elemento || "";
+        p.tipo_accion = info.tipo_accion || "clic";
+        p.texto_digitado = info.texto_digitado || "";
+        p.box = info.box;
+        p.click = info.click;
+
+        // Anotar visualmente la imagen con el recuadro rojo y la bolita roja difuminada + cursor
+        if (p.box || p.click) {
+          await anotarCaptura({ rutaImagen: rutaPaso, box: p.box, click: p.click });
+        }
       } catch (e) {
         fallidos++;
         console.error("Error describiendo el paso " + (i + 1) + ":", e.message);
         p.texto = "";
       }
-      avanza("Describiendo los pasos con IA", ++hechos, pasos.length);
+      avanza("Describiendo y resaltando los pasos con IA", ++hechos, pasos.length);
     });
     if (fallidos) avisos.push(`La IA no pudo describir ${fallidos} paso(s); revísalos y escríbelos a mano.`);
   } else {
-    avisos.push("No hay clave de IA en el .env (la misma del asistente): el PDF sale con las capturas pero sin la descripción de los pasos.");
+    avisos.push("No hay clave de IA en el .env: el PDF sale con las capturas pero sin la descripción de los pasos.");
   }
 
   // Pasos sin acción relevante o vacíos
@@ -395,7 +574,14 @@ async function procesarVideoAuto({ archivo, dir, nombreVideo, sensibilidad, maxP
     objetivo,
     duracion: formatoTiempo(duracion),
     avisos,
-    pasos: finales.map((p) => ({ archivo: p.archivo, tiempo: p.tiempo, texto: p.texto })),
+    pasos: finales.map((p) => ({
+      archivo: p.archivo,
+      tiempo: p.tiempo,
+      texto: p.texto,
+      elemento: p.elemento || "",
+      tipo_accion: p.tipo_accion || "clic",
+      texto_digitado: p.texto_digitado || ""
+    })),
   };
 }
 
