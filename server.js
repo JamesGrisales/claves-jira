@@ -2084,9 +2084,14 @@ app.post("/informe/enviar-email", requireLogin, express.json({ limit: "1mb" }), 
       return res.json({ ok: true, mensaje: "Informe enviado exitosamente desde tu cuenta de Outlook." });
     } catch (mapiErr) {
       console.error("Error al enviar directamente por Outlook MAPI:", mapiErr.message);
-      return res.status(500).json({
-        error: "No se pudo enviar automáticamente desde Outlook (" + (mapiErr.message || "Error al conectar con Outlook") + "). Por favor abre tu aplicación de Outlook de escritorio con tu cuenta institucional y vuelve a intentar."
-      });
+      const m = mapiErr.message || "";
+      let explicacion = "";
+      if (m.includes("80040154") || m.includes("REGDB_E_CLASSNOTREG") || m.includes("OUTLOOK_COM_NOT_AVAILABLE")) {
+        explicacion = "Tienes activa la aplicación «Nuevo Outlook» (que no permite envíos externos automáticos). Solución en 10 segundos: abre «Outlook (clásico)» desde tu menú Inicio de Windows (o dale doble clic a «activar_outlook_clasico.bat» en la carpeta del proyecto), y vuelve a pulsar este botón.";
+      } else {
+        explicacion = "No se pudo enviar automáticamente desde Outlook (" + m + "). Por favor abre tu aplicación de Outlook de escritorio con tu cuenta institucional y vuelve a intentar.";
+      }
+      return res.status(500).json({ error: explicacion });
     }
   } catch (err) {
     console.error("Error al enviar informe por correo:", err);
