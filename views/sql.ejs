@@ -1339,11 +1339,11 @@
     </div>
     
     <div class="ed-main" style="flex:1; display:flex; flex-direction:column; min-width:0; position:relative;">
-  <!-- PANEL: Envolver en UPDATE con Escape de comillas (' -> '') -->
+  <!-- PANEL: Envolver en UPDATE / Comillas escapadas (' -> '') -->
   <div class="rp" id="ew">
     <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; padding:0 4px; flex-wrap:wrap; gap:8px;">
       <span style="font-size:13px; font-weight:700; color:var(--text); display:inline-flex; align-items:center; gap:6px;">
-        🔄 Envolver Consulta en UPDATE / INSERT (Escape automático de comillas <code style="color:#38bdf8;">'</code> → <code style="color:#4ade80;">''</code>)
+        🔄 Envolver en Comillas SQL (Escape automático <code style="color:#38bdf8;">'</code> → <code style="color:#4ade80; font-weight:bold;">''</code>)
       </span>
       <div style="display:inline-flex; align-items:center; gap:8px;">
         <span class="cnt" id="ewEscapeCnt" style="font-size:12px; font-weight:600; color:var(--accent);">0 comillas escapadas</span>
@@ -1351,63 +1351,80 @@
       </div>
     </div>
 
-    <!-- Fila de opciones de tabla, campo y condición -->
-    <div class="rp-row" style="flex-wrap:wrap; gap:10px; margin-bottom:10px;">
+    <!-- Fila de opciones -->
+    <div class="rp-row" style="flex-wrap:wrap; gap:10px; margin-bottom:10px; align-items:center;">
       <div style="display:flex; align-items:center; gap:6px;">
         <span class="presets">Modo:</span>
-        <select id="ewModo">
-          <option value="update" selected>UPDATE completo</option>
-          <option value="insert">INSERT completo</option>
-          <option value="cadena">Solo cadena escapada ('...')</option>
+        <select id="ewModo" style="font-weight:600;">
+          <option value="envolver" selected>Solo envolver en comillas ('...')</option>
+          <option value="escapar">Solo duplicar comillas (' → '')</option>
+          <option value="plantilla_update">Generar plantilla UPDATE completa</option>
+          <option value="plantilla_insert">Generar plantilla INSERT completa</option>
         </select>
       </div>
 
-      <div style="display:flex; align-items:center; gap:6px;" id="ewWrapTabla">
+      <div style="display:none; align-items:center; gap:6px;" id="ewWrapTabla">
         <span class="presets">Tabla:</span>
         <input type="text" id="ewTabla" value="consultas" placeholder="Nombre de tabla" style="width:130px;" autocomplete="off" spellcheck="false">
       </div>
 
-      <div style="display:flex; align-items:center; gap:6px;" id="ewWrapCampo">
+      <div style="display:none; align-items:center; gap:6px;" id="ewWrapCampo">
         <span class="presets">Campo:</span>
         <input type="text" id="ewCampo" value="query" placeholder="Nombre de columna" style="width:120px;" autocomplete="off" spellcheck="false">
       </div>
 
-      <div style="display:flex; align-items:center; gap:6px; flex:1; min-width:200px;" id="ewWrapWhere">
+      <div style="display:none; align-items:center; gap:6px; flex:1; min-width:180px;" id="ewWrapWhere">
         <span class="presets">WHERE:</span>
         <input type="text" id="ewWhere" value="id = 1" placeholder="ej: id = 123 o codigo = 'FAC_01'" style="flex:1;" autocomplete="off" spellcheck="false">
       </div>
+
+      <div style="display:flex; align-items:center; gap:10px; margin-left:auto;">
+        <label class="chk" id="ewWrapPComa" title="Agrega punto y coma al final"><input type="checkbox" id="ewPuntoComa" checked> Punto y coma final (;)</label>
+        <button type="button" class="secondary btn-sm" id="ewCargarEditor" title="Toma el texto actual del editor SQL principal">⬇ Cargar desde Editor</button>
+        <button type="button" class="secondary btn-sm" id="ewLimpiar" title="Limpiar campos">Limpiar</button>
+      </div>
     </div>
 
-    <!-- Opciones adicionales -->
-    <div class="rp-row" style="margin-bottom:10px; flex-wrap:wrap; gap:12px; align-items:center;">
-      <label class="chk" title="Agrega punto y coma al final de la sentencia"><input type="checkbox" id="ewPuntoComa" checked> Punto y coma final (;)</label>
-      <label class="chk" title="Elimina el punto y coma interno de la consulta para que no interfiera"><input type="checkbox" id="ewQuitarPuntoComaInterno" checked> Quitar ';' interno al final de la query</label>
-      <button type="button" class="secondary btn-sm" id="ewCargarEditor" title="Toma el texto actual del editor SQL principal">⬇ Cargar desde Editor Principal</button>
-      <button type="button" class="secondary btn-sm" id="ewLimpiar" title="Limpiar campos">Limpiar</button>
-    </div>
-
-    <!-- Área de entrada y salida -->
+    <!-- Área de entrada y salida con estética SQL auténtica -->
     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; width:100%; margin-bottom:10px;">
+      <!-- Entrada -->
       <div style="display:flex; flex-direction:column; gap:6px;">
-        <span style="font-size:11.5px; font-weight:700; color:var(--muted); text-transform:uppercase;">1. Tu Consulta Original (con comillas simples ' '):</span>
-        <textarea id="ewEntrada" spellcheck="false" wrap="off" placeholder="Pega o escribe aquí la consulta SQL...&#10;ejemplo:&#10;SELECT * FROM facturas WHERE estado = 'ACTIVO' AND tipo = 'FC';" style="width:100% !important; height:240px !important; min-height:180px; font-family:var(--mono); font-size:12.5px; box-sizing:border-box;"></textarea>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-size:11.5px; font-weight:700; color:var(--muted); text-transform:uppercase; display:flex; align-items:center; gap:5px;">
+            <span>1. Consulta Original</span>
+            <span style="font-size:10.5px; font-weight:normal; color:var(--muted);">(pega o escribe aquí)</span>
+          </span>
+          <span id="ewInLines" style="font-size:11px; color:var(--muted); font-family:var(--mono);"></span>
+        </div>
+        <textarea id="ewEntrada" spellcheck="false" wrap="off" placeholder="Pega o escribe tu consulta...&#10;ejemplo:&#10;select * from facturac where estado = 'A' and tipo = 'FC';" style="width:100% !important; height:290px !important; min-height:220px; font-family:var(--mono); font-size:13px; line-height:1.6; padding:12px 14px; background:var(--ed-bg, #0a1124); color:var(--ed-fg, #d6e0f5); border:1px solid var(--panel-edge); border-radius:10px; box-sizing:border-box; outline:none;"></textarea>
       </div>
 
+      <!-- Salida con visor SQL (colores y líneas) -->
       <div style="display:flex; flex-direction:column; gap:6px;">
-        <span style="font-size:11.5px; font-weight:700; color:var(--accent); text-transform:uppercase;">2. Sentencia Generada (con comillas duplicadas '' ''):</span>
-        <textarea id="ewSalida" readonly spellcheck="false" wrap="off" placeholder="Aquí aparecerá el UPDATE listo para ejecutar..." style="width:100% !important; height:240px !important; min-height:180px; font-family:var(--mono); font-size:12.5px; background:var(--panel-alt); color:var(--text); box-sizing:border-box;"></textarea>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-size:11.5px; font-weight:700; color:var(--accent); text-transform:uppercase; display:flex; align-items:center; gap:5px;">
+            <span>2. Resultado con Escape SQL</span>
+            <span style="font-size:10.5px; font-weight:normal; color:#4ade80;">(colores y comillas duplicadas)</span>
+          </span>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <button type="button" class="secondary btn-sm" id="ewBtnCopiarTop" style="padding:2px 8px; font-size:11px; font-weight:700;" title="Copiar resultado">📋 Copiar</button>
+            <span id="ewOutLines" style="font-size:11px; color:var(--accent); font-family:var(--mono);"></span>
+          </div>
+        </div>
+        <div class="code-block" id="ewCodigo" style="width:100% !important; height:290px !important; min-height:220px; margin:0; border-radius:10px; overflow:auto; box-sizing:border-box; cursor:text;"></div>
+        <textarea id="ewSalida" style="display:none;" readonly></textarea>
       </div>
     </div>
 
-    <!-- Botones de Acción -->
-    <div class="rp-row" style="margin-top:4px; gap:10px;">
-      <button type="button" id="ewCopiar" style="font-weight:700;">📋 Copiar resultado al portapapeles</button>
-      <button type="button" class="secondary" id="ewInsertar" title="Reemplaza o inserta la sentencia generada en tu editor principal">⬇ Enviar al Editor Principal</button>
-      <span class="cnt" id="ewStatus" style="margin-left:auto; font-weight:600;"></span>
+    <!-- Barra de acciones inferiores -->
+    <div class="rp-row" style="margin-top:2px; gap:10px; align-items:center;">
+      <button type="button" id="ewCopiar" style="font-weight:700; padding:8px 16px;">📋 Copiar resultado al portapapeles</button>
+      <button type="button" class="secondary" id="ewInsertar" title="Envía el resultado generado al editor SQL principal">⬇ Enviar al Editor Principal</button>
+      <span class="cnt" id="ewStatus" style="margin-left:auto; font-weight:600; color:var(--text);"></span>
     </div>
 
-    <div class="ls-hint" style="margin-top:8px;">
-      💡 <strong>¿Cómo funciona?</strong> Toma cualquier consulta SQL y duplica automáticamente cada comilla simple interna (<code>'</code> → <code>''</code>), envolviéndola en el <code>UPDATE</code> o <code>INSERT</code> de la tabla que indiques para que la base de datos la almacene sin error de sintaxis.
+    <div class="ls-hint" style="margin-top:8px;" id="ewHint">
+      💡 <strong>Envolver solo en comillas:</strong> Duplica cada comilla simple interna (<code>'</code> → <code>''</code>) y rodea la consulta con comillas simples (<code>'...'</code>) para que no rompa el campo al insertarla o actualizarla. Si pegas un UPDATE que ya tiene <code>set campo='...'</code>, detecta y arregla las comillas de adentro sin duplicar la sentencia.
     </div>
   </div>
 
@@ -5560,58 +5577,103 @@ entrada.addEventListener('keydown', function(e){
   else if ((e.ctrlKey || e.metaKey) && !e.shiftKey && k === 'm') { e.preventDefault(); if ($('btnToggleOpciones')) $('btnToggleOpciones').click(); }
 });
 /* ==========================================================================
-   HERRAMIENTA: Envolver en UPDATE / INSERT con Escape de comillas (' -> '')
+   HERRAMIENTA: Envolver en UPDATE / Comillas escapadas (' -> '')
    ========================================================================== */
+function pintarCodigoEw(sqlText){
+  var cont = $('ewCodigo');
+  if (!cont) return;
+  if (!sqlText || !sqlText.trim()) {
+    cont.innerHTML = '<div style="padding:18px; color:var(--muted); font-size:12.5px;">Aquí verás tu consulta con resaltado de sintaxis SQL y comillas duplicadas...</div>';
+    if ($('ewOutLines')) $('ewOutLines').textContent = '';
+    return;
+  }
+  var lineasRes = (typeof resaltar === 'function') ? resaltar(sqlText) : sqlText.split('\n');
+  var html = '';
+  for (var i = 0; i < lineasRes.length; i++) {
+    html += '<div class="code-line"><span class="ln">' + (i + 1) + '</span><span class="code-text">' + (lineasRes[i] || ' ') + '</span></div>';
+  }
+  cont.innerHTML = html;
+  if ($('ewOutLines')) $('ewOutLines').textContent = lineasRes.length + ' lín.';
+}
+
 function ewGenerar(){
-  var texto = ($('ewEntrada') ? $('ewEntrada').value || '' : '').trim();
-  if (!texto) {
+  var raw = ($('ewEntrada') ? $('ewEntrada').value || '' : '').trim();
+  if ($('ewInLines')) {
+    var inLns = raw ? raw.split('\n').length : 0;
+    $('ewInLines').textContent = inLns ? (inLns + ' lín.') : '';
+  }
+
+  if (!raw) {
     if ($('ewSalida')) $('ewSalida').value = '';
+    pintarCodigoEw('');
     if ($('ewEscapeCnt')) $('ewEscapeCnt').textContent = '0 comillas escapadas';
     if ($('ewStatus')) $('ewStatus').textContent = '';
     return;
   }
 
-  // 1. Quitar punto y coma interno si está marcado
-  if ($('ewQuitarPuntoComaInterno') && $('ewQuitarPuntoComaInterno').checked) {
-    texto = texto.replace(/;\s*$/, '');
-  }
-
-  // 2. Contar comillas simples para informar al usuario
-  var cantComillas = 0;
-  for (var i = 0; i < texto.length; i++) {
-    if (texto[i] === "'") cantComillas++;
-  }
-  if ($('ewEscapeCnt')) {
-    $('ewEscapeCnt').textContent = cantComillas + (cantComillas === 1 ? ' comilla escapada' : ' comillas escapadas');
-  }
-
-  // 3. Duplicar cada comilla simple (' -> '')
-  var escapado = texto.replace(/'/g, "''");
-
-  var modo = $('ewModo') ? $('ewModo').value : 'update';
+  var modo = $('ewModo') ? $('ewModo').value : 'envolver';
+  var pComa = ($('ewPuntoComa') && $('ewPuntoComa').checked) ? ';' : '';
   var tabla = ($('ewTabla') ? $('ewTabla').value || 'consultas' : 'consultas').trim();
   var campo = ($('ewCampo') ? $('ewCampo').value || 'query' : 'query').trim();
   var where = ($('ewWhere') ? $('ewWhere').value || '' : '').trim();
-  var pComa = ($('ewPuntoComa') && $('ewPuntoComa').checked) ? ';' : '';
 
   var resultado = '';
-  if (modo === 'update') {
-    resultado = 'UPDATE ' + tabla + '\n' +
-                'SET ' + campo + " = '" + escapado + "'";
-    if (where) {
-      resultado += '\nWHERE ' + where;
+  var cantComillas = 0;
+  var tipoAviso = '';
+
+  // 1. MODO ENVOLVER (POR DEFECTO)
+  if (modo === 'envolver') {
+    // Comprobar si el usuario pegó un UPDATE completo existente (ej: update consultas set query='...' where ...)
+    var matchUpdate = raw.match(/^([\s\S]*?\bset\s+[\w\.]+\s*=\s*')([\s\S]*?)('?\s*\bwhere\b[\s\S]*)$/i);
+    if (matchUpdate) {
+      // Arreglar comillas de adentro sin duplicar el UPDATE
+      var enc = matchUpdate[1];
+      var interna = matchUpdate[2].replace(/'$/, '');
+      var wh = matchUpdate[3].replace(/^'/, '');
+      for (var k = 0; k < interna.length; k++) if (interna[k] === "'") cantComillas++;
+      var internaEsc = interna.replace(/'/g, "''");
+      resultado = enc + internaEsc + "'\n" + wh.trim();
+      if (pComa && !resultado.trim().endsWith(';')) resultado += ';';
+      tipoAviso = 'UPDATE detectado: comillas internas duplicadas correctamente';
+    } else {
+      // Consulta normal: quitar punto y coma final si tiene, duplicar comillas y envolver entre ' y '
+      var limpia = raw.replace(/;\s*$/, '');
+      for (var k2 = 0; k2 < limpia.length; k2++) if (limpia[k2] === "'") cantComillas++;
+      var escTxt = limpia.replace(/'/g, "''");
+      resultado = "'" + escTxt + "'" + pComa;
+      tipoAviso = 'Consulta envuelta en comillas simples escapadas';
     }
+  } else if (modo === 'escapar') {
+    for (var k3 = 0; k3 < raw.length; k3++) if (raw[k3] === "'") cantComillas++;
+    resultado = raw.replace(/'/g, "''");
+    tipoAviso = 'Comillas duplicadas (' → '')';
+  } else if (modo === 'plantilla_update') {
+    var limpiaUpd = raw.replace(/;\s*$/, '');
+    for (var k4 = 0; k4 < limpiaUpd.length; k4++) if (limpiaUpd[k4] === "'") cantComillas++;
+    var escUpd = limpiaUpd.replace(/'/g, "''");
+    resultado = 'UPDATE ' + tabla + '\n' +
+                'SET ' + campo + " = '" + escUpd + "'";
+    if (where) resultado += '\nWHERE ' + where;
     resultado += pComa;
-  } else if (modo === 'insert') {
+    tipoAviso = 'Plantilla UPDATE generada';
+  } else if (modo === 'plantilla_insert') {
+    var limpiaIns = raw.replace(/;\s*$/, '');
+    for (var k5 = 0; k5 < limpiaIns.length; k5++) if (limpiaIns[k5] === "'") cantComillas++;
+    var escIns = limpiaIns.replace(/'/g, "''");
     resultado = 'INSERT INTO ' + tabla + ' (' + campo + ')\n' +
-                "VALUES ('" + escapado + "')" + pComa;
-  } else {
-    // Solo cadena escapada
-    resultado = "'" + escapado + "'" + pComa;
+                "VALUES ('" + escIns + "')" + pComa;
+    tipoAviso = 'Plantilla INSERT generada';
   }
 
   if ($('ewSalida')) $('ewSalida').value = resultado;
-  if ($('ewStatus')) $('ewStatus').textContent = 'Listo (' + resultado.length.toLocaleString('es-CO') + ' car.)';
+  pintarCodigoEw(resultado);
+
+  if ($('ewEscapeCnt')) {
+    $('ewEscapeCnt').textContent = cantComillas + (cantComillas === 1 ? ' comilla escapada' : ' comillas escapadas');
+  }
+  if ($('ewStatus')) {
+    $('ewStatus').textContent = tipoAviso + ' (' + resultado.length.toLocaleString('es-CO') + ' car.)';
+  }
 }
 
 if ($('btnEW')) {
@@ -5646,17 +5708,19 @@ if ($('ewCerrar')) {
   if ($(id)) $(id).addEventListener('input', ewGenerar);
 });
 
-['ewModo', 'ewPuntoComa', 'ewQuitarPuntoComaInterno'].forEach(function(id){
-  if ($(id)) {
-    $(id).addEventListener('change', function(){
-      var m = $('ewModo') ? $('ewModo').value : 'update';
-      if ($('ewWrapTabla')) $('ewWrapTabla').style.display = m === 'cadena' ? 'none' : 'flex';
-      if ($('ewWrapCampo')) $('ewWrapCampo').style.display = m === 'cadena' ? 'none' : 'flex';
-      if ($('ewWrapWhere')) $('ewWrapWhere').style.display = m === 'update' ? 'flex' : 'none';
-      ewGenerar();
-    });
-  }
-});
+if ($('ewModo')) {
+  $('ewModo').addEventListener('change', function(){
+    var m = $('ewModo').value;
+    var esPlantilla = (m === 'plantilla_update' || m === 'plantilla_insert');
+    if ($('ewWrapTabla')) $('ewWrapTabla').style.display = esPlantilla ? 'flex' : 'none';
+    if ($('ewWrapCampo')) $('ewWrapCampo').style.display = esPlantilla ? 'flex' : 'none';
+    if ($('ewWrapWhere')) $('ewWrapWhere').style.display = (m === 'plantilla_update') ? 'flex' : 'none';
+    if ($('ewWrapPComa')) $('ewWrapPComa').style.display = (m === 'escapar') ? 'none' : 'flex';
+    ewGenerar();
+  });
+}
+
+if ($('ewPuntoComa')) $('ewPuntoComa').addEventListener('change', ewGenerar);
 
 if ($('ewCargarEditor')) {
   $('ewCargarEditor').addEventListener('click', function(){
@@ -5683,13 +5747,14 @@ if ($('ewLimpiar')) {
   });
 }
 
-if ($('ewCopiar')) {
-  $('ewCopiar').addEventListener('click', function(){
-    var res = $('ewSalida') ? $('ewSalida').value : '';
-    if (!res) { toast('No hay nada que copiar'); return; }
-    copiar(res, 'UPDATE generado copiado');
-  });
+function copiarResultadoEw(){
+  var res = $('ewSalida') ? $('ewSalida').value : '';
+  if (!res) { toast('No hay nada que copiar'); return; }
+  copiar(res, 'Resultado copiado');
 }
+
+if ($('ewCopiar')) $('ewCopiar').addEventListener('click', copiarResultadoEw);
+if ($('ewBtnCopiarTop')) $('ewBtnCopiarTop').addEventListener('click', copiarResultadoEw);
 
 if ($('ewInsertar')) {
   $('ewInsertar').addEventListener('click', function(){
@@ -5700,7 +5765,7 @@ if ($('ewInsertar')) {
     actualizarBotonesPaneles();
     procesar();
     if (entrada) entrada.focus();
-    toast('UPDATE insertado en el editor');
+    toast('Consulta insertada en el editor');
   });
 }
 
