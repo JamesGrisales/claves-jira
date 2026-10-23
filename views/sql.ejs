@@ -2084,8 +2084,13 @@ entrada.addEventListener('paste', function(e) {
 if (localStorage.getItem('boveda-sql-draft')) {
   entrada.value = localStorage.getItem('boveda-sql-draft');
 }
+var tDraft = null;
 entrada.addEventListener('input', function() {
-  localStorage.setItem('boveda-sql-draft', this.value);
+  clearTimeout(tDraft);
+  var val = this.value;
+  tDraft = setTimeout(function(){
+    localStorage.setItem('boveda-sql-draft', val);
+  }, 350);
 });
 
 function toggleSidebar(forzar) {

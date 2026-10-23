@@ -423,7 +423,7 @@
 
 <div id="results">
   <% notas.forEach(function(n) { %>
-  <div class="row" data-id="<%= n.id %>" data-cat="<%= n.categoria.toLowerCase() %>" id="row-<%= n.id %>">
+  <div class="row" data-id="<%= n.id %>" data-cat="<%= n.categoria.toLowerCase() %>" data-tit="<%= n.titulo.toLowerCase() %>" id="row-<%= n.id %>">
     <div class="main" onclick="toggleRow(<%= n.id %>)">
       <div class="name">
         <span class="cat-badge"><%= n.categoria %></span>
@@ -1635,17 +1635,27 @@ function deshacerFormato(id){ cambiarModoNota(id, 'plano'); }
 // ---------------------------------------------------------------------------
 // Filtros de la lista: apartados (pestañas) + búsqueda en el servidor
 // ---------------------------------------------------------------------------
-const filasCache = Array.from(document.querySelectorAll('#results .row'));
+const filasCache = Array.from(document.querySelectorAll('#results .row')).map(function(row){
+  return {
+    el: row,
+    id: Number(row.dataset.id),
+    cat: row.dataset.cat || '',
+    tit: (row.dataset.tit || (row.querySelector('.titulo') ? row.querySelector('.titulo').textContent : '')).toLowerCase()
+  };
+});
 
 function aplicarFiltros(){
   let visibles = 0;
-  filasCache.forEach(function(row){
-    const okCat = categoriaActiva === '__todas__' || row.dataset.cat === categoriaActiva;
-    const okTxt = idsCoinciden === null || idsCoinciden.has(Number(row.dataset.id));
-    const ver = okCat && okTxt;
-    row.style.display = ver ? '' : 'none';
+  const q = (textoBusqueda || '').toLowerCase().trim();
+  for (let i = 0; i < filasCache.length; i++) {
+    const row = filasCache[i];
+    const okCat = categoriaActiva === '__todas__' || row.cat === categoriaActiva;
+    const okLocal = !q || row.tit.indexOf(q) !== -1 || row.cat.indexOf(q) !== -1;
+    const okServer = idsCoinciden !== null && idsCoinciden.has(row.id);
+    const ver = okCat && (okLocal || okServer);
+    row.el.style.display = ver ? '' : 'none';
     if (ver) visibles++;
-  });
+  }
   document.getElementById('sinResultados').style.display = (filasCache.length && !visibles) ? 'block' : 'none';
 }
 
@@ -1660,6 +1670,9 @@ function buscarEnServidor(q){
     aplicarFiltros();
     return;
   }
+
+  // Filtrado instantáneo local de inmediato (0ms)
+  aplicarFiltros();
 
   const mi = ++seqBusqueda;
   estado.textContent = 'Buscando…';
@@ -1678,8 +1691,11 @@ function buscarEnServidor(q){
 let debounceBusqueda;
 document.getElementById('searchInput').addEventListener('input', function(e){
   const valor = e.target.value.trim();
+  textoBusqueda = valor;
+  // Filtrado local instantáneo mientras se escribe
+  aplicarFiltros();
   clearTimeout(debounceBusqueda);
-  debounceBusqueda = setTimeout(function(){ buscarEnServidor(valor); }, 250);
+  debounceBusqueda = setTimeout(function(){ buscarEnServidor(valor); }, 180);
 });
 
 document.querySelectorAll('#tabs .tab').forEach(function(tab){

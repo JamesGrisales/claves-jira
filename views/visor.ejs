@@ -52,7 +52,7 @@
   :root[data-theme="oled"] .code-block{ background:#050608; border-color:rgba(255,255,255,0.08); color:#f1f5f9; }
   :root[data-theme="oled"] .code-line .ln{ border-right-color:rgba(255,255,255,0.08); color:#475569; }
   :root[data-theme="oled"] #entrada{ background:#050608; border-color:rgba(255,255,255,0.08); color:#f8fafc; }
-  .code-line{ display:flex; }
+  .code-line{ display:flex; contain:layout style; }
   .code-line:hover{ background:rgba(255,255,255,.04); }
   .code-line .ln{ flex-shrink:0; width:52px; text-align:right; padding-right:12px; margin-right:12px; color:#6e7681; border-right:1px solid #333; user-select:none; }
   .code-line .code-text{ flex:1; min-width:0; white-space:pre-wrap; word-break:break-word; padding-right:14px; }
@@ -290,7 +290,7 @@
 (function(){
 'use strict';
 
-var LOTE = 2000;          // líneas dibujadas por bloque
+var LOTE = 120;           // líneas dibujadas por bloque (liviano y rápido)
 var MAX_LINEA = 20000;    // líneas más largas se recortan (con botón para ver completa)
 var LIMITE_NODOS_EXPANDIR = 20000;
 
@@ -1032,7 +1032,15 @@ function irACoincidencia(dir, inicial){
   var cont = $('vista-codigo');
   var pos = estado.vis ? estado.vis.indexOf(linea) : linea;
   if (pos === -1 && estado.vis) return;
-  if (pos >= estado.hasta) agregarLineas(pos - estado.hasta + LOTE);
+  if (pos >= estado.hasta) {
+    if (pos - estado.hasta > 250) {
+      cont.innerHTML = '';
+      estado.hasta = Math.max(0, pos - 20);
+      agregarLineas(LOTE);
+    } else {
+      agregarLineas(pos - estado.hasta + LOTE);
+    }
+  }
   Array.prototype.forEach.call(cont.querySelectorAll('.cur-line'), function(e){ e.classList.remove('cur-line'); });
   var el = cont.querySelector('[data-i="' + linea + '"]');
   if (el) {

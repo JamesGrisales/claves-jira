@@ -138,7 +138,10 @@
     if (o.trim) lista = lista.map(function(x){ return x.trim(); });
     if (o.vacios) lista = lista.filter(function(x){ return x !== ''; });
     if (o.mayus) lista = lista.map(function(x){ return x.toUpperCase(); });
-    if (o.dups) lista = lista.filter(function(x, i){ return lista.indexOf(x) === i; });
+    if (o.dups) {
+      var vDups = new Set();
+      lista = lista.filter(function(x){ if (vDups.has(x)) return false; vDups.add(x); return true; });
+    }
     if (o.orden) lista = lista.slice().sort(function(a,b){
       return a.localeCompare(b, undefined, { numeric:true });
     });
@@ -167,7 +170,10 @@
     if (o.parent === 'filas') {
       // Cada línea de Excel = una fila; las columnas vienen separadas por tabulador
       var filas = texto.split(/\r?\n/).filter(function(l){ return o.vacios ? l.trim() !== '' : true; });
-      if (o.dups) filas = filas.filter(function(x, i){ return filas.indexOf(x) === i; });
+      if (o.dups) {
+        var vFilas = new Set();
+        filas = filas.filter(function(x){ if (vFilas.has(x)) return false; vFilas.add(x); return true; });
+      }
       var grupos = filas.map(function(f){
         var cols = f.split('\t');
         if (o.trim) cols = cols.map(function(c){ return c.trim(); });
@@ -220,8 +226,10 @@
     } else { salida.select(); document.execCommand('copy'); ok(); }
   }
 
-  ids.forEach(function(id){ $(id).addEventListener('input', generar); $(id).addEventListener('change', generar); });
-  entrada.addEventListener('input', generar);
+  var tGenerar = null;
+  function programarGenerar(){ clearTimeout(tGenerar); tGenerar = setTimeout(generar, 40); }
+  ids.forEach(function(id){ $(id).addEventListener('input', programarGenerar); $(id).addEventListener('change', generar); });
+  entrada.addEventListener('input', programarGenerar);
   $('bCopiar').addEventListener('click', function(){ copiar(salida.value); });
   $('bSql').addEventListener('click', function(){
     var v = salida.value;

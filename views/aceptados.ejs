@@ -377,7 +377,15 @@
     entrada.value = ''; st.raw = ''; st.totals = null; st.prevTotals = null; st.pegado = null; guardar();
     aplicarTexto(); entrada.focus();
   });
-  $('buscar').addEventListener('input', function(){ filtro = this.value; pintarFilas(); });
+  var tBuscarAceptados = null;
+  $('buscar').addEventListener('input', function(){
+    clearTimeout(tBuscarAceptados);
+    var v = this.value;
+    tBuscarAceptados = setTimeout(function(){
+      filtro = v;
+      pintarFilas();
+    }, 50);
+  });
   $('colAcept').addEventListener('change', function(){ var b = $('aMapB').querySelector('button[data-c="' + this.value + '"]'); if (b) b.click(); });
   $('aMapB').addEventListener('click', function(e){
     var b = e.target.closest('button[data-c]'); if (!b) return;
