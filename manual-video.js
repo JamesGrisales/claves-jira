@@ -29,8 +29,14 @@ const HORAS_VIDA = 12;
 //   o bien GEMINI_API_KEY (API nativa de Gemini). MANUAL_MODELO permite usar otro modelo solo aquí.
 const modoIA = () => (process.env.OPENAI_API_KEY ? "compatible" : process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY ? "gemini" : "");
 const iaActiva = () => !!modoIA();
-const modeloIA = () =>
-  process.env.MANUAL_MODELO || process.env.AI_MODEL || (modoIA() === "gemini" ? "gemini-2.5-flash" : "gpt-4o-mini");
+const modeloIA = () => {
+  let m = process.env.MANUAL_MODELO || process.env.AI_MODEL;
+  if (!m) return modoIA() === "gemini" ? "gemini-2.5-flash" : "gemini-3.8-flash";
+  if (m === "gemini-3-flash-preview" || m === "gemini-2.5-flash" || m === "gemini-2.0-flash") {
+    return "gemini-3.8-flash";
+  }
+  return m;
+};
 const urlCompatible = () => (process.env.OPENAI_BASE_URL || "https://api.openai.com/v1").replace(/\/$/, "");
 const urlGemini = () => (process.env.GEMINI_BASE_URL || "https://generativelanguage.googleapis.com").replace(/\/$/, "");
 const PARALELO = Math.min(4, Math.max(1, Number(process.env.MANUAL_PARALELO) || 2)); // llamadas a la IA a la vez
@@ -268,8 +274,16 @@ async function anotarCaptura({ rutaImagen, box, click }) {
   let currentLayer = "0:v";
 
   // 1. Recuadro rojo alrededor de la opción, botón o campo clicado
-  if (Array.isArray(box) && box.length === 4) {
-    const ymin = Number(box[0]), xmin = Number(box[1]), ymax = Number(box[2]), xmax = Number(box[3]);
+  let finalBox = Array.isArray(box) && box.length === 4 ? box : null;
+  if (!finalBox && Array.isArray(click) && click.length === 2) {
+    const cyRaw = Number(click[0]), cxRaw = Number(click[1]);
+    if (cyRaw >= 0 && cxRaw >= 0) {
+      finalBox = [Math.max(0, cyRaw - 20), Math.max(0, cxRaw - 40), Math.min(1000, cyRaw + 20), Math.min(1000, cxRaw + 40)];
+    }
+  }
+
+  if (finalBox) {
+    const ymin = Number(finalBox[0]), xmin = Number(finalBox[1]), ymax = Number(finalBox[2]), xmax = Number(finalBox[3]);
     if (ymax > ymin && xmax > xmin && ymin >= 0 && xmin >= 0 && ymax <= 1000 && xmax <= 1000) {
       let bx = Math.round((xmin / 1000) * W);
       let by = Math.round((ymin / 1000) * H);
@@ -529,6 +543,7 @@ async function procesarVideoAuto({ archivo, dir, nombreVideo, sensibilidad, maxP
 
         // Anotar visualmente la imagen con el recuadro rojo y la bolita roja difuminada + cursor
         if (p.box || p.click) {
+          console.log(`[Manual Video] Resaltando paso ${i + 1} (${p.archivo}):`, { elemento: p.elemento, box: p.box, click: p.click });
           await anotarCaptura({ rutaImagen: rutaPaso, box: p.box, click: p.click });
         }
       } catch (e) {
