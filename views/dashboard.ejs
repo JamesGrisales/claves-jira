@@ -411,14 +411,31 @@
   var $ = function(id){ return document.getElementById(id); };
   var input = $('searchInput'), wrap = $('searchWrap'), total = <%= companies.length %>;
 
+  var rowsCache = null;
+  function getCachedRows(){
+    if (!rowsCache) {
+      rowsCache = Array.from(document.querySelectorAll('#results .row')).map(function(row){
+        return { el: row, name: (row.dataset.name || '').toLowerCase() };
+      });
+    }
+    return rowsCache;
+  }
+  var debounceDash = null;
   function filtrar(){
-    var q = input.value.trim().toLowerCase(), vis = 0;
-    wrap.classList.toggle('has-text', q.length > 0);
-    document.querySelectorAll('#results .row').forEach(function(row){
-      var ok = row.dataset.name.includes(q); row.style.display = ok ? '' : 'none'; if (ok) vis++;
-    });
-    $('countTxt').textContent = q ? (vis + ' de ' + total + ' empresas') : (total + ' empresas');
-    $('noMatch').style.display = (total > 0 && vis === 0) ? 'block' : 'none';
+    clearTimeout(debounceDash);
+    debounceDash = setTimeout(function(){
+      var q = input.value.trim().toLowerCase(), vis = 0;
+      wrap.classList.toggle('has-text', q.length > 0);
+      var rows = getCachedRows();
+      for (var i = 0; i < rows.length; i++) {
+        var r = rows[i];
+        var ok = !q || r.name.includes(q);
+        r.el.style.display = ok ? '' : 'none';
+        if (ok) vis++;
+      }
+      $('countTxt').textContent = q ? (vis + ' de ' + total + ' empresas') : (total + ' empresas');
+      $('noMatch').style.display = (total > 0 && vis === 0) ? 'block' : 'none';
+    }, 40);
   }
   input.addEventListener('input', filtrar);
   $('searchClear').addEventListener('click', function(){ input.value = ''; filtrar(); input.focus(); });

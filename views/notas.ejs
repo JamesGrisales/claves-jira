@@ -682,9 +682,10 @@ function tokensAHtml(tokens, intervalos){
   return out;
 }
 
-function buscarIntervalos(linea, regex){
+function buscarIntervalos(linea, regex, qLow){
   const res = [];
-  if (!regex) return res;
+  if (!regex || !linea) return res;
+  if (qLow && linea.toLowerCase().indexOf(qLow) === -1) return res;
   regex.lastIndex = 0;
   let m;
   while ((m = regex.exec(linea)) !== null) {
@@ -713,7 +714,6 @@ function cargarContenido(id){
         ta.value = t;
         ta.readOnly = false;
         ta.placeholder = '';
-        actualizarEditorNota(ta);
       }
       const bt = document.querySelector('#edit-' + id + ' button[type=submit]');
       if (bt) bt.disabled = false;
@@ -741,7 +741,7 @@ function htmlLinea(id, d, i){
       resto = linea.length - MAX_LINEA;
       linea = linea.slice(0, MAX_LINEA);
     }
-    const intervalos = buscarIntervalos(linea, d.regex);
+    const intervalos = buscarIntervalos(linea, d.regex, d.queryLower);
     let tokens;
     if (d.usarCodigo) {
       if (linea.length >= MAX_LINEA || expandida) tokens = linea ? [{ t: linea, c: null }] : [];
@@ -826,6 +826,7 @@ function renderContenido(id, query){
   if (!cont) return;
 
   d.query = query || '';
+  d.queryLower = d.query ? d.query.toLowerCase() : '';
   d.regex = d.query ? new RegExp(escapeRegExp(d.query), 'gi') : null;
   d.usarCodigo = d.modo === 'codigo' || (d.modo === 'auto' && d.esSql);
   if (d.usarCodigo && !d.clases) d.clases = clasificarLineas(d.lineas);
@@ -833,7 +834,6 @@ function renderContenido(id, query){
   d.desde = 0;
   d.estado = { bloque: false };
 
-  cont.innerHTML = '';
   cont.classList.toggle('code-block', d.usarCodigo);
   cont.classList.toggle('contenido', !d.usarCodigo);
   const btnModo = document.getElementById('btnModo-' + id);
@@ -846,8 +846,22 @@ function renderContenido(id, query){
     });
   }
 
-  agregarLineas(id, LOTE);
-  calcularCoincidencias(id);
+  calcularCoincidencias(id, false);
+
+  if (d.coinc && d.coinc.length > 0) {
+    const primera = d.coinc[0];
+    const inicio = primera > 20 ? Math.max(0, primera - 15) : 0;
+    posicionarVentana(id, inicio);
+    d.idx = 0;
+    actualizarContadorCoincidencias(id);
+    const el = cont.querySelector('[data-i="' + primera + '"]');
+    if (el) {
+      el.classList.add('cur-line');
+      el.scrollIntoView({ block: 'center' });
+    }
+  } else {
+    posicionarVentana(id, 0);
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -1118,19 +1132,42 @@ function irACoincidenciaExcel(id, dir, inicial){
 // ---------------------------------------------------------------------------
 // Búsqueda dentro de la nota
 // ---------------------------------------------------------------------------
-function calcularCoincidencias(id){
+function actualizarContadorCoincidencias(id){
   const d = notasData[id];
   const el = document.getElementById('matches-' + id);
+  if (!el) return;
+  if (!d.coinc || !d.coinc.length) {
+    el.textContent = d.query ? 'Sin resultados' : '';
+    return;
+  }
+  if (d.idx >= 0 && d.coinc.length > 1) {
+    el.textContent = (d.idx + 1) + ' de ' + d.coinc.length + ' líneas' + (d.totalTexto ? ' (' + d.totalTexto + ')' : '');
+  } else {
+    el.textContent = d.totalTexto || '';
+  }
+}
+
+function calcularCoincidencias(id, autoNavegar){
+  const d = notasData[id];
   d.coinc = [];
   d.idx = -1;
 
-  if (!d.regex) { if (el) el.textContent = ''; return; }
+  if (!d.regex || !d.query) {
+    actualizarContadorCoincidencias(id);
+    return;
+  }
 
   let total = 0;
   const r = d.regex;
-  for (let i = 0; i < d.lineas.length; i++) {
-    const l = d.lineas[i];
-    if (l.length < d.query.length) continue;
+  const qLow = d.queryLower || d.query.toLowerCase();
+  const qLen = d.query.length;
+  const lineas = d.lineas;
+  const len = lineas.length;
+
+  for (let i = 0; i < len; i++) {
+    const l = lineas[i];
+    if (l.length < qLen) continue;
+    if (l.toLowerCase().indexOf(qLow) === -1) continue;
     r.lastIndex = 0;
     let m;
     let c = 0;
@@ -1138,48 +1175,46 @@ function calcularCoincidencias(id){
     if (c) { d.coinc.push(i); total += c; }
   }
 
-  if (el) {
-    d.totalTexto = total
-      ? total.toLocaleString('es-CO') + (total === 1 ? ' resultado' : ' resultados')
-      : '';
-    el.textContent = d.totalTexto || 'Sin resultados';
-  }
+  d.totalTexto = total
+    ? total.toLocaleString('es-CO') + (total === 1 ? ' resultado' : ' resultados')
+    : '';
 
-  if (d.coinc.length) irACoincidencia(id, 0, true);
+  actualizarContadorCoincidencias(id);
+
+  if (autoNavegar && d.coinc.length) irACoincidencia(id, 0, true);
 }
 
 function irACoincidencia(id, dir, inicial){
   const d = notasData[id];
   if (d && d.esExcel) { irACoincidenciaExcel(id, dir, inicial); return; }
-  if (!d || !d.coinc.length) return;
+  if (!d || !d.coinc || !d.coinc.length) return;
   d.idx = inicial ? 0 : (d.idx + dir + d.coinc.length) % d.coinc.length;
   const linea = d.coinc[d.idx];
   const cont = document.getElementById('texto-' + id);
+  if (!cont) return;
 
-  const elContador = document.getElementById('matches-' + id);
-  if (elContador && d.coinc.length > 1) {
-    elContador.textContent = (d.idx + 1) + ' de ' + d.coinc.length +
-      (d.coinc.length === 1 ? ' línea' : ' líneas') +
-      (d.totalTexto ? ' (' + d.totalTexto + ')' : '');
-  }
+  actualizarContadorCoincidencias(id);
 
   if (d.lineas[linea].length > MAX_LINEA && !d.expandidas.has(linea)) {
     d.expandidas.add(linea);
     const previo = cont.querySelector('[data-i="' + linea + '"]');
     if (previo) previo.outerHTML = htmlLinea(id, d, linea);
   }
-  if (linea < d.desde || linea >= d.hasta + SALTO) {
-    // salto largo: se dibuja solo una ventana alrededor de la coincidencia
-    posicionarVentana(id, linea - 300 < 1000 ? 0 : linea - 300);
-  } else if (linea >= d.hasta) {
-    agregarLineas(id, linea - d.hasta + LOTE);
+
+  let el = cont.querySelector('[data-i="' + linea + '"]');
+  if (!el) {
+    if (linea < d.desde || linea >= d.hasta + SALTO) {
+      posicionarVentana(id, linea - 300 < 1000 ? 0 : Math.max(0, linea - 20));
+    } else if (linea >= d.hasta) {
+      agregarLineas(id, linea - d.hasta + LOTE);
+    }
+    el = cont.querySelector('[data-i="' + linea + '"]');
   }
 
   cont.querySelectorAll('.cur-line').forEach(function(e){ e.classList.remove('cur-line'); });
-  const el = cont.querySelector('[data-i="' + linea + '"]');
   if (el) {
     el.classList.add('cur-line');
-    el.scrollIntoView({ block: 'center' });
+    el.scrollIntoView({ block: 'center', behavior: 'smooth' });
   }
 }
 
@@ -1188,7 +1223,7 @@ function buscarEnNota(id, query){
   clearTimeout(debounceEnNota[id]);
   debounceEnNota[id] = setTimeout(function(){
     renderContenido(id, query.trim());
-  }, 150);
+  }, 220);
 }
 
 function teclaBusqueda(e, id){
@@ -1424,27 +1459,49 @@ function showToast(msg){
   toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 1400);
 }
 
+async function copiarAlPortapapeles(texto){
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(texto);
+      return;
+    }
+  } catch (e) {}
+  const ta = document.createElement('textarea');
+  ta.value = texto;
+  ta.style.position = 'fixed';
+  ta.style.left = '-9999px';
+  ta.style.top = '0';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.focus();
+  ta.select();
+  try { document.execCommand('copy'); } catch(e){}
+  document.body.removeChild(ta);
+}
+
 async function copiarNota(id){
   let texto;
+  const sel = window.getSelection();
+  const selText = sel ? sel.toString().trim() : '';
+  const cont = document.getElementById('texto-' + id);
+
+  if (selText && cont && sel.anchorNode && cont.contains(sel.anchorNode)) {
+    texto = selText;
+    const cantLineas = texto.split('\n').length;
+    await copiarAlPortapapeles(texto);
+    showToast(cantLineas > 1 ? ('Selección copiada (' + cantLineas.toLocaleString('es-CO') + ' líneas)') : 'Selección copiada');
+    return;
+  }
+
   if (notasData[id].esExcel) {
-    // Excel: copia la hoja que estás viendo, lista para pegar en Excel
     try { await cargarHoja(id); } catch (e) { showToast('No se pudo cargar'); return; }
     texto = tsvHoja(notasData[id].xl.hojas[notasData[id].xl.activa]);
   } else {
     try { await cargarContenido(id); } catch (e) { showToast('No se pudo cargar'); return; }
     texto = notasData[id].texto.replace(/^[ \t]*\[\[IMG:\d+\]\][ \t]*\n?/gm, '');
   }
-  try {
-    await navigator.clipboard.writeText(texto);
-  } catch (e) {
-    const ta = document.createElement('textarea');
-    ta.value = texto;
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand('copy');
-    document.body.removeChild(ta);
-  }
-  showToast();
+  await copiarAlPortapapeles(texto);
+  showToast('Toda la nota copiada');
 }
 
 // ---------------------------------------------------------------------------
