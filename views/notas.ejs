@@ -53,10 +53,10 @@
 
   /* Bloque de código estilo editor (siempre oscuro, como VS Code) */
   .code-block{ background:#1e1e1e; color:#d4d4d4; border:1px solid #2d2d2d; border-radius:9px; padding:10px 0; font-family:var(--mono); font-size:13px; line-height:1.6; margin:0; height:48vh; min-height:420px; max-height:80vh; overflow:auto; resize:vertical; cursor:context-menu; tab-size:4; box-sizing:border-box; }
-  .code-line{ display:flex; }
+  .code-line{ display:flex; contain:layout style; }
   .code-line:hover{ background:rgba(255,255,255,.04); }
   .code-line .ln{ flex-shrink:0; width:46px; text-align:right; padding-right:12px; margin-right:12px; color:#6e7681; border-right:1px solid #333; user-select:none; }
-  .code-line .code-text{ flex:1; min-width:0; white-space:pre-wrap; word-break:break-word; padding-right:14px; }
+  .code-line .code-text{ flex:1; min-width:0; white-space:pre-wrap; word-break:break-word; padding-right:14px; user-select:text; }
   .tk-kw{ color:#569cd6; font-weight:600; }
   .tk-fn{ color:#dcdcaa; }
   .tk-st{ color:#ce9178; }
@@ -531,9 +531,9 @@
 <script>
 const RUTA_BASE = <%- JSON.stringify(C.base) %>;
 const MAX_MB = <%= MAXMB %>;
-const LOTE = 1500;          // líneas que se dibujan por bloque (el resto se carga al desplazarse)
+const LOTE = 100;           // líneas que se dibujan por bloque (el resto se carga al desplazarse)
 const MAX_LINEA = 20000;    // las líneas más largas se recortan, con botón para verlas completas
-const SALTO = 4000;         // si una coincidencia está más lejos que esto, se dibuja solo una ventana alrededor de ella
+const SALTO = 120;          // si una coincidencia está más lejos que esto, se dibuja solo una ventana alrededor de ella
 const AVISO_CARGAR_TODO = 60000; // "cargar todo" pide confirmación si faltan más líneas que esto
 
 let categoriaActiva = '__todas__';
@@ -657,10 +657,21 @@ function clasificarLineas(lineas){
 
 // Convierte tokens + rangos de coincidencia de búsqueda en HTML
 function tokensAHtml(tokens, intervalos){
+  if (!tokens || !tokens.length) return '';
+  if (!intervalos || !intervalos.length) {
+    let out = '';
+    for (let j = 0; j < tokens.length; j++) {
+      const tk = tokens[j];
+      const esc = escapeHtml(tk.t);
+      out += tk.c ? '<span class="tk-' + tk.c + '">' + esc + '</span>' : esc;
+    }
+    return out;
+  }
   let out = '';
   let pos = 0;
   let k = 0;
-  tokens.forEach(function(tk){
+  for (let j = 0; j < tokens.length; j++) {
+    const tk = tokens[j];
     const ini = pos;
     const fin = pos + tk.t.length;
     let cursor = ini;
@@ -678,7 +689,7 @@ function tokensAHtml(tokens, intervalos){
     }
     out += tk.c ? '<span class="tk-' + tk.c + '">' + html + '</span>' : html;
     pos = fin;
-  });
+  }
   return out;
 }
 
@@ -842,7 +853,7 @@ function renderContenido(id, query){
   if (!cont.dataset.scroll) {
     cont.dataset.scroll = '1';
     cont.addEventListener('scroll', function(){
-      if (cont.scrollTop + cont.clientHeight > cont.scrollHeight - 800) agregarLineas(id, LOTE);
+      if (cont.scrollTop + cont.clientHeight > cont.scrollHeight - 500) agregarLineas(id, LOTE);
     });
   }
 
@@ -1152,27 +1163,30 @@ function calcularCoincidencias(id, autoNavegar){
   d.coinc = [];
   d.idx = -1;
 
-  if (!d.regex || !d.query) {
+  if (!d.query) {
     actualizarContadorCoincidencias(id);
     return;
   }
 
   let total = 0;
-  const r = d.regex;
   const qLow = d.queryLower || d.query.toLowerCase();
-  const qLen = d.query.length;
+  const qLen = qLow.length;
   const lineas = d.lineas;
   const len = lineas.length;
 
   for (let i = 0; i < len; i++) {
     const l = lineas[i];
     if (l.length < qLen) continue;
-    if (l.toLowerCase().indexOf(qLow) === -1) continue;
-    r.lastIndex = 0;
-    let m;
+    const lLow = l.toLowerCase();
+    let p = lLow.indexOf(qLow);
+    if (p === -1) continue;
+    d.coinc.push(i);
     let c = 0;
-    while ((m = r.exec(l)) !== null) { c++; if (m[0] === '') r.lastIndex++; }
-    if (c) { d.coinc.push(i); total += c; }
+    while (p !== -1) {
+      c++;
+      p = lLow.indexOf(qLow, p + qLen);
+    }
+    total += c;
   }
 
   d.totalTexto = total
@@ -1204,9 +1218,9 @@ function irACoincidencia(id, dir, inicial){
   let el = cont.querySelector('[data-i="' + linea + '"]');
   if (!el) {
     if (linea < d.desde || linea >= d.hasta + SALTO) {
-      posicionarVentana(id, linea - 300 < 1000 ? 0 : Math.max(0, linea - 20));
+      posicionarVentana(id, Math.max(0, linea - 15));
     } else if (linea >= d.hasta) {
-      agregarLineas(id, linea - d.hasta + LOTE);
+      agregarLineas(id, Math.min(LOTE, linea - d.hasta + 25));
     }
     el = cont.querySelector('[data-i="' + linea + '"]');
   }
@@ -1223,7 +1237,7 @@ function buscarEnNota(id, query){
   clearTimeout(debounceEnNota[id]);
   debounceEnNota[id] = setTimeout(function(){
     renderContenido(id, query.trim());
-  }, 220);
+  }, 120);
 }
 
 function teclaBusqueda(e, id){
