@@ -2083,83 +2083,9 @@ app.post("/informe/enviar-email", requireLogin, express.json({ limit: "1mb" }), 
       });
       return res.json({ ok: true, mensaje: "Informe enviado exitosamente desde tu cuenta de Outlook." });
     } catch (mapiErr) {
-      console.log("ℹ️ MAPI directo no disponible en este equipo (" + (mapiErr.message || 'MAPI') + "). Abriendo borrador en Outlook con PDF adjunto...");
-
-      // 2. Si MAPI COM no está disponible (ej. New Outlook para Windows o sin COM registrado),
-      // generamos un borrador oficial (.eml con X-Unsent: 1) y lo abrimos directamente en su app de Outlook
-      // con el PDF adjunto y la firma oficial, sin descargar ningún archivo al navegador.
-      const MailComposer = require("nodemailer/lib/mail-composer");
-      const path = require("path");
-      const fs = require("fs");
-      const os = require("os");
-      const { exec } = require("child_process");
-
-      const logoPath = path.join(__dirname, "assets", "jaivana-signature.png");
-      const attachments = [
-        {
-          filename: filename || `INFORME_DOCUMENTOS_ELECTRONICOS_${new Date().toISOString().slice(0,10)}.pdf`,
-          content: buffer,
-          contentType: "application/pdf"
-        }
-      ];
-
-      let logoTag = "";
-      if (fs.existsSync(logoPath)) {
-        attachments.push({
-          filename: "jaivana-logo.png",
-          path: logoPath,
-          cid: "jaivana_signature_img"
-        });
-        logoTag = `<div style="margin-top:12px; max-width:560px;"><img src="cid:jaivana_signature_img" alt="Jaivaná" width="560" style="width:100%; max-width:560px; height:auto; display:block; border:0;" /></div>`;
-      } else {
-        logoTag = `<div style="background:#2b2b2b; display:inline-block; padding:10px 24px; border-radius:8px; margin-top:12px; color:#ffffff; font-weight:bold; font-size:22px; font-family:sans-serif;">
-          Jaivaná<span style="color:#e11d48; margin-left:4px;">▲</span>
-        </div>`;
-      }
-
-      const htmlCompleto = `
-        <div style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 14.5px; color: #1e293b; line-height: 1.6; max-width: 650px;">
-          <div>${cuerpoHtml}</div>
-          <br>
-          <div style="margin-top: 20px; border-top: 1px solid #e2e8f0; padding-top: 14px; font-size: 13.5px; color: #334155;">
-            <strong style="font-size: 15px; color: #0f172a;">${tecnicoNombre}</strong><br>
-            <span style="color: #64748b;">${cargoNombre}</span><br>
-            ${logoTag}
-          </div>
-        </div>
-      `;
-
-      const toList = Array.isArray(to) ? to.join("; ") : to;
-      const ccList = cc ? (Array.isArray(cc) ? cc.join("; ") : cc) : undefined;
-      const userEmail = (clientSmtp && clientSmtp.user) || process.env.OUTLOOK_USER || "jgrisales@jaivana.co";
-
-      const mail = new MailComposer({
-        headers: {
-          "X-Unsent": "1"
-        },
-        from: `"${tecnicoNombre}" <${userEmail}>`,
-        to: toList,
-        cc: ccList,
-        subject: asunto || `INFORME FACTURACION ELECTRONICA - ${new Date().toLocaleDateString("es-CO")}`,
-        html: htmlCompleto,
-        attachments
-      });
-
-      const emlBuffer = await mail.compile().build();
-      const tempEmlPath = path.join(os.tmpdir(), `INFORME_OUTLOOK_${Date.now()}.eml`);
-      fs.writeFileSync(tempEmlPath, emlBuffer);
-
-      // Abrir en la app de Outlook instalada en Windows (sin descargar archivos al navegador)
-      exec(`powershell -ExecutionPolicy Bypass -Command "Start-Process -FilePath '${tempEmlPath.replace(/'/g, "''")}'"`, (err) => {
-        if (err) {
-          exec(`start "" "${tempEmlPath}"`);
-        }
-      });
-
-      return res.json({
-        ok: true,
-        modo: "borrador",
-        mensaje: "¡Correo abierto en tu aplicación de Outlook con el PDF adjunto! Solo pulsa 'Enviar' en Outlook."
+      console.error("Error al enviar directamente por Outlook MAPI:", mapiErr.message);
+      return res.status(500).json({
+        error: "No se pudo enviar automáticamente desde Outlook (" + (mapiErr.message || "Error al conectar con Outlook") + "). Por favor abre tu aplicación de Outlook de escritorio con tu cuenta institucional y vuelve a intentar."
       });
     }
   } catch (err) {
