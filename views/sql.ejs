@@ -1380,7 +1380,10 @@
             <span>1. Consulta Original</span>
             <span style="font-size:10.5px; font-weight:normal; color:var(--muted);">(pega o escribe aquí)</span>
           </span>
-          <span id="ewInLines" style="font-size:11px; color:var(--muted); font-family:var(--mono);"></span>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <button type="button" class="secondary btn-sm" id="ewBtnFormatear" style="padding:2px 8px; font-size:11px; font-weight:700;" title="Organizar y formatear SQL (saltos de línea e indentación)">✨ Formatear</button>
+            <span id="ewInLines" style="font-size:11px; color:var(--muted); font-family:var(--mono);"></span>
+          </div>
         </div>
         <textarea id="ewEntrada" spellcheck="false" wrap="off" placeholder="Pega o escribe tu consulta...&#10;ejemplo:&#10;select * from facturac where estado = 'A' and tipo = 'FC';" style="width:100% !important; height:340px !important; min-height:260px; font-family:var(--mono); font-size:13px; line-height:1.6; padding:12px 14px; background:var(--ed-bg, #0a1124); color:var(--ed-fg, #d6e0f5); border:1px solid var(--panel-edge); border-radius:10px; box-sizing:border-box; outline:none;"></textarea>
       </div>
@@ -4896,6 +4899,12 @@ if (edLayout) {
         '<input type="text" id="ewCampo" value="query" placeholder="Nombre de columna" autocomplete="off" spellcheck="false">' +
       '</div>' +
 
+      '<div id="ewWrapAutoFormatear" class="ew-field" style="margin-top:2px;">' +
+        '<label class="chk" title="Organiza y formatea la consulta SQL (cada columna en su propia línea, indentación de CASE y cláusulas)">' +
+          '<input type="checkbox" id="ewAutoFormatear" checked> ✨ Organizar / Formatear SQL' +
+        '</label>' +
+      '</div>' +
+
       '<div id="ewWrapSoloQuery" class="ew-field" style="display:none; margin-top:2px;">' +
         '<label class="chk" title="Al generar UPDATE desde un INSERT con múltiples columnas, solo incluye el campo query en el SET y usa el primer campo como condición WHERE">' +
           '<input type="checkbox" id="ewSoloCampoQuery" checked> Solo campo query en SET' +
@@ -5718,12 +5727,31 @@ function ewGenerar(){
   var cantComillas = 0;
   var tipoAviso = '';
 
+  var autoFormatear = ($('ewAutoFormatear') && $('ewAutoFormatear').checked);
+
+  function formatearSiAplica(str) {
+    if (!str) return '';
+    var s = str;
+    // Asegurar que palabras clave pegadas a comillas tengan un espacio: SELECT' -> SELECT '
+    s = s.replace(/\b(SELECT|FROM|WHERE|AND|OR|CASE|WHEN|THEN|ELSE|IN|LIKE|JOIN|ON|SET|VALUES)\b(?=['"])/gi, '$1 ');
+
+    if (autoFormatear && typeof SqlFormatter !== 'undefined' && SqlFormatter.format) {
+      try {
+        var fmt = SqlFormatter.format(s, { sangria: 4 });
+        if (fmt && fmt.text) s = fmt.text;
+      } catch(e) {}
+    }
+    return s;
+  }
+
   function escaparQueryInterno(str) {
     if (!str) return { esc: '', count: 0 };
     var s = str.trim();
     if (s.startsWith("'") && s.endsWith("'") && s.length >= 2) {
       s = s.slice(1, -1);
     }
+    s = formatearSiAplica(s);
+
     var norm = s.replace(/''/g, "'");
     var count = (norm.match(/'/g) || []).length;
     var esc = norm.replace(/'/g, "''");
@@ -6143,6 +6171,23 @@ if ($('ewModo')) {
 
 if ($('ewPuntoComa')) $('ewPuntoComa').addEventListener('change', ewGenerar);
 if ($('ewSoloCampoQuery')) $('ewSoloCampoQuery').addEventListener('change', ewGenerar);
+if ($('ewAutoFormatear')) $('ewAutoFormatear').addEventListener('change', ewGenerar);
+if ($('ewBtnFormatear')) {
+  $('ewBtnFormatear').addEventListener('click', function() {
+    var raw = ($('ewEntrada') ? $('ewEntrada').value || '' : '').trim();
+    if (!raw) return;
+    if (typeof SqlFormatter !== 'undefined' && SqlFormatter.format) {
+      try {
+        var fmt = SqlFormatter.format(raw, { sangria: 4 });
+        if (fmt && fmt.text) {
+          $('ewEntrada').value = fmt.text;
+          ewGenerar();
+          if (typeof toast === 'function') toast('Consulta organizada y formateada');
+        }
+      } catch(e) {}
+    }
+  });
+}
 
 if ($('ewCargarEditor')) {
   $('ewCargarEditor').addEventListener('click', function(){
