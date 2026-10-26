@@ -4896,6 +4896,12 @@ if (edLayout) {
         '<input type="text" id="ewCampo" value="query" placeholder="Nombre de columna" autocomplete="off" spellcheck="false">' +
       '</div>' +
 
+      '<div id="ewWrapSoloQuery" class="ew-field" style="display:none; margin-top:2px;">' +
+        '<label class="chk" title="Al generar UPDATE desde un INSERT con múltiples columnas, solo incluye el campo query en el SET y usa el primer campo como condición WHERE">' +
+          '<input type="checkbox" id="ewSoloCampoQuery" checked> Solo campo query en SET' +
+        '</label>' +
+      '</div>' +
+
       '<div id="ewWrapWhere" class="ew-field" style="display:none;">' +
         '<span class="presets">Condición WHERE:</span>' +
         '<input type="text" id="ewWhere" value="id = 1" placeholder="ej: id = 123" autocomplete="off" spellcheck="false">' +
@@ -5703,20 +5709,121 @@ function ewGenerar(){
 
   var modo = $('ewModo') ? $('ewModo').value : 'envolver';
   var pComa = ($('ewPuntoComa') && $('ewPuntoComa').checked) ? ';' : '';
-  var tabla = ($('ewTabla') ? $('ewTabla').value || 'consultas' : 'consultas').trim();
-  var campo = ($('ewCampo') ? $('ewCampo').value || 'query' : 'query').trim();
-  var where = ($('ewWhere') ? $('ewWhere').value || "nombre = 'cosa'" : "nombre = 'cosa'").trim();
+  var defaultTabla = ($('ewTabla') ? $('ewTabla').value || 'consultas' : 'consultas').trim();
+  var defaultCampo = ($('ewCampo') ? $('ewCampo').value || 'query' : 'query').trim();
+  var defaultWhere = ($('ewWhere') ? $('ewWhere').value || "nombre = 'cosa'" : "nombre = 'cosa'").trim();
+  var soloQueryEnSet = ($('ewSoloCampoQuery') && $('ewSoloCampoQuery').checked);
 
   var resultado = '';
   var cantComillas = 0;
   var tipoAviso = '';
 
-  // Función para procesar UPDATE existente
-  function procesarUpdateExistente(texto) {
-    var lineasUpd = texto.split('\n');
+  function escaparQueryInterno(str) {
+    if (!str) return { esc: '', count: 0 };
+    var s = str.trim();
+    if (s.startsWith("'") && s.endsWith("'") && s.length >= 2) {
+      s = s.slice(1, -1);
+    }
+    var norm = s.replace(/''/g, "'");
+    var count = (norm.match(/'/g) || []).length;
+    var esc = norm.replace(/'/g, "''");
+    return { esc: esc, count: count };
+  }
+
+  // --- PARSEADOR INTELIGENTE DE INSERT (AISLA EXCLUSIVAMENTE EL CAMPO QUERY) ---
+  function analizarInsert(sqlText) {
+    var m = sqlText.match(/^\s*insert\s+into\s+([\w\.]+)(?:\s*\(([^)]+)\))?\s*values\s*\(\s*([\s\S]+?)\s*\)\s*;?\s*$/i);
+    if (!m) return null;
+    var tabla = m[1].trim();
+    var colListStr = m[2];
+    var valListStr = m[3].trim();
+
+    var cols = null;
+    if (colListStr) {
+      cols = colListStr.split(',').map(function(c) { return c.trim().replace(/["`]/g, ''); });
+    }
+
+    var qIdx = -1;
+    if (cols) {
+      for (var ci = 0; ci < cols.length; ci++) {
+        if (/^(query|sentencia|consulta|sql|contenido|texto)$/i.test(cols[ci])) {
+          qIdx = ci;
+          break;
+        }
+      }
+      if (qIdx === -1 && cols.length >= 2) {
+        qIdx = 1; // Por defecto la 2da columna suele ser el query en tablas como consultas
+      }
+    }
+
+    var beforeCols = [];
+    var queryVal = '';
+    var afterCols = [];
+
+    if (cols && qIdx !== -1) {
+      var numBefore = qIdx;
+      var rem = valListStr;
+      // Extraer argumentos antes del campo query
+      for (var i = 0; i < numBefore; i++) {
+        var mb = rem.match(/^(\s*(?:'(?:[^']|'')*'|[^,]+)\s*)(?:,([\s\S]*))?$/);
+        if (mb) {
+          beforeCols.push({ col: cols[i], val: mb[1].trim() });
+          rem = (mb[2] || '').trim();
+        }
+      }
+      // Extraer argumentos después del campo query desde el final
+      for (var j = cols.length - 1; j > qIdx; j--) {
+        var ma = rem.match(/^([\s\S]*?),\s*('(?:[^']|'')*'|[^,']+)\s*$/);
+        if (ma) {
+          afterCols.unshift({ col: cols[j], val: ma[2].trim() });
+          rem = ma[1].trim();
+        }
+      }
+      queryVal = rem.trim();
+    } else {
+      // Sin lista de columnas: extraer argumentos simples de la cola que no pertenezcan al query
+      var remNoCol = valListStr;
+      var trailing = [];
+      while (true) {
+        var mat = remNoCol.match(/^([\s\S]*?),\s*('(?!(?:select|insert|update|delete|with)\b)(?:[^']|'')*'|[0-9.]+|true|false|null)\s*$/i);
+        if (mat && !/\b(between|and|or|case|when|then|else|end|from|where|in)\s*$/i.test(mat[1].trim())) {
+          trailing.unshift(mat[2].trim());
+          remNoCol = mat[1].trim();
+        } else {
+          break;
+        }
+      }
+      afterCols = trailing.map(function(val, idx) { return { col: 'col_' + (idx + 2), val: val }; });
+
+      var mle = remNoCol.match(/^('(?!(?:select|insert|update|delete|with)\b)(?:[^']|'')*'|[0-9.]+)\s*,\s*([\s\S]+)$/i);
+      if (mle) {
+        beforeCols.push({ col: 'nombre', val: mle[1].trim() });
+        queryVal = mle[2].trim();
+      } else {
+        queryVal = remNoCol.trim();
+      }
+    }
+
+    if (queryVal.startsWith("'") && queryVal.endsWith("'") && queryVal.length >= 2) {
+      queryVal = queryVal.slice(1, -1);
+    }
+
+    return {
+      tabla: tabla,
+      cols: cols,
+      queryCol: (cols && cols[qIdx]) ? cols[qIdx] : defaultCampo,
+      beforeCols: beforeCols,
+      queryVal: queryVal,
+      afterCols: afterCols
+    };
+  }
+
+  // --- PARSEADOR INTELIGENTE DE UPDATE ---
+  function analizarUpdate(sqlText) {
+    var lines = sqlText.split('\n');
     var idxWhere = -1;
-    for (var iw = lineasUpd.length - 1; iw >= 1; iw--) {
-      if (/^\s*where\b/i.test(lineasUpd[iw])) {
+    for (var iw = lines.length - 1; iw >= 1; iw--) {
+      if (/^\s*where\b/i.test(lines[iw])) {
         idxWhere = iw;
         break;
       }
@@ -5724,180 +5831,226 @@ function ewGenerar(){
 
     var parteUpd = '';
     var parteWhere = '';
-
     if (idxWhere !== -1) {
-      parteUpd = lineasUpd.slice(0, idxWhere).join('\n');
-      parteWhere = lineasUpd.slice(idxWhere).join('\n');
+      parteUpd = lines.slice(0, idxWhere).join('\n');
+      parteWhere = lines.slice(idxWhere).join('\n');
     } else {
-      var matchLastWhere = texto.match(/^([\s\S]*\bset\s+[\w\.]+\s*=\s*)([\s\S]+)$/i);
-      if (matchLastWhere) {
-        var restStr = matchLastWhere[2];
-        var lastWhereIdx = restStr.search(/['"]\s*\bwhere\b(?!\s*in\b)/i);
-        if (lastWhereIdx !== -1) {
-          parteUpd = matchLastWhere[1] + restStr.substring(0, lastWhereIdx + 1);
-          parteWhere = restStr.substring(lastWhereIdx + 1).replace(/^['"]*/, '').trim();
-        } else {
-          parteUpd = texto;
-        }
+      var lastWhereIdx = sqlText.search(/['"]\s*\bwhere\b(?!\s*in\b)/i);
+      if (lastWhereIdx !== -1) {
+        parteUpd = sqlText.substring(0, lastWhereIdx + 1);
+        parteWhere = sqlText.substring(lastWhereIdx + 1).replace(/^['"]*/, '').trim();
       } else {
-        parteUpd = texto;
+        parteUpd = sqlText;
       }
     }
 
-    var matchSetPart = parteUpd.match(/^([\s\S]*?\bset\s+[\w\.]+\s*=\s*)([\s\S]*)$/i);
-    if (!matchSetPart) return null;
+    var matchTable = parteUpd.match(/^\s*update\s+([\w\.]+)/i);
+    var tabla = matchTable ? matchTable[1].trim() : defaultTabla;
+    var targetField = defaultCampo || 'query';
 
-    var encUpd = matchSetPart[1];
-    var valUpd = matchSetPart[2].trim();
+    var mField = parteUpd.match(new RegExp('^([\\s\\S]*?\\bset\\s+[\\s\\S]*?\\b' + targetField + "\\s*=\\s*')([\\s\\S]*)$", 'i'));
+    var prefix = '';
+    var queryVal = '';
+    var otherSetAfter = '';
 
-    if (valUpd.startsWith("'")) valUpd = valUpd.substring(1);
-    if (valUpd.endsWith("'")) valUpd = valUpd.substring(0, valUpd.length - 1);
-
-    var normUpd = valUpd.replace(/''/g, "'");
-    var cCount = (normUpd.match(/'/g) || []).length;
-    var escValUpd = normUpd.replace(/'/g, "''");
-
-    var res = encUpd + "'" + escValUpd + "'";
-    if (parteWhere && parteWhere.trim()) {
-      res += '\n' + parteWhere.trim();
-    }
-    if (pComa && !res.trim().endsWith(';')) res += ';';
-    return { res: res, count: cCount };
-  }
-
-  // Función para procesar INSERT existente
-  function procesarInsertExistente(texto) {
-    var matchIns = texto.match(/^([\s\S]*?\bvalues\s*\(\s*)([\s\S]+?)(\s*\)\s*;?\s*)$/i);
-    if (!matchIns) return null;
-
-    var prefIns = matchIns[1];
-    var valIns = matchIns[2].trim();
-    var sufIns = matchIns[3];
-
-    var matchArgs = valIns.match(/^([\s\S]*?,\s*')([\s\S]*)$/);
-    var cCount = 0;
-    var res = '';
-
-    if (matchArgs) {
-      var pArgs = matchArgs[1];
-      var lArg = matchArgs[2];
-      if (lArg.endsWith("'")) lArg = lArg.substring(0, lArg.length - 1);
-      var normIns = lArg.replace(/''/g, "'");
-      cCount = (normIns.match(/'/g) || []).length;
-      var escIns = normIns.replace(/'/g, "''");
-      res = prefIns + pArgs + escIns + "'" + sufIns;
-    } else if (valIns.startsWith("'") && valIns.endsWith("'") && valIns.length >= 2) {
-      var innerIns = valIns.substring(1, valIns.length - 1);
-      var normInsSingle = innerIns.replace(/''/g, "'");
-      cCount = (normInsSingle.match(/'/g) || []).length;
-      var escInsSingle = normInsSingle.replace(/'/g, "''");
-      res = prefIns + "'" + escInsSingle + "'" + sufIns;
+    if (mField) {
+      prefix = mField[1];
+      var rest = mField[2].trim();
+      var mAfter = rest.match(/^([\s\S]*?)'(?:\s*,\s*([\s\S]+))?$/);
+      if (mAfter) {
+        queryVal = mAfter[1];
+        otherSetAfter = mAfter[2] || '';
+      } else {
+        queryVal = rest.replace(/'\s*$/, '');
+      }
+    } else {
+      var mAny = parteUpd.match(/^([\s\S]*?\bset\s+[\w\.]+\s*=\s*)([\s\S]*)$/i);
+      if (mAny) {
+        prefix = mAny[1];
+        var restAny = mAny[2].trim();
+        if (restAny.startsWith("'")) restAny = restAny.slice(1);
+        if (restAny.endsWith("'")) restAny = restAny.slice(0, -1);
+        queryVal = restAny;
+      } else {
+        queryVal = parteUpd;
+      }
     }
 
-    if (res && pComa && !res.trim().endsWith(';')) res += ';';
-    return res ? { res: res, count: cCount } : null;
+    if (queryVal.startsWith("'") && queryVal.endsWith("'") && queryVal.length >= 2) {
+      queryVal = queryVal.slice(1, -1);
+    }
+
+    return {
+      tabla: tabla,
+      queryCol: targetField,
+      prefix: prefix,
+      queryVal: queryVal,
+      otherSetAfter: otherSetAfter,
+      whereClause: parteWhere
+    };
   }
 
-  // 1. MODO FORZAR UPDATE
+  var isIns = /^\s*insert\s+into\s+/i.test(raw);
+  var isUpd = /^\s*update\s+/i.test(raw);
+
+  // Auto-completar tabla/where en sidebar si no los modificó el usuario
+  if (isIns) {
+    var insInfo = analizarInsert(raw);
+    if (insInfo) {
+      if ($('ewTabla') && (!$('ewTabla').value || $('ewTabla').value === 'consultas')) $('ewTabla').value = insInfo.tabla;
+      if ($('ewCampo') && (!$('ewCampo').value || $('ewCampo').value === 'query')) $('ewCampo').value = insInfo.queryCol;
+      if ($('ewWhere') && (!$('ewWhere').value || $('ewWhere').value === "nombre = 'cosa'") && insInfo.beforeCols.length > 0) {
+        $('ewWhere').value = insInfo.beforeCols[0].col + ' = ' + insInfo.beforeCols[0].val;
+      }
+    }
+  }
+
+  // 1. MODO FORZAR UPDATE (convierte INSERT a UPDATE o formatea UPDATE existente)
   if (modo === 'plantilla_update') {
-    if (/^\s*update\s+/i.test(raw)) {
-      var u1 = procesarUpdateExistente(raw);
-      if (u1) {
-        resultado = u1.res;
-        cantComillas = u1.count;
-        tipoAviso = 'UPDATE formateado y comillas internas duplicadas';
+    if (isIns) {
+      var ins = analizarInsert(raw);
+      var eqIns = escaparQueryInterno(ins.queryVal);
+      cantComillas = eqIns.count;
+
+      var setClauses = [];
+      setClauses.push(ins.queryCol + " = '" + eqIns.esc + "'");
+      if (!soloQueryEnSet && ins.afterCols && ins.afterCols.length > 0) {
+        ins.afterCols.forEach(function(ac) {
+          setClauses.push(ac.col + " = " + ac.val);
+        });
       }
-    }
-    if (!resultado) {
-      var limpiaUpd = raw.replace(/;\s*$/, '');
-      if (limpiaUpd.startsWith("'") && limpiaUpd.endsWith("'") && limpiaUpd.length >= 2) {
-        limpiaUpd = limpiaUpd.substring(1, limpiaUpd.length - 1);
+
+      var whereStr = '';
+      if (ins.beforeCols && ins.beforeCols.length > 0) {
+        whereStr = 'WHERE ' + ins.beforeCols[0].col + ' = ' + ins.beforeCols[0].val;
+      } else if (defaultWhere) {
+        whereStr = 'WHERE ' + defaultWhere;
       }
-      var normUpd2 = limpiaUpd.replace(/''/g, "'");
-      cantComillas = (normUpd2.match(/'/g) || []).length;
-      var escUpd = normUpd2.replace(/'/g, "''");
-      resultado = 'UPDATE ' + tabla + '\n' +
-                  'SET ' + campo + " = '" + escUpd + "'";
-      if (where) resultado += '\nWHERE ' + where;
-      resultado += pComa;
-      tipoAviso = 'Sentencia UPDATE generada';
+
+      resultado = 'UPDATE ' + (ins.tabla || defaultTabla) + '\n' +
+                  'SET ' + setClauses.join(',\n    ');
+      if (whereStr) resultado += '\n' + whereStr;
+      if (pComa && !resultado.trim().endsWith(';')) resultado += ';';
+      tipoAviso = 'INSERT convertido a UPDATE (solo campo ' + ins.queryCol + ' envuelto y escapado)';
+    } else if (isUpd) {
+      var upd = analizarUpdate(raw);
+      var eqUpd = escaparQueryInterno(upd.queryVal);
+      cantComillas = eqUpd.count;
+
+      resultado = upd.prefix + eqUpd.esc + "'";
+      if (!soloQueryEnSet && upd.otherSetAfter) resultado += ',\n    ' + upd.otherSetAfter;
+      if (upd.whereClause) resultado += '\n' + upd.whereClause;
+      if (pComa && !resultado.trim().endsWith(';')) resultado += ';';
+      tipoAviso = 'UPDATE formateado (solo campo ' + upd.queryCol + ' envuelto y escapado)';
+    } else {
+      var eqRaw = escaparQueryInterno(raw);
+      cantComillas = eqRaw.count;
+      resultado = 'UPDATE ' + defaultTabla + '\n' +
+                  'SET ' + defaultCampo + " = '" + eqRaw.esc + "'";
+      if (defaultWhere) resultado += '\nWHERE ' + defaultWhere;
+      if (pComa && !resultado.trim().endsWith(';')) resultado += ';';
+      tipoAviso = 'Sentencia UPDATE generada (campo ' + defaultCampo + ' envuelto)';
     }
   }
 
-  // 2. MODO FORZAR INSERT
+  // 2. MODO FORZAR INSERT (formatea INSERT existente o genera nuevo INSERT)
   else if (modo === 'plantilla_insert') {
-    if (/^\s*insert\s+into\s+/i.test(raw)) {
-      var i1 = procesarInsertExistente(raw);
-      if (i1) {
-        resultado = i1.res;
-        cantComillas = i1.count;
-        tipoAviso = 'INSERT formateado y comillas internas duplicadas';
-      }
-    }
-    if (!resultado) {
-      var limpiaIns = raw.replace(/;\s*$/, '');
-      if (limpiaIns.startsWith("'") && limpiaIns.endsWith("'") && limpiaIns.length >= 2) {
-        limpiaIns = limpiaIns.substring(1, limpiaIns.length - 1);
-      }
-      var normIns2 = limpiaIns.replace(/''/g, "'");
-      cantComillas = (normIns2.match(/'/g) || []).length;
-      var escIns = normIns2.replace(/'/g, "''");
-      resultado = 'INSERT INTO ' + tabla + ' (nombre, ' + campo + ')\n' +
-                  "VALUES ('cosa', '" + escIns + "')" + pComa;
-      tipoAviso = 'Sentencia INSERT generada';
+    if (isIns) {
+      var ins2 = analizarInsert(raw);
+      var eqIns2 = escaparQueryInterno(ins2.queryVal);
+      cantComillas = eqIns2.count;
+
+      var beforePart = ins2.beforeCols.map(function(c) { return c.val; }).join(', ');
+      var afterPart = ins2.afterCols.map(function(c) { return c.val; }).join(', ');
+
+      var valuesStr = '';
+      if (beforePart) valuesStr += beforePart + ', ';
+      valuesStr += "'" + eqIns2.esc + "'";
+      if (afterPart) valuesStr += ', ' + afterPart;
+
+      var colsStr = ins2.cols ? ' (' + ins2.cols.join(', ') + ')' : '';
+      resultado = 'INSERT INTO ' + ins2.tabla + colsStr + '\n' +
+                  'VALUES (' + valuesStr + ')';
+      if (pComa && !resultado.trim().endsWith(';')) resultado += ';';
+      tipoAviso = 'INSERT formateado (solo campo ' + ins2.queryCol + ' envuelto y escapado)';
+    } else {
+      var eqRaw2 = escaparQueryInterno(raw);
+      cantComillas = eqRaw2.count;
+      resultado = 'INSERT INTO ' + defaultTabla + ' (nombre, ' + defaultCampo + ')\n' +
+                  "VALUES ('cosa', '" + eqRaw2.esc + "')";
+      if (pComa && !resultado.trim().endsWith(';')) resultado += ';';
+      tipoAviso = 'Sentencia INSERT generada (campo ' + defaultCampo + ' envuelto)';
     }
   }
 
-  // 3. MODO AUTO / ENVOLVER (detecta UPDATE o INSERT automáticamente)
+  // 3. MODO AUTO (DETECTA SI ES UPDATE, INSERT O CONSULTA INDIVIDUAL)
   else if (modo === 'envolver') {
-    if (/^\s*update\s+/i.test(raw)) {
-      var u2 = procesarUpdateExistente(raw);
-      if (u2) {
-        resultado = u2.res;
-        cantComillas = u2.count;
-        tipoAviso = 'UPDATE detectado: comillas internas duplicadas correctamente';
-      }
-    }
-    if (!resultado && /^\s*insert\s+into\s+/i.test(raw)) {
-      var i2 = procesarInsertExistente(raw);
-      if (i2) {
-        resultado = i2.res;
-        cantComillas = i2.count;
-        tipoAviso = 'INSERT detectado: comillas internas duplicadas correctamente';
-      }
-    }
-    if (!resultado) {
-      var limpiaNorm = raw.replace(/;\s*$/, '');
-      if (limpiaNorm.startsWith("'") && limpiaNorm.endsWith("'") && limpiaNorm.length >= 2) {
-        limpiaNorm = limpiaNorm.substring(1, limpiaNorm.length - 1);
-      }
-      var normNormal = limpiaNorm.replace(/''/g, "'");
-      cantComillas = (normNormal.match(/'/g) || []).length;
-      var escTxt = normNormal.replace(/'/g, "''");
-      resultado = "'" + escTxt + "'" + pComa;
+    if (isUpd) {
+      var updA = analizarUpdate(raw);
+      var eqUpdA = escaparQueryInterno(updA.queryVal);
+      cantComillas = eqUpdA.count;
+
+      resultado = updA.prefix + eqUpdA.esc + "'";
+      if (updA.otherSetAfter) resultado += ',\n    ' + updA.otherSetAfter;
+      if (updA.whereClause) resultado += '\n' + updA.whereClause;
+      if (pComa && !resultado.trim().endsWith(';')) resultado += ';';
+      tipoAviso = 'UPDATE detectado: solo campo ' + updA.queryCol + ' envuelto y escapado';
+    } else if (isIns) {
+      var insA = analizarInsert(raw);
+      var eqInsA = escaparQueryInterno(insA.queryVal);
+      cantComillas = eqInsA.count;
+
+      var beforePartA = insA.beforeCols.map(function(c) { return c.val; }).join(', ');
+      var afterPartA = insA.afterCols.map(function(c) { return c.val; }).join(', ');
+
+      var valuesStrA = '';
+      if (beforePartA) valuesStrA += beforePartA + ', ';
+      valuesStrA += "'" + eqInsA.esc + "'";
+      if (afterPartA) valuesStrA += ', ' + afterPartA;
+
+      var colsStrA = insA.cols ? ' (' + insA.cols.join(', ') + ')' : '';
+      resultado = 'INSERT INTO ' + insA.tabla + colsStrA + '\n' +
+                  'VALUES (' + valuesStrA + ')';
+      if (pComa && !resultado.trim().endsWith(';')) resultado += ';';
+      tipoAviso = 'INSERT detectado: solo campo ' + insA.queryCol + ' envuelto y escapado';
+    } else {
+      var eqRawA = escaparQueryInterno(raw);
+      cantComillas = eqRawA.count;
+      resultado = "'" + eqRawA.esc + "'" + pComa;
       tipoAviso = 'Consulta envuelta en comillas simples escapadas';
     }
   }
 
   // 4. MODO SOLO ENVOLVER EN COMILLAS
   else if (modo === 'solo_envolver') {
-    var limpiaCom = raw.replace(/;\s*$/, '');
-    if (limpiaCom.startsWith("'") && limpiaCom.endsWith("'") && limpiaCom.length >= 2) {
-      limpiaCom = limpiaCom.substring(1, limpiaCom.length - 1);
+    var qVal = raw;
+    if (isIns) {
+      var insB = analizarInsert(raw);
+      if (insB) qVal = insB.queryVal;
+    } else if (isUpd) {
+      var updB = analizarUpdate(raw);
+      if (updB) qVal = updB.queryVal;
     }
-    var normCom = limpiaCom.replace(/''/g, "'");
-    cantComillas = (normCom.match(/'/g) || []).length;
-    var escCom = normCom.replace(/'/g, "''");
-    resultado = "'" + escCom + "'" + pComa;
-    tipoAviso = 'Consulta envuelta en comillas simples';
+    var eqB = escaparQueryInterno(qVal);
+    cantComillas = eqB.count;
+    resultado = "'" + eqB.esc + "'" + pComa;
+    tipoAviso = 'Consulta extraída y envuelta en comillas simples';
   }
 
   // 5. MODO SOLO DUPLICAR COMILLAS
   else if (modo === 'escapar') {
-    var normEsc = raw.replace(/''/g, "'");
-    cantComillas = (normEsc.match(/'/g) || []).length;
-    resultado = normEsc.replace(/'/g, "''");
-    tipoAviso = "Comillas duplicadas (' → '')";
+    var qValC = raw;
+    if (isIns) {
+      var insC = analizarInsert(raw);
+      if (insC) qValC = insC.queryVal;
+    } else if (isUpd) {
+      var updC = analizarUpdate(raw);
+      if (updC) qValC = updC.queryVal;
+    }
+    var eqC = escaparQueryInterno(qValC);
+    cantComillas = eqC.count;
+    resultado = eqC.esc;
+    tipoAviso = "Comillas internas duplicadas (' → '')";
   }
 
   if ($('ewSalida')) $('ewSalida').value = resultado;
@@ -5935,6 +6088,7 @@ if (ewPillBtns) {
         if ($('ewWrapTabla')) $('ewWrapTabla').style.display = esPlantilla ? 'flex' : 'none';
         if ($('ewWrapCampo')) $('ewWrapCampo').style.display = esPlantilla ? 'flex' : 'none';
         if ($('ewWrapWhere')) $('ewWrapWhere').style.display = (m === 'plantilla_update') ? 'flex' : 'none';
+        if ($('ewWrapSoloQuery')) $('ewWrapSoloQuery').style.display = (m === 'plantilla_update') ? 'flex' : 'none';
         if ($('ewWrapPComa')) $('ewWrapPComa').style.display = (m === 'escapar') ? 'none' : 'flex';
       }
       ewGenerar();
@@ -5981,12 +6135,14 @@ if ($('ewModo')) {
     if ($('ewWrapTabla')) $('ewWrapTabla').style.display = esPlantilla ? 'flex' : 'none';
     if ($('ewWrapCampo')) $('ewWrapCampo').style.display = esPlantilla ? 'flex' : 'none';
     if ($('ewWrapWhere')) $('ewWrapWhere').style.display = (m === 'plantilla_update') ? 'flex' : 'none';
+        if ($('ewWrapSoloQuery')) $('ewWrapSoloQuery').style.display = (m === 'plantilla_update') ? 'flex' : 'none';
     if ($('ewWrapPComa')) $('ewWrapPComa').style.display = (m === 'escapar') ? 'none' : 'flex';
     ewGenerar();
   });
 }
 
 if ($('ewPuntoComa')) $('ewPuntoComa').addEventListener('change', ewGenerar);
+if ($('ewSoloCampoQuery')) $('ewSoloCampoQuery').addEventListener('change', ewGenerar);
 
 if ($('ewCargarEditor')) {
   $('ewCargarEditor').addEventListener('click', function(){
