@@ -640,6 +640,60 @@
     color: var(--accent) !important;
   }
 
+
+  /* Capa de resaltado de búsqueda en el editor */
+  .nt-ed-search-layer {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 1;
+  }
+  .nt-ed-search-layer-content {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    will-change: transform;
+  }
+  .nt-ed-hl-line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 20.8px;
+    background: rgba(245, 158, 11, 0.14);
+    border-left: 3px solid rgba(245, 158, 11, 0.65);
+    pointer-events: none;
+    transition: background 0.12s ease;
+  }
+  .nt-ed-hl-line.active {
+    background: rgba(245, 158, 11, 0.32);
+    border-left: 4px solid #f59e0b;
+    box-shadow: inset 0 0 10px rgba(245, 158, 11, 0.25);
+  }
+  .nt-ed-hl-word {
+    position: absolute;
+    height: 19px;
+    background: #ffd700;
+    opacity: 0.42;
+    border-radius: 3px;
+    box-shadow: 0 0 6px rgba(255, 215, 0, 0.6);
+    pointer-events: none;
+    transition: opacity 0.12s ease;
+  }
+  .nt-ed-hl-word.active {
+    background: #f59e0b;
+    opacity: 0.85;
+    box-shadow: 0 0 10px #f59e0b, 0 0 2px #ffffff;
+  }
+  .nt-ed-input::selection,
+  .nt-ed-box.plain .nt-ed-input::selection {
+    background: #f59e0b !important;
+    color: #000000 !important;
+    -webkit-text-fill-color: #000000 !important;
+  }
+
 </style>
 
 <% var C = (typeof cfg !== 'undefined') ? cfg : { base:'/notas', plural:'notas', titulo:'Notas y comandos', agregar:'+ Agregar nota', placeCat:'Ej: Ventoy USB', placeTit:'Ej: Preparar la USB', placeCont:'Pega aquí el comando, script o apunte…', vacio:'Todavía no hay notas guardadas. Agrega la primera arriba.', buscarDentro:'Buscar dentro de esta nota…', papeleraUno:'Mover esta nota a la papelera', el:'la nota', todos:'las' };
@@ -895,6 +949,7 @@
               <div class="nt-ed-box">
                 <div class="nt-ed-gut" aria-hidden="true"><div class="nt-ed-gut-in">1</div></div>
                 <div class="nt-ed-code">
+                  <div class="nt-ed-search-layer" aria-hidden="true"><div class="nt-ed-search-layer-content" id="searchContent-<%= n.id %>"></div></div>
                   <pre class="nt-ed-capa" aria-hidden="true"></pre>
                   <textarea class="nt-ed-input" name="contenido" <% if (!n.es_excel) { %>required<% } %> readonly placeholder="Cargando contenido…" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off"></textarea>
                 </div>
@@ -1887,6 +1942,7 @@ function sincronizarScrollEditor(ta){
   if (!frame) return;
   const capa = frame.querySelector('.nt-ed-capa');
   const gutIn = frame.querySelector('.nt-ed-gut-in');
+  const searchContent = frame.querySelector('.nt-ed-search-layer-content');
 
   if (capa) {
     capa.scrollTop = ta.scrollTop;
@@ -1895,10 +1951,13 @@ function sincronizarScrollEditor(ta){
   if (gutIn) {
     gutIn.style.transform = 'translateY(' + (-ta.scrollTop) + 'px)';
   }
+  if (searchContent) {
+    searchContent.style.transform = 'translate(' + (-ta.scrollLeft) + 'px, ' + (-ta.scrollTop) + 'px)';
+  }
 }
 
 // =========================================================================
-// FILTRADO Y BÚSQUEDA INTERACTIVA DENTRO DEL EDITOR DE EDICIÓN (SIN ROBO DE FOCO)
+// FILTRADO Y BÚSQUEDA INTERACTIVA CON RESALTADO EN EL EDITOR DE CÓDIGO
 // =========================================================================
 const editorSearchState = {};
 
@@ -1943,6 +2002,7 @@ function filtrarEnEditor(id, query) {
     if (countEl) countEl.textContent = '';
     if (badgeEl) { badgeEl.style.display = 'none'; badgeEl.textContent = '0'; }
     if (resultsList) resultsList.innerHTML = '<div class="nt-ed-no-res">Escribe para filtrar líneas o buscar texto...</div>';
+    actualizarResaltadosEditor(id);
     return;
   }
 
@@ -1962,6 +2022,8 @@ function filtrarEnEditor(id, query) {
           start: currentOffset + colIdx,
           end: currentOffset + colIdx + queryLower.length,
           lineNum: lineNum,
+          colIdx: colIdx,
+          len: queryLower.length,
           lineText: lineText.trim() || '(Línea vacía)'
         });
         searchPos = colIdx + Math.max(1, queryLower.length);
@@ -1971,6 +2033,8 @@ function filtrarEnEditor(id, query) {
         start: currentOffset,
         end: currentOffset + lineText.length,
         lineNum: lineNum,
+        colIdx: 0,
+        len: lineText.length,
         lineText: lineText.trim() || '(Línea vacía)'
       });
     }
@@ -2009,10 +2073,57 @@ function filtrarEnEditor(id, query) {
   if (total > 0) {
     st.idx = 0;
     if (countEl) countEl.textContent = '1 / ' + total;
-    // OJO: Al escribir (oninput) NO llamamos ta.focus() para que el usuario pueda seguir escribiendo en el filtro!
   } else {
     if (countEl) countEl.textContent = '0 encontrados';
   }
+
+  // Renderizar resaltados visuales en el editor
+  actualizarResaltadosEditor(id);
+}
+
+function actualizarResaltadosEditor(id) {
+  const st = getEditorSearchState(id);
+  const searchContent = document.getElementById('searchContent-' + id);
+  if (!searchContent) return;
+
+  if (!st.query || !st.matches || st.matches.length === 0) {
+    searchContent.innerHTML = '';
+    return;
+  }
+
+  const matches = st.matches;
+  const currentIdx = st.idx;
+  const maxHighlights = 250;
+  const count = Math.min(matches.length, maxHighlights);
+
+  let html = '';
+  const linesRendered = new Set();
+
+  for (let i = 0; i < count; i++) {
+    const m = matches[i];
+    const isCurrent = (i === currentIdx);
+    const top = 12 + (m.lineNum - 1) * 20.8;
+
+    if (!linesRendered.has(m.lineNum) || isCurrent) {
+      linesRendered.add(m.lineNum);
+      html += '<div class="nt-ed-hl-line' + (isCurrent ? ' active' : '') + '" style="top:' + top + 'px;"></div>';
+    }
+
+    if (m.colIdx !== undefined && m.len !== undefined) {
+      html += '<div class="nt-ed-hl-word' + (isCurrent ? ' active' : '') + '" style="top:' + (top + 1) + 'px; left:calc(14px + ' + m.colIdx + 'ch); width:calc(' + m.len + 'ch);"></div>';
+    }
+  }
+
+  if (currentIdx >= maxHighlights && matches[currentIdx]) {
+    const m = matches[currentIdx];
+    const top = 12 + (m.lineNum - 1) * 20.8;
+    html += '<div class="nt-ed-hl-line active" style="top:' + top + 'px;"></div>';
+    if (m.colIdx !== undefined && m.len !== undefined) {
+      html += '<div class="nt-ed-hl-word active" style="top:' + (top + 1) + 'px; left:calc(14px + ' + m.colIdx + 'ch); width:calc(' + m.len + 'ch);"></div>';
+    }
+  }
+
+  searchContent.innerHTML = html;
 }
 
 function resaltarCoincidenciaItem(text, query) {
@@ -2055,7 +2166,10 @@ function saltarAMatchEditor(id, matchIdx, enfocar) {
   sincronizarScrollEditor(ta);
   actualizarEditorNota(ta);
 
-  // Solo enfocar y seleccionar en el textarea si se solicita explícitamente (ej: Enter, botón o clic)
+  // Actualizar resaltado activo
+  actualizarResaltadosEditor(id);
+
+  // Solo enfocar y seleccionar en el textarea si se solicita explícitamente (Enter, botón o clic)
   if (enfocar) {
     ta.focus();
     ta.setSelectionRange(match.start, match.end);
@@ -2181,7 +2295,7 @@ function reemplazarTodoEditor(id) {
 function teclaFiltroEditor(e, id) {
   if (e.key === 'Enter') {
     e.preventDefault();
-    irCoincidenciaEditor(id, e.shiftKey ? -1 : 1, true); // Enter = salta y enfoca
+    irCoincidenciaEditor(id, e.shiftKey ? -1 : 1, true);
   } else if (e.key === 'Escape') {
     alternarListaFiltradas(id, false);
     const panel = document.getElementById('edit-' + id);
