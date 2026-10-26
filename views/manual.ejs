@@ -400,6 +400,7 @@
   }
 </style>
 
+<div x-data="manualAlpineApp()">
 <!-- Barra superior con pestañas de navegación del módulo -->
 <div class="manual-tabs-nav" role="tablist">
   <button type="button" class="mtab-btn active" id="tabBtnVideo" data-tab="video" role="tab" aria-selected="true" aria-controls="panelVideo">
@@ -640,7 +641,18 @@
   </div>
 </div>
 
+</div>
+
 <script>
+
+/* ---------- Controlador Reactivo Alpine.js de Manuales y OCR ---------- */
+window.manualAlpineApp = function() {
+  return {
+    tabActiva: 'video',
+    setTab(t) { this.tabActiva = t; }
+  };
+};
+
 (function(){
   var $ = function(id){ return document.getElementById(id); };
 

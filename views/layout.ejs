@@ -9,6 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script defer src="/alpine.min.js"></script>
 <script>
   /* Aplica modo, paleta y menú ANTES de pintar (evita parpadeos) */
   (function(){
@@ -44,6 +45,7 @@
       };
 
       var p = localStorage.getItem('boveda-palette') || 'db-engine';
+      if (p === 'planeta-dia') p = 'db-engine';
       d.setAttribute('data-palette', p);
 
       if (p === 'db-engine' || DB_ENGINES_CONFIG[dbEng]) {
@@ -67,6 +69,7 @@
   })();
 </script>
 <style>
+[x-cloak] { display: none !important; }
 /* =====================================================================
    SISTEMA DE DISEÑO — Bóveda Jira
    1) Paletas  2) Tokens claro/oscuro  3) Base  4) Botones  5) Formularios
@@ -212,14 +215,14 @@
 
 /* ---------- 3) BASE ---------- */
 *{ box-sizing:border-box; }
-html{ scrollbar-color:var(--scrollbar) transparent; scroll-behavior:smooth; }
+html{ scrollbar-color:var(--scrollbar) transparent; scroll-behavior:smooth; max-width:100vw; overflow-x:hidden; }
 ::-webkit-scrollbar{ width:10px; height:10px; }
 ::-webkit-scrollbar-thumb{ background:var(--scrollbar); border-radius:8px; border:2px solid transparent; background-clip:padding-box; }
 ::-webkit-scrollbar-thumb:hover{ background:var(--accent); background-clip:padding-box; }
 ::selection{ background:rgba(var(--accent-rgb), .85); color:#fff; }
 :focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
 body{
-  margin:0; min-height:100vh; color:var(--text); font-family:var(--sans);
+  margin:0; min-height:100vh; max-width:100vw; overflow-x:hidden; color:var(--text); font-family:var(--sans);
   display:flex; flex-direction:column; align-items:center; padding:0 20px 70px;
   background:
     radial-gradient(1000px 520px at 6% -10%, var(--bg-glow), transparent 62%),
@@ -243,11 +246,46 @@ body:has(.fullscreen) .navbar, body.has-fullscreen .navbar, body.amp .navbar,
 body:has(.fullscreen) #sbOpen, body.has-fullscreen #sbOpen, body.amp #sbOpen,
 body:has(.fullscreen) .to-top, body.has-fullscreen .to-top, body.amp .to-top,
 body:has(.fullscreen) #as-trigger, body.has-fullscreen #as-trigger, body.amp #as-trigger,
-body:has(.fullscreen) .nav-popover-global, body.has-fullscreen .nav-popover-global, body.amp .nav-popover-global{
+body:has(.fullscreen) .nav-popover-global, body.has-fullscreen .nav-popover-global{
   display:none !important;
   opacity:0 !important;
   pointer-events:none !important;
   visibility:hidden !important;
+}
+/* Al abrir cualquier modal o formulario superpuesto, ocultar barras flotantes (Cyber-Dock, Topbar, Matrix) y elevar .wrap */
+body.modal-abierto,
+body:has(.modal[style*="display: flex"]),
+body:has(.modal[style*="display:flex"]) {
+  overflow: hidden !important;
+}
+body.modal-abierto .wrap,
+body:has(.modal[style*="display: flex"]) .wrap,
+body:has(.modal[style*="display:flex"]) .wrap {
+  z-index: 99998 !important;
+}
+body.modal-abierto .navbar,
+body.modal-abierto .topbar,
+body.modal-abierto .hex-matrix-handle,
+body.modal-abierto #sbOpen,
+body.modal-abierto .to-top,
+body.modal-abierto #as-trigger,
+body:has(.modal[style*="display: flex"]) .navbar,
+body:has(.modal[style*="display: flex"]) .topbar,
+body:has(.modal[style*="display: flex"]) .hex-matrix-handle,
+body:has(.modal[style*="display: flex"]) #sbOpen,
+body:has(.modal[style*="display: flex"]) .to-top,
+body:has(.modal[style*="display: flex"]) #as-trigger,
+body:has(.modal[style*="display:flex"]) .navbar,
+body:has(.modal[style*="display:flex"]) .topbar,
+body:has(.modal[style*="display:flex"]) .hex-matrix-handle,
+body:has(.modal[style*="display:flex"]) #sbOpen,
+body:has(.modal[style*="display:flex"]) .to-top,
+body:has(.modal[style*="display:flex"]) #as-trigger {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+  transform: translateY(-28px) scale(0.96) !important;
+  transition: opacity 0.22s ease, transform 0.22s ease, visibility 0.22s !important;
 }
 .fullscreen{
   z-index:999999 !important;
@@ -502,6 +540,7 @@ body:not(.guest) .navbar{
 :root[data-nav-style="dock"] .nav-tabs{ width:100% !important; align-items:center !important; gap:8px !important; padding:6px 0 !important; flex:1 1 auto !important; min-height:0 !important; overflow-y:auto !important; overflow-x:hidden !important; scrollbar-width:thin !important; }
 :root[data-nav-style="dock"] .nav-tabs a{ width:48px !important; height:48px !important; min-height:48px !important; flex-shrink:0 !important; padding:0 !important; justify-content:center !important; border-radius:14px !important; border:none !important; background:transparent !important; transform:none !important; }
 :root[data-nav-style="dock"] .nav-tabs a .nav-txt{ display:none !important; }
+:root[data-nav-style="dock"] .nav-tabs a .nav-db-side{ display:none !important; }
 :root[data-nav-style="dock"] .nav-tabs a .nav-ic{ margin:0 !important; width:40px !important; height:40px !important; border-radius:12px !important; border:none !important; background:rgba(255, 255, 255, 0.05) !important; box-shadow:0 4px 12px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.15) !important; transition:all .22s var(--spring) !important; }
 :root[data-nav-style="dock"] .nav-tabs a:hover .nav-ic{ background:rgba(var(--accent-rgb), 0.25) !important; color:#fff !important; transform:translateY(-2px) scale(1.08) rotate(-2deg) !important; box-shadow:0 8px 22px rgba(var(--accent-rgb), 0.6), inset 0 1px 0 rgba(255,255,255,0.35) !important; }
 
@@ -529,6 +568,10 @@ body:not(.guest) .navbar{
 :root[data-nav-style="dock"] body:not(.guest) .navbar:hover .nav-tabs a .nav-txt,
 :root[data-nav-style="dock"] body:not(.guest) .navbar.expanded .nav-tabs a .nav-txt{
   display:inline-block !important; font-size:13.5px !important;
+}
+:root[data-nav-style="dock"] body:not(.guest) .navbar:hover .nav-tabs a .nav-db-side,
+:root[data-nav-style="dock"] body:not(.guest) .navbar.expanded .nav-tabs a .nav-db-side{
+  display:inline-flex !important; margin-left:auto !important; margin-right:4px !important; animation:fadeIn .2s ease !important;
 }
 :root[data-nav-style="dock"] body:not(.guest) .navbar:hover .nav-tabs a .nav-ic,
 :root[data-nav-style="dock"] body:not(.guest) .navbar.expanded .nav-tabs a .nav-ic{
@@ -738,7 +781,7 @@ body:not(.guest) .navbar{
 :root[data-nav-style="rueda"] .brand{
   position:fixed !important;
   left:265px !important;
-  top:max(14px, calc(50% - 374px)) !important;
+  top:14px !important;
   bottom:auto !important;
   z-index:510 !important;
   display:flex !important;
@@ -769,7 +812,7 @@ body:not(.guest) .navbar{
 :root[data-nav-style="rueda"] button.cmd-trigger{
   position:fixed !important;
   left:265px !important;
-  top:max(54px, calc(50% - 331px)) !important;
+  top:54px !important;
   bottom:auto !important;
   z-index:510 !important;
   width:228px !important;
@@ -807,11 +850,11 @@ body:not(.guest) .navbar{
 :root[data-nav-style="rueda"] .nav-tabs{
   position:fixed !important;
   left:215px !important;
-  top:50% !important;
-  bottom:auto !important;
-  transform:translateY(-50%) translateX(-30px) scale(0.96) !important;
+  top:96px !important;
+  bottom:148px !important;
+  transform:translateX(-30px) scale(0.96) !important;
   width:385px !important;
-  max-height:calc(100vh - 180px) !important;
+  max-height:calc(100vh - 248px) !important;
   display:flex !important;
   flex-direction:column !important;
   align-items:flex-start !important;
@@ -846,7 +889,7 @@ body:not(.guest) .navbar{
   opacity:1 !important;
   visibility:visible !important;
   pointer-events:auto !important;
-  transform:translateY(-50%) translateX(0) scale(1) !important;
+  transform:translateX(0) scale(1) !important;
 }
 
 /* Alternancia icónica CIAN y ÁMBAR Neón */
@@ -886,20 +929,48 @@ body:not(.guest) .navbar{
 }
 
 /* CURVATURA RADIAL EN ABANICO (DESPLAZAMIENTO X SEGÚN EL ARCO DE LA RUEDA - 14 MÓDULOS COMPLETOS) */
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(1),
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(1),
 :root[data-nav-style="rueda"] .nav-tabs a:nth-child(1)  { margin-left: 52px !important; }
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(2),
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(2),
 :root[data-nav-style="rueda"] .nav-tabs a:nth-child(2)  { margin-left: 72px !important; }
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(3),
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(3),
 :root[data-nav-style="rueda"] .nav-tabs a:nth-child(3)  { margin-left: 94px !important; }
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(4),
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(4),
 :root[data-nav-style="rueda"] .nav-tabs a:nth-child(4)  { margin-left: 112px !important; }
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(5),
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(5),
 :root[data-nav-style="rueda"] .nav-tabs a:nth-child(5)  { margin-left: 126px !important; }
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(6),
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(6),
 :root[data-nav-style="rueda"] .nav-tabs a:nth-child(6)  { margin-left: 136px !important; }
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(7),
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(7),
 :root[data-nav-style="rueda"] .nav-tabs a:nth-child(7)  { margin-left: 140px !important; }
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(8),
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(8),
 :root[data-nav-style="rueda"] .nav-tabs a:nth-child(8)  { margin-left: 140px !important; }
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(9),
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(9),
 :root[data-nav-style="rueda"] .nav-tabs a:nth-child(9)  { margin-left: 136px !important; }
-:root[data-nav-style="rueda"] .nav-tabs a:nth-child(10) { margin-left: 126px !important; }
-:root[data-nav-style="rueda"] .nav-tabs a:nth-child(11) { margin-left: 112px !important; }
-:root[data-nav-style="rueda"] .nav-tabs a:nth-child(12) { margin-left: 94px !important; }
-:root[data-nav-style="rueda"] .nav-tabs a:nth-child(13) { margin-left: 72px !important; }
-:root[data-nav-style="rueda"] .nav-tabs a:nth-child(14) { margin-left: 52px !important; }
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(10),
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(10),
+:root[data-nav-style="rueda"] .nav-tabs a:nth-child(10)  { margin-left: 126px !important; }
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(11),
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(11),
+:root[data-nav-style="rueda"] .nav-tabs a:nth-child(11)  { margin-left: 112px !important; }
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(12),
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(12),
+:root[data-nav-style="rueda"] .nav-tabs a:nth-child(12)  { margin-left: 94px !important; }
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(13),
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(13),
+:root[data-nav-style="rueda"] .nav-tabs a:nth-child(13)  { margin-left: 72px !important; }
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(14),
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(14),
+:root[data-nav-style="rueda"] .nav-tabs a:nth-child(14)  { margin-left: 52px !important; }
 
 /* RAYOS LÁSER CONECTORES DESDE LA RUEDA HASTA LA TARJETA */
 :root[data-nav-style="rueda"] .nav-tabs a::before{
@@ -928,34 +999,90 @@ body:not(.guest) .navbar{
 }
 
 /* Longitudes exactas de los rayos láser para cada tarjeta (1 a 14) */
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(1)::before,
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(1)::before,
 :root[data-nav-style="rueda"] .nav-tabs a:nth-child(1)::before  { left:-46px !important; width:46px !important; }
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(1)::after,
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(1)::after,
 :root[data-nav-style="rueda"] .nav-tabs a:nth-child(1)::after   { left:-50px !important; }
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(2)::before,
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(2)::before,
 :root[data-nav-style="rueda"] .nav-tabs a:nth-child(2)::before  { left:-66px !important; width:66px !important; }
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(2)::after,
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(2)::after,
 :root[data-nav-style="rueda"] .nav-tabs a:nth-child(2)::after   { left:-70px !important; }
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(3)::before,
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(3)::before,
 :root[data-nav-style="rueda"] .nav-tabs a:nth-child(3)::before  { left:-88px !important; width:88px !important; }
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(3)::after,
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(3)::after,
 :root[data-nav-style="rueda"] .nav-tabs a:nth-child(3)::after   { left:-92px !important; }
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(4)::before,
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(4)::before,
 :root[data-nav-style="rueda"] .nav-tabs a:nth-child(4)::before  { left:-106px !important; width:106px !important; }
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(4)::after,
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(4)::after,
 :root[data-nav-style="rueda"] .nav-tabs a:nth-child(4)::after   { left:-110px !important; }
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(5)::before,
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(5)::before,
 :root[data-nav-style="rueda"] .nav-tabs a:nth-child(5)::before  { left:-120px !important; width:120px !important; }
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(5)::after,
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(5)::after,
 :root[data-nav-style="rueda"] .nav-tabs a:nth-child(5)::after   { left:-124px !important; }
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(6)::before,
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(6)::before,
 :root[data-nav-style="rueda"] .nav-tabs a:nth-child(6)::before  { left:-130px !important; width:130px !important; }
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(6)::after,
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(6)::after,
 :root[data-nav-style="rueda"] .nav-tabs a:nth-child(6)::after   { left:-134px !important; }
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(7)::before,
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(7)::before,
 :root[data-nav-style="rueda"] .nav-tabs a:nth-child(7)::before  { left:-134px !important; width:134px !important; }
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(7)::after,
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(7)::after,
 :root[data-nav-style="rueda"] .nav-tabs a:nth-child(7)::after   { left:-138px !important; }
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(8)::before,
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(8)::before,
 :root[data-nav-style="rueda"] .nav-tabs a:nth-child(8)::before  { left:-134px !important; width:134px !important; }
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(8)::after,
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(8)::after,
 :root[data-nav-style="rueda"] .nav-tabs a:nth-child(8)::after   { left:-138px !important; }
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(9)::before,
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(9)::before,
 :root[data-nav-style="rueda"] .nav-tabs a:nth-child(9)::before  { left:-130px !important; width:130px !important; }
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(9)::after,
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(9)::after,
 :root[data-nav-style="rueda"] .nav-tabs a:nth-child(9)::after   { left:-134px !important; }
-:root[data-nav-style="rueda"] .nav-tabs a:nth-child(10)::before { left:-120px !important; width:120px !important; }
-:root[data-nav-style="rueda"] .nav-tabs a:nth-child(10)::after  { left:-124px !important; }
-:root[data-nav-style="rueda"] .nav-tabs a:nth-child(11)::before { left:-106px !important; width:106px !important; }
-:root[data-nav-style="rueda"] .nav-tabs a:nth-child(11)::after  { left:-110px !important; }
-:root[data-nav-style="rueda"] .nav-tabs a:nth-child(12)::before { left:-88px !important; width:88px !important; }
-:root[data-nav-style="rueda"] .nav-tabs a:nth-child(12)::after  { left:-92px !important; }
-:root[data-nav-style="rueda"] .nav-tabs a:nth-child(13)::before { left:-66px !important; width:66px !important; }
-:root[data-nav-style="rueda"] .nav-tabs a:nth-child(13)::after  { left:-70px !important; }
-:root[data-nav-style="rueda"] .nav-tabs a:nth-child(14)::before { left:-46px !important; width:46px !important; }
-:root[data-nav-style="rueda"] .nav-tabs a:nth-child(14)::after  { left:-50px !important; }
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(10)::before,
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(10)::before,
+:root[data-nav-style="rueda"] .nav-tabs a:nth-child(10)::before  { left:-120px !important; width:120px !important; }
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(10)::after,
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(10)::after,
+:root[data-nav-style="rueda"] .nav-tabs a:nth-child(10)::after   { left:-124px !important; }
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(11)::before,
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(11)::before,
+:root[data-nav-style="rueda"] .nav-tabs a:nth-child(11)::before  { left:-106px !important; width:106px !important; }
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(11)::after,
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(11)::after,
+:root[data-nav-style="rueda"] .nav-tabs a:nth-child(11)::after   { left:-110px !important; }
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(12)::before,
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(12)::before,
+:root[data-nav-style="rueda"] .nav-tabs a:nth-child(12)::before  { left:-88px !important; width:88px !important; }
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(12)::after,
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(12)::after,
+:root[data-nav-style="rueda"] .nav-tabs a:nth-child(12)::after   { left:-92px !important; }
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(13)::before,
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(13)::before,
+:root[data-nav-style="rueda"] .nav-tabs a:nth-child(13)::before  { left:-66px !important; width:66px !important; }
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(13)::after,
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(13)::after,
+:root[data-nav-style="rueda"] .nav-tabs a:nth-child(13)::after   { left:-70px !important; }
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(14)::before,
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(14)::before,
+:root[data-nav-style="rueda"] .nav-tabs a:nth-child(14)::before  { left:-46px !important; width:46px !important; }
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(14)::after,
+:root[data-nav-style="rueda"] .nav-tabs a:nth-of-type(14)::after,
+:root[data-nav-style="rueda"] .nav-tabs a:nth-child(14)::after   { left:-50px !important; }
 
 /* Efecto hover sobre cualquier tarjeta */
 :root[data-nav-style="rueda"] .nav-tabs a:hover{
@@ -1078,8 +1205,8 @@ body:not(.guest) .navbar{
 :root[data-nav-style="rueda"] .nav-account{
   position:fixed !important;
   left:265px !important;
-  top:min(calc(100vh - 138px), calc(50% + 294px)) !important;
-  bottom:auto !important;
+  bottom:14px !important;
+  top:auto !important;
   z-index:510 !important;
   display:flex !important;
   flex-direction:column !important;
@@ -1182,9 +1309,11 @@ body:not(.guest) .navbar{
   height:13px !important;
 }
 :root[data-nav-style="rueda"] .pal-panel{
-  left:85px !important;
-  bottom:20px !important;
-  z-index:800 !important;
+  left:265px !important;
+  bottom:16px !important;
+  top:auto !important;
+  max-height:calc(100vh - 32px) !important;
+  z-index:900 !important;
 }
 
 /* Evitar solapamiento ("remontado") cuando el panel de Apariencia está abierto */
@@ -1244,13 +1373,17 @@ body:not(.guest) .navbar{
 :root[data-nav-style="superior"] button.cmd-trigger{ flex-shrink:0 !important; height:36px !important; padding:0 12px !important; margin:0 !important; border-radius:10px !important; }
 :root[data-nav-style="superior"] .nav-tabs{
   flex-direction:row !important; align-items:center !important; gap:4px !important; flex:1 1 auto !important; min-width:0 !important;
-  overflow-x:auto !important; overflow-y:hidden !important; margin:0 8px !important; padding:0 !important; scrollbar-width:none !important;
+  overflow-x:auto !important; overflow-y:hidden !important; margin:0 8px !important; padding:0 !important;
+  scrollbar-width:thin !important; scrollbar-color:rgba(var(--accent-rgb), 0.35) transparent !important; scroll-behavior:smooth !important;
 }
-:root[data-nav-style="superior"] .nav-tabs::-webkit-scrollbar{ display:none; }
-:root[data-nav-style="superior"] .nav-tabs a{ padding:6px 12px !important; height:36px !important; white-space:nowrap !important; flex-shrink:0 !important; border-radius:9px !important; }
+:root[data-nav-style="superior"] .nav-tabs::-webkit-scrollbar{ height:3px !important; display:block !important; }
+:root[data-nav-style="superior"] .nav-tabs::-webkit-scrollbar-thumb{ background:rgba(var(--accent-rgb), 0.35) !important; border-radius:4px !important; }
+:root[data-nav-style="superior"] .nav-tabs::-webkit-scrollbar-track{ background:transparent !important; }
+:root[data-nav-style="superior"] .nav-tabs a{ padding:5px 9px !important; height:34px !important; white-space:nowrap !important; flex-shrink:0 !important; border-radius:9px !important; font-size:12.5px !important; gap:5px !important; }
 :root[data-nav-style="superior"] .nav-tabs a .nav-ic{ width:22px !important; height:22px !important; margin-right:6px !important; border-radius:6px !important; }
 :root[data-nav-style="superior"] .nav-tabs a .nav-ic svg{ width:13px !important; height:13px !important; }
-:root[data-nav-style="superior"] .nav-tabs a .nav-txt{ display:inline !important; font-size:13px !important; }
+:root[data-nav-style="superior"] .nav-tabs a .nav-txt{ display:inline !important; font-size:12px !important; font-weight:600 !important; }
+:root[data-nav-style="superior"] .nav-tabs a .nav-sub{ display:none !important; }
 :root[data-nav-style="superior"] .nav-tabs a .nav-db-side {
   margin-left: 6px !important;
   margin-right: 0 !important;
@@ -1684,17 +1817,18 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
 /* El navbar se convierte en una cápsula horizontal flotante en el CENTRO de la barra superior */
 :root[data-nav-style="cyber-dock"] body:not(.guest) .navbar {
   position: absolute !important;
-  top: 14px !important;
+  top: 12px !important;
   bottom: auto !important;
   left: 50% !important;
   right: auto !important;
   transform: translateX(-50%) !important;
   width: auto !important;
   min-width: 280px !important;
-  max-width: min(850px, 58vw) !important;
-  height: 52px !important;
-  padding: 4px 10px !important;
-  border-radius: 20px !important;
+  width: max-content !important;
+  max-width: calc(100vw - 40px) !important;
+  height: 60px !important;
+  padding: 6px 14px !important;
+  border-radius: 22px !important;
   background: rgba(9, 14, 25, 0.88) !important;
   backdrop-filter: blur(28px) saturate(2.0) !important;
   -webkit-backdrop-filter: blur(28px) saturate(2.0) !important;
@@ -1705,7 +1839,8 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
   align-items: center !important;
   gap: 5px !important;
   z-index: 500 !important;
-  overflow: visible !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
   visibility: visible !important;
   opacity: 1 !important;
   pointer-events: auto !important;
@@ -1729,6 +1864,10 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
 }
 
 :root[data-nav-style="cyber-dock"] .topbar-left {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  gap: 6px !important;
   align-self: flex-start !important;
   padding-top: 2px !important;
 }
@@ -1790,18 +1929,24 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
   flex-direction: row !important;
   align-items: center !important;
   gap: 4px !important;
+  flex-shrink: 0 !important;
 }
 
 :root[data-nav-style="cyber-dock"] .acc-foot {
   display: flex !important;
   flex-direction: row !important;
   align-items: center !important;
-  gap: 4px !important;
+  gap: 6px !important;
+}
+:root[data-nav-style="cyber-dock"] .theme-toggle {
+  width: 38px !important;
+  height: 38px !important;
+  border-radius: 12px !important;
 }
 
 :root[data-nav-style="cyber-dock"] .acc-out {
-  width: 32px !important;
-  height: 32px !important;
+  width: 38px !important;
+  height: 38px !important;
   border-radius: 10px !important;
   padding: 0 !important;
   display: inline-flex !important;
@@ -1815,9 +1960,13 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
   display: flex !important;
   flex-direction: row !important;
   align-items: center !important;
-  gap: 4px !important;
+  gap: 6px !important;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
   overflow-x: auto !important;
-  overflow-y: visible !important;
+  overflow-y: hidden !important;
+  white-space: nowrap !important;
+  -webkit-overflow-scrolling: touch !important;
   padding: 2px 2px !important;
   scrollbar-width: none !important;
 }
@@ -1826,9 +1975,9 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
 /* Icono individual en el Cyber-Dock con física de lupa */
 :root[data-nav-style="cyber-dock"] .nav-tabs a {
   position: relative !important;
-  width: 38px !important;
-  height: 38px !important;
-  border-radius: 12px !important;
+  width: 44px !important;
+  height: 44px !important;
+  border-radius: 14px !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -1846,16 +1995,24 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
 }
 
 :root[data-nav-style="cyber-dock"] .nav-tabs a .nav-ic {
-  width: 20px !important;
-  height: 20px !important;
+  width: 24px !important;
+  height: 24px !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
   transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
 }
 :root[data-nav-style="cyber-dock"] .nav-tabs a .nav-ic svg {
-  width: 18px !important;
-  height: 18px !important;
+  width: 22px !important;
+  height: 22px !important;
+  stroke: var(--text) !important;
+  stroke-width: 2.1 !important;
+  transition: all 0.2s ease !important;
+}
+:root[data-nav-style="cyber-dock"] .nav-tabs a:hover .nav-ic svg,
+:root[data-nav-style="cyber-dock"] .nav-tabs a.active .nav-ic svg {
+  stroke: var(--accent) !important;
+  filter: drop-shadow(0 0 6px var(--accent)) !important;
 }
 
 /* Efecto Lupa al posar el cursor: se magnifica y baja suavemente */
@@ -1887,43 +2044,150 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
   box-shadow: 0 0 8px var(--accent), 0 0 14px var(--accent) !important;
 }
 
-@media (max-width: 1100px) {
+/* -------------------------------------------------------------
+   RESPONSIVE CYBER-DOCK: ADAPTACIÓN TOTAL AL MINIMIZAR / ACHICAR VENTANA
+   ------------------------------------------------------------- */
+/* Cuando la ventana no es ultra-panorámica (<= 1350px), el Cyber-Dock
+   se posiciona en su propia fila superior centrada para evitar cualquier
+   solapamiento o choque con el selector de estilo a la izquierda o el reloj a la derecha */
+@media (max-width: 1350px) {
+  :root[data-nav-style="cyber-dock"] body:not(.guest) {
+    padding-top: 12px !important;
+  }
+  :root[data-nav-style="cyber-dock"] body:not(.guest) .navbar {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    transform: none !important;
+    margin: 0 auto 12px auto !important;
+    max-width: calc(100vw - 32px) !important;
+    width: max-content !important;
+  }
+  :root[data-nav-style="cyber-dock"] .topbar {
+    min-height: auto !important;
+    margin-bottom: 14px !important;
+    flex-direction: row !important;
+    align-items: center !important;
+  }
+  :root[data-nav-style="cyber-dock"] .topbar-left {
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 10px !important;
+  }
+  :root[data-nav-style="cyber-dock"] .topbar-right {
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 10px !important;
+  }
+  :root[data-nav-style="cyber-dock"] .topbar-right .clock {
+    order: 2 !important;
+  }
+  :root[data-nav-style="cyber-dock"] .topbar-right #topbarDbDropdown {
+    order: 1 !important;
+    margin-top: 0 !important;
+  }
+}
+
+/* Pantallas medianas / Ventanas restauradas medianas (<= 1080px) */
+@media (max-width: 1080px) {
+  :root[data-nav-style="cyber-dock"] body:not(.guest) .navbar {
+    height: 52px !important;
+    padding: 4px 10px !important;
+    border-radius: 18px !important;
+  }
+  :root[data-nav-style="cyber-dock"] .nav-tabs {
+    gap: 4px !important;
+  }
+  :root[data-nav-style="cyber-dock"] .nav-tabs a {
+    width: 38px !important;
+    height: 38px !important;
+    border-radius: 12px !important;
+  }
+  :root[data-nav-style="cyber-dock"] .nav-tabs a .nav-ic {
+    width: 20px !important;
+    height: 20px !important;
+  }
+  :root[data-nav-style="cyber-dock"] .nav-tabs a .nav-ic svg {
+    width: 18px !important;
+    height: 18px !important;
+  }
+  :root[data-nav-style="cyber-dock"] .theme-toggle,
+  :root[data-nav-style="cyber-dock"] .acc-out {
+    width: 34px !important;
+    height: 34px !important;
+    border-radius: 10px !important;
+  }
   :root[data-nav-style="cyber-dock"] .clock .clock-date {
-    max-width: 130px !important;
+    max-width: 120px !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
     white-space: nowrap !important;
   }
 }
-@media (max-width: 950px) {
+
+/* Pantallas compactas / Tablets (<= 850px) */
+@media (max-width: 850px) {
+  :root[data-nav-style="cyber-dock"] body:not(.guest) {
+    padding: 10px 16px 36px 16px !important;
+  }
   :root[data-nav-style="cyber-dock"] body:not(.guest) .navbar {
-    position: static !important;
-    transform: none !important;
-    left: auto !important;
-    margin: 0 auto 12px auto !important;
+    max-width: calc(100vw - 20px) !important;
+    width: 100% !important;
   }
   :root[data-nav-style="cyber-dock"] .topbar {
     flex-wrap: wrap !important;
     gap: 10px !important;
+  }
+  :root[data-nav-style="cyber-dock"] .clock .clock-date {
+    max-width: 90px !important;
+  }
+}
+
+/* Móviles y ventanas ultra-angostas (<= 600px) */
+@media (max-width: 600px) {
+  :root[data-nav-style="cyber-dock"] body:not(.guest) {
+    padding: 8px 10px 30px 10px !important;
+  }
+  :root[data-nav-style="cyber-dock"] body:not(.guest) .navbar {
+    height: 46px !important;
+    padding: 3px 6px !important;
+    border-radius: 14px !important;
+    max-width: 100% !important;
+  }
+  :root[data-nav-style="cyber-dock"] .nav-tabs {
+    gap: 3px !important;
+  }
+  :root[data-nav-style="cyber-dock"] .nav-tabs a {
+    width: 33px !important;
+    height: 33px !important;
+    border-radius: 8px !important;
+  }
+  :root[data-nav-style="cyber-dock"] .nav-tabs a .nav-ic svg {
+    width: 16px !important;
+    height: 16px !important;
+  }
+  :root[data-nav-style="cyber-dock"] .theme-toggle,
+  :root[data-nav-style="cyber-dock"] .acc-out {
+    width: 30px !important;
+    height: 30px !important;
+    border-radius: 8px !important;
+  }
+  :root[data-nav-style="cyber-dock"] .clock .clock-date {
+    display: none !important;
+  }
+  :root[data-nav-style="cyber-dock"] .topbar-left,
+  :root[data-nav-style="cyber-dock"] .topbar-right {
+    flex-wrap: wrap !important;
+    gap: 6px !important;
   }
 }
 
 
 /* Orbe de base de datos fijado en la esquina superior del icono */
 :root[data-nav-style="cyber-dock"] .nav-tabs a .nav-db-side {
-  position: absolute !important;
-  top: -3px !important;
-  right: -3px !important;
-  width: 17px !important;
-  height: 17px !important;
-  font-size: 9.5px !important;
-  border-radius: 50% !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  box-shadow: 0 0 8px rgba(var(--accent-rgb), 0.6) !important;
-  border: 1px solid rgba(255,255,255,0.4) !important;
-  z-index: 5 !important;
+  display: none !important;
 }
 
 /* Tooltips delegados al motor de tooltips holográficos cyber-tooltip */
@@ -2148,21 +2412,23 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
   right: auto !important;
   transform: translateX(-50%) !important;
   width: max-content !important;
-  max-width: calc(100vw - 32px) !important;
-  min-width: 340px !important;
-  height: 52px !important;
+  max-width: calc(100vw - 16px) !important;
+  min-width: 320px !important;
+  height: 50px !important;
   border-radius: 999px !important;
-  padding: 4px 12px !important;
-  background: rgba(9, 14, 26, 0.90) !important;
+  padding: 3px 8px 3px 10px !important;
+  background: rgba(9, 14, 26, 0.92) !important;
   backdrop-filter: blur(28px) saturate(2.0) !important;
   -webkit-backdrop-filter: blur(28px) saturate(2.0) !important;
   border: 1.5px solid rgba(var(--accent-rgb), 0.45) !important;
   box-shadow: 0 12px 36px rgba(0, 0, 0, 0.75), 0 0 25px rgba(var(--accent-rgb), 0.25) !important;
   z-index: 500 !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
   display: flex !important;
   flex-direction: row !important;
   align-items: center !important;
-  gap: 6px !important;
+  gap: 4px !important;
   visibility: visible !important;
   opacity: 1 !important;
   pointer-events: auto !important;
@@ -2236,8 +2502,8 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
   display: flex !important;
   flex-direction: row !important;
   align-items: center !important;
-  gap: 4px !important;
-  flex: 1 !important;
+  gap: 3px !important;
+  flex: 1 1 auto !important;
   flex-wrap: nowrap !important;
   overflow-x: auto !important;
   scrollbar-width: none !important;
@@ -2249,14 +2515,14 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
   display: inline-flex !important;
   flex-direction: row !important;
   align-items: center !important;
-  gap: 5px !important;
-  padding: 5px 9px !important;
+  gap: 4px !important;
+  padding: 4px 7.5px !important;
   border-radius: 999px !important;
   background: rgba(255, 255, 255, 0.04) !important;
   border: 1px solid rgba(255, 255, 255, 0.07) !important;
   color: var(--text) !important;
   text-decoration: none !important;
-  font-size: 11.5px !important;
+  font-size: 11px !important;
   font-weight: 600 !important;
   white-space: nowrap !important;
   flex-shrink: 0 !important;
@@ -2279,33 +2545,114 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
 }
 
 :root[data-nav-style="dynamic-island"] .nav-tabs a .nav-ic {
-  width: 18px !important;
-  height: 18px !important;
+  width: 17px !important;
+  height: 17px !important;
   margin: 0 !important;
   flex-shrink: 0 !important;
 }
 :root[data-nav-style="dynamic-island"] .nav-tabs a .nav-ic svg {
-  width: 14px !important;
-  height: 14px !important;
+  width: 13px !important;
+  height: 13px !important;
 }
 :root[data-nav-style="dynamic-island"] .nav-tabs a .nav-txt {
   display: inline !important;
-  font-size: 11.5px !important;
+  font-size: 11px !important;
+  letter-spacing: -0.01em !important;
 }
 :root[data-nav-style="dynamic-island"] .nav-tabs a .tab-count {
-  font-size: 9px !important;
-  padding: 1px 5px !important;
+  font-size: 8.5px !important;
+  padding: 1px 4px !important;
   border-radius: 999px !important;
   background: rgba(var(--accent-rgb), 0.35) !important;
   color: #fff !important;
 }
-
 :root[data-nav-style="dynamic-island"] .nav-tabs a .nav-db-side {
-  width: 16px !important;
-  height: 16px !important;
-  font-size: 8.5px !important;
+  width: 15px !important;
+  height: 15px !important;
+  font-size: 8px !important;
   margin-left: 1px !important;
   flex-shrink: 0 !important;
+}
+:root[data-nav-style="dynamic-island"] .nav-tabs a:last-child {
+  margin-right: 2px !important;
+}
+
+/* Módulo de cuenta / herramientas en Isla Dinámica: botones circulares elegantes estilo cápsula */
+:root[data-nav-style="dynamic-island"] .nav-account {
+  border: none !important;
+  padding: 0 2px 0 5px !important;
+  margin: 0 0 0 2px !important;
+  border-left: 1px solid rgba(255, 255, 255, 0.15) !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 3px !important;
+  flex-shrink: 0 !important;
+}
+
+:root[data-nav-style="dynamic-island"] .acc-foot {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 4px !important;
+}
+
+:root[data-nav-style="dynamic-island"] .acc-out {
+  width: 29px !important;
+  height: 29px !important;
+  border-radius: 999px !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+  background: rgba(225, 29, 72, 0.15) !important;
+  border: 1px solid rgba(225, 29, 72, 0.45) !important;
+  color: #fb7185 !important;
+  transition: all 0.2s cubic-bezier(0.34, 1.3, 0.64, 1) !important;
+}
+:root[data-nav-style="dynamic-island"] .acc-out:hover {
+  background: #e11d48 !important;
+  border-color: #e11d48 !important;
+  color: #fff !important;
+  box-shadow: 0 0 16px rgba(225, 29, 72, 0.85) !important;
+  transform: scale(1.1) !important;
+}
+:root[data-nav-style="dynamic-island"] .acc-out span {
+  display: none !important;
+}
+:root[data-nav-style="dynamic-island"] .acc-out svg {
+  width: 14px !important;
+  height: 14px !important;
+  stroke: currentColor !important;
+}
+
+:root[data-nav-style="dynamic-island"] .acc-tools {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 3px !important;
+}
+
+:root[data-nav-style="dynamic-island"] .acc-tools .theme-toggle {
+  width: 29px !important;
+  height: 29px !important;
+  border-radius: 999px !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  transition: all 0.2s cubic-bezier(0.34, 1.3, 0.64, 1) !important;
+}
+:root[data-nav-style="dynamic-island"] .acc-tools .theme-toggle:hover {
+  background: rgba(var(--accent-rgb), 0.22) !important;
+  border-color: var(--accent) !important;
+  color: #fff !important;
+  transform: scale(1.1) !important;
+  box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.5) !important;
 }
 
 
@@ -3379,15 +3726,19 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
   align-self: center !important;
 }
 
-/* En modo dock cerrado (solo iconos) */
-:root[data-nav-style="dock"]:not(:hover) .nav-tabs a .nav-db-side {
+/* En modo dock cerrado (solo iconos) vs expandido (con nombre y orbe) */
+:root[data-nav-style="dock"] .nav-tabs a .nav-db-side {
   display: none !important;
 }
-:root[data-nav-style="dock"] body:not(.guest) .navbar:hover .nav-tabs a .nav-db-side,
-:root[data-nav-style="dock"] body:not(.guest) .navbar.expanded .nav-tabs a .nav-db-side {
+:root[data-nav-style="dock"] body:not(.guest) .navbar.dock-collapsed .nav-tabs a .nav-db-side {
+  display: none !important;
+}
+:root[data-nav-style="dock"] body:not(.guest) .navbar:not(.dock-collapsed):hover .nav-tabs a .nav-db-side,
+:root[data-nav-style="dock"] body:not(.guest) .navbar.expanded:not(.dock-collapsed) .nav-tabs a .nav-db-side {
   display: inline-flex !important;
   margin-left: auto !important;
   margin-right: 6px !important;
+  animation: fadeIn .2s ease !important;
 }
 
 /* ==========================================================================
@@ -3551,25 +3902,26 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
 /* ===== TOOLTIP HOLOGRÁFICO CYBER-GLASSMORPHIC ===== */
 .cyber-tooltip {
   position: fixed !important;
-  z-index: 10000 !important;
+  z-index: 1000000 !important;
   pointer-events: none !important;
   opacity: 0 !important;
   visibility: hidden !important;
   transform: scale(0.92) translateY(4px) !important;
   transform-origin: top center !important;
-  transition: opacity 0.18s cubic-bezier(0.16, 1, 0.3, 1), transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), visibility 0.18s ease !important;
-  background: rgba(8, 14, 26, 0.94) !important;
+  transition: opacity 0.15s cubic-bezier(0.16, 1, 0.3, 1), transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), visibility 0.15s ease !important;
+  background: rgba(9, 14, 25, 0.94) !important;
   backdrop-filter: blur(24px) saturate(2.0) !important;
   -webkit-backdrop-filter: blur(24px) saturate(2.0) !important;
   border: 1px solid rgba(var(--accent-rgb, 0, 245, 255), 0.55) !important;
   border-radius: 12px !important;
   padding: 8px 12px !important;
-  box-shadow: 0 14px 34px -4px rgba(0, 0, 0, 0.8), 0 0 20px -2px rgba(var(--accent-rgb, 0, 245, 255), 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+  box-shadow: 0 16px 38px -4px rgba(0, 0, 0, 0.85), 0 0 24px -2px rgba(var(--accent-rgb, 0, 245, 255), 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.25) !important;
   display: flex !important;
   flex-direction: column !important;
   gap: 3px !important;
-  max-width: 270px !important;
-  min-width: 100px !important;
+  max-width: 320px !important;
+  min-width: 60px !important;
+  width: max-content !important;
   user-select: none !important;
 }
 
@@ -3911,33 +4263,1293 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
 :root[data-nav-style="dock"] body:not(.guest) .navbar.dock-collapsed .nav-tabs a .nav-txt {
   display: none !important;
 }
+:root[data-nav-style="dock"] body:not(.guest) .navbar.dock-collapsed .nav-tabs a .nav-db-side {
+  display: none !important;
+}
 
 :root[data-nav-style="hex-matrix"] body:not(.guest) .navbar.collapsed {
   transform: translateX(calc(-100% - 15px)) !important;
 }
 
+
+/* ==========================================================================
+   SISTEMA DE SELECTORES CYBERPUNK (CYBER-SELECT UNIVERSAL)
+   ========================================================================== */
+.cyber-select-wrap {
+  position: relative;
+  display: inline-block;
+  vertical-align: middle;
+}
+.cyber-select-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: rgba(13, 20, 36, 0.9);
+  border: 1px solid rgba(var(--accent-rgb, 0, 245, 255), 0.38);
+  border-radius: 9px;
+  padding: 6px 12px;
+  font-family: var(--sans);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+  user-select: none;
+  min-width: 140px;
+  max-width: 100%;
+}
+.cyber-select-btn:hover {
+  border-color: var(--accent);
+  box-shadow: 0 0 16px rgba(var(--accent-rgb, 0, 245, 255), 0.45);
+  transform: translateY(-1px);
+}
+.cyber-select-wrap.open .cyber-select-btn {
+  border-color: var(--accent);
+  box-shadow: 0 0 20px rgba(var(--accent-rgb, 0, 245, 255), 0.55);
+}
+.cs-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  text-align: left;
+}
+.cs-arrow {
+  width: 14px;
+  height: 14px;
+  stroke: var(--accent);
+  stroke-width: 2.2;
+  fill: none;
+  transition: transform 0.22s ease;
+  flex-shrink: 0;
+}
+.cyber-select-wrap.open .cs-arrow {
+  transform: rotate(180deg);
+}
+
+.cyber-select-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 100%;
+  width: max-content;
+  max-width: 380px;
+  max-height: 290px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  background: rgba(8, 14, 26, 0.97);
+  border: 1px solid rgba(var(--accent-rgb, 0, 245, 255), 0.5);
+  border-radius: 12px;
+  padding: 6px;
+  box-shadow: 0 18px 46px rgba(0, 0, 0, 0.88), 0 0 26px rgba(var(--accent-rgb, 0, 245, 255), 0.32);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  z-index: 100000;
+  display: none;
+  flex-direction: column;
+  gap: 3px;
+  animation: cyberSelectIn 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.cyber-select-wrap.open .cyber-select-menu {
+  display: flex;
+}
+.cyber-select-wrap.opens-up .cyber-select-menu {
+  top: auto;
+  bottom: calc(100% + 6px);
+  animation: cyberSelectInUp 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes cyberSelectIn {
+  from { opacity: 0; transform: translateY(-6px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes cyberSelectInUp {
+  from { opacity: 0; transform: translateY(6px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.cs-option {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  padding: 8px 12px !important;
+  border-radius: 8px !important;
+  font-family: var(--sans) !important;
+  font-size: 12.5px !important;
+  font-weight: 500 !important;
+  color: var(--muted) !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+  user-select: none !important;
+  white-space: nowrap !important;
+}
+.cs-option:hover, .cs-option.focused {
+  background: rgba(var(--accent-rgb, 0, 245, 255), 0.12) !important;
+  color: #ffffff !important;
+  padding-left: 14px !important;
+  box-shadow: inset 3px 0 0 var(--accent) !important;
+}
+.cs-option.selected {
+  background: rgba(var(--accent-rgb, 0, 245, 255), 0.18) !important;
+  color: var(--accent) !important;
+  font-weight: 700 !important;
+}
+.cs-check {
+  width: 14px;
+  height: 14px;
+  stroke: var(--accent);
+  stroke-width: 2.5;
+  fill: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  flex-shrink: 0;
+}
+.cs-option.selected .cs-check {
+  opacity: 1;
+}
+
+/* Fallback y estilo dark para cualquier select nativo residual */
+select {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  background-color: rgba(12, 19, 34, 0.85) !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2300f5ff' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 10px center !important;
+  color: var(--text) !important;
+  border: 1px solid rgba(var(--accent-rgb, 0, 245, 255), 0.35) !important;
+  border-radius: 9px !important;
+  padding: 6px 32px 6px 12px !important;
+  font-family: var(--sans) !important;
+  font-size: 12.5px !important;
+  cursor: pointer !important;
+}
+select:focus {
+  outline: none !important;
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 14px rgba(var(--accent-rgb, 0, 245, 255), 0.4) !important;
+}
+select option {
+  background-color: #080e1a !important;
+  color: #e2e8f0 !important;
+  padding: 10px 12px !important;
+}
+
+
+/* ---- Insignia Holográfica de Versión en Topbar (Visible en todo el programa) ---- */
+.topbar-left {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  gap: 6px !important;
+}
+.cyber-version-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(13, 20, 36, 0.92);
+  border: 1px solid rgba(var(--accent-rgb, 0, 245, 255), 0.45);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.45), 0 0 14px -2px rgba(var(--accent-rgb, 0, 245, 255), 0.28);
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--text);
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.22s ease;
+}
+.cyber-version-pill:hover {
+  border-color: var(--accent);
+  box-shadow: 0 0 18px rgba(var(--accent-rgb, 0, 245, 255), 0.55);
+  transform: translateY(-1px);
+}
+.cvp-icon {
+  width: 14px;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+}
+.cvp-icon svg {
+  width: 13px;
+  height: 13px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+}
+.cvp-lbl {
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+.cvp-ver {
+  color: var(--accent);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-shadow: 0 0 8px rgba(var(--accent-rgb, 0, 245, 255), 0.5);
+}
+.cvp-pulse {
+  width: 6.5px;
+  height: 6.5px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 8px #10b981;
+  display: inline-block;
+  animation: cvpBlink 2s infinite ease-in-out;
+}
+@keyframes cvpBlink {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+.brand-ver-badge {
+  font-size: 10px;
+  font-family: var(--mono);
+  font-weight: 800;
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: rgba(var(--accent-rgb, 0, 245, 255), 0.15);
+  color: var(--accent);
+  border: 1px solid rgba(var(--accent-rgb, 0, 245, 255), 0.35);
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+
+/* Posicionamiento del Panel de Apariencia debajo de palBtn en Cyber-Dock */
+:root[data-nav-style="cyber-dock"] .pal-panel {
+  position: fixed !important;
+  bottom: auto !important;
+  right: auto !important;
+  z-index: 10001 !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85), 0 0 26px rgba(var(--accent-rgb), 0.3) !important;
+  animation: palDockDropIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+@keyframes palDockDropIn {
+  from { opacity: 0; transform: translateY(-10px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+
+/* =====================================================================
+   INSIGNIA HOLOGRÁFICA DE MÓDULO ACTIVO (CYBER-HUD ACTIVE MODULE)
+   ===================================================================== */
+.cyber-active-module-badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 5px 14px 5px 10px !important;
+  border-radius: 999px !important;
+  background: rgba(9, 14, 28, 0.78) !important;
+  backdrop-filter: blur(20px) saturate(1.8) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(1.8) !important;
+  border: 1px solid rgba(var(--accent-rgb), 0.45) !important;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.5), 0 0 20px rgba(var(--accent-rgb), 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+  color: var(--text) !important;
+  font-family: var(--sans) !important;
+  vertical-align: middle !important;
+  margin-left: 0 !important;
+  margin-top: 4px !important;
+  margin-bottom: 8px !important;
+  transition: all 0.28s cubic-bezier(0.34, 1.3, 0.64, 1) !important;
+  user-select: none !important;
+  cursor: default !important;
+}
+
+.cyber-active-module-badge:hover {
+  border-color: var(--accent) !important;
+  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.7), 0 0 30px rgba(var(--accent-rgb), 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+  transform: translateY(-2px) scale(1.02) !important;
+}
+
+.cyber-active-module-badge .camb-status-dot {
+  width: 7px !important;
+  height: 7px !important;
+  border-radius: 50% !important;
+  background: var(--accent) !important;
+  box-shadow: 0 0 8px var(--accent), 0 0 14px var(--accent) !important;
+  flex-shrink: 0 !important;
+  animation: cambLedPulse 2.2s infinite ease-in-out alternate !important;
+}
+@keyframes cambLedPulse {
+  0% { transform: scale(0.9); opacity: 0.7; box-shadow: 0 0 4px var(--accent); }
+  100% { transform: scale(1.25); opacity: 1; box-shadow: 0 0 12px var(--accent), 0 0 20px var(--accent); }
+}
+
+.cyber-active-module-badge .camb-orb {
+  font-size: 13px !important;
+  line-height: 1 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+  filter: drop-shadow(0 0 5px rgba(var(--accent-rgb), 0.5)) !important;
+}
+
+.cyber-active-module-badge .camb-tag {
+  font-family: var(--mono) !important;
+  font-size: 9.5px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  color: var(--accent) !important;
+  background: rgba(var(--accent-rgb), 0.16) !important;
+  border: 1px solid rgba(var(--accent-rgb), 0.35) !important;
+  padding: 2px 7px !important;
+  border-radius: 999px !important;
+  line-height: 1.2 !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+}
+
+.cyber-active-module-badge .camb-title {
+  font-size: 12.5px !important;
+  font-weight: 700 !important;
+  color: #ffffff !important;
+  letter-spacing: 0.01em !important;
+  white-space: nowrap !important;
+}
+
+.cyber-active-module-badge .camb-sep {
+  color: rgba(255, 255, 255, 0.25) !important;
+  font-weight: 300 !important;
+  font-size: 12px !important;
+  margin: 0 1px !important;
+}
+
+.cyber-active-module-badge .camb-desc {
+  font-size: 11.5px !important;
+  font-weight: 500 !important;
+  color: var(--muted) !important;
+  white-space: nowrap !important;
+  max-width: 280px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+@media (max-width: 900px) {
+  .cyber-active-module-badge .camb-desc,
+  .cyber-active-module-badge .camb-sep {
+    display: none !important;
+  }
+}
+@media (max-width: 600px) {
+  .cyber-active-module-badge {
+    margin-left: 0 !important;
+    margin-top: 6px !important;
+  }
+}
+
+/* =====================================================================
+   BOTÓN, MODAL Y OVERLAY HUD DE ACTUALIZACIÓN GITHUB
+   ===================================================================== */
+.btn-git-update {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 4px 10px 4px 8px !important;
+  border-radius: 999px !important;
+  background: rgba(14, 21, 39, 0.75) !important;
+  border: 1px solid rgba(var(--accent-rgb), 0.4) !important;
+  color: var(--text) !important;
+  font-family: var(--sans) !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  transition: all 0.22s cubic-bezier(0.34, 1.3, 0.64, 1) !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4) !important;
+  user-select: none !important;
+  white-space: nowrap !important;
+}
+
+.btn-git-update:hover {
+  background: rgba(var(--accent-rgb), 0.18) !important;
+  border-color: var(--accent) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6), 0 0 16px rgba(var(--accent-rgb), 0.4) !important;
+  transform: translateY(-1px) !important;
+  color: #fff !important;
+}
+
+.btn-git-update .bgu-spinner {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 14px !important;
+  height: 14px !important;
+  color: var(--accent) !important;
+}
+.btn-git-update .bgu-spinner svg {
+  width: 13px !important;
+  height: 13px !important;
+  transition: transform 0.25s ease !important;
+}
+
+.btn-git-update.bgu-checking .bgu-spinner svg {
+  animation: bguSpin 0.9s linear infinite !important;
+}
+@keyframes bguSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.btn-git-update .bgu-badge {
+  font-family: var(--mono) !important;
+  font-size: 9.5px !important;
+  font-weight: 800 !important;
+  background: var(--accent) !important;
+  color: #040812 !important;
+  padding: 1px 5px !important;
+  border-radius: 999px !important;
+  line-height: 1 !important;
+  box-shadow: 0 0 8px var(--accent) !important;
+}
+
+/* Modal Revisor de Actualizaciones - Posicionamiento Fijo Centrado */
+.git-modal-overlay {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 999990 !important;
+  display: none !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: rgba(3, 7, 18, 0.85) !important;
+  backdrop-filter: blur(14px) saturate(1.5) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(1.5) !important;
+  padding: 16px !important;
+  animation: gitFadeIn 0.2s ease !important;
+}
+.git-modal-overlay.open,
+.git-modal-overlay.show {
+  display: flex !important;
+}
+@keyframes gitFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.cyber-modal-box {
+  background: var(--panel, #0c1427) !important;
+  border: 1px solid rgba(var(--accent-rgb), 0.5) !important;
+  border-radius: 20px !important;
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.88), 0 0 40px rgba(var(--accent-rgb), 0.25) !important;
+  max-width: 580px !important;
+  width: min(580px, 94vw) !important;
+  max-height: 88vh !important;
+  overflow-y: auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  position: relative !important;
+  animation: cyberModalPop 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  color: var(--text) !important;
+  padding: 0 !important;
+}
+@keyframes cyberModalPop {
+  from { opacity: 0; transform: scale(0.92) translateY(14px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.git-modal-head {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 18px 22px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+.git-modal-body {
+  padding: 18px 22px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 14px !important;
+}
+.git-modal-foot {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 10px !important;
+  padding: 14px 22px 18px !important;
+  background: rgba(0, 0, 0, 0.28) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+/* Banner de estadísticas en el modal */
+.git-update-banner {
+  display: flex !important;
+  align-items: center !important;
+  gap: 16px !important;
+  background: rgba(var(--accent-rgb), 0.08) !important;
+  border: 1px solid rgba(var(--accent-rgb), 0.25) !important;
+  border-radius: 12px !important;
+  padding: 14px 16px !important;
+}
+.git-update-banner.uptodate {
+  background: rgba(16, 185, 129, 0.08) !important;
+  border-color: rgba(16, 185, 129, 0.35) !important;
+}
+.gub-stat {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 70px !important;
+  padding: 6px 12px !important;
+  background: rgba(9, 14, 28, 0.85) !important;
+  border: 1px solid rgba(var(--accent-rgb), 0.4) !important;
+  border-radius: 10px !important;
+  box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.2) !important;
+}
+.gub-stat.uptodate {
+  border-color: rgba(16, 185, 129, 0.5) !important;
+  box-shadow: 0 0 14px rgba(16, 185, 129, 0.25) !important;
+}
+.gub-num {
+  font-family: var(--mono) !important;
+  font-size: 22px !important;
+  font-weight: 900 !important;
+  color: var(--accent) !important;
+  line-height: 1 !important;
+}
+.gub-stat.uptodate .gub-num {
+  color: #10b981 !important;
+}
+.gub-lbl {
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  color: var(--muted) !important;
+  margin-top: 3px !important;
+}
+.gub-info {
+  flex: 1 !important;
+  font-size: 12px !important;
+  line-height: 1.4 !important;
+}
+.gub-branch {
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: var(--text) !important;
+  margin-bottom: 3px !important;
+}
+.gub-desc {
+  color: var(--muted) !important;
+  font-size: 11.5px !important;
+}
+
+/* Lista de commits */
+.git-commits-list {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+}
+.git-commit-item {
+  display: flex !important;
+  align-items: flex-start !important;
+  gap: 8px !important;
+  padding: 7px 10px !important;
+  border-radius: 8px !important;
+  background: rgba(255, 255, 255, 0.03) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  font-size: 12px !important;
+  color: var(--text) !important;
+}
+.gci-dot {
+  width: 6px !important;
+  height: 6px !important;
+  border-radius: 50% !important;
+  background: var(--accent) !important;
+  box-shadow: 0 0 6px var(--accent) !important;
+  margin-top: 5px !important;
+  flex-shrink: 0 !important;
+}
+.gci-txt {
+  flex: 1 !important;
+  line-height: 1.35 !important;
+}
+
+/* Botón de confirmar instalación */
+.btn-update-confirm {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+  padding: 8px 16px !important;
+  border-radius: 10px !important;
+  background: linear-gradient(135deg, var(--accent), var(--accent-dark)) !important;
+  color: #040812 !important;
+  font-weight: 800 !important;
+  font-size: 13px !important;
+  border: none !important;
+  box-shadow: 0 4px 16px rgba(var(--accent-rgb), 0.45) !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+.btn-update-confirm:hover {
+  filter: brightness(1.15) !important;
+  transform: translateY(-1px) scale(1.02) !important;
+  box-shadow: 0 6px 22px rgba(var(--accent-rgb), 0.6) !important;
+}
+
+/* Overlay HUD Full-Screen de Instalación */
+.hud-actualizando-overlay {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 9999999 !important;
+  background: rgba(4, 8, 18, 0.94) !important;
+  backdrop-filter: blur(28px) saturate(1.8) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(1.8) !important;
+  display: none !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 20px !important;
+  animation: hudFadeIn 0.3s ease !important;
+}
+.hud-actualizando-overlay.show,
+.hud-actualizando-overlay.open {
+  display: flex !important;
+}
+@keyframes hudFadeIn {
+  from { opacity: 0; transform: scale(0.98); }
+  to { opacity: 1; transform: scale(1); }
+}
+  to { opacity: 1; transform: scale(1); }
+}
+
+.hud-act-box {
+  max-width: 480px !important;
+  width: 100% !important;
+  text-align: center !important;
+  padding: 34px 28px !important;
+  border-radius: 24px !important;
+  background: rgba(10, 16, 32, 0.95) !important;
+  border: 1px solid rgba(var(--accent-rgb), 0.5) !important;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9), 0 0 45px rgba(var(--accent-rgb), 0.35) !important;
+  position: relative !important;
+}
+
+/* Spinner Cuántico */
+.hud-act-spinner-quantum {
+  position: relative !important;
+  width: 90px !important;
+  height: 90px !important;
+  margin: 0 auto 18px auto !important;
+}
+.haq-svg {
+  width: 100% !important;
+  height: 100% !important;
+  transform: rotate(-90deg) !important;
+}
+.haq-ring {
+  fill: none !important;
+  stroke-linecap: round !important;
+}
+.haq-ring-bg {
+  stroke: rgba(255, 255, 255, 0.08) !important;
+  stroke-width: 4 !important;
+}
+.haq-ring-main {
+  stroke: var(--accent) !important;
+  stroke-width: 4.5 !important;
+  stroke-dasharray: 200 !important;
+  stroke-dashoffset: 70 !important;
+  animation: haqSpinMain 1.8s linear infinite !important;
+  filter: drop-shadow(0 0 8px var(--accent)) !important;
+}
+@keyframes haqSpinMain {
+  0% { transform: rotate(0deg); transform-origin: 50% 50%; }
+  100% { transform: rotate(360deg); transform-origin: 50% 50%; }
+}
+.haq-ring-inner {
+  stroke: #f59e0b !important;
+  stroke-width: 3 !important;
+  stroke-dasharray: 120 !important;
+  stroke-dashoffset: 40 !important;
+  animation: haqSpinInner 1.2s linear infinite reverse !important;
+  filter: drop-shadow(0 0 6px #f59e0b) !important;
+}
+@keyframes haqSpinInner {
+  0% { transform: rotate(0deg); transform-origin: 50% 50%; }
+  100% { transform: rotate(360deg); transform-origin: 50% 50%; }
+}
+.haq-center-icon {
+  position: absolute !important;
+  inset: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 30px !important;
+  animation: haqPulse 1.5s ease-in-out infinite alternate !important;
+}
+@keyframes haqPulse {
+  from { transform: scale(0.9); opacity: 0.8; }
+  to { transform: scale(1.15); opacity: 1; filter: drop-shadow(0 0 10px var(--accent)); }
+}
+
+.hud-act-title {
+  margin: 0 0 6px 0 !important;
+  font-size: 19px !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.04em !important;
+  color: #ffffff !important;
+}
+.hud-act-sub {
+  margin: 0 0 20px 0 !important;
+  font-size: 13px !important;
+  color: var(--muted) !important;
+}
+
+/* Pasos de instalación */
+.hud-act-steps {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 9px !important;
+  text-align: left !important;
+  background: rgba(0, 0, 0, 0.4) !important;
+  border: 1px solid rgba(255, 255, 255, 0.07) !important;
+  border-radius: 14px !important;
+  padding: 14px 16px !important;
+  margin-bottom: 20px !important;
+}
+.ha-step {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  font-size: 12px !important;
+  color: rgba(255, 255, 255, 0.45) !important;
+  transition: all 0.25s ease !important;
+}
+.has-dot {
+  width: 8px !important;
+  height: 8px !important;
+  border-radius: 50% !important;
+  background: rgba(255, 255, 255, 0.2) !important;
+  flex-shrink: 0 !important;
+}
+.has-txt { flex: 1 !important; }
+.has-check {
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  color: #10b981 !important;
+  display: none !important;
+}
+
+.ha-step.active {
+  color: var(--text) !important;
+  font-weight: 600 !important;
+}
+.ha-step.active .has-dot {
+  background: var(--accent) !important;
+  box-shadow: 0 0 8px var(--accent) !important;
+  animation: bguSpin 1s infinite alternate !important;
+}
+.ha-step.done {
+  color: #10b981 !important;
+}
+.ha-step.done .has-dot {
+  background: #10b981 !important;
+  box-shadow: 0 0 6px #10b981 !important;
+}
+.ha-step.done .has-check {
+  display: inline !important;
+}
+
+/* Barra de progreso de estado */
+.hud-act-status-bar {
+  height: 6px !important;
+  border-radius: 999px !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  overflow: hidden !important;
+  position: relative !important;
+  margin-bottom: 14px !important;
+}
+.hasb-fill {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  bottom: 0 !important;
+  width: 40% !important;
+  border-radius: 999px !important;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent) !important;
+  animation: hasbProgress 1.6s infinite ease-in-out !important;
+}
+@keyframes hasbProgress {
+  0% { left: -40%; }
+  100% { left: 100%; }
+}
+
+.hud-act-telemetry {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+  font-size: 12.5px !important;
+  color: var(--text) !important;
+  margin-bottom: 12px !important;
+}
+.hat-dot {
+  width: 7px !important;
+  height: 7px !important;
+  border-radius: 50% !important;
+  background: #f59e0b !important;
+  box-shadow: 0 0 8px #f59e0b !important;
+  animation: hatBlink 1s infinite alternate !important;
+}
+@keyframes hatBlink {
+  from { opacity: 0.4; }
+  to { opacity: 1; }
+}
+
+.hud-act-warning {
+  display: block !important;
+  color: var(--muted) !important;
+  font-size: 11px !important;
+  line-height: 1.35 !important;
+}
+
+/* =====================================================================
+   SEPARADORES DE GRUPOS EN NAVEGACIÓN (Gestión, Herramientas, Productividad)
+   ===================================================================== */
+.nav-group-sep {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin: 10px 0 4px;
+  padding: 0 8px;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+.nav-group-sep::before, .nav-group-sep::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--panel-edge);
+  opacity: 0.7;
+}
+.nav-group-label {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  white-space: nowrap;
+  user-select: none;
+}
+
+/* En Cyber-Dock Flotante: micro-separador vertical elegante */
+:root[data-nav-style="cyber-dock"] .nav-tabs .nav-group-sep {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 26px !important;
+  width: 1px !important;
+  background: rgba(255, 255, 255, 0.18) !important;
+  margin: 0 5px !important;
+  padding: 0 !important;
+  flex-shrink: 0 !important;
+  box-shadow: 0 0 6px rgba(var(--accent-rgb), 0.25) !important;
+}
+:root[data-nav-style="cyber-dock"] .nav-tabs .nav-group-sep::before,
+:root[data-nav-style="cyber-dock"] .nav-tabs .nav-group-sep::after {
+  display: none !important;
+}
+:root[data-nav-style="cyber-dock"] .nav-tabs .nav-group-sep .nav-group-label {
+  display: none !important;
+}
+
+/* En Isla Dinámica y Superior */
+:root[data-nav-style="dynamic-island"] .nav-tabs .nav-group-sep,
+:root[data-nav-style="superior"] .nav-tabs .nav-group-sep,
+:root[data-nav-style="top"] .nav-tabs .nav-group-sep {
+  display: inline-flex !important;
+  height: 22px !important;
+  width: 1px !important;
+  background: rgba(255, 255, 255, 0.16) !important;
+  margin: 0 4px !important;
+  padding: 0 !important;
+  flex-shrink: 0 !important;
+}
+:root[data-nav-style="dynamic-island"] .nav-tabs .nav-group-sep::before,
+:root[data-nav-style="dynamic-island"] .nav-tabs .nav-group-sep::after,
+:root[data-nav-style="superior"] .nav-tabs .nav-group-sep::before,
+:root[data-nav-style="superior"] .nav-tabs .nav-group-sep::after,
+:root[data-nav-style="top"] .nav-tabs .nav-group-sep::before,
+:root[data-nav-style="top"] .nav-tabs .nav-group-sep::after,
+:root[data-nav-style="dynamic-island"] .nav-tabs .nav-group-sep .nav-group-label,
+:root[data-nav-style="superior"] .nav-tabs .nav-group-sep .nav-group-label,
+:root[data-nav-style="top"] .nav-tabs .nav-group-sep .nav-group-label {
+  display: none !important;
+}
+
+/* En Rueda Holográfica */
+:root[data-nav-style="rueda"] .nav-tabs .nav-group-sep {
+  display: none !important;
+}
+
+/* En Hex Matrix */
+:root[data-nav-style="hex-matrix"] .nav-tabs .nav-group-sep {
+  grid-column: 1 / -1 !important;
+  width: 100% !important;
+  margin: 8px 0 2px !important;
+  padding: 0 4px !important;
+}
+
+/* Cuando la barra lateral está colapsada (iconos) */
+body:not(.guest) .navbar.dock-collapsed .nav-group-sep .nav-group-label,
+:root[data-nav-style="dock"]:not(:hover) .nav-group-sep .nav-group-label {
+  display: none !important;
+}
+body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
+:root[data-nav-style="dock"]:not(:hover) .nav-group-sep {
+  margin: 6px 0 !important;
+  padding: 0 12px !important;
+}
+
+
+/* =====================================================================
+   DROPDOWNS MODERNOS CYBERPUNK / GLASSMORPHISM (SELECTORES ELEGANTES)
+   ===================================================================== */
+.custom-select-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+.custom-select-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+  padding: 6px 14px !important;
+  min-height: 34px !important;
+  border-radius: 999px !important;
+  background: var(--panel-alt) !important;
+  border: 1px solid var(--panel-edge) !important;
+  color: var(--text) !important;
+  font-size: 12.5px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  transition: all .18s var(--ease) !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18) !important;
+}
+.custom-select-btn:hover {
+  border-color: var(--accent) !important;
+  background: rgba(var(--accent-rgb), 0.12) !important;
+  box-shadow: 0 0 14px -2px rgba(var(--accent-rgb), 0.4) !important;
+  transform: translateY(-1px) !important;
+}
+.custom-select-btn.open {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 16px -2px rgba(var(--accent-rgb), 0.55) !important;
+}
+.custom-select-btn .cs-arrow {
+  font-size: 10px;
+  color: var(--muted);
+  transition: transform .2s ease;
+}
+.custom-select-btn.open .cs-arrow {
+  transform: rotate(180deg);
+}
+.custom-select-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 1000;
+  min-width: 240px;
+  max-width: 340px;
+  background: var(--panel);
+  border: 1px solid var(--panel-edge);
+  border-radius: 14px;
+  box-shadow: 0 18px 42px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.08);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  animation: panelIn .16s var(--ease);
+}
+.custom-select-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font-size: 12.5px;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: left;
+  transition: all .12s ease;
+  box-shadow: none;
+}
+.custom-select-item:hover {
+  background: var(--accent-soft) !important;
+  color: var(--accent-dark) !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+.custom-select-item.active {
+  background: var(--accent) !important;
+  color: #fff !important;
+  font-weight: 700;
+}
+.custom-select-item .cs-check {
+  font-size: 12px;
+  font-weight: 800;
+}
+
+
+.pw-toggle .eye-off,
+.field .pw-toggle .eye-off {
+  display: none !important;
+}
+.pw-toggle.showing .eye,
+.field .pw-toggle.showing .eye {
+  display: none !important;
+}
+.pw-toggle.showing .eye-off,
+.field .pw-toggle.showing .eye-off {
+  display: block !important;
+}
+.pw-toggle.showing,
+.field .pw-toggle.showing {
+  color: var(--accent, #00f5ff) !important;
+}
+
+</style>
+<style>
+  /* Badge de Disponibilidad en la Cabecera */
+  .badge-disp-header {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.18), rgba(217, 119, 6, 0.22));
+    border: 1px solid rgba(245, 158, 11, 0.6);
+    color: #f59e0b;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.4px;
+    cursor: pointer;
+    box-shadow: 0 0 16px rgba(245, 158, 11, 0.25);
+    transition: all 0.2s ease;
+  }
+  .badge-disp-header:hover {
+    background: rgba(245, 158, 11, 0.3);
+    transform: translateY(-1px);
+    box-shadow: 0 0 24px rgba(245, 158, 11, 0.45);
+  }
+  .badge-disp-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: #f59e0b;
+    animation: dispPulse 1.8s ease-in-out infinite;
+  }
+  @keyframes dispPulse {
+    0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); }
+    50% { opacity: 0.6; transform: scale(1.15); box-shadow: 0 0 0 6px rgba(245, 158, 11, 0); }
+  }
+
+  /* Modal de Disponibilidad Activo al Iniciar Sesión */
+  .disp-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(0, 0, 0, 0.78);
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    animation: dispFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  @keyframes dispFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  .disp-modal-card {
+    position: relative;
+    width: min(520px, 96vw);
+    background: linear-gradient(180deg, #161b22 0%, #0d1117 100%);
+    border: 1px solid rgba(245, 158, 11, 0.55);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 30px rgba(245, 158, 11, 0.3);
+    border-radius: 20px;
+    padding: 28px 24px 22px;
+    overflow: hidden;
+    color: #e6edf3;
+    animation: dispCardScale 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  @keyframes dispCardScale {
+    from { transform: scale(0.92) translateY(20px); opacity: 0; }
+    to { transform: scale(1) translateY(0); opacity: 1; }
+  }
+  .disp-modal-glow {
+    position: absolute;
+    top: -50px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 280px;
+    height: 100px;
+    background: radial-gradient(ellipse, rgba(245, 158, 11, 0.4), transparent 70%);
+    pointer-events: none;
+  }
+  .disp-badge-top {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(245, 158, 11, 0.15);
+    border: 1px solid rgba(245, 158, 11, 0.4);
+    color: #f59e0b;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 0.6px;
+    margin-bottom: 12px;
+  }
+  .disp-pulse-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+    background: #f59e0b;
+    animation: dispPulse 1.6s infinite;
+  }
+  .disp-modal-title {
+    margin: 0 0 8px;
+    font-size: 22px;
+    font-weight: 900;
+    color: #fff;
+    line-height: 1.25;
+  }
+  .disp-modal-desc {
+    margin: 0 0 16px;
+    font-size: 13.5px;
+    color: #94a3b8;
+    line-height: 1.5;
+  }
+  .disp-dates-card {
+    background: rgba(245, 158, 11, 0.08);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    border-radius: 14px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .disp-dates-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .disp-icon-cal {
+    font-size: 26px;
+  }
+  .disp-dates-row strong {
+    display: block;
+    font-size: 14px;
+    color: #fff;
+    font-weight: 800;
+  }
+  .disp-dates-row small {
+    font-size: 11.5px;
+    color: #f59e0b;
+    font-weight: 700;
+  }
+  .disp-status-active {
+    background: rgba(16, 185, 129, 0.2);
+    border: 1px solid rgba(16, 185, 129, 0.5);
+    color: #10b981;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 4px 10px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .disp-tips-box {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-size: 12.5px;
+    color: #cbd5e1;
+    line-height: 1.45;
+    margin-bottom: 20px;
+  }
+  .disp-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+  }
+  .btn-disp-confirm {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+    color: #000 !important;
+    font-size: 14px !important;
+    font-weight: 900 !important;
+    padding: 12px 24px !important;
+    border-radius: 12px !important;
+    border: none !important;
+    cursor: pointer !important;
+    box-shadow: 0 4px 16px rgba(245, 158, 11, 0.4) !important;
+    transition: all 0.2s ease !important;
+    width: 100%;
+    text-align: center;
+  }
+  .btn-disp-confirm:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 22px rgba(245, 158, 11, 0.6) !important;
+    filter: brightness(1.08);
+  }
 </style>
 </head>
-<body class="<%= currentUser ? '' : 'guest' %>" data-user="<%= currentUser ? currentUser.username : '' %>">
+<%
+  var cp = (typeof currentPath !== 'undefined' && currentPath) ? currentPath : '';
+  var S = function(d){ return '<svg viewBox="0 0 24 24" aria-hidden="true">' + d + '</svg>'; };
+  var navItems = [
+    // --- GESTIÓN & CLIENTES ---
+    { h:'/',          t:'Empresas',      desc:'Contraseñas de clientes', grupo:'Gestión', i:S('<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>'), badgeIcon:'🐘', badgeCls:'db-orb-pg', badgeTitle:'PostgreSQL 16 · Bóveda Principal' },
+    { h:'/jaivana',   t:'Jaivaná',       desc:'Datos del proyecto', grupo:'Gestión', i:S('<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>'), badgeIcon:'🐘', badgeCls:'db-orb-pg', badgeTitle:'PostgreSQL · Jaivaná Sync' },
+    { h:'/informe',          t:'Informe',       desc:'Reportes y Aceptados', grupo:'Gestión', i:S('<path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/>'), badgeIcon:'🟦', badgeCls:'db-orb-sql', badgeTitle:'SQL Server Reporting' },
+    { h:'/viaticos',  t:'Viáticos',      desc:'Gastos de viajes', grupo:'Gestión', i:S('<path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/>'), badgeIcon:'💾', badgeCls:'db-orb-sqlite', badgeTitle:'SQLite Embedded Storage' },
+
+    // --- HERRAMIENTAS TÉCNICAS ---
+    { h:'/sql',       t:'SQL',           desc:'Formateador y Revisor SQL', grupo:'Herramientas', i:S('<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>'), badgeIcon:'🐘', badgeCls:'db-orb-pg', badgeTitle:'PostgreSQL / Multi-Engine SQL' },
+    { h:'/visor',     t:'Visor XML/JSON',desc:'Previsualizar archivos', grupo:'Herramientas', i:S('<polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>'), badgeIcon:'🍃', badgeCls:'db-orb-mg', badgeTitle:'MongoDB & JSON Parser' },
+    { h:'/listas',    t:'Listas',        desc:'Tareas pendientes', grupo:'Herramientas', i:S('<line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>'), badgeIcon:'🏛️', badgeCls:'db-orb-ora', badgeTitle:'Oracle & SQL Matrix Lists' },
+    { h:'/logs',      t:'Logs',          desc:'Registro de actividad', grupo:'Herramientas', i:S('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="14" y2="17"/>'), badgeIcon:'⚡', badgeCls:'db-orb-rd', badgeTitle:'Redis Realtime Cache & Logs' },
+
+    // --- PRODUCTIVIDAD ---
+    { h:'/notas',     t:'Notas',         desc:'Tus apuntes rápidos', grupo:'Productividad', i:S('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>'), badgeIcon:'🐘', badgeCls:'db-orb-pg', badgeTitle:'PostgreSQL · Documentos' },
+    { h:'/enlaces',   t:'Enlaces',       desc:'Accesos directos', grupo:'Productividad', i:S('<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>'), badgeIcon:'🐘', badgeCls:'db-orb-pg', badgeTitle:'PostgreSQL Links Storage' },
+    { h:'/calendario', t:'Calendario',   desc:'Fechas importantes', grupo:'Productividad', i:S('<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>'), badgeIcon:'🏛️', badgeCls:'db-orb-ora', badgeTitle:'Oracle Cron & Event Scheduler' },
+    { h:'/manual',    t:'Manual',        desc:'Cómo usar el sistema', grupo:'Productividad', i:S('<polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/>'), badgeIcon:'🐬', badgeCls:'db-orb-my', badgeTitle:'MySQL Knowledge Base' },
+
+    // --- SISTEMA ---
+    { h:'/papelera',  t:'Papelera',      desc:'Cosas eliminadas', grupo:'Sistema', i:S('<polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>'), badge:true, badgeIcon:'⚡', badgeCls:'db-orb-rd', badgeTitle:'Redis Soft-Delete Garbage Collector' }
+  ];
+  var activeItem = navItems.find(function(n){ return n.h === '/' ? cp === '/' : cp.indexOf(n.h) === 0; }) || navItems[0];
+%>
+<body class="<%= currentUser ? '' : 'guest' %>" data-user="<%= currentUser ? currentUser.username : '' %>"
+  data-active-module-title="<%= activeItem.t %>"
+  data-active-module-desc="<%= activeItem.desc %>"
+  data-active-module-icon="<%= activeItem.badgeIcon || '⚡' %>"
+  data-active-module-cls="<%= activeItem.badgeCls || 'db-orb-pg' %>"
+  data-active-module-href="<%= activeItem.h %>">
   <%
-    var cp = (typeof currentPath !== 'undefined' && currentPath) ? currentPath : '';
-    var S = function(d){ return '<svg viewBox="0 0 24 24" aria-hidden="true">' + d + '</svg>'; };
-    var navItems = [
-      { h:'/',          t:'Empresas',      desc:'Contraseñas de clientes', i:S('<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>'), badgeIcon:'🐘', badgeCls:'db-orb-pg', badgeTitle:'PostgreSQL 16 · Bóveda Principal' },
-      { h:'/notas',     t:'Notas',         desc:'Tus apuntes rápidos', i:S('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>'), badgeIcon:'🐘', badgeCls:'db-orb-pg', badgeTitle:'PostgreSQL · Documentos' },
-      { h:'/jaivana',   t:'Jaivaná',       desc:'Datos del proyecto', i:S('<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>'), badgeIcon:'🐘', badgeCls:'db-orb-pg', badgeTitle:'PostgreSQL · Jaivaná Sync' },
-      { h:'/visor',     t:'Visor XML/JSON',desc:'Previsualizar archivos', i:S('<polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>'), badgeIcon:'🍃', badgeCls:'db-orb-mg', badgeTitle:'MongoDB & JSON Parser' },
-      { h:'/sql',       t:'SQL',           desc:'Formateador y Revisor SQL', i:S('<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>'), badgeIcon:'🐘', badgeCls:'db-orb-pg', badgeTitle:'PostgreSQL / Multi-Engine SQL' },
-      { h:'/listas',    t:'Listas',        desc:'Tareas pendientes', i:S('<line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>'), badgeIcon:'🏛️', badgeCls:'db-orb-ora', badgeTitle:'Oracle & SQL Matrix Lists' },
-      { h:'/aceptados', t:'Aceptados',     desc:'Elementos validados', i:S('<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>'), badgeIcon:'🐬', badgeCls:'db-orb-my', badgeTitle:'MySQL / MariaDB Sync' },
-      { h:'/informe',   t:'Informe',       desc:'Reportes generados', i:S('<path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/>'), badgeIcon:'🟦', badgeCls:'db-orb-sql', badgeTitle:'SQL Server Reporting' },
-      { h:'/viaticos',  t:'Viáticos',      desc:'Gastos de viajes', i:S('<path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/>'), badgeIcon:'💾', badgeCls:'db-orb-sqlite', badgeTitle:'SQLite Embedded Storage' },
-      { h:'/logs',      t:'Logs',          desc:'Registro de actividad', i:S('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="14" y2="17"/>'), badgeIcon:'⚡', badgeCls:'db-orb-rd', badgeTitle:'Redis Realtime Cache & Logs' },
-      { h:'/enlaces',   t:'Enlaces',       desc:'Accesos directos', i:S('<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>'), badgeIcon:'🐘', badgeCls:'db-orb-pg', badgeTitle:'PostgreSQL Links Storage' },
-      { h:'/calendario', t:'Calendario',   desc:'Fechas importantes', i:S('<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>'), badgeIcon:'🏛️', badgeCls:'db-orb-ora', badgeTitle:'Oracle Cron & Event Scheduler' },
-      { h:'/manual',    t:'Manual',        desc:'Cómo usar el sistema', i:S('<polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/>'), badgeIcon:'🐬', badgeCls:'db-orb-my', badgeTitle:'MySQL Knowledge Base' },
-      { h:'/papelera',  t:'Papelera',      desc:'Cosas eliminadas', i:S('<polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>'), badge:true, badgeIcon:'⚡', badgeCls:'db-orb-rd', badgeTitle:'Redis Soft-Delete Garbage Collector' }
-    ];
     var clockBox = '<div class="clock" id="clock" role="timer" aria-label="Hora y fecha actual"><svg class="face" viewBox="0 0 44 44" aria-hidden="true"><circle class="ring" cx="22" cy="22" r="20"/><line class="tick" x1="22" y1="4.5" x2="22" y2="7.5"/><line class="tick" x1="39.5" y1="22" x2="36.5" y2="22"/><line class="tick" x1="22" y1="39.5" x2="22" y2="36.5"/><line class="tick" x1="4.5" y1="22" x2="7.5" y2="22"/><line class="hand h" id="ckHh" x1="22" y1="22" x2="22" y2="12" stroke-width="2.6"/><line class="hand m" id="ckHm" x1="22" y1="22" x2="22" y2="8" stroke-width="1.8"/><line class="hand s" id="ckHs" x1="22" y1="25" x2="22" y2="6.5"/><circle class="pin" cx="22" cy="22" r="1.9"/></svg><div class="clock-txt"><div class="clock-time"><span id="ckH">--</span><i>:</i><span id="ckM">--</span><i>:</i><span id="ckS">--</span><small id="ckA" style="display:none;"></small></div><div class="clock-date" id="ckD"></div></div></div>';
     var themeBtn = '<button type="button" class="theme-toggle" id="themeToggle" title="Alternar claro / oscuro" aria-label="Alternar tema claro/oscuro"><svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path></svg><svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"></path></svg></button>';
     var palBtn = '<button type="button" class="theme-toggle" id="palBtn" title="Cambiar colores y apariencia" aria-label="Cambiar paleta de colores" aria-haspopup="dialog"><span class="pal-dot"></span></button>';
@@ -4026,8 +5638,17 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
     <div class="brand"><span class="badge" id="brandBadge" title="Bóveda Jira">🔐</span><span class="brand-title">Bóveda Jira</span><button type="button" class="sb-close" id="sbClose" title="Cerrar menú (Esc)" aria-label="Cerrar menú"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
     <button type="button" class="plain cmd-trigger" id="cmdOpen" title="Buscar… (Ctrl K)" aria-haspopup="dialog" aria-label="Abrir buscador rápido"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><span>Buscar…</span><kbd class="kbd">Ctrl K</kbd></button>
     <nav class="nav-tabs" id="navTabs">
-      <% navItems.forEach(function(n, idx){ var on = n.h === '/' ? cp === '/' : cp.indexOf(n.h) === 0; %>
-      <a href="<%= n.h %>" title="<%= n.t %>" data-title="<%= n.t %>" data-desc="<%= n.desc %>" style="--i:<%= idx %>" class="<%= on ? 'active' : '' %>"<%- on ? ' aria-current="page"' : '' %>>
+      <% var ultimoGrupo = null; %>
+      <% navItems.forEach(function(n, idx){ 
+           var on = n.h === '/' ? cp === '/' : cp.indexOf(n.h) === 0;
+           if (ultimoGrupo && ultimoGrupo !== n.grupo) { %>
+             <div class="nav-group-sep" role="separator" data-grupo="<%= n.grupo %>" title="<%= n.grupo %>">
+               <span class="nav-group-label"><%= n.grupo %></span>
+             </div>
+      <%   }
+           ultimoGrupo = n.grupo;
+      %>
+      <a href="<%= n.h %>" title="<%= n.t %> (<%= n.grupo %>)" data-title="<%= n.t %>" data-desc="<%= n.desc %>" data-grupo="<%= n.grupo %>" style="--i:<%= idx %>" class="<%= on ? 'active' : '' %>"<%- on ? ' aria-current="page"' : '' %>>
         <span class="nav-ic"><%- n.i %></span>
         <span class="nav-txt">
           <span class="nav-tit"><%= n.t %></span>
@@ -4053,7 +5674,13 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
     </div>
   </div>
   <% } else { %>
-  <div class="navbar"><%- clockBox %><%- themeBtn %><%- palBtn %></div>
+  <div class="navbar">
+      <div id="badgeDisponibilidadHeader" class="badge-disp-header" style="display:none;" title="Tienes turno de disponibilidad activo esta semana. Clic para ver detalles.">
+        <span class="badge-disp-dot"></span>
+        <span class="badge-disp-txt">🚨 DISPONIBILIDAD ESTA SEMANA</span>
+      </div>
+
+      <%- clockBox %><%- themeBtn %><%- palBtn %></div>
   <% } %>
 
   <!-- Panel de apariencia: modo + paleta de colores -->
@@ -4110,34 +5737,7 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
         <small>Dial Cyberpunk 180°</small>
       </button>
     </div>
-    <div class="pal-sec">Sincronización Planetaria</div>
-    <div class="pal-planet-box">
-      <button type="button" class="sw-planet-auto" data-pal="planeta-dia" id="swPlanetaDia" title="Cambia el estilo de la interfaz automáticamente según el planeta de cada día de la semana">
-        <span class="spa-icon">🪐</span>
-        <div class="spa-info">
-          <b class="spa-title">Planeta del Día (Automático)</b>
-          <span class="spa-desc" id="spaDescText">Hoy: Sincronizando...</span>
-        </div>
-        <span class="spa-badge">ACTIVO</span>
-      </button>
-    </div>
-
-    <div class="pal-sec">Colección Cósmica (Planetas)</div>
-    <div class="swatches" id="swatchesPlanets">
-      <% [
-        ['mercurio','Mercurio (Lunes)','#94a3b8','#475569'],
-        ['venus','Venus (Martes)','#ffd700','#d97706'],
-        ['tierra','Tierra (Miércoles)','#00f5ff','#0284c7'],
-        ['marte','Marte (Jueves)','#ff3b30','#b91c1c'],
-        ['jupiter','Júpiter (Viernes)','#f59e0b','#b45309'],
-        ['saturno','Saturno (Sábado)','#e0c580','#92400e'],
-        ['urano','Urano (Domingo)','#4ef2d2','#0284c7']
-      ].forEach(function(p){ %>
-      <button type="button" class="plain sw" data-pal="<%= p[0] %>" style="--a:<%= p[2] %>;--b:<%= p[3] %>" title="<%= p[1] %>"><span class="dot"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span><%= p[1] %></button>
-      <% }); %>
-    </div>
-
-    <div class="pal-sec">Paletas Clásicas</div>
+    <div class="pal-sec">Paletas de Colores</div>
     <div class="swatches" id="swatches">
       <% [
         ['cyber','Cyber Neón','#00f5ff','#ff0055'],
@@ -4182,6 +5782,26 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
         </span>
         <svg class="bnm-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="6 9 12 15 18 9"/></svg>
       </button>
+      <div class="topbar-ver-update-group" style="display:inline-flex; align-items:center; gap:6px; flex-wrap:wrap;">
+        <!-- Insignia Holográfica de Versión del Sistema (Visible en todo el programa) -->
+        <div class="cyber-version-pill" data-title="Suite Bóveda Jira · Versión activa: v2.8.8 (Compilación estable 2026)" title="Suite Bóveda Jira · Versión v2.8.8 (Compilación estable 2026)">
+          <span class="cvp-icon"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></span>
+          <span class="cvp-lbl">BUILD</span>
+          <strong class="cvp-ver">v2.8.8</strong>
+          <span class="cvp-pulse"></span>
+        </div>
+
+        <!-- Botón de Bajar Cambios Directamente desde GitHub -->
+        <button type="button" class="btn-git-update" id="btnGitUpdate" title="Buscar y descargar últimas mejoras desde GitHub">
+          <span class="bgu-spinner" id="bguSpinner">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+            </svg>
+          </span>
+          <span class="bgu-txt" id="bguTxt">Bajar Cambios</span>
+          <span class="bgu-badge" id="bguBadge" style="display:none;">0</span>
+        </button>
+      </div>
     </div>
     <div class="topbar-right">
       <!-- Selector Interactivo de Motor de Base de Datos y Color Global -->
@@ -4264,6 +5884,10 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
             <div class="tbm-info"><div class="tbm-title">Go / Golang</div><small>Azul Celeste · Goroutines Pipeline</small></div>
           </button>
         </div>      </div>
+      <div id="badgeDisponibilidadHeaderTopbar" class="badge-disp-header" style="display:none;" title="Tienes turno de disponibilidad activo esta semana. Clic para ver detalles.">
+        <span class="badge-disp-dot"></span>
+        <span class="badge-disp-txt">🚨 DISPONIBILIDAD ESTA SEMANA</span>
+      </div>
       <%- clockBox %>
     </div>
   </div>
@@ -4280,6 +5904,40 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
       </div>
     <% }); %>
     <%- body %>
+  </div>
+
+  
+  <!-- Modal de Turno de Disponibilidad Activo al Iniciar Sesión -->
+  <div id="modalDisponibilidadLogin" class="disp-modal-backdrop" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="dispModalTitle">
+    <div class="disp-modal-card">
+      <div class="disp-modal-glow"></div>
+      <div class="disp-badge-top">
+        <span class="disp-pulse-dot"></span>
+        <span>🚨 AVISO DE GUARDIA Y SOPORTE</span>
+      </div>
+      <h2 id="dispModalTitle" class="disp-modal-title">¡Estás de Disponibilidad esta Semana!</h2>
+      <p class="disp-modal-desc">
+        Tienes asignado el turno oficial de disponibilidad y atención de emergencias durante toda esta semana:
+      </p>
+      <div class="disp-dates-card">
+        <div class="disp-dates-row">
+          <span class="disp-icon-cal">📅</span>
+          <div>
+            <strong id="dispModalFechas">Del Lunes 26 de Octubre al Domingo 1 de Noviembre</strong>
+            <small id="dispModalUsuario">Turno asignado a James Grisales</small>
+          </div>
+        </div>
+        <span class="disp-status-active">🟢 Guardia Activa</span>
+      </div>
+      <div class="disp-tips-box">
+        <span>💡 <strong>Recordatorio importante:</strong> Mantén tu teléfono con sonido y revisa solicitudes urgentes de soporte o Jira fuera de tu jornada laboral habitual.</span>
+      </div>
+      <div class="disp-modal-actions">
+        <button type="button" class="btn-disp-confirm" id="btnConfirmarDisponibilidad">
+          ✔ Entendido, estoy disponible esta semana
+        </button>
+      </div>
+    </div>
   </div>
 
   <% if (currentUser) { %><button type="button" class="hex-matrix-handle" id="hexMatrixHandle" title="Matriz Hexagonal HUD (Clic o posar ratón para expandir)" aria-label="Abrir Matriz Hexagonal">
@@ -4792,7 +6450,7 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
       'superior': 'Barra Superior'
     };
     function marcar(){
-      var m = root.getAttribute('data-mode') || 'auto', p = root.getAttribute('data-palette') || 'planeta-dia', st = root.getAttribute('data-nav-style') || 'oculto';
+      var m = root.getAttribute('data-mode') || 'auto', p = root.getAttribute('data-palette') || 'db-engine', st = root.getAttribute('data-nav-style') || 'oculto';
       Array.prototype.forEach.call(panel.querySelectorAll('[data-mode]'), function(b){ b.classList.toggle('on', b.dataset.mode === m); });
       Array.prototype.forEach.call(panel.querySelectorAll('[data-pal]'), function(b){ b.classList.toggle('on', b.dataset.pal === p); });
       Array.prototype.forEach.call(panel.querySelectorAll('[data-nav]'), function(b){ b.classList.toggle('on', b.dataset.nav === st); });
@@ -4873,8 +6531,71 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
     $('palCustom').addEventListener('input', function(){ setPaleta('custom', this.value); });
     $('palReset').addEventListener('click', function(){ setModo('oled'); setPaleta('lima'); setNavStyle('oculto'); });
     $('themeToggle').addEventListener('click', function(){ setModo(root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'); });
+    function posicionarPanelPaleta(){
+      var btn = $('palBtn');
+      if (!btn || !panel) return;
+      var rect = btn.getBoundingClientRect();
+      var navStyle = root.getAttribute('data-nav-style') || 'oculto';
+      var panelWidth = 360;
+
+      if (navStyle === 'superior') {
+        panel.style.setProperty('position', 'fixed', 'important');
+        panel.style.setProperty('top', '70px', 'important');
+        panel.style.setProperty('right', '20px', 'important');
+        panel.style.setProperty('left', 'auto', 'important');
+        panel.style.setProperty('bottom', 'auto', 'important');
+        panel.style.setProperty('max-height', 'calc(100vh - 90px)', 'important');
+      } else if (navStyle === 'cyber-dock') {
+        var left = rect.right - panelWidth + 14;
+        if (left < 10) left = 10;
+        if (left + panelWidth > window.innerWidth - 10) left = window.innerWidth - panelWidth - 10;
+        panel.style.setProperty('position', 'fixed', 'important');
+        panel.style.setProperty('top', Math.round(rect.bottom + 12) + 'px', 'important');
+        panel.style.setProperty('left', Math.round(left) + 'px', 'important');
+        panel.style.setProperty('bottom', 'auto', 'important');
+        panel.style.setProperty('right', 'auto', 'important');
+        panel.style.setProperty('max-height', 'calc(100vh - ' + Math.round(rect.bottom + 26) + 'px)', 'important');
+      } else if (navStyle === 'dynamic-island') {
+        var left = Math.max(10, Math.min(window.innerWidth - panelWidth - 10, rect.left - 180));
+        panel.style.setProperty('position', 'fixed', 'important');
+        panel.style.setProperty('top', Math.round(rect.bottom + 12) + 'px', 'important');
+        panel.style.setProperty('left', Math.round(left) + 'px', 'important');
+        panel.style.setProperty('bottom', 'auto', 'important');
+        panel.style.setProperty('right', 'auto', 'important');
+        panel.style.setProperty('max-height', 'calc(100vh - ' + Math.round(rect.bottom + 26) + 'px)', 'important');
+      } else if (navStyle === 'dock' || navStyle === 'fija' || navStyle === 'rueda' || navStyle === 'oculto' || navStyle === 'hex-matrix') {
+        var left = Math.round(rect.right + 12);
+        if (left + panelWidth > window.innerWidth - 10) left = Math.max(10, window.innerWidth - panelWidth - 10);
+        panel.style.setProperty('position', 'fixed', 'important');
+        panel.style.setProperty('left', left + 'px', 'important');
+        panel.style.setProperty('bottom', '16px', 'important');
+        panel.style.setProperty('top', 'auto', 'important');
+        panel.style.setProperty('right', 'auto', 'important');
+        panel.style.setProperty('max-height', 'calc(100vh - 32px)', 'important');
+      } else {
+        if (rect.top > window.innerHeight / 2) {
+          panel.style.setProperty('position', 'fixed', 'important');
+          panel.style.setProperty('bottom', '16px', 'important');
+          panel.style.setProperty('top', 'auto', 'important');
+          panel.style.setProperty('left', Math.max(10, Math.min(window.innerWidth - panelWidth - 10, rect.left)) + 'px', 'important');
+          panel.style.setProperty('right', 'auto', 'important');
+          panel.style.setProperty('max-height', 'calc(100vh - 32px)', 'important');
+        } else {
+          panel.style.setProperty('position', 'fixed', 'important');
+          panel.style.setProperty('top', Math.round(rect.bottom + 10) + 'px', 'important');
+          panel.style.setProperty('bottom', 'auto', 'important');
+          panel.style.setProperty('left', Math.max(10, Math.min(window.innerWidth - panelWidth - 10, rect.left - 180)) + 'px', 'important');
+          panel.style.setProperty('right', 'auto', 'important');
+          panel.style.setProperty('max-height', 'calc(100vh - ' + Math.round(rect.bottom + 24) + 'px)', 'important');
+        }
+      }
+    }
+
     function togglePal(abrir){
       var isOpen = (typeof abrir === 'boolean') ? abrir : !panel.classList.contains('open');
+      if (isOpen) {
+        posicionarPanelPaleta();
+      }
       panel.classList.toggle('open', isOpen);
       document.body.classList.toggle('pal-open', isOpen);
     }
@@ -4923,55 +6644,94 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
     });
 
     
-    /* ===== SISTEMA DE TOOLTIPS HOLOGRÁFICOS CYBERPUNK ===== */
+    /* ===== SISTEMA DE TOOLTIPS HOLOGRÁFICOS CYBERPUNK (GLOBAL PARA TODOS LOS MÓDULOS) ===== */
     (function(){
-      var tip = document.createElement('div');
-      tip.className = 'cyber-tooltip';
-      tip.id = 'cyberTooltip';
-      tip.setAttribute('aria-hidden', 'true');
-      tip.innerHTML = '<div class="ct-head"><span class="ct-title"></span><span class="ct-badge"></span></div><div class="ct-desc"></div><div class="ct-arrow"></div>';
-      document.body.appendChild(tip);
+      var tip = document.getElementById('cyberTooltip');
+      if (!tip) {
+        tip = document.createElement('div');
+        tip.className = 'cyber-tooltip';
+        tip.id = 'cyberTooltip';
+        tip.setAttribute('aria-hidden', 'true');
+        tip.innerHTML = '<div class="ct-head"><span class="ct-title"></span><span class="ct-badge"></span></div><div class="ct-desc"></div><div class="ct-arrow"></div>';
+        document.body.appendChild(tip);
+      }
 
       var titleEl = tip.querySelector('.ct-title');
       var descEl = tip.querySelector('.ct-desc');
       var badgeEl = tip.querySelector('.ct-badge');
+      var arrowEl = tip.querySelector('.ct-arrow');
       var currentTarget = null;
       var hideTimer = null;
+
+      function parseInfo(el) {
+        var rawTitle = el.getAttribute('data-title') || el.getAttribute('data-tip-suppressed') || el.getAttribute('title') || el.getAttribute('aria-label') || '';
+        var desc = el.getAttribute('data-desc') || '';
+        var badge = el.getAttribute('data-badge') || '';
+
+        rawTitle = (rawTitle || '').trim();
+
+        if (el.closest('.nav-tabs') && !badge) {
+          var orb = el.querySelector('.nav-db-side');
+          if (orb) badge = orb.textContent.trim();
+        }
+
+        if (!badge) {
+          var kbdMatch = rawTitle.match(/\s*\(((?:Ctrl|Alt|Shift|Cmd|Meta|Esc)[^)]*)\)\s*$/i);
+          if (kbdMatch) {
+            badge = kbdMatch[1].trim();
+            rawTitle = rawTitle.substring(0, kbdMatch.index).trim();
+          } else if (/^atajo:\s*(.+)$/i.test(rawTitle)) {
+            var atajoMatch = rawTitle.match(/^atajo:\s*(.+)$/i);
+            badge = atajoMatch[1].trim();
+            var innerTxt = (el.textContent || '').trim();
+            rawTitle = innerTxt && innerTxt.length < 30 ? innerTxt : 'Atajo';
+          }
+        }
+
+        if (!desc) {
+          if (rawTitle.includes(' · ')) {
+            var parts = rawTitle.split(' · ');
+            rawTitle = parts[0].trim();
+            desc = parts.slice(1).join(' · ').trim();
+          } else if (rawTitle.includes(': ') && !rawTitle.toLowerCase().startsWith('http')) {
+            var colonIdx = rawTitle.indexOf(': ');
+            var candidateTitle = rawTitle.substring(0, colonIdx).trim();
+            var candidateDesc = rawTitle.substring(colonIdx + 2).trim();
+            if (candidateTitle.length > 0 && candidateTitle.length < 30) {
+              rawTitle = candidateTitle;
+              desc = candidateDesc;
+            }
+          }
+        }
+
+        return { title: rawTitle, desc: desc, badge: badge };
+      }
 
       function showTip(el){
         if (!el) return;
         currentTarget = el;
         clearTimeout(hideTimer);
 
-        // Suprimir el tooltip nativo del navegador
+        // Suprimir el tooltip nativo amarillo/negro del sistema operativo
         if (el.hasAttribute('title') && el.getAttribute('title')) {
           el.setAttribute('data-tip-suppressed', el.getAttribute('title'));
           el.removeAttribute('title');
         }
 
-        var tit = el.getAttribute('data-title') || el.getAttribute('data-tip-suppressed') || el.getAttribute('aria-label') || '';
-        var desc = el.getAttribute('data-desc') || '';
-        var badge = el.getAttribute('data-badge') || '';
+        var info = parseInfo(el);
+        if (!info.title && !info.desc) return;
 
-        // Si es un enlace del menú principal, mostrar el icono del motor o badge de BD
-        if (el.closest('.nav-tabs') && !badge) {
-          var orb = el.querySelector('.nav-db-side');
-          if (orb) badge = orb.textContent.trim();
-        }
-
-        if (!tit && !desc) return;
-
-        titleEl.textContent = tit;
-        if (desc) {
-          descEl.textContent = desc;
+        titleEl.textContent = info.title;
+        if (info.desc) {
+          descEl.textContent = info.desc;
           descEl.style.display = 'block';
         } else {
           descEl.textContent = '';
           descEl.style.display = 'none';
         }
 
-        if (badge) {
-          badgeEl.textContent = badge;
+        if (info.badge) {
+          badgeEl.textContent = info.badge;
           badgeEl.style.display = 'inline-block';
         } else {
           badgeEl.textContent = '';
@@ -4980,39 +6740,35 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
 
         tip.className = 'cyber-tooltip visible';
 
-        // Calcular posición
         var rect = el.getBoundingClientRect();
         var tipRect = tip.getBoundingClientRect();
         var x = 0, y = 0;
-        var arrowClass = 'arrow-top';
+        var arrowClass = 'arrow-bottom';
 
-        var navStyle = root.getAttribute('data-nav-style') || 'oculto';
+        var isTopBar = !!el.closest('.topbar, .navbar, [data-nav-style="cyber-dock"] .navbar');
 
-        // Si el elemento está en la parte superior (cyber-dock, dynamic-island, topbar)
-        if (rect.top < 120 || navStyle === 'cyber-dock' || navStyle === 'dynamic-island' || navStyle === 'superior') {
+        if (isTopBar || rect.top < 70) {
           x = rect.left + (rect.width / 2) - (tipRect.width / 2);
-          y = rect.bottom + 10;
+          y = rect.bottom + 8;
           arrowClass = 'arrow-top';
-        } else if (rect.left < 160) {
-          // Barra lateral izquierda (dock, hex-matrix, clásica)
-          x = rect.right + 12;
-          y = rect.top + (rect.height / 2) - (tipRect.height / 2);
-          arrowClass = 'arrow-left';
         } else {
-          // Por defecto arriba del elemento
           x = rect.left + (rect.width / 2) - (tipRect.width / 2);
-          y = rect.top - tipRect.height - 10;
+          y = rect.top - tipRect.height - 8;
           arrowClass = 'arrow-bottom';
+          if (y < 8) {
+            y = rect.bottom + 8;
+            arrowClass = 'arrow-top';
+          }
         }
 
-        // Restricciones de pantalla
         if (x < 10) x = 10;
         if (x + tipRect.width > window.innerWidth - 10) {
           x = window.innerWidth - tipRect.width - 10;
         }
-        if (y < 10) {
-          y = rect.bottom + 10;
-          arrowClass = 'arrow-top';
+
+        var arrowOffset = (rect.left + rect.width / 2) - x;
+        if (arrowEl) {
+          arrowEl.style.left = Math.max(14, Math.min(tipRect.width - 14, arrowOffset)) + 'px';
         }
 
         tip.style.left = Math.round(x) + 'px';
@@ -5029,9 +6785,11 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
         currentTarget = null;
       }
 
-      // Delegación de eventos para máximo rendimiento y fluidez
+      // Selector global que cubre TODOS los módulos y botones con tooltip
+      var selector = '[title], [data-title], [data-cyber-tip], [data-tip-suppressed], .nav-tabs a, .acc-actions a, .acc-actions button, .btn-nav-modal, .topbar-db-btn, #topbarThemeBtn, #cmdOpen, #as-trigger, .hex-matrix-handle, .v-icon-cluster button, .v-tb-btn, .v-tb-menu-item, .v-tb-drop-btn, .ew-pill-btn';
+
       document.addEventListener('mouseover', function(e){
-        var target = e.target.closest('.nav-tabs a, .acc-actions a, .acc-actions button, .btn-nav-modal, .topbar-db-btn, #topbarThemeBtn, #cmdOpen, #as-trigger, .hex-matrix-handle, [data-cyber-tip]');
+        var target = e.target.closest(selector);
         if (target) {
           showTip(target);
         } else if (currentTarget && !e.target.closest('.cyber-tooltip')) {
@@ -5040,10 +6798,14 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
       });
 
       document.addEventListener('mouseout', function(e){
-        var target = e.target.closest('.nav-tabs a, .acc-actions a, .acc-actions button, .btn-nav-modal, .topbar-db-btn, #topbarThemeBtn, #cmdOpen, #as-trigger, .hex-matrix-handle, [data-cyber-tip]');
+        var target = e.target.closest(selector);
         if (target && target === currentTarget) {
           hideTip();
         }
+      });
+
+      document.addEventListener('mousedown', function(){
+        if (currentTarget) hideTip();
       });
 
       window.addEventListener('scroll', function(){
@@ -5051,9 +6813,7 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
       }, { passive: true });
     })();
 
-
-    
-    /* Scroll horizontal con rueda del ratón en barras horizontales */
+        /* Scroll horizontal con rueda del ratón en barras horizontales */
     var nt = $('navTabs');
     if (nt) {
       nt.addEventListener('wheel', function(e){
@@ -5098,14 +6858,6 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
       var NAV = <%- JSON.stringify(currentUser ? navItems : []).replace(/</g, '\\u003c') %>;
       var logged = NAV.length > 0, cur = location.pathname, prevFocus = null, sel = 0, vis = [];
       var PALS = [
-        ['planeta-dia','Planeta del Día (Automático)','#00f5ff','#ff3b30'],
-        ['mercurio','Planeta Mercurio (Lunes)','#94a3b8','#475569'],
-        ['venus','Planeta Venus (Martes)','#ffd700','#d97706'],
-        ['tierra','Planeta Tierra (Miércoles)','#00f5ff','#0284c7'],
-        ['marte','Planeta Marte (Jueves)','#ff3b30','#b91c1c'],
-        ['jupiter','Planeta Júpiter (Viernes)','#f59e0b','#b45309'],
-        ['saturno','Planeta Saturno (Sábado)','#e0c580','#92400e'],
-        ['urano','Planeta Urano (Domingo)','#4ef2d2','#0284c7'],
         ['cyber','Cyber Neón','#00f5ff','#ff0055'],
         ['azul','Azul','#2563eb','#4f46e5'],
         ['cobalto','Cobalto','#38bdf8','#1d4ed8'],
@@ -5164,6 +6916,7 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
           L.push({ g:'Cuenta', t:'Mi contraseña y Huella digital', i:I.lock, k:'clave cambiar contraseña huella biometria windows hello', run:function(){ location.href = '/cambiar-clave'; } });
           L.push({ g:'Cuenta', t:'Crear usuario', i:I.user, k:'registro nuevo', run:function(){ location.href = '/registro'; } });
           L.push({ g:'Cuenta', t:'Cerrar sesión', i:I.out,  k:'salir logout', run:function(){ location.href = '/logout'; } });
+          L.push({ g:'Sistema', t:'Bajar cambios de GitHub (Actualizar)', i:ico('<path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>'), k:'actualizar git pull bajar cambios version update github', run:function(){ var b = $('btnGitUpdate'); if (b) b.click(); } });
         }
         return L;
       }
@@ -5239,58 +6992,63 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
       });
     })();
 
-    /* ----- Popover lateral interactivo ----- */
+    /* ----- Insignia Holográfica de Módulo Activo Debajo del Título en Todos los Módulos ----- */
     (function(){
-      var navPop = document.createElement('div');
-      navPop.className = 'nav-popover-global';
-      document.body.appendChild(navPop);
-      
-      function attachPopover(el, getTitle, getDesc) {
-        if (!el) return;
-        el.addEventListener('mouseenter', function(){
-          var title = typeof getTitle === 'function' ? getTitle(el) : getTitle;
-          var desc = typeof getDesc === 'function' ? getDesc(el) : getDesc;
-          if (!title) return;
-          var rect = el.getBoundingClientRect();
-          navPop.innerHTML = '<b>' + title + '</b>' + (desc ? '<span>' + desc + '</span>' : '');
-          navPop.style.top = (rect.top + rect.height/2) + 'px';
-          navPop.style.left = (rect.right + 14) + 'px';
-          navPop.classList.add('show');
-        });
-        el.addEventListener('mouseleave', function(){
-          navPop.classList.remove('show');
-        });
+      function mountActiveBadge(){
+        if (document.body.classList.contains('guest')) return;
+        var h1 = document.querySelector('.wrap h1, .main-content h1, .page-head h1, .top h1, h1');
+        if (!h1) return;
+        if (h1.closest('.modal, .nav-modal, .cmdk-box, .pal-panel')) return;
+        if (document.getElementById('cyberActiveModuleBadge')) return;
+
+        var modTitle = document.body.dataset.activeModuleTitle || 'Módulo';
+        var modDesc = document.body.dataset.activeModuleDesc || '';
+        var modIcon = document.body.dataset.activeModuleIcon || '⚡';
+        var modCls = document.body.dataset.activeModuleCls || 'db-orb-pg';
+
+        var badge = document.createElement('div');
+        badge.className = 'cyber-active-module-badge';
+        badge.id = 'cyberActiveModuleBadge';
+        badge.title = 'Módulo en ejecución: ' + modTitle + (modDesc ? ' · ' + modDesc : '');
+        badge.innerHTML = '<span class="camb-status-dot"></span>' +
+          '<span class="camb-orb ' + modCls + '">' + modIcon + '</span>' +
+          '<span class="camb-tag">MÓDULO ACTIVO</span>' +
+          '<span class="camb-title">' + modTitle + '</span>' +
+          (modDesc ? '<span class="camb-sep">·</span><span class="camb-desc">' + modDesc + '</span>' : '');
+
+        var parent = h1.parentElement;
+        if (!parent) return;
+
+        // Si el contenedor padre es una barra horizontal flex (como .top, .cal-top, .page-head con acciones a la derecha)
+        // creamos un contenedor vertical dedicado para que h1 quede arriba y la insignia directamente debajo:
+        var cs = window.getComputedStyle(parent);
+        var isFlexRow = (cs.display === 'flex' || cs.display === 'inline-flex') && (cs.flexDirection === 'row' || !cs.flexDirection);
+        if (isFlexRow) {
+          var titleWrap = document.createElement('div');
+          titleWrap.className = 'cyber-title-group';
+          titleWrap.style.display = 'flex';
+          titleWrap.style.flexDirection = 'column';
+          titleWrap.style.alignItems = 'flex-start';
+          titleWrap.style.gap = '6px';
+          titleWrap.style.minWidth = '0';
+
+          parent.insertBefore(titleWrap, h1);
+          h1.style.setProperty('margin', '0', 'important');
+          h1.style.setProperty('display', 'block', 'important');
+          titleWrap.appendChild(h1);
+          titleWrap.appendChild(badge);
+        } else {
+          h1.style.setProperty('display', 'block', 'important');
+          h1.style.setProperty('margin-bottom', '6px', 'important');
+          h1.insertAdjacentElement('afterend', badge);
+        }
       }
 
-      // Nav tabs
-      document.querySelectorAll('.nav-tabs a').forEach(function(link){
-        attachPopover(link, function(){ return link.dataset.title || (link.querySelector('.nav-txt') ? link.querySelector('.nav-txt').textContent.trim() : link.textContent.trim()); }, function(){ return link.dataset.desc || ''; });
-      });
-
-      // Buscador
-      var cmd = $('cmdOpen');
-      if (cmd) attachPopover(cmd, 'Buscador rápido', 'Ctrl + K  ó  /');
-
-      // Tarjeta de usuario
-      var ucard = document.querySelector('.user-card');
-      if (ucard) attachPopover(ucard, function(){ return document.body.dataset.user || 'Usuario'; }, 'Sesión activa');
-
-      // Acciones de cuenta
-      document.querySelectorAll('.nav-account .acc-btn, .nav-account .acc-out').forEach(function(btn){
-        attachPopover(btn, function(){ return btn.dataset.title || (btn.querySelector('span') ? btn.querySelector('span').textContent.trim() : btn.textContent.trim()) || btn.getAttribute('title') || ''; }, '');
-      });
-
-      // Tema y paleta
-      var th = $('themeToggle');
-      if (th) attachPopover(th, 'Tema claro / oscuro', 'Cambiar modo');
-      var pal = $('palBtn');
-      if (pal) attachPopover(pal, 'Apariencia y Colores', 'Elige tu paleta favorita');
-
-      // Botón de alternar menú
-      var sbc = $('sbClose');
-      if (sbc) attachPopover(sbc, function(){ return root.classList.contains('sb-off') ? 'Expandir menú' : 'Ocultar menú'; }, '');
-
-      document.addEventListener('scroll', function(){ navPop.classList.remove('show'); }, { passive:true });
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', mountActiveBadge);
+      } else {
+        mountActiveBadge();
+      }
     })();
 
     /* ----- Manejador de Motor de Base de Datos y Paleta Global ----- */
@@ -5407,9 +7165,584 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
     })();
   })();
   </script>
-<% if (currentUser) { %><script src="/persistir.js"></script><% } %>
+<% if (currentUser) { %><script src="/persistir.js">
+    /* ===== MOTOR UNIVERSAL DE SELECTORES CYBERPUNK (CYBER-SELECT) ===== */
+    (function initCyberSelects(){
+      function enhance(selectEl){
+        if (selectEl.dataset.cyberEnhanced === 'true') return;
+        if (selectEl.multiple || selectEl.size > 1) return;
+
+        selectEl.dataset.cyberEnhanced = 'true';
+        selectEl.style.position = 'absolute';
+        selectEl.style.opacity = '0';
+        selectEl.style.pointerEvents = 'none';
+        selectEl.style.width = '0';
+        selectEl.style.height = '0';
+        selectEl.style.overflow = 'hidden';
+
+        var wrap = document.createElement('div');
+        wrap.className = 'cyber-select-wrap';
+        if (selectEl.id) wrap.setAttribute('data-target-id', selectEl.id);
+        if (selectEl.className) {
+          var extra = selectEl.className.replace('cyber-enhanced', '').trim();
+          if (extra) wrap.className += ' ' + extra;
+        }
+
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'cyber-select-btn';
+        btn.setAttribute('aria-haspopup', 'listbox');
+        btn.setAttribute('aria-expanded', 'false');
+
+        var labelSpan = document.createElement('span');
+        labelSpan.className = 'cs-label';
+
+        var arrowSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        arrowSvg.setAttribute('class', 'cs-arrow');
+        arrowSvg.setAttribute('viewBox', '0 0 24 24');
+        arrowSvg.innerHTML = '<path d="m6 9 6 6 6-6"/>';
+
+        btn.appendChild(labelSpan);
+        btn.appendChild(arrowSvg);
+
+        var menu = document.createElement('div');
+        menu.className = 'cyber-select-menu';
+        menu.setAttribute('role', 'listbox');
+
+        function rebuildOptions(){
+          menu.innerHTML = '';
+          var opts = Array.from(selectEl.options);
+          var selectedOpt = selectEl.options[selectEl.selectedIndex] || opts[0];
+          labelSpan.textContent = selectedOpt ? selectedOpt.textContent : '--';
+
+          opts.forEach(function(opt){
+            var item = document.createElement('div');
+            item.className = 'cs-option' + (opt.selected ? ' selected' : '');
+            item.setAttribute('data-value', opt.value);
+            item.setAttribute('role', 'option');
+
+            var txt = document.createElement('span');
+            txt.textContent = opt.textContent;
+
+            var chk = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            chk.setAttribute('class', 'cs-check');
+            chk.setAttribute('viewBox', '0 0 24 24');
+            chk.innerHTML = '<polyline points="20 6 9 17 4 12"/>';
+
+            item.appendChild(txt);
+            item.appendChild(chk);
+
+            item.addEventListener('click', function(e){
+              e.stopPropagation();
+              selectEl.value = opt.value;
+              selectEl.dispatchEvent(new Event('change', { bubbles: true }));
+              closeMenu();
+            });
+
+            menu.appendChild(item);
+          });
+        }
+
+        rebuildOptions();
+
+        function openMenu(){
+          document.querySelectorAll('.cyber-select-wrap.open').forEach(function(w){
+            if (w !== wrap) w.classList.remove('open');
+          });
+          wrap.classList.add('open');
+          btn.setAttribute('aria-expanded', 'true');
+
+          var rect = wrap.getBoundingClientRect();
+          var spaceBelow = window.innerHeight - rect.bottom;
+          if (spaceBelow < 280 && rect.top > 280) {
+            wrap.classList.add('opens-up');
+          } else {
+            wrap.classList.remove('opens-up');
+          }
+        }
+
+        function closeMenu(){
+          wrap.classList.remove('open');
+          btn.setAttribute('aria-expanded', 'false');
+        }
+
+        btn.addEventListener('click', function(e){
+          e.stopPropagation();
+          if (wrap.classList.contains('open')) {
+            closeMenu();
+          } else {
+            openMenu();
+          }
+        });
+
+        selectEl.addEventListener('change', function(){
+          var opts = Array.from(selectEl.options);
+          var current = opts[selectEl.selectedIndex];
+          if (current) labelSpan.textContent = current.textContent;
+          menu.querySelectorAll('.cs-option').forEach(function(it){
+            var isSel = it.getAttribute('data-value') === selectEl.value;
+            it.classList.toggle('selected', isSel);
+          });
+        });
+
+        var obs = new MutationObserver(function(){
+          rebuildOptions();
+        });
+        obs.observe(selectEl, { childList: true, subtree: true });
+
+        wrap.appendChild(btn);
+        wrap.appendChild(menu);
+        selectEl.parentNode.insertBefore(wrap, selectEl.nextSibling);
+      }
+
+      function scan(){
+        var selects = document.querySelectorAll(
+          '#sortEmpresas, .efb-select, #orden, #selArchivo, #horaFormato, #ticket, #sep, #comillas, #parent, #union, #porLinea, #fTipo, #fAvisar, #fRep, #indent, #rpAlcance, #lsSep, #lsComillas, #lsParent, #mxOp, select.cyber-select'
+        );
+        selects.forEach(enhance);
+      }
+
+      document.addEventListener('click', function(e){
+        if (!e.target.closest('.cyber-select-wrap')) {
+          document.querySelectorAll('.cyber-select-wrap.open').forEach(function(w){
+            w.classList.remove('open');
+            var b = w.querySelector('.cyber-select-btn');
+            if (b) b.setAttribute('aria-expanded', 'false');
+          });
+        }
+      });
+
+      document.addEventListener('keydown', function(e){
+        if (e.key === 'Escape') {
+          document.querySelectorAll('.cyber-select-wrap.open').forEach(function(w){
+            w.classList.remove('open');
+            var b = w.querySelector('.cyber-select-btn');
+            if (b) b.setAttribute('aria-expanded', 'false');
+          });
+        }
+      });
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', scan);
+      } else {
+        scan();
+      }
+
+      // Re-escanear por si modales o vistas inyectan selects dinámicamente
+      window.refreshCyberSelects = scan;
+    })();
+
+  </script><% } %>
 <% if (currentUser) { %><%- include('asistente-widget') %><% } %>
 <% if (currentUser) { %><%- include('recordatorios-widget') %><% } %>
 
+
+    <!-- =====================================================================
+       MODAL: REVISOR DE ACTUALIZACIONES DESDE GITHUB (ALINEADO Y CENTRADO)
+       ===================================================================== -->
+  <div class="git-modal-overlay" id="modalGitUpdate" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="modalGitTitle">
+    <div class="cyber-modal-box">
+      <!-- Encabezado del modal -->
+      <div class="git-modal-head">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <span id="modalGitIcon" style="font-size:26px; filter:drop-shadow(0 0 10px var(--accent));">🚀</span>
+          <div>
+            <h3 id="modalGitTitle" style="margin:0; font-size:16.5px; font-weight:800; color:var(--text); letter-spacing:-0.01em;">Actualizaciones en GitHub</h3>
+            <small id="modalGitSubtitle" style="color:var(--muted); font-size:12px;">Nuevas mejoras listas para descargar e instalar</small>
+          </div>
+        </div>
+        <button type="button" class="plain modal-close" id="btnCloseModalGit" aria-label="Cerrar" style="font-size:22px; cursor:pointer; color:var(--muted); padding:4px 8px; border-radius:8px; border:none; background:transparent;">&times;</button>
+      </div>
+
+      <!-- Cuerpo del modal -->
+      <div class="git-modal-body">
+        <!-- VISTA A: Hay cambios pendientes -->
+        <div id="gitViewPending" style="display:block;">
+          <div class="git-update-banner">
+            <div class="gub-stat">
+              <span class="gub-num" id="gitCommitsCount">0</span>
+              <span class="gub-lbl">Mejoras</span>
+            </div>
+            <div class="gub-info">
+              <div class="gub-branch">Rama: <strong id="gitBranchName" style="color:var(--accent);">main</strong></div>
+              <div class="gub-desc">Al confirmar, el sistema guardará tus cambios locales (git stash), descargará las novedades de GitHub (git pull), actualizará dependencias y reiniciará el programa automáticamente.</div>
+            </div>
+          </div>
+
+          <div style="margin: 14px 0 8px; font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent);">
+            📋 Lista de cambios y mejoras detectadas:
+          </div>
+          <div class="git-commits-list" id="gitCommitsList" style="max-height: 220px; overflow-y: auto;">
+            <!-- Commits renderizados dinamicamente -->
+          </div>
+        </div>
+
+        <!-- VISTA B: Ya está al día / No existen cambios -->
+        <div id="gitViewUpToDate" style="display:none;">
+          <div class="git-update-banner uptodate">
+            <div class="gub-stat uptodate">
+              <span class="gub-num">0</span>
+              <span class="gub-lbl" style="color:#10b981;">Al Día</span>
+            </div>
+            <div class="gub-info">
+              <div class="gub-branch" style="color:#10b981;">✅ Sistema Sincronizado y Estable</div>
+              <div class="gub-desc">Tu versión actual (v2.8.8) cuenta con todas las mejoras y parches más recientes publicados en GitHub. No hay versiones ni cambios nuevos pendientes de descargar.</div>
+            </div>
+          </div>
+          <div style="padding: 12px 14px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; font-size: 12.5px; color: var(--muted); line-height: 1.45;">
+            💡 <strong>Tip:</strong> Si tú o tu equipo suben nuevos commits al repositorio de GitHub, podrás descargarlos aquí mismo con un solo clic en cualquier momento.
+          </div>
+        </div>
+
+        <!-- VISTA C: Error de conexión -->
+        <div id="gitViewError" style="display:none;">
+          <div style="padding: 14px 16px; border-radius: 12px; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.35); color: #f87171; font-size: 13px; line-height: 1.45;" id="gitErrorText">
+            No se pudo conectar con GitHub. Verifica que tengas conexión a internet o acceso al repositorio.
+          </div>
+        </div>
+      </div>
+
+      <!-- Pie del modal / Botones de acción -->
+      <div class="git-modal-foot">
+        <div id="gitFootPending" style="display:flex; align-items:center; gap:10px;">
+          <button type="button" class="secondary btn-sm" id="btnCancelGitUpdate">Posponer</button>
+          <button type="button" class="btn-update-confirm" id="btnConfirmGitUpdate">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="16" height="16"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+            <span>Descargar e Instalar Ahora</span>
+          </button>
+        </div>
+        <div id="gitFootUpToDate" style="display:none;">
+          <button type="button" class="btn-update-confirm" id="btnOkGitUpdate">
+            <span>Entendido</span>
+          </button>
+        </div>
+        <div id="gitFootError" style="display:none;">
+          <button type="button" class="secondary btn-sm" id="btnErrorClose">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =====================================================================
+       HUD FULL-SCREEN: INSTALACIÓN Y RECONEXIÓN AUTOMÁTICA
+       ===================================================================== -->
+  <div class="hud-actualizando-overlay" id="hudActualizando" style="display:none;" aria-live="assertive">
+    <div class="hud-act-box">
+      <div class="hud-act-spinner-quantum">
+        <svg class="haq-svg" viewBox="0 0 120 120">
+          <circle class="haq-ring haq-ring-bg" cx="60" cy="60" r="50"/>
+          <circle class="haq-ring haq-ring-main" cx="60" cy="60" r="50"/>
+          <circle class="haq-ring haq-ring-inner" cx="60" cy="60" r="35"/>
+        </svg>
+        <div class="haq-center-icon" id="haqCenterIcon">⚡</div>
+      </div>
+
+      <h2 class="hud-act-title" id="hudActTitle">INSTALANDO NUEVA VERSIÓN</h2>
+      <p class="hud-act-sub" id="hudActSubtitle">Sincronizando cambios de GitHub y reiniciando el servicio...</p>
+
+      <div class="hud-act-steps">
+        <div class="ha-step active" id="haStep1">
+          <span class="has-dot"></span>
+          <span class="has-txt">1. Descargando cambios de GitHub (git pull)</span>
+          <span class="has-check">✔</span>
+        </div>
+        <div class="ha-step" id="haStep2">
+          <span class="has-dot"></span>
+          <span class="has-txt">2. Verificando librerías y dependencias (npm install)</span>
+          <span class="has-check">✔</span>
+        </div>
+        <div class="ha-step" id="haStep3">
+          <span class="has-dot"></span>
+          <span class="has-txt">3. Reiniciando servidor Bóveda Jira en puerto 5050</span>
+          <span class="has-check">✔</span>
+        </div>
+      </div>
+
+      <div class="hud-act-status-bar">
+        <div class="hasb-fill" id="hudActProgress"></div>
+      </div>
+
+      <div class="hud-act-telemetry" id="hudActTelemetry">
+        <span class="hat-dot"></span>
+        <span class="hat-txt" id="hudActMsg">Reconectando con el servidor...</span>
+      </div>
+
+      <small class="hud-act-warning">Por favor mantén esta ventana abierta. La aplicación se reconectará y abrirá en el login automáticamente.</small>
+    </div>
+  </div>
+
+  <script>
+    /* =====================================================================
+       LÓGICA DEL ACTUALIZADOR AUTOMÁTICO DESDE GITHUB
+       ===================================================================== */
+    (function(){
+      function initGitUpdater(){
+        var btn = document.getElementById('btnGitUpdate');
+        var modal = document.getElementById('modalGitUpdate');
+        var hud = document.getElementById('hudActualizando');
+        if (!btn) return;
+
+        var bguTxt = document.getElementById('bguTxt');
+        var bguBadge = document.getElementById('bguBadge');
+
+        var modalIcon = document.getElementById('modalGitIcon');
+        var modalTitle = document.getElementById('modalGitTitle');
+        var modalSubtitle = document.getElementById('modalGitSubtitle');
+
+        var viewPending = document.getElementById('gitViewPending');
+        var viewUpToDate = document.getElementById('gitViewUpToDate');
+        var viewError = document.getElementById('gitViewError');
+        var footPending = document.getElementById('gitFootPending');
+        var footUpToDate = document.getElementById('gitFootUpToDate');
+        var footError = document.getElementById('gitFootError');
+        var errorText = document.getElementById('gitErrorText');
+
+        function abrirModal(){
+          if (!modal) return;
+          modal.style.display = 'flex';
+          modal.classList.add('open');
+          modal.classList.add('show');
+          document.body.style.overflow = 'hidden';
+        }
+        function cerrarModal(){
+          if (!modal) return;
+          modal.style.display = 'none';
+          modal.classList.remove('open');
+          modal.classList.remove('show');
+          document.body.style.overflow = '';
+        }
+
+        var btnClose = document.getElementById('btnCloseModalGit');
+        var btnCancel = document.getElementById('btnCancelGitUpdate');
+        var btnOk = document.getElementById('btnOkGitUpdate');
+        var btnErrClose = document.getElementById('btnErrorClose');
+        if (btnClose) btnClose.addEventListener('click', cerrarModal);
+        if (btnCancel) btnCancel.addEventListener('click', cerrarModal);
+        if (btnOk) btnOk.addEventListener('click', cerrarModal);
+        if (btnErrClose) btnErrClose.addEventListener('click', cerrarModal);
+
+        if (modal) {
+          modal.addEventListener('click', function(e){
+            if (e.target === modal) cerrarModal();
+          });
+        }
+
+        // 1. Clic en "Bajar Cambios": consulta GitHub
+        btn.addEventListener('click', function(){
+          if (btn.classList.contains('bgu-checking')) return;
+
+          btn.classList.add('bgu-checking');
+          if (bguTxt) bguTxt.textContent = 'Buscando...';
+
+          fetch('/api/sistema/verificar-actualizacion')
+            .then(function(res){ return res.json(); })
+            .then(function(data){
+              btn.classList.remove('bgu-checking');
+              if (bguTxt) bguTxt.textContent = 'Bajar Cambios';
+
+              if (!data.ok) {
+                // Estado Error
+                if (modalIcon) modalIcon.textContent = '⚠️';
+                if (modalTitle) modalTitle.textContent = 'Consulta de Actualizaciones';
+                if (modalSubtitle) modalSubtitle.textContent = 'No se pudo verificar el repositorio en este momento';
+                if (errorText) errorText.textContent = data.error || 'No se pudo conectar con GitHub. Verifica tu conexión a internet.';
+                if (viewPending) viewPending.style.display = 'none';
+                if (viewUpToDate) viewUpToDate.style.display = 'none';
+                if (viewError) viewError.style.display = 'block';
+                if (footPending) footPending.style.display = 'none';
+                if (footUpToDate) footUpToDate.style.display = 'none';
+                if (footError) footError.style.display = 'flex';
+                abrirModal();
+                if (typeof window.aviso === 'function') window.aviso('Aviso: ' + (data.error || 'No se pudo conectar con GitHub'));
+                return;
+              }
+
+              if (!data.hayCambios || data.numCambios === 0) {
+                // Estado: Al día (0 cambios)
+                if (bguBadge) bguBadge.style.display = 'none';
+                if (modalIcon) modalIcon.textContent = '✨';
+                if (modalTitle) modalTitle.textContent = 'Sistema al Día (v2.8.8)';
+                if (modalSubtitle) modalSubtitle.textContent = 'No existen versiones o cambios nuevos disponibles';
+                if (viewPending) viewPending.style.display = 'none';
+                if (viewUpToDate) viewUpToDate.style.display = 'block';
+                if (viewError) viewError.style.display = 'none';
+                if (footPending) footPending.style.display = 'none';
+                if (footUpToDate) footUpToDate.style.display = 'flex';
+                if (footError) footError.style.display = 'none';
+                abrirModal();
+                if (typeof window.aviso === 'function') window.aviso('✨ Tu sistema ya está al día con la última versión');
+                return;
+              }
+
+              // Estado: Hay cambios pendientes
+              if (bguBadge) {
+                bguBadge.textContent = data.numCambios;
+                bguBadge.style.display = 'inline-block';
+              }
+              if (modalIcon) modalIcon.textContent = '🚀';
+              if (modalTitle) modalTitle.textContent = 'Actualizaciones en GitHub';
+              if (modalSubtitle) modalSubtitle.textContent = 'Nuevas mejoras listas para descargar e instalar';
+              if (viewPending) viewPending.style.display = 'block';
+              if (viewUpToDate) viewUpToDate.style.display = 'none';
+              if (viewError) viewError.style.display = 'none';
+              if (footPending) footPending.style.display = 'flex';
+              if (footUpToDate) footUpToDate.style.display = 'none';
+              if (footError) footError.style.display = 'none';
+
+              var cnt = document.getElementById('gitCommitsCount');
+              if (cnt) cnt.textContent = data.numCambios;
+              var br = document.getElementById('gitBranchName');
+              if (br) br.textContent = data.branch || 'main';
+
+              var listHtml = '';
+              (data.commits || []).forEach(function(c){
+                listHtml += '<div class="git-commit-item"><span class="gci-dot"></span><span class="gci-txt">' + (c || '').replace(/[&<>"']/g, '') + '</span></div>';
+              });
+              var cList = document.getElementById('gitCommitsList');
+              if (cList) cList.innerHTML = listHtml || '<div style="color:var(--muted); font-size:12px;">Mejoras listas para descargar.</div>';
+
+              abrirModal();
+            })
+            .catch(function(err){
+              btn.classList.remove('bgu-checking');
+              if (bguTxt) bguTxt.textContent = 'Bajar Cambios';
+              if (modalIcon) modalIcon.textContent = '⚠️';
+              if (modalTitle) modalTitle.textContent = 'Error de Conexión';
+              if (modalSubtitle) modalSubtitle.textContent = 'No se pudo comunicar con el servicio';
+              if (errorText) errorText.textContent = 'Error al consultar GitHub: ' + err.message;
+              if (viewPending) viewPending.style.display = 'none';
+              if (viewUpToDate) viewUpToDate.style.display = 'none';
+              if (viewError) viewError.style.display = 'block';
+              if (footPending) footPending.style.display = 'none';
+              if (footUpToDate) footUpToDate.style.display = 'none';
+              if (footError) footError.style.display = 'flex';
+              abrirModal();
+            });
+        });
+
+        // 2. Confirmar e instalar: activa el HUD y llama al endpoint de reinicio
+        var btnConfirm = document.getElementById('btnConfirmGitUpdate');
+        if (btnConfirm) {
+          btnConfirm.addEventListener('click', function(){
+            cerrarModal();
+
+            // Mostrar HUD de instalación en pantalla completa
+            if (hud) {
+              hud.style.display = 'flex';
+              hud.classList.add('show');
+              hud.classList.add('open');
+            }
+            document.body.style.overflow = 'hidden';
+
+            // Disparar proceso en el servidor
+            fetch('/api/sistema/ejecutar-actualizacion', { method: 'POST' })
+              .then(function(res){ return res.json(); })
+              .then(function(resData){
+                setTimeout(iniciarMonitoreoReconexion, 2000);
+              })
+              .catch(function(err){
+                setTimeout(iniciarMonitoreoReconexion, 2000);
+              });
+          });
+        }
+
+        function iniciarMonitoreoReconexion(){
+          var intentos = 0;
+          var maxIntentos = 60; // 60 intentos * 1.5s = 90 segundos máx
+          var step1 = document.getElementById('haStep1');
+          var step2 = document.getElementById('haStep2');
+          var step3 = document.getElementById('haStep3');
+          var msg = document.getElementById('hudActMsg');
+
+          var pollTimer = setInterval(function(){
+            intentos++;
+            if (msg) msg.textContent = 'Verificando reinicio del servidor (segundo ' + Math.round(intentos * 1.5) + ')...';
+
+            if (intentos === 3 && step1 && step2) {
+              step1.classList.remove('active');
+              step1.classList.add('done');
+              step2.classList.add('active');
+            }
+            if (intentos === 6 && step2 && step3) {
+              step2.classList.remove('active');
+              step2.classList.add('done');
+              step3.classList.add('active');
+            }
+
+            // Sondeo de salud al servidor con timestamp anticaché
+            fetch('/api/health?_t=' + Date.now())
+              .then(function(r){
+                if (r.ok) return r.json();
+                throw new Error('Servidor aún reiniciando');
+              })
+              .then(function(data){
+                if (data && data.ok) {
+                  clearInterval(pollTimer);
+                  if (step3) {
+                    step3.classList.remove('active');
+                    step3.classList.add('done');
+                  }
+                  if (msg) msg.textContent = '¡Actualización completada! Redirigiendo al login...';
+                  setTimeout(function(){
+                    window.location.href = '/login?actualizado=1';
+                  }, 1200);
+                }
+              })
+              .catch(function(){
+                // Servidor aún en proceso de reinicio o git pull, continuar esperando
+                if (intentos >= maxIntentos) {
+                  clearInterval(pollTimer);
+                  if (msg) msg.innerHTML = 'El servidor está tardando más de lo habitual. Puedes intentar recargar la página manualmente haciendo <a href="/login" style="color:var(--accent); text-decoration:underline;">clic aquí</a>.';
+                }
+              });
+          }, 1500);
+        }
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initGitUpdater);
+      } else {
+        initGitUpdater();
+      }
+    })();
+
+    /* ---------- VERIFICADOR AUTOMÁTICO DE TURNO DE DISPONIBILIDAD ---------- */
+    (function(){
+      if (!window.fetch) return;
+      fetch('/api/disponibilidad/estado').then(function(r){ return r.json(); }).then(function(d){
+        if (d && d.ok && d.enDisponibilidad && d.turno) {
+          var t = d.turno;
+          var bHeaders = document.querySelectorAll('.badge-disp-header');
+          bHeaders.forEach(function(bh){
+            bh.style.display = 'inline-flex';
+            bh.onclick = function(){ mostrarModalDisp(t); };
+          });
+        }
+      }).catch(function(){});
+
+      function mostrarModalDisp(t) {
+        var m = document.getElementById('modalDisponibilidadLogin');
+        if (!m) return;
+        var pIni = t.inicio.split('-'), pFin = t.fin.split('-');
+        var meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+        var txtFechas = 'Del ' + (+pIni[2]) + ' de ' + meses[+pIni[1]-1] + ' al ' + (+pFin[2]) + ' de ' + meses[+pFin[1]-1] + ' de ' + pFin[0];
+        var elF = document.getElementById('dispModalFechas');
+        if (elF) elF.textContent = txtFechas;
+        var elU = document.getElementById('dispModalUsuario');
+        if (elU && t.usuario) elU.textContent = 'Turno oficial: ' + t.usuario + (t.celular ? ' · Cel: ' + t.celular : '');
+        m.style.display = 'flex';
+      }
+
+      var btn = document.getElementById('btnConfirmarDisponibilidad');
+      if (btn) {
+        btn.addEventListener('click', function(){
+          var m = document.getElementById('modalDisponibilidadLogin');
+          if (m) m.style.display = 'none';
+          sessionStorage.setItem('aviso_disponibilidad_mostrado', '1');
+        });
+      }
+    })();
+
+  </script>
 </body>
 </html>

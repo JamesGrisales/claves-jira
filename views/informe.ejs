@@ -4,7 +4,7 @@
   .top .acciones{ display:flex; gap:8px; flex-wrap:wrap; }
   .top .acciones button{ padding:9px 15px; font-size:13.5px; }
 
-  .inf-grid{ display:grid; grid-template-columns:minmax(380px, 560px) minmax(0, 1fr); gap:18px; align-items:start; }
+  .inf-grid{ display:grid; grid-template-columns:minmax(400px, 580px) minmax(0, 1fr); gap:20px; align-items:stretch; }
   @media (max-width: 1000px){ .inf-grid{ grid-template-columns:1fr; } }
 
   .bloque{ padding:16px 18px; margin-bottom:14px; }
@@ -52,8 +52,8 @@
   #filas.con-lista .combo .chev{ display:block; }
   .botones-emp{ display:flex; gap:8px; flex-wrap:wrap; margin-top:6px; }
   .botones-emp .agregar{ margin-top:0; }
-  .modal{ position:fixed; inset:0; z-index:70; display:none; align-items:center; justify-content:center; padding:16px; background:rgba(8,12,22,.55); }
-  .modal-box{ width:min(520px, 100%); max-height:88vh; display:flex; flex-direction:column; gap:10px; background:var(--panel); border:1px solid var(--panel-edge); border-radius:14px; padding:16px 18px; box-shadow:0 20px 50px rgba(0,0,0,.35); }
+  .modal{ position:fixed; inset:0; z-index:100000 !important; display:none; align-items:center; justify-content:center; padding:20px 16px; background:rgba(3,7,18,.82); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); }
+  .modal-box{ position:relative; z-index:100001 !important; width:min(520px, 100%); max-height:88vh; display:flex; flex-direction:column; gap:10px; background:var(--panel); border:1px solid var(--panel-edge); border-radius:14px; padding:16px 18px; box-shadow:0 24px 60px rgba(0,0,0,.6); }
   .modal-box h3{ margin:0; font-size:15px; }
   .modal-box input[type=text]{ width:100%; box-sizing:border-box; background:var(--panel-alt); border:1px solid var(--panel-edge); color:var(--text); font-family:var(--sans); font-size:13.5px; padding:8px 10px; border-radius:8px; outline:none; }
   .modal-box input[type=text]:focus{ border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft); }
@@ -82,8 +82,8 @@
   .auto-info a{ color:var(--accent-dark); font-weight:700; }
   .estado{ font-size:12.5px; color:var(--muted); min-height:18px; margin:0 0 8px; }
   .estado.mal{ color:var(--danger); font-weight:600; }
-  .vista{ position:sticky; top:10px; }
-  .vista iframe{ width:100%; height:calc(100vh - 150px); min-height:560px; border:1px solid var(--panel-edge); border-radius:10px; background:#e9edf3; }
+  .vista{ display:flex; flex-direction:column; height:100%; min-height:calc(100vh - 120px); position:relative; }
+  .vista iframe{ width:100%; flex:1 1 auto; height:100%; min-height:calc(100vh - 130px); border:1px solid var(--panel-edge); border-radius:12px; background:#e9edf3; box-shadow:0 4px 20px rgba(0,0,0,.45); }
   .nota{ font-size:12px; color:var(--muted); margin-top:8px; }
   .nota a{ color:var(--accent-dark); font-weight:600; }
 
@@ -91,10 +91,23 @@
   .toast.show{ opacity:1; transform:translateX(-50%) translateY(0) scale(1); }
 
   /* Estilos del modal de correo Outlook - Ampliado y Espacioso */
+  #modalCorreo {
+    z-index: 100000 !important;
+  }
   #modalCorreo .modal-box {
+    position: relative;
+    z-index: 100001 !important;
     width: min(940px, 96vw) !important;
     max-width: 940px !important;
-    max-height: 94vh !important;
+    max-height: 92vh !important;
+    margin: auto;
+  }
+  #modalConfirmacionEnvio {
+    z-index: 100002 !important;
+  }
+  #modalConfirmacionEnvio .modal-box {
+    position: relative;
+    z-index: 100003 !important;
   }
   .em-tabs { display:flex; gap:8px; border-bottom:1px solid var(--panel-edge); padding-bottom:8px; margin-bottom:12px; }
   .em-tab-btn { background:transparent; border:none; box-shadow:none; color:var(--muted); font-size:13.5px; font-weight:700; padding:8px 18px; border-bottom:2px solid transparent; border-radius:0; cursor:pointer; transition:all .15s ease; }
@@ -111,17 +124,235 @@
   @media (max-width: 760px) {
     .em-bottom-grid { grid-template-columns: 1fr !important; }
   }
+
+  /* =====================================================================
+     TABS SUPERIORES: INFORME DIARIO & CONCILIACIÓN DE ACEPTADOS
+     ===================================================================== */
+  .inf-tabs-nav {
+    display: flex; gap: 10px; padding: 6px;
+    background: var(--panel-alt); border: 1px solid var(--panel-edge); border-radius: 16px;
+    margin-bottom: 20px; flex-wrap: wrap;
+  }
+  .inf-tab-btn {
+    display: inline-flex; align-items: center; gap: 10px; padding: 10px 18px; border-radius: 12px;
+    border: 1px solid transparent; background: transparent; color: var(--muted);
+    font-weight: 700; font-size: 13.5px; cursor: pointer; transition: all .2s var(--ease); box-shadow: none;
+  }
+  .inf-tab-btn:hover { color: var(--text); background: rgba(255,255,255,.05); transform: none; box-shadow: none; }
+  .inf-tab-btn.active {
+    background: var(--panel); color: var(--text); border-color: var(--accent);
+    box-shadow: 0 0 16px -2px rgba(var(--accent-rgb), .35), 0 4px 12px rgba(0,0,0,.25);
+  }
+  .inf-tab-btn svg { stroke: currentColor; flex-shrink: 0; transition: transform .2s var(--spring); }
+  .inf-tab-btn.active svg { stroke: var(--accent); transform: scale(1.1); }
+  .inf-tab-pill {
+    font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px;
+    background: rgba(var(--accent-rgb), .12); color: var(--accent); border: 1px solid rgba(var(--accent-rgb), .28);
+    letter-spacing: .02em;
+  }
+  .inf-panel { animation: fadeIn .25s ease; }
+
+  /* Stepper de flujo de trabajo diario */
+  .inf-workflow-guide {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    background: var(--panel-alt);
+    border: 1px solid var(--panel-edge);
+    border-radius: 14px;
+    padding: 10px 16px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+  }
+  .inf-wf-step {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all .18s ease;
+    padding: 6px 12px;
+    border-radius: 10px;
+  }
+  .inf-wf-step:hover {
+    color: var(--text);
+    background: rgba(255,255,255,0.05);
+    transform: translateY(-1px);
+  }
+  .inf-wf-step.active {
+    color: var(--accent-dark);
+    font-weight: 700;
+  }
+  :root[data-theme="dark"] .inf-wf-step.active { color: var(--accent); }
+  .inf-wf-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--panel);
+    border: 1px solid var(--panel-edge);
+    font-size: 11.5px;
+    font-weight: 800;
+    color: var(--muted);
+    transition: all .18s ease;
+  }
+  .inf-wf-step.active .inf-wf-num {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+    box-shadow: 0 0 10px rgba(var(--accent-rgb), 0.5);
+  }
+  .inf-wf-sep {
+    color: var(--panel-edge);
+    font-size: 14px;
+    user-select: none;
+    opacity: 0.7;
+  }
+
+  /* Barra compacta de datos de Jaivaná */
+  .bar-compacta-aceptados {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    background: var(--panel-alt);
+    border: 1px solid var(--panel-edge);
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin-top: 8px;
+    animation: fadeIn .2s ease;
+  }
+
+  /* Badge de sincronización */
+  .badge-sync-aceptados {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11.5px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: rgba(16, 185, 129, 0.12);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.28);
+    animation: fadeIn .3s ease;
+  }
+  :root[data-theme="dark"] .badge-sync-aceptados {
+    color: #34d399;
+    background: rgba(16, 185, 129, 0.18);
+  }
+
+  /* Estilos específicos de Aceptados integrados */
+  .a-head { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:6px; }
+  .a-head strong { font-size:12px; color:var(--muted); letter-spacing:.03em; text-transform:uppercase; }
+  #entradaAceptados {
+    width:100%; height:130px; resize:vertical; background:var(--panel-alt); border:1px solid var(--panel-edge);
+    color:var(--text); font-family:var(--mono); font-size:12px; line-height:1.45; padding:10px 12px; border-radius:10px; outline:none;
+    white-space:pre; overflow:auto;
+  }
+  #entradaAceptados:focus { border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft); }
+  .a-hint { font-size:12px; color:var(--muted); margin-top:8px; }
+  .a-err { font-size:13px; color:var(--danger); background:var(--danger-soft); border-radius:8px; padding:8px 12px; margin-top:10px; }
+  .a-map { margin:16px 0 0; padding:12px 14px; border:1px solid var(--accent); border-radius:12px; background:var(--accent-soft); }
+  .a-map > span { display:block; font-size:13px; color:var(--text); margin-bottom:8px; }
+  .a-map-b { display:flex; gap:8px; flex-wrap:wrap; }
+  .a-map-b button { display:flex; flex-direction:column; align-items:flex-start; gap:1px; padding:8px 14px; font-size:12px; font-weight:600; background:var(--panel); color:var(--text); border:2px solid var(--panel-edge); box-shadow:none; min-width:130px; text-align:left; cursor:pointer; }
+  .a-map-b button b { font-size:17px; font-variant-numeric:tabular-nums; }
+  .a-map-b button.on { border-color:var(--accent); background:var(--accent); color:#fff; }
+  .a-map-b small { font-size:10.5px; color:var(--muted); font-weight:700; text-transform:uppercase; letter-spacing:.03em; }
+  .a-map-b button.on small { color:#fff; }
+  .cards { display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:12px; margin:16px 0; }
+  .kpi { background:var(--panel); border:1px solid var(--panel-edge); border-radius:12px; padding:14px 16px; box-shadow:var(--shadow); }
+  .kpi .l { font-size:11px; font-weight:700; color:var(--muted); letter-spacing:.03em; text-transform:uppercase; }
+  .kpi .v { font-size:26px; font-weight:800; margin-top:4px; letter-spacing:-.01em; }
+  .kpi .s { font-size:12px; color:var(--muted); margin-top:3px; min-height:16px; }
+  .kpi.main { border-color:var(--accent); background:linear-gradient(135deg, var(--accent-soft), var(--panel)); }
+  .kpi.main .v { color:var(--accent-dark); font-size:32px; }
+  .up { color:#137333; font-weight:700; } .down { color:var(--danger); font-weight:700; }
+  .bad { color:var(--danger); font-weight:700; } .warnc { color:#8a5300; font-weight:700; }
+  :root[data-theme="dark"] .up { color:#6fdc8c; } :root[data-theme="dark"] .warnc { color:#ffc46b; }
+  .a-tools { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:10px; }
+  .a-tools input[type=text] { flex:1; min-width:180px; font-family:var(--sans); font-size:14px; background:var(--panel-alt); border:1px solid var(--panel-edge); color:var(--text); padding:8px 12px; border-radius:8px; }
+  .a-tools label { display:flex; align-items:center; gap:6px; margin:0; font-size:12.5px; font-weight:600; color:var(--muted); text-transform:none; letter-spacing:0; }
+  .a-tools select { background:var(--panel-alt); border:1px solid var(--panel-edge); color:var(--text); font-family:var(--sans); font-size:13px; padding:7px 10px; border-radius:8px; height:36px; }
+  .a-tools button { padding:8px 13px; font-size:13px; }
+  .btn-transfer-informe {
+    background: linear-gradient(135deg, #0284c7, #0369a1); color: #fff; font-weight: 700;
+    border: none; padding: 8px 18px; border-radius: 8px; cursor: pointer; display: inline-flex;
+    align-items: center; gap: 6px; box-shadow: 0 4px 14px rgba(2,132,199,0.4); transition: all .15s ease;
+  }
+  .btn-transfer-informe:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(2,132,199,0.55); filter: brightness(1.1); }
+  .a-wrap { overflow:auto; border:1px solid var(--panel-edge); border-radius:12px; max-height:62vh; background:var(--panel); }
+  .a-t { width:100%; border-collapse:collapse; font-size:13px; }
+  .a-t th { position:sticky; top:0; z-index:1; background:var(--panel-alt); text-align:left; font-size:11px; letter-spacing:.03em; text-transform:uppercase; color:var(--muted); padding:8px 10px; border-bottom:1px solid var(--panel-edge); white-space:nowrap; cursor:pointer; user-select:none; }
+  .a-t th.n, .a-t td.n { text-align:right; font-variant-numeric:tabular-nums; }
+  .a-t th input { width:92px; background:transparent; border:1px dashed transparent; color:inherit; font:inherit; text-transform:inherit; letter-spacing:inherit; padding:2px 4px; border-radius:5px; text-align:right; cursor:text; }
+  .a-t th input:hover, .a-t th input:focus { border-color:var(--accent); background:var(--panel); outline:none; }
+  .a-t td { padding:7px 10px; border-bottom:1px solid var(--panel-edge); white-space:nowrap; }
+  .a-t td.nm { font-weight:600; white-space:normal; min-width:180px; }
+  .a-t td.z { color:var(--muted); }
+  .a-t tbody tr:hover td { background:var(--accent-soft); }
+  .a-t tfoot td { position:sticky; bottom:0; background:var(--panel-alt); font-weight:800; border-top:2px solid var(--panel-edge); border-bottom:none; }
+  .a-b { display:inline-block; font-size:11.5px; font-weight:700; padding:2px 8px; border-radius:999px; margin-left:6px; }
+  .a-b.v { color:var(--danger); background:var(--danger-soft); }
+  .a-b.p { color:#8a5300; background:#fff4e0; }
+  :root[data-theme="dark"] .a-b.p { color:#ffc46b; background:#3a2c12; }
+  .ver { font-family:var(--mono); font-size:11.5px; color:var(--muted); }
+
 </style>
 
 <div>
-  <div class="top">
+  <div x-data="informeAlpineApp('<%= typeof defaultTab !== "undefined" ? defaultTab : "" %>')">
+  <!-- Barra superior con pestañas de navegación: Informe & Aceptados -->
+  <div class="inf-tabs-nav" role="tablist">
+    <button type="button" id="tabBtnInforme" class="inf-tab-btn" :class="{ active: tabActiva === 'informe' }" @click="setTab('informe')">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/>
+      </svg>
+      <span>Informe Diario</span>
+      <span class="inf-tab-pill">PDF & Correo</span>
+    </button>
+    <button type="button" id="tabBtnAceptados" class="inf-tab-btn" :class="{ active: tabActiva === 'aceptados' }" @click="setTab('aceptados')">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+      </svg>
+      <span>Conciliación de Aceptados</span>
+      <span class="inf-tab-pill">Dashboard Jaivaná</span>
+    </button>
+  </div>
+
+  <!-- Flujo de Trabajo en 3 Pasos -->
+  <div class="inf-workflow-guide" role="navigation" aria-label="Flujo de trabajo diario">
+    <div class="inf-wf-step" :class="{ active: tabActiva === 'aceptados' }" @click="setTab('aceptados')" title="Ir a la pestaña de Aceptados">
+      <span class="inf-wf-num">1</span>
+      <span><strong>Conciliar Aceptados</strong> (Pegar tabla de Jaivaná)</span>
+    </div>
+    <span class="inf-wf-sep">➔</span>
+    <div class="inf-wf-step" :class="{ active: tabActiva === 'informe' }" @click="setTab('informe')" title="Ir al Informe Diario">
+      <span class="inf-wf-num">2</span>
+      <span><strong>Cargar en Informe</strong> (Auto-completar empresas)</span>
+    </div>
+    <span class="inf-wf-sep">➔</span>
+    <div class="inf-wf-step" @click="setTab('informe')" title="Descargar PDF o Enviar a Outlook">
+      <span class="inf-wf-num">3</span>
+      <span><strong>Emitir Reporte</strong> (PDF / Outlook)</span>
+    </div>
+  </div>
+
+  <!-- PANEL 1: INFORME DIARIO (PDF Y CORREO) -->
+  <div id="panelInforme" class="inf-panel" x-show="tabActiva === 'informe'">
+<div class="top">
     <div style="display:flex; align-items:center; gap:10px;">
       <h1>Informe diario</h1>
-      <span class="inf-version-badge" style="background:rgba(2,132,199,0.14); color:#0284c7; border:1px solid rgba(2,132,199,0.32); font-size:11px; font-weight:800; padding:2px 8px; border-radius:12px; letter-spacing:0.4px;" title="Versión activa de la Suite de Informes">v2.5.7</span>
+      <span class="inf-version-badge" style="background:rgba(2,132,199,0.14); color:#0284c7; border:1px solid rgba(2,132,199,0.32); font-size:11px; font-weight:800; padding:2px 8px; border-radius:12px; letter-spacing:0.4px;" title="Versión activa de la Suite de Informes">v2.8.8</span>
     </div>
     <div class="acciones" style="display:flex; align-items:center; gap:8px;">
       <button type="button" class="secondary" id="btnEjemplo" title="Vuelve a los datos del informe de ejemplo">Restablecer</button>
-      <button type="button" id="btnDescargar">⬇ Descargar PDF</button>
+      <button type="button" id="btnDescargar" @click="descargarFeedback()" :style="descargando ? 'border-color:#38bdf8; color:#38bdf8; font-weight:700;' : ''"><span x-text="descargando ? '⌛ Generando PDF...' : '⬇ Descargar PDF'">⬇ Descargar PDF</span></button>
       <button type="button" class="secondary" id="btnAbrirModalCorreo" style="font-weight:700; border-color:var(--accent); background:var(--accent-soft); color:var(--accent-dark); display:inline-flex; align-items:center; gap:6px;">
         <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
         ✉ Enviar por Correo
@@ -130,7 +361,7 @@
     </div>
   </div>
   <p class="sub" style="margin-bottom:0;">Formato diario de reporte de envío de documentos electrónicos. Cambia la fecha, la hora y los demás campos; la vista previa es el PDF real y se descarga idéntica al formato del Word.</p>
-</div>
+
 
 <div class="inf-grid">
   <div>
@@ -235,7 +466,7 @@
         <div>
           <div style="display:flex; align-items:center; gap:8px;">
             <h3 style="margin:0; font-size:18px; font-weight:700; color:var(--text); letter-spacing:-0.01em;">Enviar informe por correo (Outlook)</h3>
-            <span class="inf-version-badge" style="background:linear-gradient(135deg, rgba(2,132,199,0.22), rgba(14,165,233,0.12)); border:1px solid rgba(2,132,199,0.4); color:#0284c7; font-size:11px; font-weight:800; padding:2px 8px; border-radius:12px; letter-spacing:0.5px;" title="Versión del módulo de correo y reportes">v2.5.7</span>
+            <span class="inf-version-badge" style="background:linear-gradient(135deg, rgba(2,132,199,0.22), rgba(14,165,233,0.12)); border:1px solid rgba(2,132,199,0.4); color:#0284c7; font-size:11px; font-weight:800; padding:2px 8px; border-radius:12px; letter-spacing:0.5px;" title="Versión del módulo de correo y reportes">v2.8.8</span>
           </div>
           <span style="font-size:12px; color:var(--muted);">Envío corporativo directo con PDF adjunto y firma institucional de Jaivaná</span>
         </div>
@@ -326,7 +557,7 @@
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
               <div style="display:flex; align-items:center; gap:6px;">
                 <span style="color:var(--muted); font-size:11px; text-transform:uppercase; font-weight:700; letter-spacing:0.5px;">Firma del Correo (Outlook):</span>
-                <span class="badge-app-version" style="background:rgba(2,132,199,0.18); color:#0284c7; border:1px solid rgba(2,132,199,0.35); font-size:10.5px; font-weight:800; padding:1px 7px; border-radius:6px; letter-spacing:0.3px;" title="Versión de la firma corporativa">v2.5.7</span>
+                <span class="badge-app-version" style="background:rgba(2,132,199,0.18); color:#0284c7; border:1px solid rgba(2,132,199,0.35); font-size:10.5px; font-weight:800; padding:1px 7px; border-radius:6px; letter-spacing:0.3px;" title="Versión de la firma corporativa">v2.8.8</span>
               </div>
               <div style="display:flex; align-items:center; gap:6px;">
                 <span style="font-size:11px; color:#10b981; font-weight:600; display:flex; align-items:center; gap:3px;" id="badgeFirmaStatus">
@@ -431,7 +662,7 @@
         <button type="button" class="secondary" id="btnIrAConfig" style="font-size:12.5px; padding:7px 12px;" title="Ver o editar configuración">⚙ Cuenta</button>
         <button type="button" class="secondary" id="btnAbrirOutlookApp" style="font-size:12.5px; padding:7px 12px;" title="Ver borrador en tu aplicación de Outlook antes de enviar">✉ Ver borrador</button>
         <button type="button" class="secondary" id="btnOutlookWeb" style="font-size:12.5px; padding:7px 12px;" title="Abrir en el navegador (Outlook Web)">🌐 Web</button>
-        <span style="font-size:11px; color:var(--muted); font-weight:600; padding:2px 8px; border-radius:6px; background:rgba(255,255,255,0.04); border:1px solid var(--panel-edge);" title="Versión de compilación activa">Build <strong style="color:var(--text);">v2.5.7</strong></span>
+        <span style="font-size:11px; color:var(--muted); font-weight:600; padding:2px 8px; border-radius:6px; background:rgba(255,255,255,0.04); border:1px solid var(--panel-edge);" title="Versión de compilación activa">Build <strong style="color:var(--text);">v2.8.8</strong></span>
       </div>
       <div style="display:flex; gap:10px; align-items:center;">
         <button type="button" class="secondary" id="btnCancelarEmail" style="padding:8px 16px;">Cancelar</button>
@@ -440,9 +671,205 @@
     </div>
   </div>
 </div>
+
+<!-- Modal Confirmación de Envío con Verificación en Elementos Enviados -->
+<div class="modal" id="modalConfirmacionEnvio" role="dialog" aria-modal="true" aria-label="Confirmación de envío de correo" style="display:none; position:fixed; inset:0; z-index:99999 !important; background:rgba(3, 7, 18, 0.78); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); align-items:center; justify-content:center; padding:16px;">
+  <div class="modal-box" style="position:relative; width:min(540px, 94vw); padding:28px 30px; gap:16px; border-radius:20px; background:var(--panel, #0f172a); border:1px solid rgba(16, 185, 129, 0.4); box-shadow:0 24px 70px rgba(0,0,0,0.7), 0 0 35px rgba(16, 185, 129, 0.15); text-align:center;">
+    
+    <!-- Botón Cerrar (X) Superior -->
+    <button type="button" id="btnXConfModal" style="position:absolute; top:16px; right:16px; width:32px; height:32px; border-radius:50%; background:var(--panel-alt, rgba(255,255,255,0.08)); border:1px solid var(--panel-edge); color:var(--muted); font-size:14px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .15s ease;" title="Cerrar ventana">✕</button>
+
+    <!-- Icono Check Verde -->
+    <div style="width:68px; height:68px; border-radius:50%; background:rgba(16, 185, 129, 0.14); border:2px solid #10b981; color:#10b981; font-size:32px; font-weight:bold; display:flex; align-items:center; justify-content:center; margin:0 auto; box-shadow:0 0 20px rgba(16, 185, 129, 0.25);">
+      ✓
+    </div>
+
+    <div>
+      <h3 style="margin:0 0 6px; font-size:21px; font-weight:800; color:var(--text); letter-spacing:-0.01em;">¡Informe Enviado y Validado!</h3>
+      <p style="margin:0; font-size:13.5px; color:var(--muted); line-height:1.5;">
+        El informe ha sido despachado exitosamente desde tu cuenta <strong style="color:var(--text);">jgrisales@jaivana.co</strong> y se encuentra verificado en tu bandeja de <strong style="color:#10b981;">Elementos enviados</strong> de Outlook.
+      </p>
+    </div>
+
+    <!-- Tarjeta de comprobación de envío -->
+    <div style="background:var(--panel-alt, rgba(255,255,255,0.03)); border:1px solid var(--panel-edge); border-radius:14px; padding:14px 16px; text-align:left; display:flex; flex-direction:column; gap:9px; font-size:12.5px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--panel-edge); padding-bottom:6px;">
+        <span style="font-weight:700; color:var(--muted); text-transform:uppercase; font-size:10.5px; letter-spacing:0.5px;">Comprobante de Salida</span>
+        <span style="color:#10b981; font-weight:700; font-size:11px; display:inline-flex; align-items:center; gap:4px;">● Verificado en Outlook</span>
+      </div>
+      <div style="display:flex; gap:8px;">
+        <span style="color:var(--muted); width:80px; flex-shrink:0;">📬 Para:</span>
+        <strong style="color:var(--text); word-break:break-all;" id="confPara">-</strong>
+      </div>
+      <div style="display:flex; gap:8px;">
+        <span style="color:var(--muted); width:80px; flex-shrink:0;">📝 Asunto:</span>
+        <span style="color:var(--text); font-weight:600;" id="confAsunto">-</span>
+      </div>
+      <div style="display:flex; gap:8px;">
+        <span style="color:var(--muted); width:80px; flex-shrink:0;">🕒 Enviado:</span>
+        <span style="color:var(--text);" id="confHora">-</span>
+      </div>
+      <div style="display:flex; gap:8px;">
+        <span style="color:var(--muted); width:80px; flex-shrink:0;">📁 Carpeta:</span>
+        <span style="color:#10b981; font-weight:700;" id="confCarpeta">Elementos enviados (Outlook)</span>
+      </div>
+    </div>
+
+    <!-- Botones de Acción -->
+    <div style="display:flex; flex-direction:column; gap:10px; width:100%; margin-top:4px;">
+      <div style="display:flex; gap:10px; width:100%;">
+        <button type="button" class="btn" id="btnAbrirEnviadosModal" style="flex:1; padding:11px 14px; font-size:13px; font-weight:700; background:linear-gradient(135deg, #0284c7, #0369a1); color:#fff; border:none; border-radius:10px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; box-shadow:0 4px 14px rgba(2,132,199,0.35); transition:all .15s ease;">
+          📂 Ver en Outlook Desktop
+        </button>
+        <a href="https://outlook.office.com/mail/sentitems" target="_blank" rel="noopener noreferrer" class="secondary btn" id="btnVerWebModal" style="flex:1; padding:11px 14px; font-size:13px; font-weight:600; text-decoration:none; display:flex; align-items:center; justify-content:center; gap:6px; border-radius:10px;">
+          🌐 Ver en Outlook Web
+        </a>
+      </div>
+      <button type="button" class="secondary" id="btnCerrarConfModal" style="width:100%; padding:10px; font-size:13px; font-weight:600; border-radius:10px; cursor:pointer;">
+        Entendido / Cerrar
+      </button>
+    </div>
+  </div>
+</div>
+
+  </div>
+  <!-- ==================== FIN PANEL 1 (INFORME) ==================== -->
+
+  <!-- ==================== PANEL 2: CONCILIACIÓN DE ACEPTADOS (JAIVANÁ) ==================== -->
+  <div id="panelAceptados" class="inf-panel" x-show="tabActiva === 'aceptados'" x-cloak>
+    <div class="top">
+      <div>
+        <h1 style="margin:0;">Conciliación de Aceptados</h1>
+        <p class="sub" style="margin:4px 0 0;">Pega la tabla del dashboard de Jaivaná y se calculan los totales al instante. Puedes transferir todas las empresas al Informe Diario con un solo clic.</p>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span class="chip info" id="chipEmpAceptados">Sin datos</span>
+        <span class="db-orb db-orb-pg" title="Conexión de sincronización Jaivaná PostgreSQL">🐘</span>
+      </div>
+    </div>
+
+    <div class="card" id="cardEntradaAceptados" style="padding:18px; margin-top:14px; transition: all .2s ease;">
+      <div class="a-head">
+        <strong>Datos pegados de Jaivaná</strong>
+        <div style="display:flex; gap:8px;">
+          <button type="button" class="secondary" id="bToggleEntradaAceptados" style="display:none; font-size:12px; padding:5px 11px;" title="Plegar la caja de pegado para tener más espacio para la tabla">▲ Plegar caja</button>
+          <button type="button" class="secondary" id="bLimpiarAceptados">Limpiar caja</button>
+        </div>
+      </div>
+      <div id="wrapTextareaAceptados">
+        <textarea id="entradaAceptados" spellcheck="false" wrap="off" placeholder="Copia las filas de la tabla del dashboard de Jaivaná y pégalas aquí (Ctrl+V)…"></textarea>
+        <div class="a-hint">Cada fila: empresa, cuatro columnas de números, vencimiento, última sincronización y versión. Todo se calcula en tu navegador y queda guardado.</div>
+        <div class="a-err" id="errAceptados" style="display:none;"></div>
+      </div>
+      <div id="barCompactaAceptados" class="bar-compacta-aceptados" style="display:none;">
+        <span style="font-size:13px; font-weight:600; color:var(--accent-dark); display:inline-flex; align-items:center; gap:6px;">
+          ✓ Datos cargados de Jaivaná (<span id="txtFilasCompactas">0</span> empresas calculadas)
+        </span>
+        <button type="button" class="secondary" id="bExpandirEntradaAceptados" style="font-size:12px; padding:4px 10px;">▼ Ver / Editar texto pegado</button>
+      </div>
+    </div>
+
+    <div id="panelAceptadosData" style="display:none; margin-top:14px;">
+      <div class="a-map" id="aMap">
+        <span>¿Cuál de estas columnas son los <b>Aceptados</b>? Esa suma pasará sola al Informe:</span>
+        <div class="a-map-b" id="aMapB"></div>
+      </div>
+      <div class="cards" id="cardsAceptados"></div>
+
+      <div class="a-tools">
+        <input type="text" id="buscarAceptados" placeholder="Filtrar empresa… (el total suma solo lo filtrado)" autocomplete="off">
+        <label>Columna aceptados: <select id="colAceptados"></select></label>
+        <button type="button" class="secondary" id="bCopiarAceptados">Copiar resumen</button>
+        <button type="button" class="btn-transfer-informe" id="btnTransferInforme" title="Pasa las empresas y cantidades calculadas directamente a la tabla del Informe Diario">
+          ⚡ Cargar datos en el Informe Diario
+        </button>
+      </div>
+
+      <div class="a-wrap">
+        <table class="a-t">
+          <thead id="theadAceptados"></thead>
+          <tbody id="tbodyAceptados"></tbody>
+          <tfoot id="tfootAceptados"></tfoot>
+        </table>
+      </div>
+      <div class="a-hint" style="margin-top:10px;">Puedes cambiar el nombre de cada columna haciendo clic en el encabezado. Clic en ordenar para cambiar el criterio.</div>
+    </div>
+  </div>
+  <!-- ==================== FIN PANEL 2 (ACEPTADOS) ==================== -->
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
+
+/* ---------- Controlador Reactivo Alpine.js de Informe ---------- */
+window.informeAlpineApp = function(initialTabFromEjs) {
+  return {
+    descargando: false,
+    tabActiva: (function(){
+      try {
+        var p = new URLSearchParams(window.location.search);
+        var q = p.get('tab');
+        if (q === 'aceptados' || window.location.hash === '#aceptados') return 'aceptados';
+        if (q === 'informe' || window.location.hash === '#informe') return 'informe';
+      } catch(e){}
+      if (initialTabFromEjs === 'aceptados') return 'aceptados';
+      return 'informe';
+    })(),
+
+    init() {
+      var self = this;
+      window.cambiarTabModulo = function(t){ self.setTab(t); };
+      this.aplicarVisibilidad(this.tabActiva);
+    },
+
+    setTab(t) {
+      this.tabActiva = t;
+      this.aplicarVisibilidad(t);
+      try {
+        var url = new URL(window.location.href);
+        if (t === 'aceptados') {
+          url.searchParams.set('tab', 'aceptados');
+        } else {
+          url.searchParams.delete('tab');
+        }
+        window.history.replaceState(null, '', url.pathname + (url.searchParams.toString() ? ('?' + url.searchParams.toString()) : ''));
+      } catch(e){}
+    },
+
+    aplicarVisibilidad(t) {
+      var pnlInf = document.getElementById('panelInforme');
+      var pnlAc = document.getElementById('panelAceptados');
+      var btnInf = document.getElementById('tabBtnInforme');
+      var btnAc = document.getElementById('tabBtnAceptados');
+      if (t === 'aceptados') {
+        if (pnlInf) pnlInf.style.display = 'none';
+        if (pnlAc) pnlAc.style.display = 'block';
+        if (btnInf) btnInf.classList.remove('active');
+        if (btnAc) btnAc.classList.add('active');
+      } else {
+        if (pnlInf) pnlInf.style.display = 'block';
+        if (pnlAc) pnlAc.style.display = 'none';
+        if (btnInf) btnInf.classList.add('active');
+        if (btnAc) btnAc.classList.remove('active');
+      }
+    },
+
+    descargarFeedback() {
+      this.descargando = true;
+      setTimeout(() => this.descargando = false, 2500);
+    }
+  };
+};
+
+document.addEventListener('DOMContentLoaded', function(){
+  var btnInf = document.getElementById('tabBtnInforme');
+  var btnAc = document.getElementById('tabBtnAceptados');
+  if (btnInf) btnInf.addEventListener('click', function(){ if (window.cambiarTabModulo) window.cambiarTabModulo('informe'); });
+  if (btnAc) btnAc.addEventListener('click', function(){ if (window.cambiarTabModulo) window.cambiarTabModulo('aceptados'); });
+});
+
 (function(){
 'use strict';
 
@@ -911,7 +1338,7 @@ setInterval(sincronizarServidor, 15000);
   var KEY_CONTACTS_CC = 'boveda_informe_cc';
   var KEY_FIRMA_NOMBRE = 'boveda_firma_nombre';
   var KEY_FIRMA_CARGO = 'boveda_firma_cargo';
-  var APP_VERSION = 'v2.5.7';
+  var APP_VERSION = 'v2.8.8';
 
   var mCorreo = $('modalCorreo');
   var bAbrir = $('btnAbrirModalCorreo');
@@ -1327,6 +1754,19 @@ setInterval(sincronizarServidor, 15000);
         }
 
         cerrarModalCorreo();
+
+        // Mostrar el modal de confirmación con los datos validados de Elementos Enviados
+        var mConf = $('modalConfirmacionEnvio');
+        if (mConf) {
+          document.body.classList.add('modal-abierto');
+          var det = data.detalle || {};
+          if ($('confPara')) $('confPara').textContent = det.destinatario || (Array.isArray(listaPara) ? listaPara.join(', ') : listaPara);
+          if ($('confAsunto')) $('confAsunto').textContent = det.asunto || txtAsunto.value;
+          if ($('confHora')) $('confHora').textContent = det.fechaEnvio || new Date().toLocaleTimeString('es-CO');
+          if ($('confCarpeta')) $('confCarpeta').textContent = det.carpeta || 'Elementos enviados (Outlook)';
+          mConf.style.display = 'flex';
+        }
+
         toast('🚀 ' + (data.mensaje || '¡Informe enviado con éxito desde tu cuenta de Outlook!'));
       } catch(err) {
         txtErr.style.display = 'block';
@@ -1334,6 +1774,66 @@ setInterval(sincronizarServidor, 15000);
       } finally {
         bEnviar.disabled = false;
         bEnviar.textContent = '🚀 Enviar directo desde la App';
+      }
+    });
+  }
+
+
+  // Controladores interactivos del modal de confirmación de Elementos Enviados
+  function cerrarConfirmacionEnvio() {
+    var m = $('modalConfirmacionEnvio');
+    if (m) m.style.display = 'none';
+    document.body.classList.remove('modal-abierto');
+  }
+
+  var btnXConf = $('btnXConfModal');
+  if (btnXConf) btnXConf.addEventListener('click', cerrarConfirmacionEnvio);
+
+  var btnCerrarConf = $('btnCerrarConfModal');
+  if (btnCerrarConf) btnCerrarConf.addEventListener('click', cerrarConfirmacionEnvio);
+
+  var modalConfEl = $('modalConfirmacionEnvio');
+  if (modalConfEl) {
+    modalConfEl.addEventListener('click', function(e) {
+      if (e.target === modalConfEl) cerrarConfirmacionEnvio();
+    });
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && modalConfEl.style.display === 'flex') {
+        cerrarConfirmacionEnvio();
+      }
+    });
+  }
+
+  var btnDesktopSent = $('btnAbrirEnviadosModal');
+  if (btnDesktopSent) {
+    btnDesktopSent.addEventListener('click', async function() {
+      try {
+        toast('📂 Abriendo Elementos Enviados en Outlook…');
+        btnDesktopSent.disabled = true;
+        btnDesktopSent.textContent = 'Abriendo Outlook…';
+
+        // 1. Invocar apertura por backend (acceso directo, Outlook Classic o PWA)
+        fetch('/informe/abrir-enviados', { method: 'POST' }).catch(function(){});
+
+        // 2. Disparar protocolo nativo de Windows ms-outlook
+        try {
+          var hiddenIframe = document.createElement('iframe');
+          hiddenIframe.style.display = 'none';
+          hiddenIframe.src = 'ms-outlook:';
+          document.body.appendChild(hiddenIframe);
+          setTimeout(function() {
+            if (hiddenIframe.parentNode) hiddenIframe.parentNode.removeChild(hiddenIframe);
+          }, 3000);
+        } catch(e) {}
+
+        setTimeout(function() {
+          btnDesktopSent.disabled = false;
+          btnDesktopSent.innerHTML = '📂 Ver en Outlook Desktop';
+          toast('✅ Orden enviada a Outlook. También puedes usar "Ver en Outlook Web"');
+        }, 1400);
+      } catch (err) {
+        btnDesktopSent.disabled = false;
+        btnDesktopSent.innerHTML = '📂 Ver en Outlook Desktop';
       }
     });
   }
@@ -1424,6 +1924,461 @@ setInterval(sincronizarServidor, 15000);
   }
 })();
 
+  /* =====================================================================
+     MOTOR DE CONCILIACIÓN DE ACEPTADOS (DASHBOARD JAIVANÁ)
+     ===================================================================== */
+  var KEY_ACEPT = 'boveda-aceptados-v1';
+  var RE_FECHA = /^(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2})(?::(\d{2}))?)?/;
+  var stAcept = { raw: '', labels: [], col: 0, totals: null, prevTotals: null, pegado: null };
+  var datosAcept = { filas: [], n: 0 };
+  var ordenAcept = { k: 'orig', dir: 1 };
+  var filtroAcept = '';
+
+  function initAceptadosEngine() {
+    var entrada = $('entradaAceptados');
+    if (!entrada) return;
+
+    try {
+      var guardado = localStorage.getItem(KEY_ACEPT);
+      if (guardado) stAcept = Object.assign(stAcept, JSON.parse(guardado));
+    } catch(e){}
+
+    function guardarAcept(){
+      try { localStorage.setItem(KEY_ACEPT, JSON.stringify(stAcept)); } catch(e){}
+    }
+
+    function esc(t){ return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+    function fmt(n){ return Number(n).toLocaleString('es-CO'); }
+
+    function parseNum(s){
+      s = (s == null ? '' : String(s)).trim();
+      if (s === '') return { v: 0, vacio: true };
+      if (/^-?\d+$/.test(s)) return { v: Number(s), vacio: false };
+      if (/^\d{1,3}([.,\s]\d{3})+$/.test(s)) return { v: Number(s.replace(/[.,\s]/g,'')), vacio: false };
+      var n = parseFloat(s.replace(',', '.'));
+      return isNaN(n) ? null : { v: n, vacio: false };
+    }
+
+    function parseVenc(s){
+      var m = RE_FECHA.exec(s || '');
+      if (!m) return null;
+      var fecha = new Date(+m[1], +m[2]-1, +m[3], +(m[4]||0), +(m[5]||0), +(m[6]||0));
+      var suf = /\((\d+)\s*d\)/i.exec(s), venc = /\(\s*vencido\s*\)/i.test(s);
+      var dias = suf ? Number(suf[1]) : Math.ceil((fecha - Date.now()) / 864e5);
+      var estado = (venc || fecha < new Date()) ? 'v' : (dias <= 30 ? 'p' : 'ok');
+      return { ms: fecha.getTime(), txt: m[1]+'-'+m[2]+'-'+m[3], dias: dias, estado: estado };
+    }
+
+    function parseSync(s){
+      if (!s) return null;
+      var d = new Date(String(s).trim().replace(/(\.\d{3})\d+/, '$1'));
+      return isNaN(d.getTime()) ? null : d.getTime();
+    }
+
+    function hace(ms){
+      var min = Math.max(0, Math.round((Date.now() - ms) / 60000));
+      if (min < 1) return 'hace un momento';
+      if (min < 60) return 'hace ' + min + ' min';
+      var h = Math.floor(min / 60);
+      if (h < 48) return 'hace ' + h + ' h ' + (min % 60) + ' min';
+      return 'hace ' + Math.floor(h / 24) + ' días';
+    }
+
+    function fechaCorta(ms){
+      var d = new Date(ms);
+      return pad(d.getDate()) + '/' + pad(d.getMonth()+1) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+    }
+
+    function parsear(texto){
+      var filas = [], encabezados = null, n = 0;
+      texto.split(/\r?\n/).forEach(function(linea){
+        if (!linea.trim()) return;
+        var c = linea.split('\t');
+        if (c.length < 3) c = linea.trim().split(/\s{2,}/);
+        c = c.map(function(x){ return x.trim(); });
+
+        var iv = -1;
+        for (var i = 1; i < c.length; i++) { if (RE_FECHA.test(c[i])) { iv = i; break; } }
+
+        if (iv < 0 && c.length > 2 && c.slice(1).some(function(x){ return x !== '' && !parseNum(x); })) {
+          encabezados = c.slice(1).filter(function(x){ return !/venc|expira|sincron|version|versión/i.test(x); });
+          return;
+        }
+
+        var celdas = c.slice(1, iv < 0 ? c.length : iv);
+        var nums = celdas.map(parseNum);
+        if (nums.some(function(x){ return x === null; })) return;
+        if (iv < 0 && !nums.length) return;
+
+        n = Math.max(n, nums.length);
+        filas.push({
+          nombre: c[0], nums: nums,
+          venc: iv >= 0 ? parseVenc(c[iv]) : null,
+          sync: iv >= 0 ? parseSync(c[iv+1]) : null,
+          ver: iv >= 0 ? (c[iv+2] || '') : '',
+          orig: filas.length
+        });
+      });
+      filas.forEach(function(f){ while (f.nums.length < n) f.nums.push({ v: 0, vacio: true }); });
+      return { filas: filas, n: n, encabezados: encabezados };
+    }
+
+    function etiqueta(i){ return stAcept.labels[i] || 'Columna ' + (i + 1); }
+    function suma(filas, i){ return filas.reduce(function(a, f){ return a + (f.nums[i] ? f.nums[i].v : 0); }, 0); }
+
+    var KEY_INFORME = 'boveda-aceptados-resumen';
+    function guardarResumenInforme(){
+      try {
+        if (!datosAcept.filas.length) {
+          localStorage.removeItem(KEY_INFORME);
+          enviarResumen(null);
+          return;
+        }
+        var resumen = {
+          empresas: datosAcept.filas.length,
+          aceptados: suma(datosAcept.filas, stAcept.col),
+          columna: etiqueta(stAcept.col),
+          pegado: stAcept.pegado || Date.now(),
+          actualizado: Date.now()
+        };
+        enviarResumen(resumen);
+        localStorage.setItem(KEY_INFORME, JSON.stringify(resumen));
+      } catch(e){}
+    }
+
+    var ultimoEnvio = '';
+    function enviarResumen(r){
+      var firma = r ? [r.empresas, r.aceptados, r.columna, r.pegado].join('|') : 'null';
+      if (firma === ultimoEnvio) return;
+      ultimoEnvio = firma;
+      try {
+        fetch('/api/kv/aceptados-resumen', {
+          method: 'PUT',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ v: r })
+        }).catch(function(){});
+      } catch (e) {}
+    }
+
+    function aplicarTexto(){
+      var texto = entrada.value;
+      var errBox = $('errAceptados');
+      var pnlData = $('panelAceptadosData');
+      var chip = $('chipEmpAceptados');
+      if (errBox) errBox.style.display = 'none';
+
+      if (!texto.trim()) {
+        datosAcept = { filas: [], n: 0 };
+        if (pnlData) pnlData.style.display = 'none';
+        if (chip) chip.textContent = 'Sin datos';
+        guardarResumenInforme();
+        return;
+      }
+
+      var r = parsear(texto);
+      if (!r.filas.length) {
+        datosAcept = { filas: [], n: 0 };
+        if (pnlData) pnlData.style.display = 'none';
+        if (chip) chip.textContent = 'Sin datos';
+        guardarResumenInforme();
+        if (errBox) {
+          errBox.textContent = 'No encontré filas con el formato esperado. Copia las filas tal cual de la tabla del dashboard (empresa y sus columnas separadas por tabulador).';
+          errBox.style.display = 'block';
+        }
+        return;
+      }
+      datosAcept = r;
+      if (r.encabezados && r.encabezados.length >= r.n) {
+        stAcept.labels = r.encabezados.slice(0, r.n);
+        for (var h = 0; h < stAcept.labels.length; h++) {
+          if (/aceptad/.test(String(stAcept.labels[h]).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase())) {
+            stAcept.col = h;
+            break;
+          }
+        }
+      }
+      if (stAcept.col >= r.n) stAcept.col = 0;
+
+      var totales = [];
+      for (var i = 0; i < r.n; i++) totales.push(suma(r.filas, i));
+
+      if (texto !== stAcept.raw) {
+        if (stAcept.totals && JSON.stringify(stAcept.totals) !== JSON.stringify(totales)) {
+          stAcept.prevTotals = stAcept.totals;
+        }
+        stAcept.raw = texto;
+        stAcept.totals = totales;
+        stAcept.pegado = Date.now();
+      }
+      guardarAcept();
+      if (pnlData) pnlData.style.display = 'block';
+      render();
+    }
+
+    function render(){
+      var filas = datosAcept.filas, n = datosAcept.n;
+      var chip = $('chipEmpAceptados');
+      if (chip) chip.textContent = filas.length + (filas.length === 1 ? ' empresa' : ' empresas');
+
+      var sel = $('colAceptados');
+      if (sel) {
+        var o = '';
+        for (var i = 0; i < n; i++) o += '<option value="' + i + '"' + (i === stAcept.col ? ' selected' : '') + '>' + esc(etiqueta(i)) + '</option>';
+        sel.innerHTML = o;
+      }
+
+      var mbEl = $('aMapB');
+      if (mbEl) {
+        var mb = '';
+        for (var c = 0; c < n; c++) {
+          mb += '<button type="button" data-c="' + c + '" class="' + (c === stAcept.col ? 'on' : '') + '"><small>' + esc(etiqueta(c)) + (c === stAcept.col ? ' · va al Informe' : '') + '</small><b>' + fmt(suma(filas, c)) + '</b></button>';
+        }
+        mbEl.innerHTML = mb;
+      }
+
+      var cardsEl = $('cardsAceptados');
+      if (cardsEl) {
+        var prev = stAcept.prevTotals;
+        var acept = suma(filas, stAcept.col);
+        var conAcept = filas.filter(function(f){ return f.nums[stAcept.col] && f.nums[stAcept.col].v > 0; }).length;
+        var delta = '';
+        if (prev && prev[stAcept.col] != null && prev[stAcept.col] !== acept) {
+          var d = acept - prev[stAcept.col];
+          delta = 'Antes: ' + fmt(prev[stAcept.col]) + ' · <span class="' + (d >= 0 ? 'up' : 'down') + '">' + (d >= 0 ? '+' : '') + fmt(d) + '</span>';
+        } else if (prev) delta = 'Sin cambios frente al pegado anterior';
+        var html = '<div class="kpi main"><div class="l">' + esc(etiqueta(stAcept.col)) + '</div><div class="v">' + fmt(acept) + '</div><div class="s">' + (delta || (stAcept.pegado ? 'Pegado ' + hace(stAcept.pegado) : '')) + '</div></div>';
+        html += '<div class="kpi"><div class="l">Empresas</div><div class="v">' + filas.length + '</div><div class="s">' + conAcept + ' con ' + esc(etiqueta(stAcept.col).toLowerCase()) + ' &gt; 0</div></div>';
+        for (var j = 0; j < n; j++) {
+          if (j === stAcept.col) continue;
+          var t = suma(filas, j), cf = filas.filter(function(f){ return f.nums[j] && f.nums[j].v > 0; }).length;
+          html += '<div class="kpi"><div class="l">' + esc(etiqueta(j)) + '</div><div class="v">' + fmt(t) + '</div><div class="s">' + cf + ' empresas</div></div>';
+        }
+        var venc = filas.filter(function(f){ return f.venc && f.venc.estado === 'v'; });
+        var porv = filas.filter(function(f){ return f.venc && f.venc.estado === 'p'; });
+        html += '<div class="kpi"><div class="l">Vencimientos</div><div class="v"><span class="' + (venc.length ? 'bad' : '') + '">' + venc.length + '</span> <span style="font-size:14px;font-weight:600;color:var(--muted)">vencidos</span></div><div class="s">' +
+          (porv.length ? '<span class="warnc">' + porv.length + ' por vencer (≤ 30 días)</span>' : 'Ninguno por vencer en 30 días') + '</div></div>';
+        var syncs = filas.map(function(f){ return f.sync; }).filter(Boolean);
+        if (syncs.length) {
+          var viejo = Math.min.apply(null, syncs), nuevo = Math.max.apply(null, syncs);
+          html += '<div class="kpi"><div class="l">Última sincronización</div><div class="v" style="font-size:20px;">' + fechaCorta(nuevo) + '</div><div class="s">' + hace(nuevo) + ' · la más antigua: ' + hace(viejo) + '</div></div>';
+        }
+        cardsEl.innerHTML = html;
+      }
+
+      var theadEl = $('theadAceptados');
+      if (theadEl) {
+        var th = '<tr><th data-k="nombre">Empresa' + flecha('nombre') + '</th>';
+        for (var k = 0; k < n; k++) th += '<th class="n" data-k="c' + k + '"><input type="text" data-lab="' + k + '" value="' + esc(etiqueta(k)) + '" title="Clic para renombrar la columna">' + (k === stAcept.col ? '<span class="a-inf">Informe</span>' : '') + flecha('c' + k) + '</th>';
+        th += '<th data-k="venc">Vencimiento' + flecha('venc') + '</th><th data-k="sync">Última sync' + flecha('sync') + '</th><th data-k="ver">Versión' + flecha('ver') + '</th></tr>';
+        theadEl.innerHTML = th;
+      }
+
+      pintarFilasAcept();
+      guardarResumenInforme();
+    }
+
+    function flecha(k){ return ordenAcept.k === k ? ' ' + (ordenAcept.dir > 0 ? '▲' : '▼') : ''; }
+
+    function pintarFilasAcept(){
+      var tbodyEl = $('tbodyAceptados'), tfootEl = $('tfootAceptados');
+      if (!tbodyEl) return;
+      var n = datosAcept.n, q = filtroAcept.trim().toLowerCase();
+      var filas = datosAcept.filas.filter(function(f){ return !q || f.nombre.toLowerCase().indexOf(q) !== -1; });
+
+      filas = filas.slice().sort(function(a, b){
+        var va, vb, k = ordenAcept.k;
+        if (k === 'orig') return a.orig - b.orig;
+        if (k === 'nombre') return ordenAcept.dir * a.nombre.localeCompare(b.nombre, 'es');
+        if (k === 'ver') return ordenAcept.dir * String(a.ver).localeCompare(String(b.ver));
+        if (k === 'venc') { va = a.venc ? a.venc.ms : Infinity; vb = b.venc ? b.venc.ms : Infinity; }
+        else if (k === 'sync') { va = a.sync || 0; vb = b.sync || 0; }
+        else { var i = +k.slice(1); va = a.nums[i] ? a.nums[i].v : 0; vb = b.nums[i] ? b.nums[i].v : 0; }
+        return ordenAcept.dir * (va - vb) || (a.orig - b.orig);
+      });
+
+      var html = '';
+      filas.forEach(function(f){
+        html += '<tr><td class="nm">' + esc(f.nombre) + '</td>';
+        f.nums.forEach(function(x){ html += '<td class="n' + (x.v === 0 ? ' z' : '') + '">' + (x.vacio ? '–' : fmt(x.v)) + '</td>'; });
+        if (f.venc) {
+          var b = f.venc.estado === 'v' ? '<span class="a-b v">Vencido</span>' : (f.venc.estado === 'p' ? '<span class="a-b p">' + f.venc.dias + ' d</span>' : '');
+          html += '<td>' + f.venc.txt + b + '</td>';
+        } else html += '<td class="z">–</td>';
+        if (f.sync) {
+          var viejo = Date.now() - f.sync > 864e5;
+          html += '<td' + (viejo ? ' class="warnc"' : '') + ' title="' + hace(f.sync) + '">' + fechaCorta(f.sync) + '</td>';
+        } else html += '<td class="z">–</td>';
+        html += '<td class="ver">' + esc(f.ver) + '</td></tr>';
+      });
+      tbodyEl.innerHTML = html || '<tr><td colspan="' + (n + 4) + '" class="z" style="text-align:center;padding:18px;">Ninguna empresa coincide con el filtro.</td></tr>';
+
+      if (tfootEl) {
+        var foot = '<tr><td>' + (q ? 'Total filtrado (' + filas.length + ')' : 'Total (' + filas.length + ')') + '</td>';
+        for (var i = 0; i < n; i++) foot += '<td class="n">' + fmt(suma(filas, i)) + '</td>';
+        tfootEl.innerHTML = foot + '<td colspan="3"></td></tr>';
+      }
+    }
+
+    function resumenTexto(){
+      var filas = datosAcept.filas, n = datosAcept.n, l = [];
+      l.push(etiqueta(stAcept.col) + ': ' + fmt(suma(filas, stAcept.col)));
+      for (var i = 0; i < n; i++) if (i !== stAcept.col) l.push(etiqueta(i) + ': ' + fmt(suma(filas, i)));
+      l.push('Empresas: ' + filas.length);
+      var v = filas.filter(function(f){ return f.venc && f.venc.estado === 'v'; }).map(function(f){ return f.nombre; });
+      var p = filas.filter(function(f){ return f.venc && f.venc.estado === 'p'; }).map(function(f){ return f.nombre + ' (' + f.venc.dias + ' d)'; });
+      if (v.length) l.push('Vencidos: ' + v.join(', '));
+      if (p.length) l.push('Por vencer: ' + p.join(', '));
+      return l.join('\n');
+    }
+
+    // Eventos
+    var temporizadorAcept;
+    entrada.addEventListener('input', function(){ clearTimeout(temporizadorAcept); temporizadorAcept = setTimeout(aplicarTexto, 250); });
+    entrada.addEventListener('paste', function(){ setTimeout(function(){ clearTimeout(temporizadorAcept); aplicarTexto(); }, 0); });
+
+    
+    // Plegado y desplegado de caja de pegado
+    var bToggle = $('bToggleEntradaAceptados');
+    var bExpand = $('bExpandirEntradaAceptados');
+    var wrapTa = $('wrapTextareaAceptados');
+    var barComp = $('barCompactaAceptados');
+    var txtFilasComp = $('txtFilasCompactas');
+
+    function plegarCaja(plegar) {
+      if (plegar) {
+        if (wrapTa) wrapTa.style.display = 'none';
+        if (barComp) barComp.style.display = 'flex';
+        if (bToggle) bToggle.textContent = '▼ Expandir caja';
+      } else {
+        if (wrapTa) wrapTa.style.display = 'block';
+        if (barComp) barComp.style.display = 'none';
+        if (bToggle) bToggle.textContent = '▲ Plegar caja';
+      }
+    }
+
+    if (bToggle) bToggle.addEventListener('click', function(){
+      var estaPlegado = wrapTa && wrapTa.style.display === 'none';
+      plegarCaja(!estaPlegado);
+    });
+    if (bExpand) bExpand.addEventListener('click', function(){
+      plegarCaja(false);
+    });
+
+    var bLimp = $('bLimpiarAceptados');
+    if (bLimp) {
+      bLimp.addEventListener('click', function(){
+        entrada.value = ''; stAcept.raw = ''; stAcept.totals = null; stAcept.prevTotals = null; stAcept.pegado = null; guardarAcept();
+        aplicarTexto(); entrada.focus();
+      });
+    }
+
+    var tBuscar = null;
+    var bBusc = $('buscarAceptados');
+    if (bBusc) {
+      bBusc.addEventListener('input', function(){
+        clearTimeout(tBuscar);
+        var v = this.value;
+        tBuscar = setTimeout(function(){
+          filtroAcept = v;
+          pintarFilasAcept();
+        }, 50);
+      });
+    }
+
+    var selCol = $('colAceptados');
+    if (selCol) {
+      selCol.addEventListener('change', function(){
+        var b = $('aMapB') ? $('aMapB').querySelector('button[data-c="' + this.value + '"]') : null;
+        if (b) b.click();
+      });
+    }
+
+    var mapB = $('aMapB');
+    if (mapB) {
+      mapB.addEventListener('click', function(e){
+        var b = e.target.closest('button[data-c]'); if (!b) return;
+        var c = Number(b.getAttribute('data-c')), labels = [];
+        for (var j = 0; j < datosAcept.n; j++) labels[j] = etiqueta(j);
+        for (var j2 = 0; j2 < labels.length; j2++) if (j2 !== c && labels[j2] === 'Aceptados') labels[j2] = 'Columna ' + (j2 + 1);
+        if (/^Columna \d+$/.test(labels[c])) labels[c] = 'Aceptados';
+        stAcept.labels = labels; stAcept.col = c; guardarAcept(); render();
+      });
+    }
+
+    var bCop = $('bCopiarAceptados');
+    if (bCop) {
+      bCop.addEventListener('click', function(){
+        var t = resumenTexto();
+        var ok = function(){ toast('Resumen copiado'); };
+        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(ok, ok);
+        else { var ta = document.createElement('textarea'); ta.value = t; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); ok(); }
+      });
+    }
+
+    var thAcept = $('theadAceptados');
+    if (thAcept) {
+      thAcept.addEventListener('click', function(e){
+        if (e.target.tagName === 'INPUT') return;
+        var th = e.target.closest('th'); if (!th) return;
+        var k = th.getAttribute('data-k');
+        if (ordenAcept.k === k) ordenAcept.dir = -ordenAcept.dir; else { ordenAcept.k = k; ordenAcept.dir = (k === 'nombre' || k === 'ver' || k === 'venc') ? 1 : -1; }
+        render();
+      });
+      thAcept.addEventListener('change', function(e){
+        if (!e.target.matches('input[data-lab]')) return;
+        var i = Number(e.target.getAttribute('data-lab'));
+        var labels = []; for (var j = 0; j < datosAcept.n; j++) labels[j] = etiqueta(j);
+        labels[i] = e.target.value.trim() || (i === 0 ? 'Aceptados' : 'Columna ' + (i + 1));
+        stAcept.labels = labels; guardarAcept(); render();
+      });
+    }
+
+    // Botón para transferir datos de Aceptados al Informe Diario
+    var btnTrans = $('btnTransferInforme');
+    if (btnTrans) {
+      btnTrans.addEventListener('click', function(){
+        if (!datosAcept.filas || !datosAcept.filas.length) {
+          toast('⚠️ Primero pega la tabla del dashboard de Jaivaná.');
+          return;
+        }
+        var colIdx = stAcept.col;
+        var totalAcept = suma(datosAcept.filas, colIdx);
+        var filasNuevas = datosAcept.filas.map(function(f){
+          var acVal = f.nums[colIdx] && !f.nums[colIdx].vacio ? String(f.nums[colIdx].v) : '0';
+          return [f.nombre, acVal, '0', '0', ''];
+        });
+
+        // Transferir a la tabla de filas del informe
+        pintarFilas(filasNuevas);
+
+        // Actualizar contadores del resumen
+        if ($('r_empresas')) $('r_empresas').value = String(filasNuevas.length);
+        if ($('r_aceptados')) $('r_aceptados').value = String(totalAcept);
+
+        guardar();
+        vistaPrevia();
+
+        if (window.cambiarTabModulo) {
+          window.cambiarTabModulo('informe');
+        }
+        var badgeSync = $('badgeSyncAceptados');
+      if (badgeSync) {
+        badgeSync.style.display = 'inline-flex';
+        badgeSync.innerHTML = '⚡ Sincronizado desde Aceptados (' + filasNuevas.length + ' empresas)';
+      }
+      toast('⚡ ¡' + filasNuevas.length + ' empresas transferidas al Informe Diario!');
+      });
+    }
+
+    // Restaurar lo último pegado si existe
+    if (stAcept.raw) {
+      entrada.value = stAcept.raw;
+      aplicarTexto();
+    }
+  }
+
+
 /* ---------- arranque ---------- */
 var inicial = ejemplo();
 try {
@@ -1439,6 +2394,7 @@ pintar(inicial);
 estadoLista();
 if (errorLista || !EMPRESAS.length) refrescarEmpresas(true);
 vistaPrevia();
+initAceptadosEngine();
 
 })();
 </script>

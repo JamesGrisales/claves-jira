@@ -55,10 +55,11 @@
   .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
 </style>
 
+<div x-data="enlacesAlpineApp()">
 <div class="top">
   <h1>Enlaces</h1>
   <div style="display:flex; align-items:center; gap:8px;">
-    <span class="chip" id="chip"></span>
+    <span class="chip" id="chip" x-text="contadorTexto">0 enlaces</span>
     <span class="db-orb db-orb-pg" title="Persistencia relacional en PostgreSQL">🐘</span>
   </div>
 </div>
@@ -66,14 +67,52 @@
 
 <div class="card" style="padding:18px;">
   <div class="en-tools">
-    <input type="text" id="buscar" placeholder="Buscar por nombre, grupo o dirección…  (tecla /)" autocomplete="off">
-    <select id="orden" title="Ordenar">
+    <input type="text" id="buscar" x-model="q" @input="alEscribir()" placeholder="Buscar por nombre, grupo o dirección…  (tecla /)" autocomplete="off">
+    <select id="orden" x-model="orden" @change="alCambiarOrden()" title="Ordenar" style="display:none;">
       <option value="g">Por grupo</option>
       <option value="u">Más usados</option>
       <option value="r">Más recientes</option>
       <option value="a">A – Z</option>
     </select>
-    <button type="button" id="bNuevo">＋ Nuevo enlace</button>
+    <div class="custom-select-wrap" x-data="{ 
+           abierto: false, 
+           sel: 'g', 
+           label: 'Por grupo',
+           elegir(val, txt) {
+             this.sel = val;
+             this.label = txt;
+             this.abierto = false;
+             const s = document.getElementById('orden');
+             if (s) {
+               s.value = val;
+               s.dispatchEvent(new Event('change', { bubbles: true }));
+             }
+           }
+         }" @click.outside="abierto = false">
+      <button type="button" class="custom-select-btn" :class="{ open: abierto }" @click="abierto = !abierto">
+        <span x-text="label">Por grupo</span>
+        <span class="cs-arrow">▾</span>
+      </button>
+      <div class="custom-select-dropdown" x-show="abierto" x-cloak style="display:none;">
+        <button type="button" class="custom-select-item" :class="{ active: sel === 'g' }" @click="elegir('g', 'Por grupo')">
+          <span>Por grupo</span>
+          <span class="cs-check" x-show="sel === 'g'">✓</span>
+        </button>
+        <button type="button" class="custom-select-item" :class="{ active: sel === 'u' }" @click="elegir('u', 'Más usados')">
+          <span>Más usados</span>
+          <span class="cs-check" x-show="sel === 'u'">✓</span>
+        </button>
+        <button type="button" class="custom-select-item" :class="{ active: sel === 'r' }" @click="elegir('r', 'Más recientes')">
+          <span>Más recientes</span>
+          <span class="cs-check" x-show="sel === 'r'">✓</span>
+        </button>
+        <button type="button" class="custom-select-item" :class="{ active: sel === 'a' }" @click="elegir('a', 'A – Z')">
+          <span>A – Z</span>
+          <span class="cs-check" x-show="sel === 'a'">✓</span>
+        </button>
+      </div>
+    </div>
+    <button type="button" id="bNuevo" @click="abrirNuevo()">＋ Nuevo enlace</button>
   </div>
   <div class="en-groups" id="grupos"></div>
   <div id="lista"></div>
@@ -104,8 +143,80 @@
 </dialog>
 <div class="toast" id="toast">Listo</div>
 
+</div>
+
 <script id="datos" type="application/json"><%- JSON.stringify(items || []).replace(/</g, '\\u003c') %></script>
 <script>
+/* ---------- Controlador Reactivo Alpine.js de Enlaces ---------- */
+window.enlacesAlpineApp = function() {
+  return {
+    q: '',
+    orden: 'g',
+    grupoActivo: null,
+    totalEnlaces: 0,
+    visibles: 0,
+
+    init() {
+      try {
+        const raw = document.getElementById('datos').textContent;
+        const d = JSON.parse(raw) || [];
+        this.totalEnlaces = d.length;
+        this.visibles = d.length;
+      } catch (e) {}
+
+      window.addEventListener('keydown', (e) => {
+        const t = e.target;
+        const escribiendo = t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable);
+        if (e.key === '/' && !escribiendo && !e.ctrlKey && !e.metaKey) {
+          e.preventDefault();
+          const inp = document.getElementById('buscar');
+          if (inp) { inp.focus(); inp.select(); }
+        } else if (e.key === 'Escape') {
+          const dlg = document.getElementById('dlg');
+          if (dlg && dlg.open) {
+            dlg.close();
+          } else if (t && t.id === 'buscar') {
+            this.q = '';
+            this.alEscribir();
+            t.blur();
+          }
+        }
+      });
+    },
+
+    alEscribir() {
+      const inp = document.getElementById('buscar');
+      if (inp) {
+        inp.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+    },
+
+    alCambiarOrden() {
+      const sel = document.getElementById('orden');
+      if (sel) {
+        sel.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    },
+
+    abrirNuevo() {
+      const btn = document.getElementById('bNuevo');
+      if (btn) btn.click();
+    },
+
+    actualizarContador(cantVisibles, total) {
+      this.visibles = cantVisibles;
+      this.totalEnlaces = total;
+    },
+
+    get contadorTexto() {
+      if (this.q) {
+        return this.visibles + ' de ' + this.totalEnlaces + ' enlaces';
+      }
+      return this.totalEnlaces + (this.totalEnlaces === 1 ? ' enlace' : ' enlaces');
+    }
+  };
+};
+
 (function(){
   var $ = function(id){ return document.getElementById(id); };
   var datos = []; try { datos = JSON.parse($('datos').textContent) || []; } catch (e) {}

@@ -24,7 +24,7 @@
     background-color: #000000 !important;
   }
 
-  /* Barra superior de invitado: Montada ENCIMA de la tarjeta de login */
+  /* Barra superior de invitado: Montada ENCIMA de la tarjeta de login en perspectiva 3D */
   .login-top-controls {
     width: 100%;
     max-width: 440px;
@@ -34,12 +34,13 @@
     margin-bottom: 6px;
     z-index: 50;
     pointer-events: auto;
-    transform: perspective(1400px) rotateY(-8.5deg) rotateX(1.8deg) translateZ(10px) !important;
-    transform-style: preserve-3d;
-    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    /* Inclinación 3D táctica idéntica a la tarjeta de login (~14.5° de lado y paralela a la tarjeta) */
+    transform: perspective(1200px) rotateY(-14.5deg) rotateX(2deg) rotateZ(-3.8deg) translateZ(12px) !important;
+    transform-origin: center right !important;
+    transition: transform 0.25s ease, filter 0.25s ease;
   }
   .login-top-controls:hover {
-    transform: perspective(1400px) rotateY(-4.5deg) rotateX(0.8deg) translateZ(16px);
+    transform: perspective(1200px) rotateY(-14.5deg) rotateX(2deg) rotateZ(-3.8deg) translateZ(16px) !important;
   }
   .login-top-controls .navbar,
   body.guest .navbar {
@@ -54,18 +55,54 @@
     background: transparent !important;
     border: none !important;
     box-shadow: none !important;
-    gap: 8px !important;
+    gap: 10px !important;
     z-index: 50 !important;
   }
+  /* RELOJ DEL LOGIN: Ángulo Táctico 3D de lado (idéntico al recuadro de login) */
   body.guest .navbar .clock {
     margin: 0 !important;
-    padding: 6px 14px 6px 10px !important;
-    background: rgba(10, 16, 28, 0.78) !important;
-    border: 1px solid var(--planet-accent, rgba(0, 245, 255, 0.35)) !important;
+    padding: 7px 18px 7px 12px !important;
+    background: rgba(10, 16, 28, 0.85) !important;
+    border: 1.5px solid var(--planet-accent, rgba(0, 245, 255, 0.65)) !important;
     border-radius: 999px !important;
+    backdrop-filter: blur(28px) saturate(200%) !important;
+    -webkit-backdrop-filter: blur(28px) saturate(200%) !important;
+    box-shadow: 
+      -14px 18px 45px -8px rgba(0, 0, 0, 0.95), 
+      -5px 0 28px -3px var(--planet-accent, rgba(0, 245, 255, 0.45)), 
+      inset 1px 1px 2px rgba(255, 255, 255, 0.45),
+      inset 0 0 18px var(--planet-accent, rgba(0, 245, 255, 0.12)) !important;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease !important;
+  }
+  body.guest .navbar .clock:hover {
+    border-color: var(--planet-accent, #00f5ff) !important;
+    box-shadow: 
+      -18px 24px 55px -8px rgba(0, 0, 0, 0.98), 
+      -7px 0 35px -2px var(--planet-accent, rgba(0, 245, 255, 0.7)), 
+      inset 1px 1px 3px rgba(255, 255, 255, 0.6),
+      inset 0 0 25px var(--planet-accent, rgba(0, 245, 255, 0.22)) !important;
+  }
+  body.guest .navbar #themeToggle {
+    margin-left: auto !important;
+  }
+  body.guest .navbar .theme-toggle {
+    margin: 0 !important;
+    width: 36px !important;
+    height: 36px !important;
+    background: rgba(10, 16, 28, 0.85) !important;
+    border: 1.5px solid var(--planet-accent, rgba(0, 245, 255, 0.45)) !important;
+    border-radius: 12px !important;
     backdrop-filter: blur(20px) !important;
     -webkit-backdrop-filter: blur(20px) !important;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5), 0 0 12px var(--planet-accent, rgba(0, 245, 255, 0.15)) !important;
+    box-shadow: 
+      -6px 10px 20px rgba(0, 0, 0, 0.6), 
+      0 0 12px var(--planet-accent, rgba(0, 245, 255, 0.2)) !important;
+    transition: all 0.2s ease !important;
+  }
+  body.guest .navbar .theme-toggle:hover {
+    border-color: var(--planet-accent, #00f5ff) !important;
+    box-shadow: 0 0 18px var(--planet-accent, rgba(0, 245, 255, 0.55)) !important;
+    transform: translateY(-1.5px) !important;
   }
   body.guest .navbar .theme-toggle {
     margin: 0 !important;
@@ -417,12 +454,10 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 20px 40px;
+    padding: 8px 24px;
     box-sizing: border-box;
-    z-index: 10;
-    gap: 10px;
-    perspective: 1200px;
-    transform-style: preserve-3d;
+    z-index: 20;
+    gap: 6px;
   }
 
   .auth-card-glass {
@@ -434,59 +469,48 @@
     -webkit-backdrop-filter: blur(34px) saturate(200%);
     border: 1px solid var(--planet-accent, rgba(0, 245, 255, 0.6)) !important;
     border-radius: 22px !important;
-    padding: 30px 34px 26px;
+    padding: 16px 24px 14px;
     box-sizing: border-box;
-    /* Opción C: Ángulo Táctico Tipo Cabina (~8° sutil estático) */
-    transform: perspective(1400px) rotateY(-8.5deg) rotateX(1.8deg) translateZ(10px) !important;
-    transform-style: preserve-3d;
+    /* Ángulo Táctico Tipo Cabina (~14.5° de lado con el reloj) */
+    transform: perspective(1200px) rotateY(-14.5deg) rotateX(2deg) translateZ(12px) !important;
+    transform-origin: center right;
     box-shadow: 
       -18px 24px 60px -10px rgba(0, 0, 0, 0.95), 
       -5px 0 34px -4px var(--planet-accent, rgba(0, 245, 255, 0.38)), 
       inset 1px 1px 2px rgba(255, 255, 255, 0.4),
       inset 0 0 25px var(--planet-accent, rgba(0, 245, 255, 0.08)) !important;
     overflow: hidden;
-    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease, border-color 0.35s ease;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease;
     animation: panelIn 0.5s ease;
+    z-index: 20;
   }
 
   .auth-card-glass:hover {
-    transform: perspective(1400px) rotateY(-4.5deg) rotateX(0.8deg) translateZ(16px);
+    /* Se mantiene la perspectiva idéntica sin rotaciones en hover que desvíen el mouse */
+    transform: perspective(1200px) rotateY(-14.5deg) rotateX(2deg) translateZ(12px) !important;
+    border-color: var(--planet-accent, #00f5ff) !important;
     box-shadow: 
       -22px 28px 70px -10px rgba(0, 0, 0, 0.98), 
-      -7px 0 42px -2px var(--planet-accent, rgba(0, 245, 255, 0.55)), 
+      -7px 0 42px -2px var(--planet-accent, rgba(0, 245, 255, 0.65)), 
       inset 1px 1px 3px rgba(255, 255, 255, 0.5),
-      inset 0 0 30px var(--planet-accent, rgba(0, 245, 255, 0.12)) !important;
+      inset 0 0 30px var(--planet-accent, rgba(0, 245, 255, 0.15)) !important;
   }
 
-  
-  /* Capas de elevación 3D para elementos internos */
+  /* Capas de brillo y reflejo detrás de los elementos interactivos */
   .auth-card-glass .card-glare-3d {
     position: absolute;
     inset: 0;
     border-radius: 22px;
-    pointer-events: none;
-    z-index: 10;
+    pointer-events: none !important;
+    z-index: 1;
     mix-blend-mode: overlay;
     background: radial-gradient(circle at 18% 28%, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.04) 40%, transparent 68%);
     opacity: 0.9;
   }
-  .auth-card-glass .auth-card-top-bar {
-    transform: translateZ(28px);
-  }
-  .auth-card-glass .field,
-  .auth-card-glass label {
-    transform: translateZ(16px);
-  }
-  .auth-card-glass #btnLogin {
-    transform: translateZ(32px);
-  }
-  .auth-card-glass .btn-biometria,
-  .auth-card-glass .auth-divider-biometric {
-    transform: translateZ(24px);
-  }
-  .auth-card-glass .auth-aux-row,
-  .auth-card-glass .auth-card-links {
-    transform: translateZ(14px);
+
+  .auth-card-glass form {
+    position: relative;
+    z-index: 10;
   }
 
   /* Brillo diagonal de cristal (*specular sheen*) */
@@ -497,7 +521,8 @@
     width: 160px;
     height: 160px;
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.0) 65%);
-    pointer-events: none;
+    pointer-events: none !important;
+    z-index: 1;
     border-top-right-radius: 22px;
   }
 
@@ -506,8 +531,8 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 24px;
-    padding-bottom: 14px;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   }
   .auth-card-title-group {
@@ -564,35 +589,43 @@
     font-weight: 600;
     color: rgba(255, 255, 255, 0.85);
     letter-spacing: 0.02em;
-    margin-bottom: 6px;
+    margin-bottom: 2px; font-size: 11px;
     display: block;
+    cursor: pointer;
+    user-select: none;
   }
 
   .field {
     position: relative;
-    margin-bottom: 16px;
+    margin-bottom: 8px;
+    cursor: text;
+    z-index: 12;
   }
   .field > svg.lead {
     position: absolute;
-    left: 14px;
+    left: 15px;
     top: 50%;
     transform: translateY(-50%);
-    width: 16px;
-    height: 16px;
+    width: 17px;
+    height: 17px;
     fill: none;
-    stroke: rgba(255, 255, 255, 0.45);
-    stroke-width: 2;
-    pointer-events: none;
-    transition: stroke 0.2s ease, filter 0.2s ease;
+    stroke: var(--planet-accent, #00f5ff) !important;
+    opacity: 0.9 !important;
+    stroke-width: 2.2;
+    pointer-events: none !important;
+    z-index: 25 !important;
+    transition: stroke 0.2s ease, filter 0.2s ease, opacity 0.2s ease;
+    filter: drop-shadow(0 0 6px var(--planet-accent, rgba(0, 245, 255, 0.5)));
   }
   .field:focus-within > svg.lead {
-    stroke: var(--planet-accent, #ff3b30);
-    filter: drop-shadow(0 0 6px var(--planet-accent, #ff3b30));
+    stroke: var(--planet-accent, #00f5ff) !important;
+    opacity: 1 !important;
+    filter: drop-shadow(0 0 10px var(--planet-accent, #00f5ff)) !important;
   }
 
   .field input[type=text], .field input[type=password] {
     width: 100%;
-    height: 48px;
+    height: 38px;
     padding: 0 44px 0 42px;
     font-family: var(--sans);
     font-size: 14px;
@@ -604,6 +637,10 @@
     box-sizing: border-box;
     box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.5), 0 0 10px -2px var(--planet-accent, rgba(255, 59, 48, 0.15));
     transition: all 0.25s ease;
+    cursor: text !important;
+    position: relative;
+    z-index: 14;
+    pointer-events: auto !important;
   }
   .field input[type=text]::placeholder, .field input[type=password]::placeholder {
     color: rgba(255, 255, 255, 0.35);
@@ -631,6 +668,7 @@
     justify-content: center;
     cursor: pointer;
     transition: all 0.15s ease;
+    z-index: 25 !important;
   }
   .field .pw-toggle:hover {
     color: var(--planet-accent, #ff3b30);
@@ -639,33 +677,59 @@
     width: 17px;
     height: 17px;
   }
+  .field .pw-toggle .eye-off {
+    display: none !important;
+  }
+  .field .pw-toggle.showing .eye {
+    display: none !important;
+  }
+  .field .pw-toggle.showing .eye-off {
+    display: block !important;
+  }
+  .field .pw-toggle.showing {
+    color: var(--planet-accent, #00f5ff) !important;
+  }
 
   /* Opciones auxiliares */
   .auth-aux-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-top: 4px;
-    margin-bottom: 12px;
+    margin-top: 2px;
+    margin-bottom: 6px;
     font-size: 12.5px;
+    position: relative;
+    z-index: 15;
   }
   .auth-remember {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    cursor: pointer;
+    gap: 9px;
+    cursor: pointer !important;
     user-select: none;
-    color: rgba(255, 255, 255, 0.65);
-    font-weight: 500;
-  }
-  .auth-remember input[type=checkbox] {
-    accent-color: var(--planet-accent, #ff3b30);
-    width: 15px;
-    height: 15px;
-    cursor: pointer;
+    color: rgba(255, 255, 255, 0.75);
+    font-weight: 600;
+    padding: 5px 6px;
+    border-radius: 8px;
+    transition: color 0.15s ease, background 0.15s ease;
   }
   .auth-remember:hover {
     color: #fff;
+    background: rgba(255, 255, 255, 0.06);
+  }
+  .auth-remember input[type=checkbox] {
+    accent-color: var(--planet-accent, #00f5ff);
+    width: 17px;
+    height: 17px;
+    margin: 0;
+    cursor: pointer !important;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 16;
+  }
+  .auth-remember span {
+    cursor: pointer !important;
+    user-select: none;
   }
 
   .caps {
@@ -686,14 +750,14 @@
   #btnLogin {
     position: relative;
     width: 100%;
-    margin-top: 14px;
+    margin-top: 8px;
     padding: 0 24px;
     font-size: 15px;
     font-weight: 800;
     font-family: var(--mono);
     letter-spacing: 0.08em;
     border-radius: 11px;
-    height: 48px;
+    height: 40px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -777,72 +841,383 @@
     text-transform: uppercase;
   }
 
-  /* BOTÓN HUELLA DIGITAL BIOMÉTRICA */
-  .btn-biometria {
+  /* ==========================================================================
+   POD HERO DE DESBLOQUEO BIOMÉTRICO (ESTILO EXACTO MOCKUP DE REFERENCIA)
+   ========================================================================== */
+  .bio-hero-pod {
     width: 100%;
-    height: 46px;
-    border-radius: 11px;
-    background: rgba(10, 16, 28, 0.85);
-    border: 1px solid var(--planet-accent, #ff3b30) !important;
-    color: #ffffff;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 16px;
-    font-family: var(--mono);
-    font-size: 12.5px;
-    font-weight: 700;
-    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+    border-radius: 18px;
+    background: rgba(6, 12, 22, 0.94);
+    border: 1.5px solid rgba(16, 185, 129, 0.45);
+    box-shadow: 
+      0 8px 28px rgba(0, 0, 0, 0.75),
+      0 0 24px -4px rgba(16, 185, 129, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    padding: 8px 10px 6px;
+    box-sizing: border-box;
     cursor: pointer;
     position: relative;
     overflow: hidden;
-    box-shadow: 0 0 16px -4px var(--planet-accent, rgba(255, 59, 48, 0.35));
-    transition: all 0.25s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
   }
-  .btn-biometria:hover {
-    background: rgba(20, 28, 48, 0.95);
-    box-shadow: 0 0 24px -2px var(--planet-accent, rgba(255, 59, 48, 0.65));
-    transform: translateY(-1px);
+  .bio-hero-pod:hover {
+    border-color: #10b981;
+    background: rgba(8, 16, 30, 0.98);
+    box-shadow: 
+      0 12px 38px rgba(0, 0, 0, 0.9),
+      0 0 35px 2px rgba(16, 185, 129, 0.55),
+      inset 0 1px 1px rgba(255, 255, 255, 0.25);
+    transform: translateY(-2px);
   }
-  .btn-biometria .bio-scanner-icon {
-    position: relative;
-    width: 24px;
-    height: 24px;
+
+  .bio-hero-stage {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--planet-accent, #ff3b30);
-  }
-  .btn-biometria .bio-scanner-icon svg {
-    width: 22px;
-    height: 22px;
-  }
-  .btn-biometria .bio-scan-laser {
-    position: absolute;
-    top: 0;
-    left: 0;
     width: 100%;
-    height: 2px;
-    background: var(--planet-accent, #ff3b30);
-    box-shadow: 0 0 8px var(--planet-accent, #ff3b30);
-    opacity: 0;
+    gap: 16px;
+    position: relative;
   }
-  .btn-biometria.scanning .bio-scan-laser {
+
+  /* Ondas sonoras / radar laterales */
+  .bio-soundwaves {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .bio-soundwaves.left {
+    flex-direction: row-reverse;
+  }
+  .bio-soundwaves.right {
+    flex-direction: row;
+  }
+  .sw {
+    display: block;
+    width: 2.5px;
+    border-radius: 999px;
+    background: rgba(16, 185, 129, 0.45);
+    box-shadow: 0 0 6px rgba(16, 185, 129, 0.35);
+    transition: all 0.25s ease;
+  }
+  .sw1 { height: 32px; opacity: 0.9; }
+  .sw2 { height: 24px; opacity: 0.7; }
+  .sw3 { height: 16px; opacity: 0.5; }
+  .sw4 { height: 10px; opacity: 0.3; }
+
+  .bio-hero-pod:hover .sw,
+  .bio-hero-pod.scanning .sw {
+    background: #10b981;
+    box-shadow: 0 0 12px #10b981;
+  }
+  .bio-hero-pod.scanning .sw1 { animation: wavePulse 1.1s infinite ease-in-out; }
+  .bio-hero-pod.scanning .sw2 { animation: wavePulse 1.1s infinite ease-in-out 0.18s; }
+  .bio-hero-pod.scanning .sw3 { animation: wavePulse 1.1s infinite ease-in-out 0.36s; }
+  .bio-hero-pod.scanning .sw4 { animation: wavePulse 1.1s infinite ease-in-out 0.54s; }
+  @keyframes wavePulse {
+    0%, 100% { transform: scaleY(0.65); opacity: 0.4; }
+    50% { transform: scaleY(1.35); opacity: 1; filter: drop-shadow(0 0 10px #10b981); }
+  }
+
+  /* Disco central del escáner */
+  .bio-center-scanner {
+    position: relative;
+    width: 68px;
+    height: 68px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  /* Anillo orbital exterior giratorio */
+  .bio-orbit-ring {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+  .orbit-track {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.08);
+    stroke-width: 2.2;
+  }
+  .orbit-beam {
+    fill: none;
+    stroke: #10b981;
+    stroke-width: 3.8;
+    stroke-linecap: round;
+    stroke-dasharray: 65 210;
+    stroke-dashoffset: 0;
+    filter: drop-shadow(0 0 8px #10b981) drop-shadow(0 0 14px rgba(16, 185, 129, 0.65));
+    animation: orbitSpin 4.5s linear infinite;
+    transform-origin: 50px 50px;
+  }
+  .bio-hero-pod.scanning .orbit-beam {
+    animation: orbitSpin 1.4s linear infinite;
+    stroke: #00f5ff;
+    filter: drop-shadow(0 0 10px #00f5ff) drop-shadow(0 0 20px #00f5ff);
+  }
+  @keyframes orbitSpin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  /* Núcleo central de la huella */
+  .bio-fp-core {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(16, 185, 129, 0.18) 0%, rgba(5, 12, 22, 0.96) 75%);
+    border: 1.5px solid rgba(16, 185, 129, 0.45);
+    box-shadow: inset 0 0 16px rgba(16, 185, 129, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.25s ease;
+  }
+  .bio-hero-pod:hover .bio-fp-core {
+    border-color: #10b981;
+    box-shadow: inset 0 0 24px rgba(16, 185, 129, 0.45), 0 0 18px rgba(16, 185, 129, 0.4);
+  }
+  .bio-fp-svg {
+    width: 30px;
+    height: 30px;
+    stroke: #10b981;
+    filter: drop-shadow(0 0 5px rgba(16, 185, 129, 0.75));
+    transition: all 0.25s ease;
+  }
+  .bio-hero-pod:hover .bio-fp-svg {
+    stroke: #22c55e;
+    filter: drop-shadow(0 0 9px #22c55e);
+  }
+
+  /* Línea láser de escaneo */
+  .bio-laser-sweep {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 3px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #ffffff;
+    box-shadow: 0 0 10px #10b981, 0 0 20px #10b981, 0 0 35px #00f5ff;
+    opacity: 0.9;
+    pointer-events: none;
+    z-index: 4;
+    animation: laserFloat 2.8s infinite ease-in-out;
+  }
+  .bio-hero-pod.scanning .bio-laser-sweep {
     opacity: 1;
-    animation: scanLaser 1.1s infinite alternate ease-in-out;
+    animation: laserFastSweep 0.95s infinite alternate cubic-bezier(0.45, 0.05, 0.55, 0.95);
   }
-  @keyframes scanLaser {
-    0% { top: 0%; }
-    100% { top: 100%; }
+  @keyframes laserFloat {
+    0%, 100% { top: 32%; opacity: 0.65; }
+    50% { top: 68%; opacity: 1; }
   }
-  .btn-biometria .bio-badge {
-    font-size: 9.5px;
+  @keyframes laserFastSweep {
+    0% { top: 12%; opacity: 0.8; }
+    50% { opacity: 1; }
+    100% { top: 88%; opacity: 0.8; }
+  }
+
+  /* Mini badge verificado a las 4:30 en el borde del círculo (👤✓) */
+  .bio-user-verified {
+    position: absolute;
+    right: 3px;
+    bottom: 3px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #060e1c;
+    border: 1.5px solid #10b981;
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.75);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 6;
+  }
+  .bio-user-verified svg {
+    width: 10px;
+    height: 10px;
+    stroke: #10b981;
+  }
+
+  /* Subtítulo y telemetría */
+  .bio-hero-caption {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    text-align: center;
+    width: 100%;
+  }
+  .bh-title {
+    font-size: 12px;
+    font-weight: 850;
+    letter-spacing: 0.03em;
+    color: #ffffff;
+    font-family: var(--sans);
+    text-shadow: 0 0 12px rgba(16, 185, 129, 0.5);
+  }
+  .bh-sub {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.65);
+    font-weight: 500;
+  }
+  .bh-progress-track {
+    width: 65%;
+    height: 2.5px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 999px;
+    overflow: hidden;
+    margin-top: 4px;
+    display: none;
+  }
+  .bio-hero-pod.scanning .bh-progress-track {
+    display: block;
+  }
+  .bh-progress-bar {
+    width: 45%;
+    height: 100%;
+    background: linear-gradient(90deg, #10b981, #00f5ff);
+    border-radius: 999px;
+    box-shadow: 0 0 10px #10b981;
+    animation: bhBarPulse 1.0s infinite alternate ease-in-out;
+  }
+  @keyframes bhBarPulse {
+    0% { transform: translateX(0%); }
+    100% { transform: translateX(160%); }
+  }
+
+  /* Estados interactivos */
+  .bio-hero-pod.scanning {
+    border-color: #00f5ff !important;
+    background: rgba(6, 18, 34, 0.98) !important;
+    box-shadow: 0 12px 42px rgba(0, 0, 0, 0.9), 0 0 45px rgba(0, 245, 255, 0.65) !important;
+  }
+  .bio-hero-pod.scanning .bh-title {
+    color: #00f5ff !important;
+    text-shadow: 0 0 14px #00f5ff !important;
+  }
+
+  .bio-hero-pod.authorized {
+    border-color: #10b981 !important;
+    background: rgba(4, 32, 18, 0.98) !important;
+    box-shadow: 0 12px 45px rgba(0, 0, 0, 0.9), 0 0 50px rgba(16, 185, 129, 0.9) !important;
+  }
+  .bio-hero-pod.authorized .bh-title {
+    color: #10b981 !important;
+  }
+
+  .bio-hero-pod.rejected {
+    border-color: #ef4444 !important;
+    background: rgba(34, 8, 14, 0.98) !important;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.9), 0 0 38px rgba(239, 68, 68, 0.75) !important;
+    animation: bioHeroShake 0.4s ease !important;
+  }
+  @keyframes bioHeroShake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-6px); }
+    40%, 80% { transform: translateX(6px); }
+  }
+  .bio-hero-pod.rejected .bh-title {
+    color: #ef4444 !important;
+  }
+
+  /* Divisor elegante entre Biometría y Formulario de Contraseña */
+  .auth-divider-password {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 8px 0 6px;
+    width: 100%;
+  }
+  .auth-divider-password .adp-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.02));
+  }
+  .auth-divider-password .adp-label {
+    font-size: 10px;
     font-weight: 800;
-    padding: 3px 7px;
-    border-radius: 5px;
-    background: var(--planet-accent, #ff3b30);
-    color: #fff;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.1em;
+    color: rgba(255, 255, 255, 0.45);
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  /* Medidor dinámico de fuerza de contraseña */
+  .pw-strength-wrap {
+    margin-top: -6px;
+    margin-bottom: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .pw-strength-track {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .pw-seg {
+    height: 100%;
+    border-radius: 999px;
+    transition: all 0.25s ease;
+    background: transparent;
+  }
+  .pw-strength-text {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: rgba(255, 255, 255, 0.45);
+    text-align: right;
+    transition: color 0.2s ease;
+  }
+
+  /* Badges de seguridad al pie de la tarjeta */
+  .auth-trust-badges {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 8px;
+    padding-top: 6px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    flex-wrap: wrap;
+  }
+  .atb-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 2px 6px;
+    border-radius: 999px;
+    letter-spacing: 0.03em;
+  }
+  .atb-chip svg {
+    width: 11px;
+    height: 11px;
+    stroke: #00f5ff;
+  }
+  .atb-flag {
+    font-size: 11px;
   }
 
   /* Enlaces inferiores de la tarjeta */
@@ -850,8 +1225,8 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 6px;
-    margin-top: 18px;
+    gap: 4px;
+    margin-top: 8px;
     font-size: 12px;
     font-family: var(--sans);
   }
@@ -1121,6 +1496,27 @@
       padding: 10px 18px 30px;
     }
   }
+
+  /* Ajuste de compactación ultra-fluida para evitar desbordes en cualquier pantalla */
+  @media (max-height: 860px) {
+    .cyber-login-col {
+      transform: scale(0.94);
+      transform-origin: center right;
+    }
+  }
+  @media (max-height: 760px) {
+    .cyber-login-col {
+      transform: scale(0.86);
+      transform-origin: center right;
+    }
+  }
+  @media (max-height: 660px) {
+    .cyber-login-col {
+      transform: scale(0.78);
+      transform-origin: center right;
+    }
+  }
+
 </style>
 
 <div class="cyber-split-screen">
@@ -1278,6 +1674,72 @@
         </div>
       </div>
 
+      <!-- ESCÁNER HERO BIOMÉTRICO (PROTAGONISTA ESTILO MOCKUP DE REFERENCIA) -->
+      <div class="bio-hero-pod" id="btnBiometria" role="button" tabindex="0" title="Haz clic para iniciar escaneo con Windows Hello">
+        <div class="bio-hero-stage">
+          <!-- Ondas concéntricas de radar a la izquierda -->
+          <div class="bio-soundwaves left" aria-hidden="true">
+            <span class="sw sw1"></span>
+            <span class="sw sw2"></span>
+            <span class="sw sw3"></span>
+            <span class="sw sw4"></span>
+          </div>
+
+          <!-- Centro: Círculo del Escáner con Arco Giratorio y Huella -->
+          <div class="bio-center-scanner">
+            <svg class="bio-orbit-ring" viewBox="0 0 100 100" aria-hidden="true">
+              <circle class="orbit-track" cx="50" cy="50" r="44" />
+              <circle class="orbit-beam" cx="50" cy="50" r="44" />
+            </svg>
+
+            <div class="bio-fp-core">
+              <div class="bio-laser-sweep"></div>
+              <svg class="bio-fp-svg" viewBox="0 0 44 44" fill="none" stroke="currentColor">
+                <path d="M22 4C12.8 4 5.3 11.4 5.3 20.6c0 2.6.6 5.1 1.7 7.3" stroke-width="2.2" stroke-linecap="round"/>
+                <path d="M37 27.9c1.1-2.2 1.7-4.7 1.7-7.3 0-9.2-7.5-16.6-16.7-16.6" stroke-width="2.2" stroke-linecap="round"/>
+                <path d="M22 9.5c-6.1 0-11.1 5-11.1 11.1 0 3.6 1.7 6.8 4.3 8.8" stroke-width="2.2" stroke-linecap="round"/>
+                <path d="M28.8 29.4c2.6-2 4.3-5.2 4.3-8.8 0-6.1-5-11.1-11.1-11.1" stroke-width="2.2" stroke-linecap="round"/>
+                <path d="M22 15c-3.1 0-5.6 2.5-5.6 5.6 0 4.1 2.5 7.6 6.1 9.1" stroke-width="2.2" stroke-linecap="round"/>
+                <path d="M22 20.6c0 1 .8 1.8 1.8 1.8s1.8-.8 1.8-1.8c0-2-1.6-3.7-3.7-3.7" stroke-width="2.2" stroke-linecap="round"/>
+                <path d="M22 26.2v7.5" stroke-width="2.2" stroke-linecap="round"/>
+                <path d="M18.3 30.8v4.7" stroke-width="2.2" stroke-linecap="round"/>
+                <path d="M25.7 30.8v4.7" stroke-width="2.2" stroke-linecap="round"/>
+              </svg>
+
+              <!-- Mini badge circular con avatar de usuario verificado (👤✓) -->
+              <div class="bio-user-verified" title="Sensor Verificado">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                  <circle cx="12" cy="7" r="4"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <!-- Ondas concéntricas de radar a la derecha -->
+          <div class="bio-soundwaves right" aria-hidden="true">
+            <span class="sw sw1"></span>
+            <span class="sw sw2"></span>
+            <span class="sw sw3"></span>
+            <span class="sw sw4"></span>
+          </div>
+        </div>
+
+        <div class="bio-hero-caption">
+          <span class="bh-title">Desbloqueo Biométrico</span>
+          <span class="bh-sub" id="bioSub">Toca para escanear con Windows Hello</span>
+          <div class="bh-progress-track"><div class="bh-progress-bar"></div></div>
+        </div>
+      </div>
+
+      <!-- Divisor elegante para ingreso con contraseña -->
+      <div class="auth-divider-password">
+        <span class="adp-line"></span>
+        <span class="adp-label">O INGRESO CON CONTRASEÑA</span>
+        <span class="adp-line"></span>
+      </div>
+
+      <!-- Formulario de acceso con usuario y contraseña -->
       <form method="post" action="/login" id="loginForm">
         <label for="usuario">Usuario</label>
         <div class="field">
@@ -1290,14 +1752,25 @@
           <svg class="lead" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
           <input type="password" id="clave" name="password" autocomplete="current-password" placeholder="••••••••" required>
           <button type="button" class="pw-toggle" aria-label="Mostrar contraseña" title="Mostrar / ocultar contraseña">
-            <svg class="eye" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            <svg class="eye" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
             <svg class="eye-off" viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
           </button>
         </div>
 
+        <!-- Medidor dinámico de fuerza de contraseña -->
+        <div class="pw-strength-wrap" id="pwStrengthWrap" style="display:none;">
+          <div class="pw-strength-track">
+            <div class="pw-seg" id="pwSeg1"></div>
+            <div class="pw-seg" id="pwSeg2"></div>
+            <div class="pw-seg" id="pwSeg3"></div>
+            <div class="pw-seg" id="pwSeg4"></div>
+          </div>
+          <div class="pw-strength-text" id="pwStrengthText">Seguridad de la contraseña</div>
+        </div>
+
         <div class="auth-aux-row">
-          <label class="auth-remember">
-            <input type="checkbox" id="chkRecordar">
+          <label class="auth-remember" for="chkRecordar" id="lblRecordar">
+            <input type="checkbox" id="chkRecordar" name="remember">
             <span>Recordar mi usuario</span>
           </label>
         </div>
@@ -1308,34 +1781,21 @@
           <svg class="btn-pulse-wave" viewBox="0 0 40 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M2 8h10l3-6 5 12 4-8 3 4h11"/>
           </svg>
-          <span class="btn-label">ACCEDER</span>
+          <span class="btn-label">ACCEDER A LA BÓVEDA</span>
           <svg class="btn-arrow" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        </button>
-
-        <div class="auth-divider-biometric" id="bioDivider" style="display:none;">
-          <span>O ACCESO BIOMÉTRICO</span>
-        </div>
-
-        <button type="button" class="btn-biometria" id="btnBiometria" style="display:none;" title="Identifícate con tu huella digital de Windows Hello">
-          <div class="bio-scan-laser"></div>
-          <svg class="bio-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 2a10 10 0 0 0-6.88 17.23l.12.11"/>
-            <path d="M12 6a6 6 0 0 0-4.24 10.24l.24.23"/>
-            <path d="M12 10a2 2 0 0 0-1.42 3.41"/>
-            <path d="M12 14v4"/>
-            <path d="M15.54 8.46a5 5 0 0 1 0 7.08"/>
-            <path d="M18.36 5.64a9 9 0 0 1 0 12.72"/>
-          </svg>
-          <span class="bio-text">
-            <span class="bio-title">INGRESAR CON HUELLA DIGITAL</span>
-            <span class="bio-sub">Windows Hello · Sensor Biométrico</span>
-          </span>
         </button>
       </form>
 
       <div class="auth-card-links">
         <a href="#" class="link-muted" onclick="alert('Comunícate con el administrador del sistema para restablecer tu clave.'); return false;">¿Olvidé mi contraseña?</a>
         <a href="/registro" class="link-action">Crear nueva cuenta</a>
+      </div>
+
+      <!-- Insignias de confianza y seguridad en el pie de la tarjeta -->
+      <div class="auth-trust-badges">
+        <span class="atb-chip" title="Cifrado militar AES-256-GCM"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> AES-256-GCM</span>
+        <span class="atb-chip" title="Base de datos PostgreSQL en enclave seguro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg> PostgreSQL Enclave</span>
+        <span class="atb-chip" title="Región segura Colombia"><span class="atb-flag">🇨🇴</span> Colombia</span>
       </div>
     </div>
   </div>
@@ -2256,71 +2716,118 @@
 // --- GESTIÓN DE ACCESO BIOMÉTRICO (WEBAUTHN / WINDOWS HELLO HUELLA DIGITAL) ---
 (function initBiometriaLogin() {
   var btnBio = document.getElementById('btnBiometria');
-  var divBio = document.getElementById('bioDivider');
   var txtUser = document.getElementById('usuario');
-  if (!btnBio || typeof Biometria === 'undefined') return;
+  if (!btnBio) return;
 
-  var originalBioHTML = btnBio.innerHTML;
   var bioEscaneando = false;
 
-  // Siempre mostrar si el navegador soporta WebAuthn o si está en localhost
-  Biometria.esCompatible().then(function(compatible) {
-    if (compatible) {
-      btnBio.style.display = 'flex';
-      if (divBio) divBio.style.display = 'flex';
+  function setScanningState(scanning) {
+    bioEscaneando = scanning;
+    btnBio.classList.toggle('scanning', scanning);
+    var title = btnBio.querySelector('.bh-title');
+    var sub = document.getElementById('bioSub');
+
+    if (scanning) {
+      if (title) title.textContent = 'ESCANEANDO HUELLA...';
+      if (sub) sub.textContent = 'Coloca tu dedo en el sensor Windows Hello';
     } else {
-      btnBio.style.display = 'flex';
-      if (divBio) divBio.style.display = 'flex';
+      if (title) title.textContent = 'Desbloqueo Biométrico';
+      if (sub) sub.textContent = 'Toca para escanear con Windows Hello';
     }
-  }).catch(function() {
-    btnBio.style.display = 'flex';
-    if (divBio) divBio.style.display = 'flex';
-  });
+  }
 
   btnBio.addEventListener('click', async function() {
     if (bioEscaneando) return;
-    bioEscaneando = true;
+    setScanningState(true);
 
     var usuario = (txtUser ? txtUser.value : '').trim();
-
-    btnBio.classList.add('scanning');
-    btnBio.disabled = true;
-    var t = btnBio.querySelector('.bio-title');
-    var s = btnBio.querySelector('.bio-sub');
-    if (t) t.textContent = 'COLOCA TU DEDO EN EL SENSOR...';
-    if (s) s.textContent = 'Escaneando huella dactilar Windows Hello';
+    var title = btnBio.querySelector('.bh-title');
+    var sub = document.getElementById('bioSub');
 
     try {
+      if (typeof Biometria === 'undefined') {
+        throw new Error('Módulo biométrico no disponible en este navegador');
+      }
+
       var resultado = await Biometria.autenticar(usuario);
       if (resultado && resultado.ok) {
         btnBio.classList.remove('scanning');
-        btnBio.style.borderColor = '#10b981';
-        btnBio.style.background = 'rgba(16, 185, 129, 0.2)';
-        if (t) t.textContent = '¡HUELLA RECONOCIDA! AUTORIZADO';
-        if (s) s.textContent = (resultado.user ? resultado.user.username : '') + ' · Acceso concedido';
+        btnBio.classList.add('authorized');
+        if (title) title.textContent = '¡HUELLA AUTORIZADA!';
+        if (sub) sub.textContent = (resultado.user ? resultado.user.username : 'Usuario') + ' · Acceso concedido';
+
         setTimeout(function() {
           window.location.href = resultado.redirect || '/';
-        }, 500);
+        }, 550);
       } else {
         throw new Error((resultado && resultado.error) || 'Huella no reconocida.');
       }
     } catch(err) {
-      console.error('Error biometría:', err);
+      console.warn('Biometría:', err);
       btnBio.classList.remove('scanning');
-      btnBio.style.borderColor = '#ef4444';
-      btnBio.style.background = 'rgba(239, 68, 68, 0.2)';
-      if (t) t.textContent = 'NO SE PUDO VERIFICAR HUELLA';
-      if (s) s.textContent = err.message || 'Intenta de nuevo o ingresa con tu contraseña';
+      btnBio.classList.add('rejected');
+      if (title) title.textContent = 'NO SE PUDO VERIFICAR HUELLA';
+      if (sub) sub.textContent = err.message || 'Intenta de nuevo o ingresa con contraseña abajo';
 
       setTimeout(function() {
-        btnBio.style.borderColor = '';
-        btnBio.style.background = '';
-        btnBio.innerHTML = originalBioHTML;
-        btnBio.disabled = false;
-        bioEscaneando = false;
-      }, 2800);
+        btnBio.classList.remove('rejected');
+        setScanningState(false);
+      }, 3000);
     }
   });
+
+  // Accesibilidad con teclado (Enter o Espacio)
+  btnBio.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      btnBio.click();
+    }
+  });
+
+  // Medidor dinámico de seguridad de contraseña
+  var txtClave = document.getElementById('clave');
+  var pwWrap = document.getElementById('pwStrengthWrap');
+  var pwText = document.getElementById('pwStrengthText');
+  var seg1 = document.getElementById('pwSeg1');
+  var seg2 = document.getElementById('pwSeg2');
+  var seg3 = document.getElementById('pwSeg3');
+  var seg4 = document.getElementById('pwSeg4');
+
+  if (txtClave && pwWrap) {
+    txtClave.addEventListener('input', function() {
+      var val = this.value;
+      if (!val) {
+        pwWrap.style.display = 'none';
+        return;
+      }
+      pwWrap.style.display = 'flex';
+      
+      var score = 0;
+      if (val.length >= 6) score++;
+      if (val.length >= 8 && /[A-Z]/.test(val) && /[a-z]/.test(val)) score++;
+      if (/d/.test(val)) score++;
+      if (/[^A-Za-z0-9]/.test(val) && val.length >= 9) score++;
+
+      [seg1, seg2, seg3, seg4].forEach(function(s){ if (s) s.style.background = 'transparent'; });
+
+      if (score <= 1) {
+        if (seg1) seg1.style.background = '#ef4444';
+        if (pwText) { pwText.textContent = 'Contraseña corta o débil'; pwText.style.color = '#ef4444'; }
+      } else if (score === 2) {
+        if (seg1) seg1.style.background = '#f59e0b';
+        if (seg2) seg2.style.background = '#f59e0b';
+        if (pwText) { pwText.textContent = 'Seguridad media'; pwText.style.color = '#f59e0b'; }
+      } else if (score === 3) {
+        if (seg1) seg1.style.background = '#00f5ff';
+        if (seg2) seg2.style.background = '#00f5ff';
+        if (seg3) seg3.style.background = '#00f5ff';
+        if (pwText) { pwText.textContent = 'Seguridad fuerte'; pwText.style.color = '#00f5ff'; }
+      } else {
+        [seg1, seg2, seg3, seg4].forEach(function(s){ if (s) s.style.background = '#10b981'; });
+        if (pwText) { pwText.textContent = 'Blindada • AES-256 Ready'; pwText.style.color = '#10b981'; }
+      }
+    });
+  }
 })();
 
 // --- ENVÍO DE FORMULARIO DE ACCESO (AJAX CON FEEDBACK EN VIVO) ---
@@ -2382,6 +2889,55 @@
     .catch(function(err) {
       console.error(err);
       mostrarError('Error al contactar con el servidor');
+    });
+  });
+
+  // Asegurar que el clic en cualquier parte del contenedor del campo o su icono active el input
+  document.querySelectorAll('.field').forEach(function(fld) {
+    fld.addEventListener('click', function(e) {
+      if (e.target.closest('.pw-toggle')) return;
+      var inp = fld.querySelector('input');
+      if (inp && e.target !== inp) {
+        inp.focus();
+      }
+    });
+  });
+
+  // Asegurar que el clic en etiquetas de texto 'Usuario' o 'Contraseña' enfoque de inmediato
+  document.querySelectorAll('.auth-card-glass label[for]').forEach(function(lbl) {
+    lbl.addEventListener('click', function(e) {
+      var targetId = lbl.getAttribute('for');
+      if (targetId && targetId !== 'chkRecordar') {
+        var targetEl = document.getElementById(targetId);
+        if (targetEl) targetEl.focus();
+      }
+    });
+  });
+
+  // Manejador ultra-confiable para 'Recordar mi usuario' (tanto en casilla como en texto)
+  var lblRecordar = document.getElementById('lblRecordar');
+  if (lblRecordar && chkRecordar) {
+    lblRecordar.addEventListener('click', function(e) {
+      if (e.target === chkRecordar) return;
+      e.preventDefault();
+      chkRecordar.checked = !chkRecordar.checked;
+      chkRecordar.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+  }
+
+  // Alternar visualización de contraseña
+  document.querySelectorAll('.pw-toggle').forEach(function(btnToggle) {
+    btnToggle.addEventListener('click', function(e) {
+      e.preventDefault();
+      var fld = btnToggle.closest('.field');
+      var inp = fld ? fld.querySelector('input') : document.getElementById('clave');
+      if (!inp) return;
+      var isPass = inp.type === 'password';
+      inp.type = isPass ? 'text' : 'password';
+      btnToggle.classList.toggle('showing', isPass);
+      btnToggle.setAttribute('aria-label', isPass ? 'Ocultar contraseña' : 'Mostrar contraseña');
+      btnToggle.title = isPass ? 'Ocultar contraseña' : 'Mostrar contraseña';
+      inp.focus();
     });
   });
 

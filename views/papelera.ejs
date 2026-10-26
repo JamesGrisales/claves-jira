@@ -20,6 +20,7 @@
   @media (max-width:640px){ .item{ flex-direction:column; } .item .acciones{ flex-direction:row; width:100%; } }
 </style>
 
+<div x-data="papeleraAlpineApp()">
 <div class="top">
   <h1>🗑 Papelera</h1>
   <div class="pap-acciones">
@@ -36,6 +37,15 @@
 </div>
 <p class="sub">Lo que eliminas en <strong>Notas</strong> y <strong>Jaivaná</strong> queda aquí. Puedes restaurarlo, o borrarlo definitivamente cuando estés seguro (eso ya no se puede deshacer).</p>
 
+
+<% if (items.length > 0) { %>
+<div class="card" style="padding:8px 14px; margin-bottom:14px; display:flex; align-items:center; gap:10px;">
+  <span style="font-size:16px;">🔍</span>
+  <input type="text" x-model="q" placeholder="Buscar en papelera por título, categoría o texto..." style="flex:1; border:none; background:transparent; outline:none; font-size:13.5px; color:var(--text);">
+  <button type="button" class="secondary" x-show="q" @click="q = ''" style="padding:2px 8px; font-size:11px;">Limpiar</button>
+</div>
+<% } %>
+
 <% if (items.length === 0) { %>
   <div class="card vacia">
     <div class="ico">🗑</div>
@@ -43,7 +53,7 @@
   </div>
 <% } else { %>
   <% items.forEach(function(i) { %>
-  <div class="item">
+  <div class="item" x-show="coincide(<%= JSON.stringify(i.titulo) %>, <%= JSON.stringify(i.categoria) %>, <%= JSON.stringify(i.vista) %>)">
     <div class="info">
       <div class="badges">
         <span class="badge-origen <%= i.origen %>"><%= i.origenNombre %></span>
@@ -69,7 +79,24 @@
   <% }); %>
 <% } %>
 
+</div>
+
 <script>
+
+/* ---------- Controlador Reactivo Alpine.js de Papelera ---------- */
+window.papeleraAlpineApp = function() {
+  return {
+    q: '',
+    coincide(titulo, categoria, vista) {
+      if (!this.q || !this.q.trim()) return true;
+      const busq = this.q.toLowerCase().trim();
+      return (titulo && titulo.toLowerCase().includes(busq)) ||
+             (categoria && categoria.toLowerCase().includes(busq)) ||
+             (vista && vista.toLowerCase().includes(busq));
+    }
+  };
+};
+
 (function(){
   var btn = document.getElementById('btnVaciar');
   if (!btn) return;

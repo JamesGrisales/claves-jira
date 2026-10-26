@@ -7,11 +7,28 @@
 
 const express = require("express");
 const crypto = require("crypto");
+const { sincronizarReunionesOutlook } = require("./sincronizar-outlook");
 
 const TZ = process.env.TZ_APP || "America/Bogota";
 
 module.exports = function (app, { pool, requireLogin }) {
   const json = express.json({ limit: "64kb" });
+
+  pool
+    .query(
+      `CREATE TABLE IF NOT EXISTS turnos_disponibilidad (
+         id SERIAL PRIMARY KEY,
+         usuario TEXT NOT NULL DEFAULT 'James Grisales',
+         fecha_inicio DATE NOT NULL,
+         fecha_fin DATE NOT NULL,
+         activo BOOLEAN NOT NULL DEFAULT TRUE,
+         notas TEXT DEFAULT '',
+         creado_en TIMESTAMPTZ DEFAULT NOW(),
+         UNIQUE(usuario, fecha_inicio, fecha_fin)
+       )`
+    )
+    .catch((e) => console.error("Error creando tabla turnos_disponibilidad:", e.message));
+
 
   // Crea la tabla si no existe (no hace falta tocar db.js)
   pool
@@ -29,6 +46,9 @@ module.exports = function (app, { pool, requireLogin }) {
        )`
     )
     .then(() => pool.query("ALTER TABLE calendario_eventos ADD COLUMN IF NOT EXISTS serie_id TEXT"))
+    .then(() => pool.query("ALTER TABLE calendario_eventos ADD COLUMN IF NOT EXISTS outlook_id TEXT"))
+    .then(() => pool.query("ALTER TABLE calendario_eventos ADD COLUMN IF NOT EXISTS organizador TEXT"))
+    .then(() => pool.query("CREATE UNIQUE INDEX IF NOT EXISTS calendario_outlook_idx ON calendario_eventos (outlook_id) WHERE outlook_id IS NOT NULL"))
     .then(() =>
       pool.query(
         "CREATE INDEX IF NOT EXISTS calendario_fecha_idx ON calendario_eventos (fecha_hora)"
@@ -97,6 +117,136 @@ module.exports = function (app, { pool, requireLogin }) {
   });
 
   // Eventos de un rango (el calendario pide mes por mes)
+  // Sincronizar reuniones asignadas desde Outlook Desktop
+  app.post("/calendario/api/sincronizar-outlook", requireLogin, async (req, res) => {
+    try {
+      const resultado = await sincronizarReunionesOutlook(pool);
+      res.json(resultado);
+    } catch (err) {
+      console.error("Error en sincronización Outlook:", err.message);
+      res.status(500).json({ ok: false, error: err.message });
+    }
+  });
+
+
+  // Consultar estado de turno de disponibilidad actual y turnos del año
+  app.get("/api/disponibilidad/estado", requireLogin, async (req, res) => {
+    try {
+      const { rows } = await pool.query(`
+        SELECT id, usuario, cedula, celular, mes,
+               to_char(fecha_inicio, 'YYYY-MM-DD') as inicio,
+               to_char(fecha_fin, 'YYYY-MM-DD') as fin,
+               notas
+        FROM turnos_disponibilidad
+        WHERE activo = TRUE
+          AND (CURRENT_DATE >= fecha_inicio AND CURRENT_DATE <= fecha_fin)
+          AND (usuario ILIKE '%James%' OR usuario ILIKE '%Grisales%')
+        ORDER BY fecha_inicio DESC
+        LIMIT 1
+      `);
+
+      const { rows: todos } = await pool.query(`
+        SELECT id, usuario, cedula, celular, mes,
+               to_char(fecha_inicio, 'YYYY-MM-DD') as inicio,
+               to_char(fecha_fin, 'YYYY-MM-DD') as fin,
+               notas
+        FROM turnos_disponibilidad
+        WHERE activo = TRUE
+        ORDER BY 
+           CASE 
+             WHEN CURRENT_DATE BETWEEN fecha_inicio AND fecha_fin THEN 0
+             WHEN fecha_inicio >= CURRENT_DATE THEN 1
+             ELSE 2
+           END,
+           fecha_inicio ASC
+      `);
+
+      res.json({
+        ok: true,
+        enDisponibilidad: rows.length > 0,
+        turno: rows.length > 0 ? rows[0] : null,
+        turnos: todos
+      });
+    } catch (err) {
+      console.error("Error consultando disponibilidad:", err.message);
+      res.status(500).json({ ok: false, error: err.message });
+    }
+  });
+
+
+  app.post("/api/disponibilidad/guardar-rol", requireLogin, json, async (req, res) => {
+    try {
+      const { rol } = req.body || {};
+      if (Array.isArray(rol)) {
+        for (const t of rol) {
+          if (!t.inicio || !t.fin || !t.usuario) continue;
+          await pool.query(`
+            INSERT INTO turnos_disponibilidad (cedula, celular, usuario, fecha_inicio, fecha_fin, mes, activo, notas)
+            VALUES ($1, $2, $3, $4::date, $5::date, $6, TRUE, $7)
+            ON CONFLICT (usuario, fecha_inicio, fecha_fin) 
+            DO UPDATE SET cedula = EXCLUDED.cedula, celular = EXCLUDED.celular, activo = TRUE, mes = EXCLUDED.mes
+          `, [t.cedula || '', t.celular || '', t.usuario, t.inicio, t.fin, t.mes || 'OCTUBRE', t.notas || 'Rol Oficial']);
+        }
+      }
+      res.json({ ok: true });
+    } catch (err) {
+      res.status(500).json({ ok: false, error: err.message });
+    }
+  });
+
+  
+  // Eliminar un turno de disponibilidad individual por ID (soporta POST, DELETE y GET)
+  app.all(["/api/disponibilidad/:id/eliminar", "/api/disponibilidad/:id/delete"], requireLogin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id, 10);
+      if (!id || isNaN(id)) return res.status(400).json({ ok: false, error: "ID inválido." });
+      await pool.query("DELETE FROM turnos_disponibilidad WHERE id = $1", [id]);
+      res.json({ ok: true, mensaje: "Turno eliminado correctamente." });
+    } catch (err) {
+      console.error("Error eliminando turno de disponibilidad:", err.message);
+      res.status(500).json({ ok: false, error: err.message });
+    }
+  });
+
+  app.delete("/api/disponibilidad/:id", requireLogin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id, 10);
+      if (!id || isNaN(id)) return res.status(400).json({ ok: false, error: "ID inválido." });
+      await pool.query("DELETE FROM turnos_disponibilidad WHERE id = $1", [id]);
+      res.json({ ok: true, mensaje: "Turno eliminado correctamente." });
+    } catch (err) {
+      console.error("Error eliminando turno de disponibilidad:", err.message);
+      res.status(500).json({ ok: false, error: err.message });
+    }
+  });
+
+  // Limpiar turnos sin datos oficiales (antiguos o sin cédula/celular)
+  app.all("/api/disponibilidad/limpiar-antiguos", requireLogin, async (req, res) => {
+    try {
+      const result = await pool.query("DELETE FROM turnos_disponibilidad WHERE cedula IS NULL AND celular IS NULL");
+      res.json({ ok: true, eliminados: result.rowCount, mensaje: "Se limpiaron " + result.rowCount + " registros antiguos sin datos de contacto." });
+    } catch (err) {
+      res.status(500).json({ ok: false, error: err.message });
+    }
+  });
+
+  app.post("/api/disponibilidad/guardar", requireLogin, json, async (req, res) => {
+    try {
+      const { inicio, fin, notas, usuario } = req.body || {};
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(inicio) || !/^\d{4}-\d{2}-\d{2}$/.test(fin)) {
+        return res.status(400).json({ ok: false, error: "Fechas inválidas." });
+      }
+      await pool.query(`
+        INSERT INTO turnos_disponibilidad (usuario, fecha_inicio, fecha_fin, notas)
+        VALUES ($1, $2::date, $3::date, $4)
+        ON CONFLICT (usuario, fecha_inicio, fecha_fin) DO UPDATE SET activo = TRUE, notas = EXCLUDED.notas
+      `, [usuario || "James Grisales", inicio, fin, notas || "Turno asignado de soporte"]);
+      res.json({ ok: true });
+    } catch (err) {
+      res.status(500).json({ ok: false, error: err.message });
+    }
+  });
+
   app.get("/calendario/api/eventos", requireLogin, async (req, res) => {
     try {
       const desde = String(req.query.desde || "");
@@ -288,15 +438,103 @@ module.exports = function (app, { pool, requireLogin }) {
     try {
       if (!/^\d+$/.test(req.params.id)) return res.status(400).json({ ok: false });
       const { rowCount } = await pool.query(
-        `DELETE FROM calendario_eventos
-         WHERE serie_id IS NOT NULL
-           AND serie_id = (SELECT serie_id FROM calendario_eventos WHERE id = $1)`,
+        `WITH target AS (SELECT serie_id FROM calendario_eventos WHERE id = $1 AND serie_id IS NOT NULL)
+         DELETE FROM calendario_eventos
+         WHERE serie_id IN (SELECT serie_id FROM target)`,
         [req.params.id]
       );
       res.json({ ok: true, eliminados: rowCount });
     } catch (e) {
       console.error("Error eliminando serie:", e.message);
-      res.status(500).json({ ok: false });
+      res.status(500).json({ ok: false, error: e.message });
+    }
+  });
+
+  // Elimina solo las ocurrencias de FINES DE SEMANA (Sábados y Domingos) de una serie específica
+  app.post("/calendario/api/:id/eliminar-serie-fines-de-semana", requireLogin, async (req, res) => {
+    try {
+      if (!/^\d+$/.test(req.params.id)) return res.status(400).json({ ok: false });
+      const { rowCount } = await pool.query(
+        `WITH target AS (SELECT serie_id FROM calendario_eventos WHERE id = $1 AND serie_id IS NOT NULL)
+         DELETE FROM calendario_eventos
+         WHERE serie_id IN (SELECT serie_id FROM target)
+           AND EXTRACT(DOW FROM fecha_hora) IN (0, 6)`,
+        [req.params.id]
+      );
+      res.json({ ok: true, eliminados: rowCount });
+    } catch (e) {
+      console.error("Error eliminando fines de semana de serie:", e.message);
+      res.status(500).json({ ok: false, error: e.message });
+    }
+  });
+
+  // Elimina masivamente eventos por lista de IDs
+  app.post("/calendario/api/eliminar-masivo", requireLogin, json, async (req, res) => {
+    try {
+      const ids = (Array.isArray(req.body && req.body.ids) ? req.body.ids : [])
+        .map((x) => parseInt(x, 10))
+        .filter((x) => Number.isInteger(x) && x > 0);
+
+      if (!ids.length) {
+        return res.status(400).json({ ok: false, error: "No se seleccionó ningún evento para eliminar." });
+      }
+
+      const { rowCount } = await pool.query(
+        "DELETE FROM calendario_eventos WHERE id = ANY($1::int[])",
+        [ids]
+      );
+
+      res.json({ ok: true, eliminados: rowCount });
+    } catch (e) {
+      console.error("Error en eliminación masiva de eventos:", e.message);
+      res.status(500).json({ ok: false, error: "No se pudieron eliminar los eventos: " + e.message });
+    }
+  });
+
+  // Estadísticas en vivo de fines de semana y total
+  app.get("/calendario/api/stats-fines-de-semana", requireLogin, async (req, res) => {
+    try {
+      const r = await pool.query(`
+        SELECT 
+          COUNT(*)::int as total,
+          COUNT(*) FILTER (WHERE EXTRACT(DOW FROM fecha_hora) IN (0, 6))::int as weekend,
+          COUNT(*) FILTER (WHERE EXTRACT(DOW FROM fecha_hora) NOT IN (0, 6))::int as weekday
+        FROM calendario_eventos
+      `);
+      res.json({ ok: true, stats: r.rows[0] });
+    } catch (e) {
+      res.status(500).json({ ok: false, error: e.message });
+    }
+  });
+
+  // Elimina masivamente todos los eventos que caigan en FINES DE SEMANA (Sábado o Domingo)
+  app.post("/calendario/api/eliminar-fines-de-semana", requireLogin, json, async (req, res) => {
+    try {
+      const { desde, hasta, tipo, todo, serie_id } = req.body || {};
+      let sql = "DELETE FROM calendario_eventos WHERE EXTRACT(DOW FROM fecha_hora) IN (0, 6)";
+      const params = [];
+
+      if (serie_id && typeof serie_id === 'string') {
+        params.push(serie_id);
+        sql += ' AND serie_id = $' + params.length;
+      }
+
+      if (!todo && desde && hasta && /^\d{4}-\d{2}-\d{2}$/.test(desde) && /^\d{4}-\d{2}-\d{2}$/.test(hasta)) {
+        params.push(desde);
+        params.push(hasta);
+        sql += ' AND fecha_hora >= $' + (params.length - 1) + '::date AND fecha_hora < ($' + params.length + '::date + 1)';
+      }
+
+      if (tipo && TIPOS.has(tipo)) {
+        params.push(tipo);
+        sql += ' AND tipo = $' + params.length;
+      }
+
+      const { rowCount } = await pool.query(sql, params);
+      res.json({ ok: true, eliminados: rowCount });
+    } catch (e) {
+      console.error("Error eliminando fines de semana:", e.message);
+      res.status(500).json({ ok: false, error: "No se pudieron eliminar los eventos de fin de semana: " + e.message });
     }
   });
 

@@ -10,7 +10,7 @@
   .panel-head{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:12px; }
   .panel-head h2{ margin:0; font-size:17px; }
 
-  .vi-grid{ display:grid; grid-template-columns:minmax(380px, 560px) minmax(0, 1fr); gap:18px; align-items:start; }
+  .vi-grid{ display:grid; grid-template-columns:minmax(400px, 580px) minmax(0, 1fr); gap:20px; align-items:stretch; }
   @media (max-width: 1000px){ .vi-grid{ grid-template-columns:1fr; } }
 
   .bloque{ padding:16px 18px; margin-bottom:14px; }
@@ -39,10 +39,10 @@
   .fila .x{ padding:0; height:30px; width:30px; font-size:14px; line-height:1; }
   .agregar{ margin-top:6px; padding:8px 13px; font-size:13px; }
 
-  .vista{ position:sticky; top:10px; }
-  .vista iframe{ width:100%; height:calc(100vh - 150px); min-height:560px; border:1px solid var(--panel-edge); border-radius:10px; background:#e9edf3; }
-  .vista-ancha{ margin-top:6px; }
-  .vista-ancha iframe{ width:100%; height:calc(100vh - 140px); min-height:520px; border:1px solid var(--panel-edge); border-radius:10px; background:#e9edf3; }
+  .vista{ display:flex; flex-direction:column; height:100%; min-height:calc(100vh - 120px); position:relative; }
+  .vista iframe{ width:100%; flex:1 1 auto; height:100%; min-height:calc(100vh - 130px); border:1px solid var(--panel-edge); border-radius:12px; background:#e9edf3; box-shadow:0 4px 20px rgba(0,0,0,.45); }
+  .vista-ancha{ margin-top:10px; display:flex; flex-direction:column; }
+  .vista-ancha iframe{ width:100%; height:calc(100vh - 140px); min-height:680px; border:1px solid var(--panel-edge); border-radius:12px; background:#e9edf3; box-shadow:0 4px 20px rgba(0,0,0,.45); }
   .estado{ font-size:12.5px; color:var(--muted); min-height:18px; margin:0 0 8px; }
   .estado.mal{ color:var(--danger); font-weight:600; }
   .nota{ font-size:12px; color:var(--muted); margin-top:8px; }
@@ -69,10 +69,12 @@
   .toast.show{ opacity:1; transform:translateX(-50%) translateY(0) scale(1); }
 </style>
 
-<div class="top">
-  <h1>Viáticos</h1>
+<div class="page-head" style="margin-bottom:12px;">
+  <div>
+    <h1 style="margin:0 0 4px;">Viáticos</h1>
+    <p class="sub" style="margin:0;">Formatos de viáticos de Jaivaná. Llena los campos: la vista previa es el PDF real y se descarga idéntica al formato de Excel.</p>
+  </div>
 </div>
-<p class="sub">Formatos de viáticos de Jaivaná. Llena los campos: la vista previa es el PDF real y se descarga idéntica al formato de Excel.</p>
 
 <div class="vtabs" id="vtabs">
   <button type="button" class="secondary active" data-k="anticipo">1 · Solicitud de anticipo de viáticos</button>
@@ -124,6 +126,49 @@
 
       <div class="card bloque">
         <h3><span class="n">3</span> Presupuesto de la visita <small style="font-weight:500; color:var(--muted);">(página 2 del PDF)</small></h3>
+        <!-- Asistente Reactivo de Presupuesto con Alpine.js -->
+        <div x-data="asistenteViaticos()" class="alpine-presupuesto-box" style="margin:10px 0 14px; padding:10px 14px; background:rgba(0, 245, 255, 0.04); border:1px solid rgba(0, 245, 255, 0.22); border-radius:10px;">
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; cursor:pointer;" @click="abierto = !abierto" title="Clic para desplegar el calculador interactivo de viáticos">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border-radius:6px; background:linear-gradient(135deg, #00f5ff, #0284c7); color:#000; font-size:11px; font-weight:900;">⚡</span>
+              <strong style="font-size:12.5px; color:var(--accent);">Asistente Reactivo de Presupuesto</strong>
+              <span style="font-size:10px; padding:2px 6px; border-radius:4px; background:rgba(0,245,255,0.15); color:var(--accent); font-weight:700;">Alpine.js</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="font-size:12px; color:var(--muted); font-weight:600;" x-text="abierto ? 'Cerrar asistente ▲' : 'Calcular rápido ▼'">Calcular rápido ▼</span>
+            </div>
+          </div>
+          <div x-show="abierto" x-cloak style="margin-top:10px; padding-top:10px; border-top:1px dashed rgba(0, 245, 255, 0.25);">
+            <p style="font-size:11.5px; color:var(--muted); margin:0 0 8px;">Calcula automáticamente alimentación, hospedaje y transporte según los días de viaje y cárgalos al presupuesto:</p>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:8px; margin-bottom:8px;">
+              <label class="campo" style="margin:0;">
+                <span style="font-size:10.5px;">Días de viaje</span>
+                <input type="number" min="1" max="30" x-model.number="dias" style="padding:5px 8px; font-size:12.5px;">
+              </label>
+              <label class="campo" style="margin:0;">
+                <span style="font-size:10.5px;">Alimentación / día</span>
+                <input type="number" step="5000" x-model.number="alimentacion" style="padding:5px 8px; font-size:12.5px;">
+              </label>
+              <label class="campo" style="margin:0;">
+                <span style="font-size:10.5px;">Hospedaje / día</span>
+                <input type="number" step="10000" x-model.number="hospedaje" style="padding:5px 8px; font-size:12.5px;">
+              </label>
+              <label class="campo" style="margin:0;">
+                <span style="font-size:10.5px;">Transporte / pasajes</span>
+                <input type="number" step="5000" x-model.number="transporte" style="padding:5px 8px; font-size:12.5px;">
+              </label>
+            </div>
+            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-top:8px; padding:8px 10px; background:rgba(0,0,0,0.25); border-radius:6px;">
+              <div style="font-size:12px; font-weight:700;">
+                <span style="color:var(--muted);">Total estimado:</span>
+                <span style="color:var(--accent); font-size:14px; margin-left:4px;" x-text="formatoPesos(total)">$ 0</span>
+              </div>
+              <button type="button" class="btn-sm2" style="background:linear-gradient(135deg, var(--accent), var(--accent-dark)); color:#fff; font-weight:800; border:none; cursor:pointer; padding:6px 12px; border-radius:6px;" @click="cargarEnFormulario()">
+                + Cargar en conceptos
+              </button>
+            </div>
+          </div>
+        </div>
         <label class="campo"><span>Empresas</span><input type="text" id="a_empresas" maxlength="60"></label>
         <div class="cab"><span>Concepto</span><span style="text-align:right;">Valor ($)</span><span></span></div>
         <div id="a_filas"></div>
@@ -150,6 +195,36 @@
         <label class="campo"><span>Nombre bajo «Firma empleado»</span><input type="text" id="a_firmaEmp" maxlength="80" placeholder="Si lo dejas vacío, usa el nombre del empleado"></label>
         <label class="campo"><span>Nombre bajo «Firma autorización»</span><input type="text" id="a_firmaAut" maxlength="80"></label>
         <label class="campo"><span>Fecha de actualización del formato</span><input type="date" id="a_fechaFormato"></label>
+
+        <!-- Firma con Imagen Digital -->
+        <div class="campo" style="margin-top:14px; padding:12px; background:rgba(255,255,255,0.03); border:1px dashed var(--panel-edge); border-radius:10px;">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; flex-wrap:wrap; gap:6px;">
+            <span style="font-size:11px; font-weight:700; color:var(--accent); letter-spacing:0.4px;">✍️ IMAGEN DE FIRMA DIGITAL</span>
+            <span style="font-size:11px; color:var(--muted);">(Aparecerá en el PDF)</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+            <input type="file" id="firma_file_input_a" accept="image/png,image/jpeg,image/webp" style="display:none;">
+            <button type="button" class="secondary btn-sm2" id="btnSubirFirmaA" style="display:inline-flex; align-items:center; gap:6px;">
+              📁 Subir imagen de firma
+            </button>
+            <button type="button" class="secondary btn-sm2" id="btnQuitarFirmaA" style="display:none; color:var(--danger); border-color:rgba(239,68,68,0.35);">
+              ✕ Quitar firma
+            </button>
+            <button type="button" class="secondary btn-sm2" id="btnFirmaJaivanaA" style="font-size:11.5px;">
+              Usar firma Jaivaná
+            </button>
+          </div>
+          <div id="firma_preview_box_a" style="display:none; margin-top:10px; padding:10px 14px; background:#ffffff; border-radius:8px; max-width:260px; border:1px solid rgba(0,0,0,0.15); box-shadow:0 2px 8px rgba(0,0,0,0.2);">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
+              <span style="font-size:10px; color:#555; font-weight:700; text-transform:uppercase; letter-spacing:0.3px;">Firma recortada:</span>
+              <span style="font-size:10px; color:#10b981; font-weight:700;">✓ Fondo transparente</span>
+            </div>
+            <div style="border-bottom:1.5px solid #000; padding-bottom:3px; margin-bottom:3px; text-align:center;">
+              <img id="firma_preview_img_a" src="" alt="Firma digital" style="max-height:60px; max-width:100%; object-fit:contain; display:block; margin:0 auto;">
+            </div>
+            <div style="font-size:9.5px; color:#444; font-weight:600; text-align:center;">Firma empleado (Posición en PDF)</div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -183,6 +258,36 @@
       <label class="campo"><span>Fecha de actualización del formato</span><input type="date" id="l_fechaFormato"></label>
     </div>
     <label class="campo" style="margin-bottom:0;"><span>Nombre bajo «Firma empleado»</span><input type="text" id="l_firmaEmp" maxlength="80" placeholder="Si lo dejas vacío, usa el nombre del empleado"></label>
+
+    <!-- Firma con Imagen Digital (Sincronizada) -->
+    <div class="campo" style="margin-top:14px; padding:12px; background:rgba(255,255,255,0.03); border:1px dashed var(--panel-edge); border-radius:10px;">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; flex-wrap:wrap; gap:6px;">
+        <span style="font-size:11px; font-weight:700; color:var(--accent); letter-spacing:0.4px;">✍️ IMAGEN DE FIRMA DIGITAL</span>
+        <span style="font-size:11px; color:var(--muted);">(Sincronizada automáticamente)</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+        <input type="file" id="firma_file_input_l" accept="image/png,image/jpeg,image/webp" style="display:none;">
+        <button type="button" class="secondary btn-sm2" id="btnSubirFirmaL" style="display:inline-flex; align-items:center; gap:6px;">
+          📁 Subir imagen de firma
+        </button>
+        <button type="button" class="secondary btn-sm2" id="btnQuitarFirmaL" style="display:none; color:var(--danger); border-color:rgba(239,68,68,0.35);">
+          ✕ Quitar firma
+        </button>
+        <button type="button" class="secondary btn-sm2" id="btnFirmaJaivanaL" style="font-size:11.5px;">
+          Usar firma Jaivaná
+        </button>
+      </div>
+      <div id="firma_preview_box_l" style="display:none; margin-top:10px; padding:10px 14px; background:#ffffff; border-radius:8px; max-width:260px; border:1px solid rgba(0,0,0,0.15); box-shadow:0 2px 8px rgba(0,0,0,0.2);">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
+          <span style="font-size:10px; color:#555; font-weight:700; text-transform:uppercase; letter-spacing:0.3px;">Firma recortada:</span>
+          <span style="font-size:10px; color:#10b981; font-weight:700;">✓ Fondo transparente</span>
+        </div>
+        <div style="border-bottom:1.5px solid #000; padding-bottom:3px; margin-bottom:3px; text-align:center;">
+          <img id="firma_preview_img_l" src="" alt="Firma digital" style="max-height:60px; max-width:100%; object-fit:contain; display:block; margin:0 auto;">
+        </div>
+        <div style="font-size:9.5px; color:#444; font-weight:600; text-align:center;">Firma empleado (Posición en PDF)</div>
+      </div>
+    </div>
   </div>
 
   <div class="card bloque">
@@ -235,8 +340,232 @@ function nombreDia(iso){ var p = partes(iso); return p ? DIAS[p.dia] : ''; }
 function mesAnio(iso){ var p = partes(iso); if (!p) return ''; var m = MESES[p.mo - 1]; return m.charAt(0).toUpperCase() + m.slice(1) + ' del ' + p.y; }
 function sumarDias(iso, n){ var p = partes(iso); if (!p) return ''; var d = new Date(p.y, p.mo - 1, p.d + n); return aIso(d); }
 
+/* ---------- Asistente Reactivo Alpine.js ---------- */
+window.asistenteViaticos = function() {
+  return {
+    abierto: false,
+    dias: 3,
+    alimentacion: 45000,
+    hospedaje: 80000,
+    transporte: 60000,
+    get total() {
+      var d = Math.max(1, parseInt(this.dias, 10) || 1);
+      return (d * (parseInt(this.alimentacion, 10) || 0)) +
+             (d * (parseInt(this.hospedaje, 10) || 0)) +
+             (parseInt(this.transporte, 10) || 0);
+    },
+    formatoPesos: function(v) {
+      return pesos(v || 0);
+    },
+    cargarEnFormulario: function() {
+      var d = Math.max(1, parseInt(this.dias, 10) || 1);
+      var alim = d * (parseInt(this.alimentacion, 10) || 0);
+      var hosp = d * (parseInt(this.hospedaje, 10) || 0);
+      var trans = parseInt(this.transporte, 10) || 0;
+      var conceptos = (leerA().conceptos || []).filter(function(c){ return (c.concepto || "").trim() || (c.valor || "").trim(); });
+      if (alim > 0) conceptos.push({ concepto: "Alimentación (" + d + " días)", valor: miles(alim) });
+      if (hosp > 0) conceptos.push({ concepto: "Hospedaje (" + d + " días)", valor: miles(hosp) });
+      if (trans > 0) conceptos.push({ concepto: "Transporte y pasajes", valor: miles(trans) });
+      pintarFilasA(conceptos);
+      cambio("anticipo");
+      this.abierto = false;
+      toast("Presupuesto cargado al formulario");
+    }
+  };
+};
+
 var toastT;
 function toast(msg){ var t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(function(){ t.classList.remove('show'); }, 1800); }
+
+/* ---------- Manejo de Firma Digital con Imagen ---------- */
+const KEY_FIRMA_IMG = 'boveda_viaticos_firma_img';
+
+function obtenerFirmaImg() {
+  try {
+    return localStorage.getItem(KEY_FIRMA_IMG) || '';
+  } catch (e) {
+    return '';
+  }
+}
+
+function guardarFirmaImg(dataUrl) {
+  try {
+    if (dataUrl) {
+      localStorage.setItem(KEY_FIRMA_IMG, dataUrl);
+    } else {
+      localStorage.removeItem(KEY_FIRMA_IMG);
+    }
+  } catch (e) {}
+  actualizarVistaFirma();
+  cambio(activa);
+}
+
+function actualizarVistaFirma() {
+  var imgUrl = obtenerFirmaImg();
+  ['a', 'l'].forEach(function(sufijo) {
+    var box = $('firma_preview_box_' + sufijo);
+    var img = $('firma_preview_img_' + sufijo);
+    var btnQuitar = $('btnQuitarFirma' + sufijo.toUpperCase());
+    if (box && img && btnQuitar) {
+      if (imgUrl) {
+        img.src = imgUrl;
+        box.style.display = 'block';
+        btnQuitar.style.display = 'inline-flex';
+      } else {
+        img.src = '';
+        box.style.display = 'none';
+        btnQuitar.style.display = 'none';
+      }
+    }
+  });
+}
+
+function procesarArchivoFirma(archivo) {
+  if (!archivo) return;
+  if (!archivo.type.match(/^image\//)) {
+    toast('El archivo debe ser una imagen (PNG, JPG o WebP)');
+    return;
+  }
+  var lector = new FileReader();
+  lector.onload = function(e) {
+    var imgTemp = new Image();
+    imgTemp.onload = function() {
+      try {
+        var srcW = imgTemp.width;
+        var srcH = imgTemp.height;
+        var tmpCanvas = document.createElement('canvas');
+        tmpCanvas.width = srcW;
+        tmpCanvas.height = srcH;
+        var tmpCtx = tmpCanvas.getContext('2d');
+        tmpCtx.drawImage(imgTemp, 0, 0);
+
+        var imgData = tmpCtx.getImageData(0, 0, srcW, srcH);
+        var data = imgData.data;
+
+        // Auto-detección del área con tinta (ignorar fondo blanco o casi blanco)
+        var minX = srcW, minY = srcH, maxX = -1, maxY = -1;
+        var hayTinta = false;
+
+        for (var y = 0; y < srcH; y++) {
+          for (var x = 0; x < srcW; x++) {
+            var idx = (y * srcW + x) * 4;
+            var r = data[idx];
+            var g = data[idx + 1];
+            var b = data[idx + 2];
+            var a = data[idx + 3];
+
+            if (a < 35) continue;
+            var brillo = 0.299 * r + 0.587 * g + 0.114 * b;
+
+            // Cualquier trazo más oscuro que el fondo del papel blanco/gris
+            if (brillo < 228) {
+              hayTinta = true;
+              if (x < minX) minX = x;
+              if (x > maxX) maxX = x;
+              if (y < minY) minY = y;
+              if (y > maxY) maxY = y;
+            }
+          }
+        }
+
+        var finalCanvas = document.createElement('canvas');
+        var finalCtx;
+
+        if (!hayTinta || minX > maxX || minY > maxY) {
+          finalCanvas.width = Math.min(srcW, 500);
+          finalCanvas.height = Math.round(srcH * (finalCanvas.width / srcW));
+          finalCtx = finalCanvas.getContext('2d');
+          finalCtx.drawImage(imgTemp, 0, 0, finalCanvas.width, finalCanvas.height);
+        } else {
+          // Recortar exactamente alrededor de la firma con margen proporcional
+          var padding = Math.max(12, Math.round((maxX - minX) * 0.04));
+          var cropX = Math.max(0, minX - padding);
+          var cropY = Math.max(0, minY - padding);
+          var cropW = Math.min(srcW - cropX, (maxX - minX) + padding * 2);
+          var cropH = Math.min(srcH - cropY, (maxY - minY) + padding * 2);
+
+          var cropCanvas = document.createElement('canvas');
+          cropCanvas.width = cropW;
+          cropCanvas.height = cropH;
+          var cropCtx = cropCanvas.getContext('2d');
+          cropCtx.drawImage(tmpCanvas, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH);
+
+          // Limpieza de fondo: hacer papel transparente y contrastar tinta
+          var cropData = cropCtx.getImageData(0, 0, cropW, cropH);
+          var cData = cropData.data;
+          for (var i = 0; i < cData.length; i += 4) {
+            var cr = cData[i];
+            var cg = cData[i + 1];
+            var cb = cData[i + 2];
+            var ca = cData[i + 3];
+            if (ca < 30) continue;
+
+            var lum = 0.299 * cr + 0.587 * cg + 0.114 * cb;
+            if (lum > 225) {
+              cData[i + 3] = 0;
+            } else if (lum > 175) {
+              var factor = (225 - lum) / 50;
+              cData[i + 3] = Math.round(255 * factor);
+              cData[i] = Math.round(cr * 0.65);
+              cData[i + 1] = Math.round(cg * 0.65);
+              cData[i + 2] = Math.round(cb * 0.65);
+            } else {
+              cData[i + 3] = 255;
+              cData[i] = Math.min(cr, 30);
+              cData[i + 1] = Math.min(cg, 30);
+              cData[i + 2] = Math.min(cb, 40);
+            }
+          }
+          cropCtx.putImageData(cropData, 0, 0);
+
+          var maxFinalW = 440;
+          var maxFinalH = 160;
+          var finalW = cropW;
+          var finalH = cropH;
+          if (finalW > maxFinalW || finalH > maxFinalH) {
+            var rScale = Math.min(maxFinalW / finalW, maxFinalH / finalH);
+            finalW = Math.round(finalW * rScale);
+            finalH = Math.round(finalH * rScale);
+          }
+
+          finalCanvas.width = finalW;
+          finalCanvas.height = finalH;
+          finalCtx = finalCanvas.getContext('2d');
+          finalCtx.drawImage(cropCanvas, 0, 0, finalW, finalH);
+        }
+
+        var dataUrlFinal = finalCanvas.toDataURL('image/png');
+        guardarFirmaImg(dataUrlFinal);
+        toast('Firma recortada, optimizada y estampada en el PDF');
+      } catch (err) {
+        console.error('Error al procesar firma:', err);
+        guardarFirmaImg(e.target.result);
+        toast('Firma cargada');
+      }
+    };
+    imgTemp.src = e.target.result;
+  };
+  lector.readAsDataURL(archivo);
+}
+
+function cargarFirmaJaivana() {
+  var img = new Image();
+  img.crossOrigin = 'anonymous';
+  img.onload = function() {
+    var canvas = document.createElement('canvas');
+    canvas.width = img.width;
+    canvas.height = img.height;
+    var ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0);
+    var dataUrl = canvas.toDataURL('image/png');
+    guardarFirmaImg(dataUrl);
+    toast('Firma corporativa Jaivaná cargada');
+  };
+  img.onerror = function() {
+    toast('No se pudo cargar la imagen corporativa');
+  };
+  img.src = '/img/jaivana-signature.png';
+}
 
 /* ---------- datos de ejemplo (los mismos de los PDF originales) ---------- */
 function ejemploA(){
@@ -292,7 +621,8 @@ function leerA(){
     anticipoAnterior: $('a_anterior').value, valorCausado: $('a_causado').value,
     anticipoSolicitado: $('a_solicitado').value, autoSolicitado: $('a_auto').checked,
     empresas: $('a_empresas').value, conceptos: conceptos,
-    firmaEmpleado: $('a_firmaEmp').value, firmaAutoriza: $('a_firmaAut').value
+    firmaEmpleado: $('a_firmaEmp').value, firmaAutoriza: $('a_firmaAut').value,
+    firmaImagen: obtenerFirmaImg()
   };
 }
 function pintarA(d){
@@ -356,7 +686,8 @@ function leerL(){
   });
   return {
     fechaFormato: $('l_fechaFormato').value, nombre: $('l_nombre').value, cargo: $('l_cargo').value, zona: $('l_zona').value,
-    firmaEmpleado: $('l_firmaEmp').value, fechas: fechas, filas: filas, otros: otros
+    firmaEmpleado: $('l_firmaEmp').value, fechas: fechas, filas: filas, otros: otros,
+    firmaImagen: obtenerFirmaImg()
   };
 }
 function pintarL(d){
@@ -385,17 +716,77 @@ function calcularL(){
   });
   $('l_totalGastos').textContent = pesos(total);
 }
-function traerDeSolicitud(){
+function traerDeSolicitud(silencioso){
   var a = leerA(), l = leerL();
-  l.nombre = a.nombre; l.cargo = a.cargo; l.zona = a.sede;
+  
+  // 1. Datos personales, sede y formato
+  if (a.nombre) l.nombre = a.nombre;
+  if (a.cargo) l.cargo = a.cargo;
+  if (a.sede) l.zona = a.sede;
+  l.fechaFormato = a.fechaFormato || a.hasta || a.fecha || hoy();
+  l.firmaEmpleado = a.firmaEmpleado || a.nombre || '';
+
+  // 2. Fechas de la semana en la cabecera de la matriz
   if (partes(a.desde) && partes(a.hasta)) {
     var f = [], dia = a.desde;
-    for (var i = 0; i < N_DIAS; i++) { f.push(dia <= a.hasta ? dia : ''); dia = sumarDias(dia, 1); }
+    for (var i = 0; i < N_DIAS; i++) {
+      f.push(dia <= a.hasta ? dia : '');
+      dia = sumarDias(dia, 1);
+    }
+    l.fechas = f;
+  } else if (partes(a.fecha)) {
+    var f = [a.fecha];
+    for (var i = 1; i < N_DIAS; i++) f.push('');
     l.fechas = f;
   }
-  var nombres = a.conceptos.map(function(c){ return c.concepto; }).filter(function(c){ return c.trim(); });
-  nombres.slice(0, N_FILAS).forEach(function(n, i){ l.filas[i].concepto = n; });
-  pintarL(l); cambio('legal'); toast('Datos traídos de la solicitud');
+
+  // 3. Conceptos y valores de gastos del presupuesto
+  var conceptosA = (a.conceptos || []).filter(function(c){ return (c.concepto || '').trim(); });
+  
+  // Llenar las filas principales (hasta N_FILAS = 7)
+  for (var i = 0; i < N_FILAS; i++) {
+    if (i < conceptosA.length) {
+      var item = conceptosA[i];
+      var vNum = numero(item.valor);
+      var vals = [];
+      for (var k = 0; k < N_DIAS; k++) {
+        // Colocar el valor en el primer día hábil por defecto
+        vals.push(k === 0 && vNum > 0 ? miles(vNum) : '');
+      }
+      l.filas[i] = {
+        concepto: item.concepto,
+        valores: vals
+      };
+    } else {
+      var valsV = [];
+      for (var k = 0; k < N_DIAS; k++) valsV.push('');
+      l.filas[i] = { concepto: '', valores: valsV };
+    }
+  }
+
+  // Si hay más conceptos que N_FILAS, llenar en "Otros gastos" (N_OTROS = 2)
+  for (var j = 0; j < N_OTROS; j++) {
+    var idxExtra = N_FILAS + j;
+    if (idxExtra < conceptosA.length) {
+      var itemEx = conceptosA[idxExtra];
+      var vNumEx = numero(itemEx.valor);
+      var valsEx = [];
+      for (var k = 0; k < N_DIAS; k++) {
+        valsEx.push(k === 0 && vNumEx > 0 ? miles(vNumEx) : '');
+      }
+      l.otros[j] = { concepto: itemEx.concepto, valores: valsEx };
+    } else {
+      var valsExV = [];
+      for (var k = 0; k < N_DIAS; k++) valsExV.push('');
+      l.otros[j] = { concepto: '', valores: valsExV };
+    }
+  }
+
+  pintarL(l);
+  calcularL();
+  guardar('legal');
+  cambio('legal');
+  if (!silencioso) toast('✨ Datos, fechas, conceptos y valores traídos desde la solicitud');
 }
 
 /* =====================================================================
@@ -520,6 +911,17 @@ pintarL(l0);
 var inicial = 'anticipo';
 try { if (localStorage.getItem(KEY_TAB) === 'legal') inicial = 'legal'; } catch (e) {}
 mostrarPestana(inicial);
+
+/* Eventos de firma digital */
+$('btnSubirFirmaA').addEventListener('click', function(){ $('firma_file_input_a').click(); });
+$('btnSubirFirmaL').addEventListener('click', function(){ $('firma_file_input_l').click(); });
+$('firma_file_input_a').addEventListener('change', function(e){ if (e.target.files && e.target.files[0]) procesarArchivoFirma(e.target.files[0]); });
+$('firma_file_input_l').addEventListener('change', function(e){ if (e.target.files && e.target.files[0]) procesarArchivoFirma(e.target.files[0]); });
+$('btnQuitarFirmaA').addEventListener('click', function(){ guardarFirmaImg(''); toast('Firma digital retirada'); });
+$('btnQuitarFirmaL').addEventListener('click', function(){ guardarFirmaImg(''); toast('Firma digital retirada'); });
+$('btnFirmaJaivanaA').addEventListener('click', cargarFirmaJaivana);
+$('btnFirmaJaivanaL').addEventListener('click', cargarFirmaJaivana);
+actualizarVistaFirma();
 
 })();
 </script>

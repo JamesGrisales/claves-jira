@@ -137,6 +137,7 @@
   
 </style>
 
+<div x-data="visorAlpineApp()">
 <div class="top">
   <h1>Visor XML / JSON</h1>
   <div style="display:inline-flex; align-items:center; gap:8px;">
@@ -268,8 +269,8 @@
       <button type="button" class="secondary" id="btnAmpliarSalida" title="Pantalla completa (Esc para salir)" style="padding:6px 11px; font-size:12.5px;">⤢ Ampliar</button>
     </div>
     <div class="v-toolbar" style="margin:0 0 8px;">
-      <button type="button" class="secondary" id="bCopiar">Copiar formateado</button>
-      <button type="button" class="secondary" id="bCopiarMin">Copiar minificado</button>
+      <button type="button" class="secondary" id="bCopiar" @click="copiarConFeedback('fmt')" :style="copiadoFmt ? 'border-color:#10b981; color:#10b981; font-weight:700;' : ''"><span x-text="copiadoFmt ? '✓ ¡Formateado copiado!' : 'Copiar formateado'">Copiar formateado</span></button>
+      <button type="button" class="secondary" id="bCopiarMin" @click="copiarConFeedback('min')" :style="copiadoMin ? 'border-color:#10b981; color:#10b981; font-weight:700;' : ''"><span x-text="copiadoMin ? '✓ ¡Minificado copiado!' : 'Copiar minificado'">Copiar minificado</span></button>
       <button type="button" class="secondary" id="bCopiarFiltro" style="display:none;">Copiar líneas filtradas</button>
       <button type="button" class="secondary" id="bDescargar">⬇ Descargar</button>
     </div>
@@ -277,16 +278,43 @@
     <div id="vista-arbol"></div>
     <div class="pathbar" id="pathbar">
       <span style="color:var(--muted);">Ruta:</span><code id="pathTxt"></code>
-      <button type="button" class="secondary" id="bCopiarRuta">Copiar ruta</button>
-      <button type="button" class="secondary" id="bCopiarValor">Copiar valor</button>
+      <button type="button" class="secondary" id="bCopiarRuta" @click="copiarConFeedback('ruta')" :style="copiadoRuta ? 'border-color:#10b981; color:#10b981; font-weight:700;' : ''"><span x-text="copiadoRuta ? '✓ ¡Ruta copiada!' : 'Copiar ruta'">Copiar ruta</span></button>
+      <button type="button" class="secondary" id="bCopiarValor" @click="copiarConFeedback('valor')" :style="copiadoValor ? 'border-color:#10b981; color:#10b981; font-weight:700;' : ''"><span x-text="copiadoValor ? '✓ ¡Valor copiado!' : 'Copiar valor'">Copiar valor</span></button>
     </div>
   </div>
+</div>
 </div>
 
 <div class="toast" id="toast">Copiado</div>
 
 <script src="/sql-formatter.js"></script>
 <script>
+/* ---------- Controlador Reactivo Alpine.js de Visor ---------- */
+window.visorAlpineApp = function() {
+  return {
+    copiadoFmt: false,
+    copiadoMin: false,
+    copiadoRuta: false,
+    copiadoValor: false,
+
+    copiarConFeedback(tipo) {
+      if (tipo === 'fmt') {
+        this.copiadoFmt = true;
+        setTimeout(() => this.copiadoFmt = false, 1800);
+      } else if (tipo === 'min') {
+        this.copiadoMin = true;
+        setTimeout(() => this.copiadoMin = false, 1800);
+      } else if (tipo === 'ruta') {
+        this.copiadoRuta = true;
+        setTimeout(() => this.copiadoRuta = false, 1800);
+      } else if (tipo === 'valor') {
+        this.copiadoValor = true;
+        setTimeout(() => this.copiadoValor = false, 1800);
+      }
+    }
+  };
+};
+
 (function(){
 'use strict';
 

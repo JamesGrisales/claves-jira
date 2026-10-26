@@ -32,10 +32,11 @@
   .toast.show{ opacity:1; transform:translateX(-50%) translateY(0) scale(1); }
 </style>
 
+<div x-data="listasAlpineApp()">
 <div class="top">
   <h1>Listas con comillas y paréntesis</h1>
   <div style="display:inline-flex; align-items:center; gap:8px;">
-    <span class="chip" id="chipCant">0 datos</span>
+    <span class="chip" id="chipCant" x-text="cantDatosTexto">0 datos</span>
     <span class="db-orb db-orb-pg" id="listasHeaderOrb" title="Motor activo">🐘</span>
   </div>
 </div>
@@ -112,16 +113,54 @@
   </div>
 
   <div class="l-bar">
-    <button type="button" id="bCopiar">Copiar resultado</button>
-    <button type="button" class="secondary" id="bLimpiar">Limpiar</button>
-    <button type="button" class="secondary" id="bSql" title="Copia: IN (...) con el resultado">Copiar como IN (…)</button>
+    <button type="button" id="bCopiar" @click="copiarConFeedback('res')" :style="copiadoRes ? 'border-color:#10b981; color:#10b981; font-weight:700;' : ''"><span x-text="copiadoRes ? '✓ ¡Resultado copiado!' : 'Copiar resultado'">Copiar resultado</span></button>
+    <button type="button" class="secondary" id="bLimpiar" @click="limpiarTodo()">Limpiar</button>
+    <button type="button" class="secondary" id="bSql" @click="copiarConFeedback('sql')" :style="copiadoSql ? 'border-color:#10b981; color:#10b981; font-weight:700;' : ''" title="Copia: IN (...) con el resultado"><span x-text="copiadoSql ? '✓ ¡IN (...) copiado!' : 'Copiar como IN (…)'">Copiar como IN (…)</span></button>
   </div>
   <div class="hint">Las comillas simples que traiga un dato se duplican (<code>O'Brien</code> → <code>'O''Brien'</code>) para que el SQL no se rompa. Si pegas varias columnas desde Excel, elige "Cada fila de Excel".</div>
+</div>
+
 </div>
 
 <div class="toast" id="toast">Copiado</div>
 
 <script>
+/* ---------- Controlador Reactivo Alpine.js de Listas ---------- */
+window.listasAlpineApp = function() {
+  return {
+    cantDatosTexto: '0 datos',
+    copiadoRes: false,
+    copiadoSql: false,
+
+    init() {
+      // Sincronizar cambios desde el generador nativo
+      window.actualizarChipListas = (txt) => {
+        if (txt) this.cantDatosTexto = txt;
+      };
+    },
+
+    copiarConFeedback(tipo) {
+      if (tipo === 'res') {
+        const btn = document.getElementById('bCopiar');
+        if (btn) btn.click();
+        this.copiadoRes = true;
+        setTimeout(() => { this.copiadoRes = false; }, 1400);
+      } else if (tipo === 'sql') {
+        const btn = document.getElementById('bSql');
+        if (btn) btn.click();
+        this.copiadoSql = true;
+        setTimeout(() => { this.copiadoSql = false; }, 1400);
+      }
+    },
+
+    limpiarTodo() {
+      const btn = document.getElementById('bLimpiar');
+      if (btn) btn.click();
+      this.cantDatosTexto = '0 datos';
+    }
+  };
+};
+
 (function(){
   var $ = function(id){ return document.getElementById(id); };
   var entrada = $('entrada'), salida = $('salida');
@@ -197,7 +236,7 @@
     }
 
     salida.value = out;
-    $('chipCant').textContent = total + (total === 1 ? ' dato' : ' datos');
+    $('chipCant').textContent = total + (total === 1 ? ' dato' : ' datos'); if (window.actualizarChipListas) window.actualizarChipListas($('chipCant').textContent);
     $('infoEntrada').textContent = texto.split(/\r?\n/).length + ' líneas';
   }
 

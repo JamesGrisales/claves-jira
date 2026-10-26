@@ -1,212 +1,1665 @@
+
 <style>
-  .cal-top{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:6px; }
-  .cal-top h1{ margin:0; }
-  .cal-layout{ display:grid; grid-template-columns:minmax(0,1fr) 300px; gap:18px; align-items:start; }
-  .cal-nav{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
-  .cal-nav h2{ margin:0 8px; font-size:20px; min-width:190px; text-transform:capitalize; }
-  .cal-nav .sp{ flex:1; }
+  /* ==============================================================
+     ESTILOS BASE DEL CALENDARIO & TEMA SWITCHER (6 DISEÑOS)
+     ============================================================== */
+  .cal-wrapper-app {
+    position: relative;
+    transition: all 0.25s ease;
+  }
 
-  .cal-grid{ display:grid; grid-template-columns:repeat(7, minmax(0,1fr)); border:1px solid var(--panel-edge); border-radius:14px; overflow:hidden; background:var(--panel); }
-  .cal-dow{ padding:9px 6px; text-align:center; font-size:11.5px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; color:var(--muted); background:var(--panel-alt); border-bottom:1px solid var(--panel-edge); }
-  .cal-day{ min-height:104px; padding:6px 6px 4px; border-right:1px solid var(--panel-edge); border-bottom:1px solid var(--panel-edge); cursor:pointer; transition:background-color .15s ease, border-color .15s ease; min-width:0; position:relative; }
-  .cal-day:nth-child(7n){ border-right:0; }
-  .cal-day:hover{ background:color-mix(in srgb, var(--accent) 6%, var(--panel)); }
-  .cal-day.otro{ background:var(--panel-alt); }
-  .cal-day.otro .num{ opacity:.45; }
-  .cal-day-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:3px; }
-  .cal-day .num{ display:inline-flex; align-items:center; justify-content:center; min-width:24px; height:24px; padding:0 6px; border-radius:999px; font-size:12.5px; font-weight:700; }
-  .cal-day.hoy .num{ background:var(--grad); color:#fff; }
+  .cal-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
 
-  /* Casilla de día festivo en Colombia */
-  .cal-day.festivo{
-    background: color-mix(in srgb, #ef4444 8.5%, var(--panel));
-    border-color: color-mix(in srgb, #ef4444 26%, var(--panel-edge));
+  /* Selector de temas de diseño - Menú Ejecutivo Moderno */
+  .cal-theme-dropdown {
+    position: relative;
+    display: inline-block;
   }
-  .cal-day.festivo:hover{
-    background: color-mix(in srgb, #ef4444 15%, var(--panel));
+  .btn-theme-trigger {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.14) 0%, rgba(59, 130, 246, 0.1) 100%) !important;
+    border: 1px solid rgba(139, 92, 246, 0.45) !important;
+    color: var(--text) !important;
+    padding: 5px 12px 5px 10px !important;
+    border-radius: 12px !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 9px !important;
+    transition: all 0.2s ease !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12) !important;
   }
-  .cal-day.festivo.otro{
-    background: color-mix(in srgb, #ef4444 4%, var(--panel-alt));
+  .btn-theme-trigger:hover {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.25) 0%, rgba(59, 130, 246, 0.18) 100%) !important;
+    border-color: rgba(168, 85, 247, 0.7) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 18px rgba(139, 92, 246, 0.35) !important;
   }
-  .cal-day.festivo.otro .num{
-    color: rgba(239, 68, 68, 0.45);
+  .btn-theme-trigger.open {
+    border-color: #a855f7 !important;
+    box-shadow: 0 0 16px rgba(168, 85, 247, 0.45) !important;
   }
-  .cal-day.festivo .num{
-    color: #ef4444;
-    font-weight: 800;
-  }
-  :root[data-theme="dark"] .cal-day.festivo .num,
-  :root[data-theme="oled"] .cal-day.festivo .num{
-    color: #f87171;
-  }
-  .cal-day.festivo.hoy .num{
-    background: linear-gradient(135deg, #ef4444, #dc2626);
-    color: #fff;
-    box-shadow: 0 0 10px rgba(239, 68, 68, 0.55);
-  }
-  .festivo-badge{
+  .theme-icon-orb {
+    font-size: 16px;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: rgba(139, 92, 246, 0.22);
+    border: 1px solid rgba(139, 92, 246, 0.45);
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 22px;
-    height: 22px;
-    border-radius: 6px;
-    background: rgba(239, 68, 68, 0.14);
-    border: 1px solid rgba(239, 68, 68, 0.32);
-    font-size: 13px;
-    line-height: 1;
-    cursor: default;
-    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
-  .cal-day.festivo:hover .festivo-badge{
-    transform: scale(1.22) rotate(-8deg);
-  }
-  .chip.festivo{
-    background: linear-gradient(135deg, #e11d48, #ef4444);
-    color: #fff;
-    font-weight: 700;
-    border: 1px solid rgba(255, 255, 255, 0.22);
-    box-shadow: 0 2px 6px rgba(225, 29, 72, 0.28);
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    cursor: default;
-  }
-  .chip.festivo:hover{
-    filter: brightness(1.1);
-  }
-  .chip.festivo .festivo-chip-ico{
-    font-size: 11px;
     flex-shrink: 0;
   }
-  .chip.festivo .festivo-chip-txt{
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-size: 11px;
+  .theme-trigger-info {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    gap: 1px;
   }
-  .cal-legend-festivo{
+  .theme-trigger-label {
+    font-size: 9.5px;
+    font-weight: 800;
+    color: #c084fc;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+  }
+  .theme-trigger-name {
+    font-size: 12.5px;
+    font-weight: 800;
+    color: #ffffff;
+    white-space: nowrap;
+  }
+  .theme-caret {
+    width: 14px;
+    height: 14px;
+    stroke: currentColor;
+    stroke-width: 2.4;
+    fill: none;
+    opacity: 0.7;
+    margin-left: 2px;
+    transition: transform 0.2s ease;
+  }
+  .btn-theme-trigger.open .theme-caret {
+    transform: rotate(180deg);
+  }
+
+  /* Menú flotante de temas */
+  .cal-theme-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    width: 300px;
+    background: rgba(15, 23, 42, 0.96) !important;
+    backdrop-filter: blur(18px) !important;
+    border: 1px solid rgba(139, 92, 246, 0.4) !important;
+    border-radius: 16px !important;
+    padding: 8px !important;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.7), 0 0 25px rgba(139, 92, 246, 0.2) !important;
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    animation: calMenuFade 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  @keyframes calMenuFade {
+    from { opacity: 0; transform: translateY(-6px) scale(0.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .theme-menu-header {
+    font-size: 10.5px;
+    font-weight: 800;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    padding: 6px 10px 4px;
+    border-bottom: 1px solid var(--panel-edge);
+    margin-bottom: 4px;
+  }
+  .theme-opt {
+    background: transparent !important;
+    border: 1px solid transparent !important;
+    border-radius: 10px !important;
+    padding: 8px 10px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    cursor: pointer !important;
+    text-align: left !important;
+    width: 100% !important;
+    color: var(--text) !important;
+    transition: all 0.15s ease !important;
+    box-sizing: border-box !important;
+  }
+  .theme-opt:hover {
+    background: rgba(139, 92, 246, 0.16) !important;
+    border-color: rgba(139, 92, 246, 0.35) !important;
+    transform: translateX(2px);
+  }
+  .theme-opt.active {
+    background: rgba(139, 92, 246, 0.25) !important;
+    border-color: rgba(168, 85, 247, 0.65) !important;
+  }
+  .theme-opt .to-icon {
+    font-size: 18px;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .theme-opt .to-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+    min-width: 0;
+  }
+  .theme-opt .to-info strong {
+    font-size: 13px;
+    font-weight: 800;
+    color: #fff;
+  }
+  .theme-opt .to-info small {
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.25;
+  }
+  .theme-opt .to-check {
+    font-size: 12.5px;
+    font-weight: 900;
+    color: #a855f7;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .theme-opt.active .to-check {
+    opacity: 1;
+  }
+
+  
+  /* Botón de Sincronización con Outlook */
+  .btn-sync-outlook {
+    background: rgba(2, 132, 199, 0.14) !important;
+    border: 1px solid rgba(2, 132, 199, 0.45) !important;
+    color: #0284c7 !important;
+    font-weight: 700 !important;
+    font-size: 12.5px !important;
+    padding: 6px 12px !important;
+    border-radius: 10px !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    transition: all 0.2s ease !important;
+  }
+  .btn-sync-outlook:hover {
+    background: rgba(2, 132, 199, 0.25) !important;
+    border-color: #0284c7 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 12px rgba(2, 132, 199, 0.3);
+  }
+  .btn-sync-outlook.loading {
+    opacity: 0.7;
+    pointer-events: none;
+  }
+  .btn-sync-outlook.loading .sync-icon {
+    display: inline-block;
+    animation: spinSync 1s linear infinite;
+  }
+  @keyframes spinSync {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  .chip.outlook-chip {
+    border-left: 3px solid #0078d4 !important;
+  }
+  .badge-outlook-tag {
+    background: #0078d4;
+    color: #fff;
+    font-size: 9.5px;
+    font-weight: 900;
+    padding: 1px 5px;
+    border-radius: 4px;
+    letter-spacing: 0.3px;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    margin-right: 4px;
+  }
+
+  /* Botón directo de purga de fin de semana */
+  .btn-quick-finde {
+    background: rgba(239, 68, 68, 0.14) !important;
+    border: 1px solid rgba(239, 68, 68, 0.4) !important;
+    color: #ef4444 !important;
+    font-weight: 700 !important;
+    font-size: 12.5px !important;
+    padding: 6px 12px !important;
+    border-radius: 10px !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    transition: all 0.2s ease !important;
+  }
+  .btn-quick-finde:hover {
+    background: rgba(239, 68, 68, 0.25) !important;
+    border-color: #ef4444 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 12px rgba(239, 68, 68, 0.3);
+  }
+  .badge-finde-count {
+    background: #ef4444;
+    color: #fff;
+    font-size: 10.5px;
+    font-weight: 900;
+    padding: 1px 6px;
+    border-radius: 8px;
+    letter-spacing: 0.3px;
+  }
+
+  .btn-limpieza-masiva {
+    background: rgba(239, 68, 68, 0.1) !important;
+    border: 1px solid rgba(239, 68, 68, 0.35) !important;
+    color: #ef4444 !important;
+    font-weight: 700 !important;
+    font-size: 12.5px !important;
+    padding: 6px 12px !important;
+    border-radius: 10px !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    transition: all 0.2s ease !important;
+  }
+  .btn-limpieza-masiva:hover {
+    background: rgba(239, 68, 68, 0.2) !important;
+    border-color: #ef4444 !important;
+    transform: translateY(-1px);
+  }
+
+  /* Franja de Métricas KPI y Heatmap - Diseño Ejecutivo Neón */
+  .cal-kpi-strip {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+  .kpi-card {
+    background: linear-gradient(145deg, rgba(255,255,255,0.03) 0%, rgba(0,0,0,0.2) 100%), var(--panel);
+    border: 1px solid var(--panel-edge);
+    border-radius: 14px;
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 8px;
+    position: relative;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    overflow: hidden;
+  }
+  .kpi-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  }
+  .kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: transparent;
+    transition: background 0.25s ease;
+  }
+  
+  /* 1. Card Total Eventos (Cyan) */
+  .kpi-card.kpi-total::before {
+    background: linear-gradient(90deg, #0284c7, #38bdf8);
+  }
+  .kpi-card.kpi-total:hover {
+    border-color: rgba(56, 189, 248, 0.45);
+    box-shadow: 0 8px 24px rgba(2, 132, 199, 0.2);
+  }
+  .kpi-card.kpi-total .kpi-val {
+    color: #38bdf8;
+  }
+
+  /* 2. Card Sábados y Domingos (Rojo/Ámbar) */
+  .kpi-card.kpi-weekend::before {
+    background: linear-gradient(90deg, #f59e0b, #ef4444);
+  }
+  .kpi-card.kpi-weekend {
+    background: linear-gradient(145deg, rgba(239, 68, 68, 0.04) 0%, rgba(0,0,0,0.2) 100%), var(--panel);
+    border-color: rgba(239, 68, 68, 0.35);
+  }
+  .kpi-card.kpi-weekend .kpi-val {
+    color: #ef4444;
+  }
+
+  /* 3. Card Días Laborales (Verde Esmeralda) */
+  .kpi-card.kpi-laborales::before {
+    background: linear-gradient(90deg, #10b981, #059669);
+  }
+  .kpi-card.kpi-laborales:hover {
+    border-color: rgba(16, 185, 129, 0.45);
+    box-shadow: 0 8px 24px rgba(16, 185, 129, 0.2);
+  }
+  .kpi-card.kpi-laborales .kpi-val {
+    color: #10b981;
+  }
+
+  /* 4. Card Festivos Colombia (Coral / Rojo) */
+  .kpi-card.kpi-festivos::before {
+    background: linear-gradient(90deg, #f43f5e, #e11d48);
+  }
+  .kpi-card.kpi-festivos:hover {
+    border-color: rgba(244, 63, 94, 0.45);
+    box-shadow: 0 8px 24px rgba(244, 63, 94, 0.2);
+  }
+  .kpi-card.kpi-festivos .kpi-val {
+    color: #f43f5e;
+  }
+
+  /* Elementos internos */
+  .kpi-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .kpi-head-left {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .kpi-icon {
+    font-size: 15px;
+    display: inline-flex;
+    align-items: center;
+  }
+  .kpi-label {
+    font-size: 11.5px;
+    font-weight: 800;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+  }
+  .kpi-tag {
+    font-size: 10px;
+    font-weight: 800;
+    padding: 2px 7px;
+    border-radius: 999px;
+    letter-spacing: 0.3px;
+  }
+  .kpi-tag-blue { background: rgba(2, 132, 199, 0.16); color: #38bdf8; border: 1px solid rgba(2, 132, 199, 0.35); }
+  .kpi-tag-green { background: rgba(16, 185, 129, 0.16); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.35); }
+  .kpi-tag-red { background: rgba(239, 68, 68, 0.16); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.35); }
+  .kpi-tag-festivo { background: rgba(244, 63, 94, 0.16); color: #fb7185; border: 1px solid rgba(244, 63, 94, 0.35); }
+
+  .kpi-val-row {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin: 2px 0;
+  }
+  .kpi-val {
+    font-size: 26px;
+    font-weight: 900;
+    letter-spacing: -0.5px;
+    line-height: 1.1;
+  }
+  .kpi-unit {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--muted);
+  }
+  .kpi-sub-detail {
+    font-size: 12px;
+    color: var(--muted);
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    margin-top: 2px;
+  }
+  .kpi-mini-pill {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .kpi-action-btn {
+    background: rgba(239, 68, 68, 0.16) !important;
+    border: 1px solid rgba(239, 68, 68, 0.45) !important;
+    color: #ef4444 !important;
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    padding: 3px 10px !important;
+    border-radius: 6px !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+  }
+  .kpi-action-btn:hover {
+    background: #ef4444 !important;
+    color: #fff !important;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+  }
+
+  /* Grid y Días del Calendario */
+  .cal-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 300px;
+    gap: 20px;
+    align-items: start;
+  }
+  @media (max-width: 980px) {
+    .cal-layout { grid-template-columns: 1fr; }
+  }
+
+  .cal-nav {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .cal-nav h2 {
+    margin: 0;
+    font-size: 20px;
+    text-transform: capitalize;
+    min-width: 170px;
+  }
+  .cal-nav .sp { flex: 1; }
+  .cal-legend-festivo {
     display: inline-flex;
     align-items: center;
     gap: 6px;
     font-size: 12px;
-    font-weight: 700;
     color: #ef4444;
     background: rgba(239, 68, 68, 0.1);
-    border: 1px solid rgba(239, 68, 68, 0.24);
+    border: 1px solid rgba(239, 68, 68, 0.28);
     padding: 3px 10px;
     border-radius: 999px;
-    cursor: default;
-    user-select: none;
+    font-weight: 700;
   }
-  :root[data-theme="dark"] .cal-legend-festivo,
-  :root[data-theme="oled"] .cal-legend-festivo{
-    color: #f87171;
-    background: rgba(239, 68, 68, 0.16);
+
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    background: var(--panel);
+    border: 1px solid var(--panel-edge);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
   }
-  .prox .dot.festivo{
-    background: #ef4444;
-    box-shadow: 0 0 8px rgba(239, 68, 68, 0.6);
+  .cal-head {
+    padding: 10px 4px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid var(--panel-edge);
+    background: var(--panel-alt);
   }
-  .prox.festivo-row:hover b{
+  .cal-head.finde-head {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.04);
+  }
+
+  .cal-day {
+    min-height: 108px;
+    padding: 6px;
+    border-right: 1px solid var(--panel-edge);
+    border-bottom: 1px solid var(--panel-edge);
+    background: var(--panel);
+    transition: background 0.12s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    cursor: pointer;
+  }
+  .cal-day:nth-child(7n) { border-right: 0; }
+  .cal-day:hover { background: color-mix(in srgb, var(--accent) 6%, var(--panel)); }
+  .cal-day.otro { background: var(--panel-alt); opacity: 0.55; }
+  .cal-day-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2px;
+  }
+  .cal-day .num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    height: 24px;
+    padding: 0 4px;
+    border-radius: 999px;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--muted);
+  }
+  .cal-day.hoy .num { background: var(--grad); color: #fff; font-weight: 900; }
+
+  /* Fines de semana diferenciados */
+  .cal-day.fin-semana {
+    background: rgba(239, 68, 68, 0.025);
+  }
+  .cal-day.fin-semana:hover {
+    background: rgba(239, 68, 68, 0.07);
+  }
+  .cal-day.fin-semana .num {
     color: #ef4444;
   }
+  .cal-day.fin-semana.otro {
+    background: rgba(239, 68, 68, 0.015);
+    opacity: 0.45;
+  }
 
-  .chip{ display:block; width:100%; text-align:left; font-size:11.5px; font-weight:600; line-height:1.3; padding:3px 7px; margin-bottom:3px; border-radius:6px; border:0; color:#fff; cursor:pointer; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; box-shadow:none; transform:none; background:var(--accent); }
-  .chip:hover{ transform:none; filter:brightness(1.08); box-shadow:none; }
-  .chip::after{ display:none; }
-  .chip.reunion{ background:var(--accent); }
-  .chip.especial{ background:#d97706; }
-  .chip.recordatorio{ background:#059669; }
-  .chip .h{ opacity:.85; margin-right:4px; font-weight:700; }
-  .mas{ font-size:11px; color:var(--muted); font-weight:700; padding-left:4px; }
+  /* Festivos de Colombia */
+  .cal-day.festivo {
+    background: linear-gradient(180deg, rgba(239, 68, 68, 0.12) 0%, rgba(239, 68, 68, 0.04) 100%) !important;
+    border-color: rgba(239, 68, 68, 0.3) !important;
+  }
+  .cal-day.festivo .num {
+    background: #ef4444;
+    color: #ffffff !important;
+    font-weight: 800;
+    box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
+  }
+  .festivo-badge {
+    font-size: 13px;
+    margin-left: 4px;
+    animation: festivoPulse 2.4s ease-in-out infinite;
+  }
+  @keyframes festivoPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+  }
+  .chip.festivo {
+    background: rgba(239, 68, 68, 0.18) !important;
+    border-color: rgba(239, 68, 68, 0.45) !important;
+    color: #ef4444 !important;
+    font-weight: 800;
+  }
 
-  .side .card{ padding:16px; }
-  .side h3{ margin:0 0 10px; font-size:14px; }
-  .prox{ display:flex; gap:10px; align-items:flex-start; padding:9px 0; border-top:1px solid var(--panel-edge); cursor:pointer; }
-  .prox:first-of-type{ border-top:0; }
-  .prox .dot{ width:10px; height:10px; border-radius:50%; margin-top:5px; flex-shrink:0; background:var(--accent); }
-  .prox .dot.especial{ background:#d97706; } .prox .dot.recordatorio{ background:#059669; }
-  .prox b{ display:block; font-size:13.5px; overflow-wrap:anywhere; }
-  .prox small{ color:var(--muted); font-size:12px; }
-  .vacio-prox{ color:var(--muted); font-size:13px; padding:6px 0; }
-  .notif-box{ margin-top:14px; font-size:12.5px; color:var(--muted); }
-  .notif-box button{ margin-top:8px; }
+  /* Chips de Eventos */
+  .chip {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 6px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    border: 1px solid transparent;
+    cursor: pointer;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: left;
+    width: 100%;
+    transition: transform 0.1s ease, filter 0.1s ease;
+  }
+  .chip:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.1);
+  }
+  .chip.reunion { background: rgba(2, 132, 199, 0.16); border-color: rgba(2, 132, 199, 0.35); color: #0284c7; }
+  .chip.especial { background: rgba(245, 158, 11, 0.16); border-color: rgba(245, 158, 11, 0.35); color: #d97706; }
+  .chip.recordatorio { background: rgba(16, 185, 129, 0.16); border-color: rgba(16, 185, 129, 0.35); color: #10b981; }
+  .chip .h { opacity: 0.75; font-size: 10px; font-weight: 700; margin-right: 2px; }
 
-  /* Ventana para agregar / editar */
-  .ev-backdrop{ position:fixed; inset:0; z-index:9000; background:rgba(8,14,30,.55); backdrop-filter:blur(3px); display:none; align-items:center; justify-content:center; padding:16px; }
-  .ev-backdrop.open{ display:flex; }
-  .ev-modal{ width:min(520px,100%); max-height:92vh; overflow:auto; background:var(--panel); border:1px solid var(--panel-edge); border-radius:18px; box-shadow:var(--shadow-lg); padding:22px; }
-  .ev-modal h3{ margin:0 0 14px; font-size:18px; }
-  .ev-modal label{ display:block; font-size:12.5px; font-weight:700; color:var(--muted); margin:12px 0 5px; }
-  .ev-modal input[type=date], .ev-modal input[type=time]{ width:100%; background:var(--panel-alt); border:1px solid var(--panel-edge); color:var(--text); font-family:var(--mono); font-size:14.5px; padding:10px 12px; border-radius:10px; outline:none; color-scheme:inherit; }
-  .ev-modal input[type=date]:focus, .ev-modal input[type=time]:focus{ border-color:var(--accent); box-shadow:0 0 0 4px rgba(var(--accent-rgb), .16); }
-  .ev-2{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-  .ev-check{ display:flex; align-items:center; gap:8px; margin-top:12px; font-size:13.5px; }
-  .ev-check label{ margin:0; font-size:13.5px; color:var(--text); font-weight:600; }
-  .rep-box{ margin-top:12px; padding:12px; border:1px dashed var(--panel-edge); border-radius:12px; background:var(--panel-alt); }
-  .rep-box label:first-child{ margin-top:0; }
-  .dias-sem{ display:flex; gap:6px; flex-wrap:wrap; margin-top:4px; }
-  .dias-sem label{ display:inline-flex; align-items:center; gap:5px; margin:0; padding:6px 10px; border:1px solid var(--panel-edge); border-radius:999px; background:var(--panel); font-size:12.5px; font-weight:700; color:var(--text); cursor:pointer; }
-  .dias-sem label:has(input:checked){ background:var(--accent-soft); border-color:var(--accent); color:var(--accent-dark); }
-  .dias-sem input{ width:14px; height:14px; }
-  .cal-aviso{ background:var(--ok-soft); color:var(--ok); border-left:3px solid var(--ok); border-radius:10px; padding:10px 14px; font-size:13.5px; font-weight:600; margin-bottom:12px; }
-  .ev-err{ color:var(--danger); background:var(--danger-soft); border-radius:8px; padding:8px 10px; font-size:13px; margin-top:12px; display:none; }
-  .ev-btns{ display:flex; gap:8px; justify-content:flex-end; margin-top:18px; flex-wrap:wrap; }
-  .ev-btns .izq{ margin-right:auto; }
+  .mas {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--muted);
+    padding: 2px 4px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.05);
+    text-align: center;
+    margin-top: auto;
+    cursor: pointer;
+  }
+  .mas:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: var(--text);
+  }
 
-  @media (max-width:980px){ .cal-layout{ grid-template-columns:1fr; } }
-  @media (max-width:640px){ .cal-day{ min-height:70px; padding:4px 3px; } .chip .h{ display:none; } .cal-nav h2{ min-width:0; font-size:17px; } }
+  /* Panel lateral de Próximos */
+  .cal-side {
+    background: var(--panel);
+    border: 1px solid var(--panel-edge);
+    border-radius: 14px;
+    padding: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+  }
+  .cal-side h3 {
+    margin: 0 0 12px;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .cal-side-filters {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 12px;
+    background: var(--panel-alt);
+    padding: 3px;
+    border-radius: 8px;
+  }
+  .cal-side-filters button {
+    flex: 1;
+    background: none;
+    border: none;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--muted);
+    padding: 4px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  .cal-side-filters button.active {
+    background: var(--panel);
+    color: var(--text);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  }
+  .prox-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 420px;
+    overflow-y: auto;
+  }
+  .prox {
+    padding: 8px 10px;
+    background: var(--panel-alt);
+    border: 1px solid var(--panel-edge);
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    cursor: pointer;
+    transition: background 0.12s;
+  }
+  .prox:hover {
+    background: color-mix(in srgb, var(--accent) 8%, var(--panel-alt));
+  }
+  .prox-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 11.5px;
+  }
+  .prox-tit {
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+    display: inline-block;
+  }
+  .dot.reunion { background: #0284c7; }
+  .dot.especial { background: #f59e0b; }
+  .dot.recordatorio { background: #10b981; }
+
+  /* ==============================================================
+     ESTILOS ESPECÍFICOS DE CADA UNO DE LOS 6 TEMAS
+     ============================================================== */
+
+  /* 1. Bento Executive */
+  .cal-wrapper-app[data-cal-theme="bento"] .cal-grid {
+    border-radius: 18px;
+    box-shadow: 0 12px 36px rgba(0,0,0,0.12);
+  }
+  .cal-wrapper-app[data-cal-theme="bento"] .cal-day {
+    min-height: 116px;
+    padding: 8px;
+  }
+  .cal-wrapper-app[data-cal-theme="bento"] .cal-kpi-strip { display: grid !important; }
+
+  /* 2. Linear & Slate Pro */
+  .cal-wrapper-app[data-cal-theme="slate"] {
+    --panel: #0d1117;
+    --panel-alt: #161b22;
+    --panel-edge: #30363d;
+  }
+  .cal-wrapper-app[data-cal-theme="slate"] .cal-grid {
+    border-color: #30363d;
+    background: #0d1117;
+  }
+  .cal-wrapper-app[data-cal-theme="slate"] .cal-day.fin-semana {
+    background: repeating-linear-gradient(45deg, rgba(239,68,68,0.035) 0, rgba(239,68,68,0.035) 8px, transparent 8px, transparent 16px);
+    border-color: #30363d;
+  }
+
+  /* 3. Aurora Glassmorphism */
+  .cal-wrapper-app[data-cal-theme="aurora"] {
+    background: radial-gradient(circle at 15% 20%, rgba(139, 92, 246, 0.12), transparent 40%),
+                radial-gradient(circle at 85% 80%, rgba(6, 182, 212, 0.1), transparent 40%);
+    border-radius: 16px;
+    padding: 10px;
+  }
+  .cal-wrapper-app[data-cal-theme="aurora"] .cal-grid {
+    background: rgba(18, 22, 34, 0.65);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(139, 92, 246, 0.28);
+    box-shadow: 0 16px 40px rgba(0,0,0,0.35);
+  }
+  .cal-wrapper-app[data-cal-theme="aurora"] .cal-side {
+    background: rgba(18, 22, 34, 0.65);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(139, 92, 246, 0.28);
+  }
+
+  /* 4. Emerald FinTech */
+  .cal-wrapper-app[data-cal-theme="fintech"] {
+    --accent: #10b981;
+    --grad: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  }
+  .cal-wrapper-app[data-cal-theme="fintech"] .cal-kpi-strip { display: grid !important; }
+  .cal-wrapper-app[data-cal-theme="fintech"] .kpi-val { color: #10b981; }
+  .cal-wrapper-app[data-cal-theme="fintech"] .kpi-card.kpi-weekend .kpi-val { color: #ef4444; }
+
+  /* 5. Cyberpunk Tactical */
+  .cal-wrapper-app[data-cal-theme="cyber"] {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace, sans-serif;
+  }
+  .cal-wrapper-app[data-cal-theme="cyber"] .cal-grid {
+    border: 1px solid #00f0ff;
+    box-shadow: 0 0 15px rgba(0, 240, 255, 0.15);
+  }
+  .cal-wrapper-app[data-cal-theme="cyber"] .cal-day:hover {
+    box-shadow: inset 0 0 8px rgba(0, 240, 255, 0.25);
+  }
+
+  /* Botón + Evento en cabecera principal (estilo píldora Aurora/Cyber) */
+  #btnNuevo {
+    background: linear-gradient(135deg, #8b5cf6, #3b82f6) !important;
+    border: none !important;
+    color: #ffffff !important;
+    font-size: 13px !important;
+    font-weight: 800 !important;
+    padding: 7px 18px !important;
+    border-radius: 999px !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    box-shadow: 0 4px 14px rgba(59, 130, 246, 0.45) !important;
+    transition: all 0.2s ease !important;
+  }
+  #btnNuevo:hover {
+    background: linear-gradient(135deg, #7c3aed, #2563eb) !important;
+    transform: translateY(-1px) scale(1.02) !important;
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.65) !important;
+  }
+
+  /* Modales y Drawers */
+  .batch-card {
+    background: var(--panel-alt);
+    border: 1px solid var(--panel-edge);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 12px;
+  }
+  .batch-card h4 {
+    margin: 0 0 6px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .batch-card p {
+    margin: 0 0 10px;
+    font-size: 12.5px;
+    color: var(--muted);
+    line-height: 1.4;
+  }
+  .batch-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  /* Popover / Lista de eventos del día */
+  .day-events-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 320px;
+    overflow-y: auto;
+    margin: 12px 0;
+  }
+  .day-ev-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    background: var(--panel-alt);
+    border: 1px solid var(--panel-edge);
+    border-radius: 10px;
+    font-size: 13px;
+    gap: 8px;
+  }
+  .day-ev-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    flex: 1;
+  }
+  .day-ev-title {
+    font-weight: 700;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .day-ev-time {
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 600;
+  }
+  .btn-ev-action {
+    background: none;
+    border: 1px solid var(--panel-edge);
+    color: var(--text);
+    cursor: pointer;
+    font-size: 12px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.15s ease;
+  }
+  .btn-ev-action:hover {
+    background: var(--panel);
+  }
+  .btn-ev-action.danger {
+    color: #ef4444;
+    border-color: rgba(239, 68, 68, 0.35);
+    background: rgba(239, 68, 68, 0.08);
+  }
+  .btn-ev-action.danger:hover {
+    background: #ef4444;
+    color: #fff;
+  }
+
+  /* Modal de Eventos */
+  .ev-backdrop {
+    position: fixed; inset: 0; background: rgba(0,0,0,.6); backdrop-filter: blur(4px);
+    display: none; align-items: center; justify-content: center; z-index: 1000; padding: 16px;
+  }
+  .ev-backdrop.open { display: flex; }
+  .ev-modal {
+    background: var(--panel); border: 1px solid var(--panel-edge);
+    border-radius: 16px; padding: 20px; width: min(460px, 98%);
+    box-shadow: 0 16px 40px rgba(0,0,0,.35); max-height: 92vh; overflow-y: auto;
+  }
+  .ev-modal h3 { margin: 0 0 14px; font-size: 18px; }
+  .ev-modal label { display: block; font-size: 12px; font-weight: 700; color: var(--muted); margin: 8px 0 3px; }
+  .ev-modal input[type="text"], .ev-modal select, .ev-modal textarea, .ev-modal input[type="date"], .ev-modal input[type="time"] {
+    width: 100%; padding: 8px 10px; border: 1px solid var(--panel-edge); border-radius: 8px;
+    background: var(--panel-alt); color: var(--text); font-size: 13px; font-family: inherit; box-sizing: border-box;
+  }
+  .ev-modal textarea { resize: vertical; }
+  .ev-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .ev-check { display: flex; align-items: center; gap: 8px; margin: 10px 0; font-size: 13px; font-weight: 600; cursor: pointer; }
+  .ev-check input { width: 16px; height: 16px; }
+  .ev-btns { display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+  .ev-btns .izq { margin-right: auto; }
+  .ev-err { color: #ef4444; font-size: 12px; font-weight: 700; margin-top: 6px; }
+
+  .rep-box {
+    margin-top: 8px; padding: 10px; background: var(--panel-alt);
+    border: 1px solid var(--panel-edge); border-radius: 8px;
+  }
+  .dias-sem { display: flex; gap: 4px; margin: 6px 0; flex-wrap: wrap; }
+  .dias-sem label {
+    display: inline-flex; align-items: center; gap: 3px; font-size: 11px;
+    padding: 3px 6px; border: 1px solid var(--panel-edge); border-radius: 6px;
+    background: var(--panel); cursor: pointer; margin: 0;
+  }
+  .dias-sem input { margin: 0; }
+
+  /* Notificador Flotante Toast para Sincronización con Outlook */
+  .outlook-sync-toast {
+    position: fixed;
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2000;
+    min-width: min(440px, 92vw);
+    background: rgba(13, 17, 23, 0.96);
+    border: 1px solid #10b981;
+    box-shadow: 0 12px 36px rgba(0,0,0,0.5), 0 0 24px rgba(16, 185, 129, 0.35);
+    border-radius: 14px;
+    backdrop-filter: blur(16px);
+    overflow: hidden;
+    animation: toastSlideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  @keyframes toastSlideDown {
+    from { opacity: 0; transform: translate(-50%, -20px); }
+    to { opacity: 1; transform: translate(-50%, 0); }
+  }
+  .toast-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+  }
+  .toast-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
+    background: rgba(16, 185, 129, 0.2);
+    color: #10b981;
+    font-size: 16px;
+    font-weight: 900;
+    flex-shrink: 0;
+  }
+  .toast-text {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .toast-text strong {
+    font-size: 13.5px;
+    color: #fff;
+    font-weight: 800;
+  }
+  .toast-text span {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.35;
+  }
+  .toast-close {
+    background: none !important;
+    border: none !important;
+    color: var(--muted) !important;
+    font-size: 16px !important;
+    padding: 4px !important;
+    cursor: pointer !important;
+    box-shadow: none !important;
+  }
+  .toast-close:hover {
+    color: #fff !important;
+  }
+  .toast-progress {
+    height: 3px;
+    background: #10b981;
+    width: 100%;
+    animation: toastProgress 4.5s linear forwards;
+  }
+  @keyframes toastProgress {
+    from { width: 100%; }
+    to { width: 0%; }
+  }
+
+  /* Estado de éxito temporal en el botón de Outlook */
+  .btn-sync-outlook.success {
+    background: rgba(16, 185, 129, 0.22) !important;
+    border-color: #10b981 !important;
+    color: #10b981 !important;
+    box-shadow: 0 0 16px rgba(16, 185, 129, 0.35) !important;
+  }
+
+  /* Rediseño Limpio y Proporcional de los Botones del Modal */
+  .ev-modal {
+    width: min(480px, 98%) !important;
+    border-radius: 18px !important;
+    padding: 22px !important;
+  }
+  .ev-footer-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid var(--panel-edge);
+  }
+  .btn-modal {
+    padding: 9px 20px !important;
+    font-size: 13.5px !important;
+    font-weight: 700 !important;
+    border-radius: 10px !important;
+    min-width: 105px !important;
+    cursor: pointer !important;
+    transition: all 0.18s ease !important;
+  }
+  .btn-modal.primary {
+    background: var(--grad) !important;
+    color: #fff !important;
+    border: none !important;
+  }
+  .btn-modal.secondary {
+    background: var(--panel-alt) !important;
+    color: var(--text) !important;
+    border: 1px solid var(--panel-edge) !important;
+  }
+  .btn-modal.secondary:hover {
+    background: color-mix(in srgb, var(--accent) 10%, var(--panel-alt)) !important;
+  }
+
+  /* Sub-barra de eliminación para eventos existentes */
+  .ev-edit-actions {
+    margin-top: 14px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: rgba(239, 68, 68, 0.04);
+    border: 1px solid rgba(239, 68, 68, 0.22);
+  }
+  .ev-danger-banner {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .ev-danger-title {
+    font-size: 11px;
+    font-weight: 800;
+    color: #ef4444;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .ev-danger-btn-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .btn-sub-action {
+    padding: 6px 12px !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    border-radius: 8px !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 5px !important;
+    transition: all 0.15s ease !important;
+    box-shadow: none !important;
+  }
+  .btn-sub-action.danger {
+    background: rgba(239, 68, 68, 0.12) !important;
+    border: 1px solid rgba(239, 68, 68, 0.35) !important;
+    color: #ef4444 !important;
+  }
+  .btn-sub-action.danger:hover {
+    background: #ef4444 !important;
+    color: #fff !important;
+  }
+  .btn-sub-action.warning {
+    background: rgba(245, 158, 11, 0.12) !important;
+    border: 1px solid rgba(245, 158, 11, 0.35) !important;
+    color: #f59e0b !important;
+  }
+  .btn-sub-action.warning:hover {
+    background: #f59e0b !important;
+    color: #fff !important;
+  }
+  .btn-sub-action.danger-alt {
+    background: rgba(239, 68, 68, 0.18) !important;
+    border: 1px solid rgba(239, 68, 68, 0.5) !important;
+    color: #ef4444 !important;
+  }
+  .btn-sub-action.danger-alt:hover {
+    background: #dc2626 !important;
+    color: #fff !important;
+  }
+
+
+  /* Banner de Turno de Disponibilidad en el Calendario */
+  .banner-disp-calendar {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.16) 0%, rgba(217, 119, 6, 0.1) 100%);
+    border: 1px solid rgba(245, 158, 11, 0.55);
+    box-shadow: 0 4px 20px rgba(245, 158, 11, 0.2);
+    border-radius: 14px;
+    padding: 14px 18px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    animation: bannerFade 0.3s ease;
+  }
+  @keyframes bannerFade {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .disp-cal-pulse-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(245, 158, 11, 0.2);
+    border: 1px solid rgba(245, 158, 11, 0.5);
+    color: #f59e0b;
+    font-size: 11px;
+    font-weight: 900;
+    padding: 3px 10px;
+    border-radius: 999px;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+  .banner-disp-calendar h3 {
+    margin: 0 0 4px;
+    font-size: 17px;
+    color: #fff;
+    font-weight: 800;
+  }
+  .banner-disp-calendar p {
+    margin: 0;
+    font-size: 13px;
+    color: #cbd5e1;
+  }
+  .disp-badge-live {
+    background: #f59e0b;
+    color: #000;
+    font-size: 12px;
+    font-weight: 900;
+    padding: 6px 14px;
+    border-radius: 999px;
+    letter-spacing: 0.4px;
+    box-shadow: 0 0 16px rgba(245, 158, 11, 0.5);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* Días de la semana de Disponibilidad en el Grid */
+  .cal-day.en-disponibilidad-semana {
+    background: rgba(245, 158, 11, 0.055) !important;
+    border-color: rgba(245, 158, 11, 0.45) !important;
+    box-shadow: inset 0 0 12px rgba(245, 158, 11, 0.12);
+  }
+  .cal-day.en-disponibilidad-semana:hover {
+    background: rgba(245, 158, 11, 0.1) !important;
+  }
+  .badge-dia-disp {
+    background: rgba(245, 158, 11, 0.18);
+    border: 1px solid rgba(245, 158, 11, 0.55);
+    color: #f59e0b;
+    font-size: 9px;
+    font-weight: 900;
+    padding: 1px 4px;
+    border-radius: 4px;
+    letter-spacing: 0.3px;
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    margin-left: 3px;
+  }
+  .chip-disp-semana {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.25), rgba(217, 119, 6, 0.2)) !important;
+    border: 1px solid rgba(245, 158, 11, 0.55) !important;
+    color: #f59e0b !important;
+    font-weight: 800 !important;
+    font-size: 10.5px !important;
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 2px;
+    width: 100%;
+    box-sizing: border-box;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .chip-disp-semana:hover {
+    background: rgba(245, 158, 11, 0.35) !important;
+    filter: brightness(1.1);
+  }
+
+
+  /* Botón de Rol de Disponibilidad */
+  .btn-rol-disponibilidad {
+    background: rgba(245, 158, 11, 0.14) !important;
+    border: 1px solid rgba(245, 158, 11, 0.45) !important;
+    color: #f59e0b !important;
+    font-weight: 700 !important;
+    font-size: 12.5px !important;
+    padding: 6px 12px !important;
+    border-radius: 10px !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    transition: all 0.2s ease !important;
+  }
+  .btn-rol-disponibilidad:hover {
+    background: rgba(245, 158, 11, 0.25) !important;
+    border-color: #f59e0b !important;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 12px rgba(245, 158, 11, 0.3);
+  }
+
+  .cal-day.en-disponibilidad-equipo {
+    background: rgba(2, 132, 199, 0.04) !important;
+    border-color: rgba(2, 132, 199, 0.28) !important;
+  }
+  .badge-dia-disp-equipo {
+    background: rgba(2, 132, 199, 0.16);
+    border: 1px solid rgba(2, 132, 199, 0.4);
+    color: #0284c7;
+    font-size: 9px;
+    font-weight: 900;
+    padding: 1px 4px;
+    border-radius: 4px;
+    letter-spacing: 0.3px;
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    margin-left: 3px;
+  }
+  .chip.chip-disp-james {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.28), rgba(217, 119, 6, 0.2)) !important;
+    border: 1px solid rgba(245, 158, 11, 0.65) !important;
+    color: #f59e0b !important;
+    font-weight: 800 !important;
+    font-size: 10px !important;
+    letter-spacing: 0.2px;
+  }
+  .chip.chip-disp-equipo {
+    background: rgba(2, 132, 199, 0.15) !important;
+    border: 1px solid rgba(2, 132, 199, 0.38) !important;
+    color: #38bdf8 !important;
+    font-weight: 700 !important;
+    font-size: 10px !important;
+  }
+  .rol-disp-table th, .rol-disp-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--panel-edge);
+  }
+  .rol-disp-table tr:hover {
+    background: rgba(255, 255, 255, 0.03);
+  }
+  .rol-badge-active {
+    background: #10b981;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 3px 8px;
+    border-radius: 12px;
+  }
+  .rol-badge-past {
+    background: rgba(148, 163, 184, 0.2);
+    color: #94a3b8;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 12px;
+  }
+  .rol-badge-next {
+    background: rgba(2, 132, 199, 0.2);
+    color: #38bdf8;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 12px;
+  }
+
+
+  /* MODAL DE ROL DE DISPONIBILIDAD - WIDE & TOP-LAYERED */
+  #modalRolDisponibilidadBack {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 1000005 !important;
+    background: rgba(3, 7, 18, 0.86) !important;
+    backdrop-filter: blur(12px) !important;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 30px 16px !important;
+    box-sizing: border-box !important;
+  }
+  .rol-modal-card {
+    background: var(--panel) !important;
+    border: 1px solid rgba(245, 158, 11, 0.4) !important;
+    border-radius: 20px !important;
+    width: min(1200px, 96vw) !important;
+    max-width: 1200px !important;
+    max-height: 90vh !important;
+    overflow-y: auto !important;
+    padding: 26px 30px !important;
+    box-shadow: 0 24px 70px rgba(0,0,0,0.7), 0 0 35px rgba(245, 158, 11, 0.15) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+    position: relative !important;
+    box-sizing: border-box !important;
+  }
+  .btn-eliminar-disp {
+    background: rgba(239, 68, 68, 0.12) !important;
+    border: 1px solid rgba(239, 68, 68, 0.45) !important;
+    color: #ef4444 !important;
+    font-weight: 700 !important;
+    font-size: 11.5px !important;
+    padding: 4px 10px !important;
+    border-radius: 8px !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    transition: all 0.2s ease !important;
+  }
+  .btn-eliminar-disp:hover {
+    background: #ef4444 !important;
+    color: #fff !important;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(239, 68, 68, 0.35);
+  }
+  .cel-link {
+    color: #38bdf8 !important;
+    font-weight: 800 !important;
+    text-decoration: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 5px !important;
+    background: rgba(2, 132, 199, 0.12) !important;
+    padding: 3px 10px !important;
+    border-radius: 6px !important;
+    border: 1px solid rgba(2, 132, 199, 0.3) !important;
+    transition: all 0.2s ease !important;
+  }
+  .cel-link:hover {
+    background: rgba(2, 132, 199, 0.25) !important;
+    border-color: #38bdf8 !important;
+    transform: translateY(-1px);
+  }
+  .ced-badge {
+    font-family: monospace;
+    font-size: 12.5px;
+    font-weight: 800;
+    color: #cbd5e1;
+    background: rgba(255, 255, 255, 0.06);
+    padding: 3px 8px;
+    border-radius: 6px;
+    border: 1px solid var(--panel-edge);
+  }
+
 </style>
 
-<div class="cal-top">
-  <h1>📅 Calendario</h1>
-  <button type="button" id="btnNuevo">+ Nuevo evento</button>
-</div>
-<p class="sub">Agrega reuniones, fechas especiales o recordatorios. Los días festivos de Colombia se destacan automáticamente en color rojo con un ícono de celebración.</p>
 
-<div class="cal-layout">
-  <div>
-    <div class="cal-nav">
-      <button type="button" class="secondary btn-sm" id="prev" aria-label="Mes anterior">‹</button>
-      <button type="button" class="secondary btn-sm" id="next" aria-label="Mes siguiente">›</button>
-      <h2 id="mesTitulo"></h2>
-      <span class="sp"></span>
-      <span class="cal-legend-festivo" title="Días festivos oficiales en Colombia según la Ley Emiliani">
-        <span>🎉</span> <span>Festivos Colombia</span>
-      </span>
-      <button type="button" class="secondary btn-sm" id="hoyBtn">Hoy</button>
+<!-- Toast de Notificación de Sincronización con Outlook -->
+<div id="outlookSyncToast" class="outlook-sync-toast" style="display:none;">
+  <div class="toast-content">
+    <span class="toast-icon">✔</span>
+    <div class="toast-text">
+      <strong id="toastSyncTitle">¡Outlook Sincronizado con Éxito!</strong>
+      <span id="toastSyncMsg">Se actualizaron tus reuniones y turnos de disponibilidad.</span>
     </div>
-    <div class="cal-grid" id="grid"></div>
+    <button type="button" class="toast-close" id="btnCloseSyncToast" title="Cerrar aviso">✕</button>
+  </div>
+  <div class="toast-progress"></div>
+</div>
+
+<div class="cal-wrapper-app" id="calAppRoot" data-cal-theme="bento">
+
+  <!-- CABECERA PRINCIPAL -->
+  <div class="cal-top">
+    <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+      <h1 style="margin:0;">📅 Calendario</h1>
+      
+    </div>
+
+    <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+      <!-- Selector de Diseños del Calendario (Menú Ejecutivo con Iconos) -->
+      <div class="cal-theme-dropdown" id="calThemeDropdown">
+        <button type="button" class="btn-theme-trigger" id="btnThemeTrigger" title="Haz clic para cambiar el diseño visual del calendario" aria-haspopup="true" aria-expanded="false">
+          <span class="theme-icon-orb" id="themeActiveOrb">🍱</span>
+          <div class="theme-trigger-info">
+            <span class="theme-trigger-label">DISEÑO</span>
+            <strong class="theme-trigger-name" id="themeActiveName">Bento Executive</strong>
+          </div>
+          <svg class="theme-caret" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+
+        <div class="cal-theme-menu" id="calThemeMenu" style="display:none;" role="menu">
+          <div class="theme-menu-header">🎨 Estilo Visual del Calendario</div>
+          <button type="button" class="theme-opt" data-theme="bento" role="menuitem">
+            <span class="to-icon">🍱</span>
+            <div class="to-info"><strong>Bento Executive</strong><small>Tarjetas modulares, KPIs y sombras suaves</small></div>
+            <span class="to-check">✔</span>
+          </button>
+          <button type="button" class="theme-opt" data-theme="slate" role="menuitem">
+            <span class="to-icon">💻</span>
+            <div class="to-info"><strong>Linear & Slate Pro</strong><small>Modo oscuro de ingeniería, líneas precisas</small></div>
+            <span class="to-check">✔</span>
+          </button>
+          <button type="button" class="theme-opt" data-theme="aurora" role="menuitem">
+            <span class="to-icon">🌌</span>
+            <div class="to-info"><strong>Aurora Glassmorphism</strong><small>Degradados cósmicos y vidrio esmerilado</small></div>
+            <span class="to-check">✔</span>
+          </button>
+          <button type="button" class="theme-opt" data-theme="fintech" role="menuitem">
+            <span class="to-icon">📊</span>
+            <div class="to-info"><strong>Emerald FinTech</strong><small>Esmeralda de alta finanza con métricas activas</small></div>
+            <span class="to-check">✔</span>
+          </button>
+          <button type="button" class="theme-opt" data-theme="cyber" role="menuitem">
+            <span class="to-icon">⚡</span>
+            <div class="to-info"><strong>Cyberpunk Tactical</strong><small>Neón cian, tipografía monospace y rejilla HUD</small></div>
+            <span class="to-check">✔</span>
+          </button>
+          <button type="button" class="theme-opt" data-theme="clasico" role="menuitem">
+            <span class="to-icon">🏛️</span>
+            <div class="to-info"><strong>Clásico Bóveda</strong><small>Diseño original limpio, sobrio y funcional</small></div>
+            <span class="to-check">✔</span>
+          </button>
+        </div>
+
+        <!-- Select oculto para mantener compatibilidad -->
+        <select id="selTemaCal" style="display:none;" title="Tema">
+          <option value="bento">Bento</option>
+          <option value="slate">Slate</option>
+          <option value="aurora">Aurora</option>
+          <option value="fintech">Fintech</option>
+          <option value="cyber">Cyber</option>
+          <option value="clasico">Clasico</option>
+        </select>
+      </div>
+
+      <!-- Botón directo de purga de fin de semana -->
+            <!-- Botón de Sincronización con Outlook Desktop -->
+            <button type="button" class="btn-rol-disponibilidad" id="btnAbrirRolDisponibilidad" title="Ver programación oficial de turnos de guardia, cédulas y celulares de contacto">
+        <span>📋 Rol de Disponibilidad</span>
+      </button>
+<button type="button" class="btn-sync-outlook" id="btnSyncOutlook" title="Sincronizar reuniones asignadas en Outlook Desktop">
+        <span class="sync-icon">🔄</span> <span class="sync-txt">Sincronizar Outlook</span>
+      </button>
+
+      <button type="button" class="btn-quick-finde" id="btnQuickPurgeFinde" title="Eliminar de inmediato todos los eventos en sábado y domingo">
+        <span>⚡ Borrar Sáb y Dom</span> <span class="badge-finde-count" id="badgeFindeCount">52</span>
+      </button>
+
+      <button type="button" class="btn-limpieza-masiva" id="btnAbrirLimpieza" title="Herramientas para eliminar eventos masivamente o borrar fines de semana">
+        <span>🧹 Borrado Masivo</span>
+      </button>
+
+      <button type="button" id="btnNuevo">+ Evento</button>
+    </div>
   </div>
 
-  <aside class="side">
-    <div class="card">
-      <h3>Próximos eventos</h3>
-      <div id="proximos"><div class="vacio-prox">Cargando…</div></div>
-      <div class="notif-box" id="notifBox" hidden>
-        Para que la alerta también salga con la pestaña en segundo plano, permite las notificaciones del navegador.
-        <br><button type="button" class="secondary btn-sm" id="btnNotif">🔔 Activar notificaciones</button>
+  <!-- FRANJA KPI & METRICS STRIP (DISEÑO EJECUTIVO NEÓN) -->
+  <div id="calKpiStrip" class="cal-kpi-strip">
+    <!-- 1. TOTAL EVENTOS -->
+    <div class="kpi-card kpi-total">
+      <div class="kpi-head">
+        <div class="kpi-head-left">
+          <span class="kpi-icon">📅</span>
+          <span class="kpi-label">Total Eventos</span>
+        </div>
+        <span class="kpi-tag kpi-tag-blue">Agenda</span>
+      </div>
+      <div class="kpi-val-row">
+        <span class="kpi-val" id="kpiTotal">0</span>
+        <span class="kpi-unit">agendados</span>
+      </div>
+      <div class="kpi-sub-detail">
+        <span>Eventos registrados en el calendario</span>
+        <span class="kpi-mini-pill" id="kpiEventosSub">Reuniones, alertas y disponibilidad</span>
       </div>
     </div>
-  </aside>
+
+    <!-- 2. SÁBADOS Y DOMINGOS -->
+    <div class="kpi-card kpi-weekend" id="kpiCardWeekend">
+      <div class="kpi-head">
+        <div class="kpi-head-left">
+          <span class="kpi-icon">⚠️</span>
+          <span class="kpi-label">Sábados y Domingos</span>
+        </div>
+        <span class="kpi-tag kpi-tag-red">No Laborales</span>
+      </div>
+      <div class="kpi-val-row">
+        <span class="kpi-val" id="kpiWeekend">0</span>
+        <span class="kpi-unit">eventos fin de semana</span>
+      </div>
+      <div class="kpi-sub-detail">
+        <span>Eventos en días no laborables</span>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:2px;">
+          <span class="kpi-mini-pill">104 días fines de semana / año</span>
+          <button type="button" class="kpi-action-btn" id="btnKpiPurgeFinde" title="Limpiar los eventos de sábado y domingo con 1 clic">⚡ Purgar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. DÍAS LABORALES (AÑO COMPLETO SIN SÁBADOS, DOMINGOS NI FESTIVOS) -->
+    <div class="kpi-card kpi-laborales">
+      <div class="kpi-head">
+        <div class="kpi-head-left">
+          <span class="kpi-icon">💼</span>
+          <span class="kpi-label">Días Laborales</span>
+        </div>
+        <span class="kpi-tag kpi-tag-green" id="kpiAnioTag">Año 2026</span>
+      </div>
+      <div class="kpi-val-row">
+        <span class="kpi-val" id="kpiDiasLaborales">243</span>
+        <span class="kpi-unit">días hábiles / año</span>
+      </div>
+      <div class="kpi-sub-detail">
+        <span id="kpiDiasLabDetalle">Sin sábados, domingos ni festivos</span>
+        <span class="kpi-mini-pill" id="kpiDiasLabMes" style="color:#10b981; font-weight:700;">Este mes: 21 días hábiles laborales</span>
+      </div>
+    </div>
+
+    <!-- 4. FESTIVOS COLOMBIA -->
+    <div class="kpi-card kpi-festivos">
+      <div class="kpi-head">
+        <div class="kpi-head-left">
+          <span class="kpi-icon">🇨🇴</span>
+          <span class="kpi-label">Festivos Colombia</span>
+        </div>
+        <span class="kpi-tag kpi-tag-festivo">Ley Emiliani</span>
+      </div>
+      <div class="kpi-val-row">
+        <span class="kpi-val" id="kpiFestivos">18</span>
+        <span class="kpi-unit">festivos / año</span>
+      </div>
+      <div class="kpi-sub-detail">
+        <span id="kpiFestivosSub">18 días feriados oficiales reconocidos</span>
+        <span class="kpi-mini-pill" id="kpiFestivosMes" style="color:#f43f5e; font-weight:700;">1 festivo en este mes</span>
+      </div>
+    </div>
+  </div>
+
+  <p class="sub" style="margin-bottom:14px;">
+    Organiza reuniones, alertas y recordatorios. Los días festivos de Colombia se destacan en color rojo con un ícono festivo 🎉.
+  </p>
+
+  
+  <!-- BANNER DE TURNO DE DISPONIBILIDAD ACTIVO EN LA SEMANA -->
+  <div id="bannerSemanaDisponibilidad" class="banner-disp-calendar" style="display:none;">
+    <div class="disp-cal-left">
+      <span class="disp-cal-pulse-badge">🚨 TURNO DE GUARDIA ACTIVO</span>
+      <h3 id="bannerDispTitulo">Esta semana estás de Disponibilidad</h3>
+      <p id="bannerDispDesc">Del 26 de Octubre al 01 de Noviembre · Tienes asignado el turno de guardia y atención de emergencias.</p>
+    </div>
+    <div class="disp-cal-right" style="display:flex; align-items:center; gap:8px;">
+      <button type="button" class="btn-rol-disponibilidad" id="btnBannerVerRol" style="font-size:11.5px; padding:4px 10px;">
+        <span>📋 Ver Todo el Rol</span>
+      </button>
+      <span class="disp-badge-live">⚡ MI DISPONIBILIDAD</span>
+    </div>
+  </div>
+
+  <!-- DISTRIBUCIÓN DEL CALENDARIO -->
+  <div class="cal-layout">
+    <div>
+      <div class="cal-nav">
+        <button type="button" class="secondary btn-sm" id="prev" aria-label="Mes anterior">‹</button>
+        <button type="button" class="secondary btn-sm" id="next" aria-label="Mes siguiente">›</button>
+        <h2 id="mesTitulo"></h2>
+        <span class="sp"></span>
+        <span class="cal-legend-festivo" title="Días festivos oficiales en Colombia según la Ley Emiliani">
+          <span>🎉</span> <span>Festivos Colombia</span>
+        </span>
+        <button type="button" class="secondary btn-sm" id="hoyBtn">Hoy</button>
+      </div>
+
+      <div class="cal-grid" id="grid"></div>
+    </div>
+
+    <!-- PANEL LATERAL DE PRÓXIMOS EVENTOS -->
+    <aside class="cal-side">
+      <h3>
+        <span>🔔 Próximos eventos</span>
+        <span style="font-size:11px; color:var(--muted); font-weight:600;">(próximos 30 días)</span>
+      </h3>
+
+      <div class="cal-side-filters" id="filtrosProximos">
+        <button type="button" class="active" data-tipo="todos">Todos</button>
+        <button type="button" data-tipo="reunion">Reuniones</button>
+        <button type="button" data-tipo="especial">Especiales</button>
+        <button type="button" data-tipo="recordatorio">Alertas</button>
+      </div>
+
+      <div class="prox-list" id="proximos"></div>
+    </aside>
+  </div>
+
 </div>
 
-<!-- Ventana agregar / editar -->
+
+<!-- MODAL PARA CREAR / EDITAR EVENTO INDIVIDUAL O DE SERIE -->
 <div class="ev-backdrop" id="evBack">
   <div class="ev-modal" role="dialog" aria-modal="true" aria-labelledby="evTitulo">
     <h3 id="evTitulo">Nuevo evento</h3>
 
-    <label for="fTitulo">Título (esto es lo que dirá la alerta)</label>
-    <input type="text" id="fTitulo" maxlength="200" placeholder="Ej: Reunión con Jaivaná" autocomplete="off">
+    <label for="fTitulo">Título del evento</label>
+    <input type="text" id="fTitulo" maxlength="200" placeholder="Ej.: Almuerzo equipo, Revisión Jira…">
 
     <div class="ev-2">
       <div>
         <label for="fTipo">Tipo</label>
         <select id="fTipo">
-          <option value="reunion">Reunión</option>
-          <option value="especial">Fecha especial</option>
-          <option value="recordatorio">Recordatorio</option>
+          <option value="reunion">Reunión (🔵 azul)</option>
+          <option value="especial">Fecha especial (🟠 naranja)</option>
+          <option value="recordatorio">Recordatorio (🟢 verde)</option>
         </select>
       </div>
       <div>
@@ -264,186 +1717,520 @@
 
     <div class="ev-err" id="evErr"></div>
 
-    <div class="ev-btns">
-      <button type="button" class="danger izq" id="btnEliminar" hidden>Eliminar</button>
-      <button type="button" class="danger" id="btnSerie" hidden>Eliminar toda la serie</button>
-      <button type="button" class="secondary" id="btnCancelar">Cancelar</button>
-      <button type="button" id="btnGuardar">Guardar</button>
+    <!-- ACCIONES DE EDICIÓN / ELIMINACIÓN (Solo visible al editar evento) -->
+    <div id="evEditActions" class="ev-edit-actions" style="display:none;">
+      <div class="ev-danger-banner">
+        <span class="ev-danger-title">Opciones de Eliminación:</span>
+        <div class="ev-danger-btn-group">
+          <button type="button" class="btn-sub-action danger" id="btnEliminar" style="display:none;" title="Eliminar únicamente este evento individual">
+            🗑️ Eliminar este evento
+          </button>
+          <button type="button" class="btn-sub-action warning" id="btnSerieFinde" style="display:none;" title="Eliminar de esta serie SOLO los sábados y domingos">
+            🧹 Solo Sáb y Dom
+          </button>
+          <button type="button" class="btn-sub-action danger-alt" id="btnSerie" style="display:none;" title="Eliminar toda la serie recurrente completa">
+            ⚠️ Toda la serie
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- BOTONES PRINCIPALES DEL PIE DEL MODAL -->
+    <div class="ev-footer-actions">
+      <button type="button" class="btn-modal secondary" id="btnCancelar">Cancelar</button>
+      <button type="button" class="btn-modal primary" id="btnGuardar">Guardar</button>
     </div>
   </div>
 </div>
+
+
+
+<!-- MODAL DE ROL OFICIAL DE DISPONIBILIDAD -->
+<div class="ev-backdrop" id="modalRolDisponibilidadBack" style="display:none;">
+  <div class="rol-modal-card" role="dialog" aria-modal="true" aria-labelledby="rolDispTitulo">
+    <!-- CABECERA DEL MODAL -->
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; border-bottom:1px solid var(--panel-edge); padding-bottom:14px;">
+      <div>
+        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+          <span style="font-size:24px;">📋</span>
+          <h2 id="rolDispTitulo" style="margin:0; font-size:21px; color:var(--text); font-weight:800; letter-spacing:0.3px;">
+            Rol Oficial de Disponibilidad y Guardias Técnicas
+          </h2>
+          <span style="background:rgba(245,158,11,0.2); color:#f59e0b; border:1px solid rgba(245,158,11,0.5); font-size:11.5px; font-weight:900; padding:3px 10px; border-radius:12px;">
+            Octubre 2026
+          </span>
+        </div>
+        <p style="margin:5px 0 0; font-size:13.5px; color:var(--muted);">
+          Programación semanal de técnicos de soporte de guardia 24/7 y atención de incidencias en producción.
+        </p>
+      </div>
+      <button type="button" id="btnCerrarRolDisp" style="background:rgba(255,255,255,0.08); border:1px solid var(--panel-edge); font-size:18px; color:var(--text); width:34px; height:34px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; transition:all 0.2s;" title="Cerrar modal (Esc)">✕</button>
+    </div>
+
+    <!-- BARRA DE ACCIONES / CONTEO / BUSCADOR -->
+    <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span id="rolDispConteo" style="font-size:12.5px; font-weight:700; color:var(--muted); background:var(--panel-alt); padding:4px 10px; border-radius:8px; border:1px solid var(--panel-edge);">
+          Cargando turnos...
+        </span>
+        <button type="button" id="btnLimpiarTurnosDummy" style="background:none; border:1px dashed var(--panel-edge); font-size:11.5px; font-weight:700; color:var(--muted); padding:4px 10px; border-radius:8px; cursor:pointer;" title="Eliminar registros que no tengan cédula ni celular registrado">
+          🧹 Limpiar antiguos sin contacto
+        </button>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <input type="text" id="filtroRolDisp" placeholder="🔍 Filtrar técnico o cédula..." style="padding:6px 12px; font-size:12.5px; border-radius:8px; background:var(--panel-alt); border:1px solid var(--panel-edge); color:var(--text); width:220px;" />
+      </div>
+    </div>
+
+    <!-- TABLA PRINCIPAL DE TURNOS ANCHA Y COMPLETA -->
+    <div style="overflow-x:auto; border:1px solid var(--panel-edge); border-radius:12px; background:var(--panel-alt);">
+      <table class="rol-disp-table" style="width:100%; border-collapse:collapse; font-size:13px; min-width:880px;">
+        <thead>
+          <tr style="background:rgba(0,0,0,0.25); color:var(--muted); text-transform:uppercase; font-size:11px; letter-spacing:0.5px;">
+            <th style="padding:12px 14px; text-align:left; border-bottom:1px solid var(--panel-edge); width:130px;">Cédula</th>
+            <th style="padding:12px 14px; text-align:left; border-bottom:1px solid var(--panel-edge); width:160px;">Celular de Guardia</th>
+            <th style="padding:12px 14px; text-align:left; border-bottom:1px solid var(--panel-edge); min-width:240px;">Técnico Asignado</th>
+            <th style="padding:12px 14px; text-align:left; border-bottom:1px solid var(--panel-edge); width:220px;">Semana (Rango)</th>
+            <th style="padding:12px 14px; text-align:center; border-bottom:1px solid var(--panel-edge); width:100px;">Mes</th>
+            <th style="padding:12px 14px; text-align:center; border-bottom:1px solid var(--panel-edge); width:160px;">Estado</th>
+            <th style="padding:12px 14px; text-align:center; border-bottom:1px solid var(--panel-edge); width:120px;">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tbodyRolDisponibilidad">
+        </tbody>
+      </table>
+    </div>
+
+    <!-- FORMULARIO RÁPIDO PARA REGISTRAR O PROGRAMAR NUEVO TURNO -->
+    <div style="background:var(--panel-alt); border:1px solid var(--panel-edge); border-radius:14px; padding:16px;">
+      <h4 style="margin:0 0 10px; font-size:14px; font-weight:800; display:flex; align-items:center; gap:6px;">
+        <span>➕</span> <span>Registrar o Programar Nuevo Turno de Disponibilidad</span>
+      </h4>
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:10px; align-items:end;">
+        <div>
+          <label style="display:block; font-size:11px; font-weight:700; color:var(--muted); margin-bottom:3px;">Cédula:</label>
+          <input type="text" id="nuevoRolCedula" placeholder="Ej: 1053827164" style="width:100%; padding:7px 10px; font-size:12.5px; border-radius:8px; background:var(--panel); border:1px solid var(--panel-edge); color:var(--text);" />
+        </div>
+        <div>
+          <label style="display:block; font-size:11px; font-weight:700; color:var(--muted); margin-bottom:3px;">Celular:</label>
+          <input type="text" id="nuevoRolCelular" placeholder="Ej: 3042497379" style="width:100%; padding:7px 10px; font-size:12.5px; border-radius:8px; background:var(--panel); border:1px solid var(--panel-edge); color:var(--text);" />
+        </div>
+        <div>
+          <label style="display:block; font-size:11px; font-weight:700; color:var(--muted); margin-bottom:3px;">Nombre Completo:</label>
+          <input type="text" id="nuevoRolUsuario" placeholder="Ej: Grisales James" style="width:100%; padding:7px 10px; font-size:12.5px; border-radius:8px; background:var(--panel); border:1px solid var(--panel-edge); color:var(--text);" />
+        </div>
+        <div>
+          <label style="display:block; font-size:11px; font-weight:700; color:var(--muted); margin-bottom:3px;">Fecha Inicio:</label>
+          <input type="date" id="nuevoRolInicio" style="width:100%; padding:6px 10px; font-size:12.5px; border-radius:8px; background:var(--panel); border:1px solid var(--panel-edge); color:var(--text);" />
+        </div>
+        <div>
+          <label style="display:block; font-size:11px; font-weight:700; color:var(--muted); margin-bottom:3px;">Fecha Fin:</label>
+          <input type="date" id="nuevoRolFin" style="width:100%; padding:6px 10px; font-size:12.5px; border-radius:8px; background:var(--panel); border:1px solid var(--panel-edge); color:var(--text);" />
+        </div>
+        <div>
+          <button type="button" class="primary" id="btnGuardarNuevoRol" style="width:100%; padding:8px 12px; font-size:12.5px; font-weight:800; border-radius:8px;">
+            Guardar Turno
+          </button>
+        </div>
+      </div>
+      <div id="rolMsg" style="display:none; font-size:12.5px; font-weight:700; margin-top:10px;"></div>
+    </div>
+
+    <!-- BOTONES INFERIORES -->
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
+      <span style="font-size:12px; color:var(--muted);">
+        💡 Puedes eliminar cualquier turno con el botón <strong>🗑️ Eliminar</strong> si te equivocas.
+      </span>
+      <button type="button" class="secondary" id="btnCerrarRolDisp2" style="padding:7px 18px; font-weight:700;">
+        Cerrar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DE LIMPIEZA Y BORRADO MASIVO -->
+<div class="ev-backdrop" id="modalLimpiezaBack">
+  <div class="ev-modal" style="width:min(580px, 98%);" role="dialog" aria-modal="true" aria-labelledby="limpiezaTitulo">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+      <h3 id="limpiezaTitulo" style="margin:0; font-size:18px; color:var(--text); display:flex; align-items:center; gap:8px;">
+        <span>🧹</span> <span>Gestión y Borrado Masivo de Eventos</span>
+      </h3>
+      <button type="button" class="iconbtn" id="btnCerrarLimpieza" style="background:none; border:none; font-size:18px; color:var(--muted); cursor:pointer;">✕</button>
+    </div>
+    <p style="font-size:13px; color:var(--muted); margin-bottom:16px;">
+      Herramientas para purgar eventos masivos no deseados o limpiar repeticiones en fines de semana de forma segura.
+    </p>
+
+    <!-- Tarjeta 1: Eliminar Fines de Semana (Sábados y Domingos) -->
+    <div class="batch-card" style="border-color:rgba(239,68,68,0.35); background:rgba(239,68,68,0.04);">
+      <h4 style="color:#ef4444;">
+        <span>🗓️</span> <span>Eliminar eventos de Fines de Semana (Sáb y Dom)</span>
+      </h4>
+      <p>
+        Elimina todos los eventos programados en sábados o domingos. Ideal para limpiar series que se crearon erróneamente en fines de semana, conservando intactos los días hábiles (lunes a viernes).
+      </p>
+      <div class="batch-actions">
+        <select id="selAmbitoFinde" style="padding:6px 10px; font-size:12.5px; border-radius:8px; background:var(--panel); border:1px solid var(--panel-edge); color:var(--text);">
+          <option value="todo">En todo el calendario (histórico completo)</option>
+          <option value="mes">Solo en el mes visible actualmente</option>
+        </select>
+        <button type="button" class="danger" id="btnEjecutarBorradoFinde" style="padding:7px 14px; font-size:12.5px; font-weight:700;">
+          🗑️ Eliminar eventos de fin de semana
+        </button>
+      </div>
+    </div>
+
+    <!-- Tarjeta 2: Purgar por Categoría -->
+    <div class="batch-card">
+      <h4>
+        <span>🏷️</span> <span>Eliminar eventos por Categoría</span>
+      </h4>
+      <p>
+        Elimina de forma masiva todos los eventos de una categoría específica en el mes visible actualmente.
+      </p>
+      <div class="batch-actions">
+        <select id="selTipoBatch" style="padding:6px 10px; font-size:12.5px; border-radius:8px; background:var(--panel); border:1px solid var(--panel-edge); color:var(--text);">
+          <option value="recordatorio">Solo Recordatorios (🟢)</option>
+          <option value="especial">Solo Fechas Especiales (🟠)</option>
+          <option value="reunion">Solo Reuniones (🔵)</option>
+        </select>
+        <button type="button" class="secondary" id="btnEjecutarBorradoTipo" style="padding:7px 14px; font-size:12.5px; font-weight:700;">
+          Eliminar de este mes
+        </button>
+      </div>
+    </div>
+
+    <div id="batchMsg" style="display:none; padding:10px 14px; border-radius:10px; font-size:13px; font-weight:700; margin-top:12px;"></div>
+
+    <div style="display:flex; justify-content:flex-end; margin-top:16px;">
+      <button type="button" class="secondary" id="btnVolverLimpieza">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- MODAL / DRAWER INSPECTOR PARA GESTIONAR EVENTOS DE UN DÍA ESPECÍFICO -->
+<div class="ev-backdrop" id="modalDiaBack">
+  <div class="ev-modal" style="width:min(520px, 98%);" role="dialog" aria-modal="true">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+      <div>
+        <h3 id="diaModalTitulo" style="margin:0; font-size:17px; color:var(--text);">Eventos del Día</h3>
+        <span id="diaModalSub" style="font-size:12px; color:var(--muted); font-weight:600;"></span>
+      </div>
+      <button type="button" class="iconbtn" id="btnCerrarDiaModal" style="background:none; border:none; font-size:18px; color:var(--muted); cursor:pointer;">✕</button>
+    </div>
+
+    <div id="diaModalLista" class="day-events-list"></div>
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:14px; gap:8px; flex-wrap:wrap;">
+      <button type="button" class="danger btn-sm" id="btnEliminarTodosDelDia" style="font-weight:700;">🗑️ Borrar todos los de este día</button>
+      <div style="display:flex; gap:8px;">
+        <button type="button" class="secondary btn-sm" id="btnAgregarEnDia">+ Agregar evento</button>
+        <button type="button" class="secondary btn-sm" id="btnCerrarDiaModal2">Listo</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 
 <script>
 (function(){
   var $ = function(id){ return document.getElementById(id); };
   var MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
   var DIAS = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+  var DIAS_COMPLETOS = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
   var hoy = new Date();
   var anio = hoy.getFullYear(), mes = hoy.getMonth();
-  var eventos = [];        // eventos del rango visible
+  var eventos = [];
   var editandoId = null;
+  var diaInspectorFecha = null;
+  var diaInspectorEventos = [];
 
-  function pad(n){ return (n < 10 ? '0' : '') + n; }
+  var turnosDisponibilidad = [];
+  function cargarDisponibilidad(cb) {
+    api('/api/disponibilidad/estado').then(function(res) {
+      if (res && res.ok) {
+        turnosDisponibilidad = res.turnos || [];
+        var banner = $('bannerSemanaDisponibilidad');
+        if (banner) {
+          if (res.enDisponibilidad && res.turno) {
+            banner.style.display = 'flex';
+            var pIni = res.turno.inicio.split('-'), pFin = res.turno.fin.split('-');
+            var mesesNom = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+            var descTxt = 'Del ' + (+pIni[2]) + ' de ' + mesesNom[+pIni[1]-1] + ' al ' + (+pFin[2]) + ' de ' + mesesNom[+pFin[1]-1] + ' de ' + pFin[0] + ' · Tienes asignado el turno de soporte de guardia.';
+            $('bannerDispDesc').textContent = descTxt;
+          } else {
+            banner.style.display = 'none';
+          }
+        }
+      }
+      if (cb) cb();
+    }).catch(function(e) { if (cb) cb(); });
+  }
+
+
+  /* ----- CÁLCULO DE FESTIVOS DE COLOMBIA (Ley Emiliani) ----- */
+  function pascua(y) {
+    var a = y % 19, b = Math.floor(y / 100), c = y % 100;
+    var d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25);
+    var g = Math.floor((b - f + 1) / 3), h = (19 * a + b - d - g + 15) % 30;
+    var i = Math.floor(c / 4), k = c % 4, l = (32 + 2 * e + 2 * i - h - k) % 7;
+    var m = Math.floor((a + 11 * h + 22 * l) / 451);
+    var mesP = Math.floor((h + l - 7 * m + 114) / 31) - 1;
+    var diaP = ((h + l - 7 * m + 114) % 31) + 1;
+    return new Date(y, mesP, diaP);
+  }
+  function proximoLunes(d) {
+    var copia = new Date(d.getTime());
+    var diaSem = copia.getDay();
+    if (diaSem === 1) return copia;
+    var faltan = (diaSem === 0) ? 1 : (8 - diaSem);
+    copia.setDate(copia.getDate() + faltan);
+    return copia;
+  }
+  function sumarDias(d, n) {
+    var copia = new Date(d.getTime());
+    copia.setDate(copia.getDate() + n);
+    return copia;
+  }
+  function obtenerFestivosColombia(y) {
+    var p = pascua(y);
+    var f = [
+      { f: new Date(y, 0, 1), nombre: 'Año Nuevo' },
+      { f: proximoLunes(new Date(y, 0, 6)), nombre: 'Día de los Reyes Magos' },
+      { f: proximoLunes(new Date(y, 2, 19)), nombre: 'Día de San José' },
+      { f: sumarDias(p, -3), nombre: 'Jueves Santo' },
+      { f: sumarDias(p, -2), nombre: 'Viernes Santo' },
+      { f: new Date(y, 4, 1), nombre: 'Día del Trabajo' },
+      { f: proximoLunes(sumarDias(p, 40)), nombre: 'Ascensión del Señor' },
+      { f: proximoLunes(sumarDias(p, 60)), nombre: 'Corpus Christi' },
+      { f: proximoLunes(sumarDias(p, 68)), nombre: 'Sagrado Corazón de Jesús' },
+      { f: proximoLunes(new Date(y, 5, 29)), nombre: 'San Pedro y San Pablo' },
+      { f: new Date(y, 6, 20), nombre: 'Día de la Independencia' },
+      { f: new Date(y, 7, 7), nombre: 'Batalla de Boyacá' },
+      { f: proximoLunes(new Date(y, 7, 15)), nombre: 'Asunción de la Virgen' },
+      { f: proximoLunes(new Date(y, 9, 12)), nombre: 'Día de la Raza' },
+      { f: proximoLunes(new Date(y, 10, 1)), nombre: 'Todos los Santos' },
+      { f: proximoLunes(new Date(y, 10, 11)), nombre: 'Independencia de Cartagena' },
+      { f: new Date(y, 11, 8), nombre: 'Inmaculada Concepción' },
+      { f: new Date(y, 11, 25), nombre: 'Navidad' }
+    ];
+    var mapa = {};
+    f.forEach(function(item) { mapa[ymd(item.f)] = item; });
+    return mapa;
+  }
+  var festivosCache = {};
+  function getFestivosDelAnio(y) {
+    if (!festivosCache[y]) festivosCache[y] = obtenerFestivosColombia(y);
+    return festivosCache[y];
+  }
+  function esFestivo(fechaStr) {
+    var p = fechaStr.split('-');
+    var map = getFestivosDelAnio(+p[0]);
+    return map[fechaStr] || null;
+  }
+
+  /* ----- HELPERS DE FECHA Y TEXTO ----- */
+  function pad(n){ return n < 10 ? '0' + n : '' + n; }
   function ymd(d){ return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+  function diaSemana(fechaStr){
+    var p = fechaStr.split('-');
+    return new Date(+p[0], +p[1] - 1, +p[2]).getDay();
+  }
   function hora12(hhmm){
-    var p = hhmm.split(':'), h = +p[0], m = p[1];
-    return (h % 12 || 12) + ':' + m + ' ' + (h < 12 ? 'a. m.' : 'p. m.');
+    if (!hhmm) return '';
+    var p = hhmm.split(':'), h = +p[0], m = p[1] || '00';
+    var suf = h >= 12 ? 'p. m.' : 'a. m.';
+    h = h % 12; if (h === 0) h = 12;
+    return h + ':' + m + ' ' + suf;
   }
-  function fechaLarga(f){
-    var p = f.split('-'); var d = new Date(+p[0], +p[1] - 1, +p[2]);
-    return DIAS[(d.getDay() + 6) % 7] + ' ' + d.getDate() + ' de ' + MESES[d.getMonth()];
+  function el(tag, cls, txt){
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (txt !== undefined) e.textContent = txt;
+    return e;
   }
-  function el(tag, cls, txt){ var e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; }
 
-  function api(url, opts){
-    opts = opts || {};
-    if (opts.body && typeof opts.body !== 'string') {
-      opts.body = JSON.stringify(opts.body);
-      opts.headers = { 'Content-Type': 'application/json' };
-      opts.method = opts.method || 'POST';
-    }
-    opts.credentials = 'same-origin';
-    return fetch(url, opts).then(function(r){
-      return r.json().catch(function(){ return {}; }).then(function(j){
-        if (!r.ok) throw new Error(j.error || 'Ocurrió un error.');
-        return j;
+  function api(url, opt){
+    opt = opt || {};
+    var headers = Object.assign({ 'Content-Type': 'application/json' }, opt.headers || {});
+    var init = { method: opt.method || (opt.body ? 'POST' : 'GET'), headers: headers };
+    if (opt.body) init.body = JSON.stringify(opt.body);
+    return fetch(url, init).then(function(r){
+      return r.json().then(function(d){
+        if (!r.ok || d.ok === false) throw new Error(d.error || ('Error HTTP ' + r.status));
+        return d;
       });
     });
   }
 
-  /* ----- Festivos oficiales de Colombia (Ley 51 de 1983 - Emiliani + Fijos + Pascua) ----- */
-  var festivosCache = {};
+  /* ----- GESTOR DE TEMA / DISEÑO (MENÚ VISUAL ELEGANTE) ----- */
+  var temasConfig = {
+    'bento':   { nombre: 'Bento Executive', icon: '🍱' },
+    'slate':   { nombre: 'Linear & Slate Pro', icon: '💻' },
+    'aurora':  { nombre: 'Aurora Glassmorphism', icon: '🌌' },
+    'fintech': { nombre: 'Emerald FinTech', icon: '📊' },
+    'cyber':   { nombre: 'Cyberpunk Tactical', icon: '⚡' },
+    'clasico': { nombre: 'Clásico Bóveda', icon: '🏛️' }
+  };
 
-  function calcularPascua(year) {
-    var a = year % 19, b = Math.floor(year / 100), c = year % 100;
-    var d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25);
-    var g = Math.floor((b - f + 1) / 3);
-    var h = (19 * a + b - d - g + 15) % 30;
-    var i = Math.floor(c / 4), k = c % 4;
-    var l = (32 + 2 * e + 2 * i - h - k) % 7;
-    var m = Math.floor((a + 11 * h + 22 * l) / 451);
-    var month = Math.floor((h + l - 7 * m + 114) / 31);
-    var day = ((h + l - 7 * m + 114) % 31) + 1;
-    return new Date(Date.UTC(year, month - 1, day));
+  function aplicarTema(tema) {
+    var validos = ['bento', 'slate', 'aurora', 'fintech', 'cyber', 'clasico'];
+    if (validos.indexOf(tema) === -1) tema = 'bento';
+    $('calAppRoot').setAttribute('data-cal-theme', tema);
+    if ($('selTemaCal')) $('selTemaCal').value = tema;
+    localStorage.setItem('cal_selected_theme', tema);
+
+    // Actualizar disparador visual con icono y nombre elegante
+    var conf = temasConfig[tema] || temasConfig['bento'];
+    if ($('themeActiveOrb')) $('themeActiveOrb').textContent = conf.icon;
+    if ($('themeActiveName')) $('themeActiveName').textContent = conf.nombre;
+
+    // Actualizar checkmark de selección activa en el menú
+    document.querySelectorAll('.theme-opt').forEach(function(btn) {
+      if (btn.getAttribute('data-theme') === tema) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
   }
 
-  function formatYMD(d) {
-    return d.getUTCFullYear() + '-' + pad(d.getUTCMonth() + 1) + '-' + pad(d.getUTCDate());
+  // Toggle del menú desplegable interactivo
+  var btnTrig = $('btnThemeTrigger');
+  var menuEl = $('calThemeMenu');
+  if (btnTrig && menuEl) {
+    btnTrig.onclick = function(e) {
+      e.stopPropagation();
+      var abierto = menuEl.style.display === 'flex';
+      menuEl.style.display = abierto ? 'none' : 'flex';
+      btnTrig.classList.toggle('open', !abierto);
+      btnTrig.setAttribute('aria-expanded', !abierto);
+    };
+
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('#calThemeDropdown')) {
+        menuEl.style.display = 'none';
+        btnTrig.classList.remove('open');
+        btnTrig.setAttribute('aria-expanded', 'false');
+      }
+    });
+
+    document.querySelectorAll('.theme-opt').forEach(function(btn) {
+      btn.onclick = function(e) {
+        e.stopPropagation();
+        var t = this.getAttribute('data-theme');
+        aplicarTema(t);
+        menuEl.style.display = 'none';
+        btnTrig.classList.remove('open');
+        btnTrig.setAttribute('aria-expanded', 'false');
+      };
+    });
   }
 
-  function siguienteLunes(d) {
-    var dow = d.getUTCDay(); // 0 = Domingo, 1 = Lunes
-    if (dow === 1) return d;
-    var diff = (8 - dow) % 7;
-    var r = new Date(d);
-    r.setUTCDate(r.getUTCDate() + (diff === 0 ? 7 : diff));
-    return r;
+  var temaGuardado = localStorage.getItem('cal_selected_theme') || 'bento';
+  aplicarTema(temaGuardado);
+
+  /* ----- ACTUALIZAR ESTADÍSTICAS EN VIVO DE FINES DE SEMANA ----- */
+  function actualizarStatsFinde() {
+    api('/calendario/api/stats-fines-de-semana').then(function(res) {
+      if (!res.stats) return;
+      var w = res.stats.weekend || 0;
+      var tot = res.stats.total || 0;
+      var l = res.stats.weekday || 0;
+      $('badgeFindeCount').textContent = w;
+      $('kpiWeekend').textContent = w;
+      $('kpiTotal').textContent = tot;
+      $('kpiWeekday').textContent = l;
+      if (w === 0) {
+        $('badgeFindeCount').style.background = '#10b981';
+        $('kpiCardWeekend').style.borderColor = 'rgba(16,185,129,0.3)';
+      } else {
+        $('badgeFindeCount').style.background = '#ef4444';
+        $('kpiCardWeekend').style.borderColor = 'rgba(239,68,68,0.35)';
+      }
+    }).catch(function(e) { console.error('Error stats:', e); });
   }
 
-  function sumarDias(d, n) {
-    var r = new Date(d);
-    r.setUTCDate(r.getUTCDate() + n);
-    return r;
-  }
-
-  function festivosColombia(year) {
-    if (festivosCache[year]) return festivosCache[year];
-    var pascua = calcularPascua(year);
-    var mapa = {};
-
-    function add(fecha, nombre) {
-      mapa[fecha] = { fecha: fecha, nombre: nombre };
-    }
-
-    // 1. Fijos (no se trasladan)
-    add(formatYMD(new Date(Date.UTC(year, 0, 1))), 'Año Nuevo');
-    add(formatYMD(new Date(Date.UTC(year, 4, 1))), 'Día del Trabajo');
-    add(formatYMD(new Date(Date.UTC(year, 6, 20))), 'Día de la Independencia');
-    add(formatYMD(new Date(Date.UTC(year, 7, 7))), 'Batalla de Boyacá');
-    add(formatYMD(new Date(Date.UTC(year, 11, 8))), 'Inmaculada Concepción');
-    add(formatYMD(new Date(Date.UTC(year, 11, 25))), 'Navidad');
-
-    // 2. Ley Emiliani (traslado al lunes siguiente)
-    add(formatYMD(siguienteLunes(new Date(Date.UTC(year, 0, 6)))), 'Reyes Magos');
-    add(formatYMD(siguienteLunes(new Date(Date.UTC(year, 2, 19)))), 'Día de San José');
-    add(formatYMD(siguienteLunes(new Date(Date.UTC(year, 5, 29)))), 'San Pedro y San Pablo');
-    add(formatYMD(siguienteLunes(new Date(Date.UTC(year, 7, 15)))), 'Asunción de la Virgen');
-    add(formatYMD(siguienteLunes(new Date(Date.UTC(year, 9, 12)))), 'Día de la Raza');
-    add(formatYMD(siguienteLunes(new Date(Date.UTC(year, 10, 1)))), 'Todos los Santos');
-    add(formatYMD(siguienteLunes(new Date(Date.UTC(year, 10, 11)))), 'Independencia de Cartagena');
-
-    // 3. Basados en Pascua (Semana Santa y fiestas móviles)
-    add(formatYMD(sumarDias(pascua, -3)), 'Jueves Santo');
-    add(formatYMD(sumarDias(pascua, -2)), 'Viernes Santo');
-    add(formatYMD(siguienteLunes(sumarDias(pascua, 43))), 'Ascensión del Señor');
-    add(formatYMD(siguienteLunes(sumarDias(pascua, 64))), 'Corpus Christi');
-    add(formatYMD(siguienteLunes(sumarDias(pascua, 71))), 'Sagrado Corazón de Jesús');
-
-    festivosCache[year] = mapa;
-    return mapa;
-  }
-
-  function esFestivo(f) {
-    var y = parseInt(f.slice(0, 4), 10);
-    var fMap = festivosColombia(y);
-    return fMap[f] || null;
-  }
-
-  /* ----- Cuadrícula del mes ----- */
+  /* ----- RANGO DEL MES Y GRID ----- */
   function rango(){
-    var primero = new Date(anio, mes, 1);
-    var offset = (primero.getDay() + 6) % 7;           // lunes = 0
-    var inicio = new Date(anio, mes, 1 - offset);
-    var fin = new Date(inicio); fin.setDate(inicio.getDate() + 41);
+    var primerDia = new Date(anio, mes, 1);
+    var dia1 = (primerDia.getDay() + 6) % 7; // Lun=0 .. Dom=6
+    var inicio = new Date(anio, mes, 1 - dia1);
+    var fin = new Date(inicio);
+    fin.setDate(fin.getDate() + 41);
     return { inicio: inicio, fin: fin };
   }
 
-  function cargar(){
-    var r = rango();
+  function renderGrid(){
     $('mesTitulo').textContent = MESES[mes] + ' ' + anio;
-    api('/calendario/api/eventos?desde=' + ymd(r.inicio) + '&hasta=' + ymd(r.fin))
-      .then(function(j){ eventos = j.eventos || []; pintar(); })
-      .catch(function(){ eventos = []; pintar(); });
-  }
-
-  function pintar(){
     var g = $('grid'); g.textContent = '';
-    DIAS.forEach(function(d){ g.appendChild(el('div', 'cal-dow', d)); });
+
+    // Encabezados de días
+    DIAS.forEach(function(d, idx){
+      var isFinde = (idx === 5 || idx === 6);
+      g.appendChild(el('div', 'cal-head' + (isFinde ? ' finde-head' : ''), d));
+    });
 
     var r = rango(), hoyStr = ymd(new Date());
     var porDia = {};
-    eventos.forEach(function(e){ (porDia[e.fecha] = porDia[e.fecha] || []).push(e); });
+    var evList = Array.isArray(eventos) ? eventos : (eventos && Array.isArray(eventos.eventos) ? eventos.eventos : []);
+    evList.forEach(function(e){ if (e && e.fecha) (porDia[e.fecha] = porDia[e.fecha] || []).push(e); });
 
     for (var i = 0; i < 42; i++) {
       var d = new Date(r.inicio); d.setDate(r.inicio.getDate() + i);
       var f = ymd(d);
       var festivo = esFestivo(f);
+      var dow = d.getDay(); // 0 = Dom, 6 = Sáb
+      var isFinde = (dow === 0 || dow === 6);
+
+      // Verificar si este día cae dentro de un turno de disponibilidad
+      var turnoDisp = turnosDisponibilidad.find(function(t){ return f >= t.inicio && f <= t.fin; });
+      var esMiTurno = turnoDisp && /james|grisales/i.test(turnoDisp.usuario || '');
 
       var cCls = 'cal-day' + (d.getMonth() !== mes ? ' otro' : '') + (f === hoyStr ? ' hoy' : '');
+      if (isFinde) cCls += ' fin-semana';
       if (festivo) cCls += ' festivo';
+      if (turnoDisp) {
+        cCls += esMiTurno ? ' en-disponibilidad-semana' : ' en-disponibilidad-equipo';
+      }
 
       var c = el('div', cCls);
       c.dataset.fecha = f;
 
       var head = el('div', 'cal-day-head');
       head.appendChild(el('span', 'num', d.getDate()));
+      if (turnoDisp) {
+        if (esMiTurno) {
+          var dispBadge = el('span', 'badge-dia-disp', '⚡ MI DISP');
+          dispBadge.title = 'Tu guardia activa: James Grisales · Cel: ' + (turnoDisp.celular || '3042497379');
+          head.appendChild(dispBadge);
+        } else {
+          var eqBadge = el('span', 'badge-dia-disp-equipo', '🛡️ DISP');
+          eqBadge.title = 'Guardia: ' + turnoDisp.usuario + (turnoDisp.celular ? ' · Cel: ' + turnoDisp.celular : '');
+          head.appendChild(eqBadge);
+        }
+      }
       if (festivo) {
         c.title = '🇨🇴 Festivo en Colombia: ' + festivo.nombre;
         var badge = el('span', 'festivo-badge');
         badge.textContent = '🎉';
         badge.title = 'Festivo: ' + festivo.nombre;
         head.appendChild(badge);
+      } else if (isFinde) {
+        var fBadge = el('span', '', dow === 6 ? 'Sáb' : 'Dom');
+        fBadge.style.fontSize = '9.5px';
+        fBadge.style.color = '#ef4444';
+        fBadge.style.fontWeight = '800';
+        head.appendChild(fBadge);
       }
       c.appendChild(head);
 
-      // Si es festivo, mostramos el chip rojo con el icono de fiesta 🎉
       if (festivo) {
         var fChip = el('div', 'chip festivo');
         fChip.title = '🎉 Festivo en Colombia: ' + festivo.nombre;
-        var fIco = el('span', 'festivo-chip-ico', '🎉');
-        var fTxt = el('span', 'festivo-chip-txt', festivo.nombre);
-        fChip.appendChild(fIco);
-        fChip.appendChild(fTxt);
+        fChip.appendChild(el('span', 'festivo-chip-ico', '🎉 '));
+        fChip.appendChild(el('span', 'festivo-chip-txt', festivo.nombre));
         c.appendChild(fChip);
       }
 
@@ -452,16 +2239,37 @@
       lista.slice(0, maxEv).forEach(function(e){
         var b = el('button', 'chip ' + e.tipo);
         b.type = 'button'; b.dataset.id = e.id;
-        b.title = e.titulo + (e.todo_el_dia ? '' : ' · ' + hora12(e.hora));
+        if (e.es_outlook) b.classList.add('outlook-chip');
+        var orgTxt = e.organizador ? ' · Organiza: ' + e.organizador : '';
+        b.title = (e.es_outlook ? '[Reunión Outlook] ' : '') + e.titulo + (e.todo_el_dia ? '' : ' · ' + hora12(e.hora)) + orgTxt + (e.serie_id ? ' (Serie recurrente)' : '');
         if (!e.todo_el_dia) b.appendChild(el('span', 'h', hora12(e.hora).replace(' a. m.', 'a').replace(' p. m.', 'p')));
-        b.appendChild(document.createTextNode(e.titulo));
+        var prefix = e.es_outlook ? '📧 ' : (e.serie_id ? '🔄 ' : '');
+        b.appendChild(document.createTextNode(prefix + e.titulo));
         c.appendChild(b);
       });
-      if (lista.length > maxEv) c.appendChild(el('div', 'mas', '+' + (lista.length - maxEv) + ' más'));
+
+      if (lista.length > maxEv) {
+        var masEl = el('div', 'mas', '+' + (lista.length - maxEv) + ' más');
+        masEl.title = 'Ver todos los ' + lista.length + ' eventos de este día';
+        c.appendChild(masEl);
+      }
+
       g.appendChild(c);
     }
   }
 
+  function cargar(){
+    var r = rango();
+    api('/calendario/api/eventos?desde=' + ymd(r.inicio) + '&hasta=' + ymd(r.fin)).then(function(res){
+      eventos = Array.isArray(res) ? res : (res && Array.isArray(res.eventos) ? res.eventos : []);
+      renderGrid();
+      actualizarStatsFinde();
+    }).catch(function(err){
+      console.error('Error cargando calendario:', err);
+    });
+  }
+
+  /* ----- INTERACCIÓN CON CELDAS Y EVENTOS DEL DÍA ----- */
   $('grid').addEventListener('click', function(e){
     var chip = e.target.closest('.chip');
     if (chip) {
@@ -475,90 +2283,307 @@
       if (ev) abrir(ev);
       return;
     }
+
     var dia = e.target.closest('.cal-day');
-    if (dia) abrir(null, dia.dataset.fecha);
+    if (!dia) return;
+    var f = dia.dataset.fecha;
+    var evsDia = eventos.filter(function(x){ return x.fecha === f; });
+
+    // Si tiene eventos o se dio clic en "+X más", abrir el inspector del día
+    if (evsDia.length > 0 || e.target.closest('.mas')) {
+      abrirDiaModal(f, evsDia);
+    } else {
+      abrir(null, f);
+    }
   });
 
+  /* ----- INSPECTOR DE DÍA MODAL (modalDiaBack) ----- */
+  function abrirDiaModal(fecha, evs) {
+    diaInspectorFecha = fecha;
+    diaInspectorEventos = evs || [];
+    var p = fecha.split('-');
+    var fechaObj = new Date(+p[0], +p[1] - 1, +p[2]);
+    var nombreDia = DIAS_COMPLETOS[fechaObj.getDay()];
+    var esFinde = (fechaObj.getDay() === 0 || fechaObj.getDay() === 6);
+
+    $('diaModalTitulo').textContent = nombreDia + ', ' + +p[2] + ' de ' + MESES[+p[1] - 1] + ' de ' + p[0];
+    $('diaModalSub').textContent = (esFinde ? '⚠️ Fin de semana · ' : '') + evs.length + ' evento(s) programado(s)';
+    $('btnEliminarTodosDelDia').hidden = (evs.length === 0);
+
+    var listaEl = $('diaModalLista');
+    listaEl.textContent = '';
+
+    if (evs.length === 0) {
+      listaEl.innerHTML = '<div style="text-align:center; padding:16px; color:var(--muted); font-size:13px;">No hay eventos en este día.</div>';
+    } else {
+      evs.forEach(function(ev) {
+        var item = el('div', 'day-ev-item');
+        var info = el('div', 'day-ev-info');
+        var dot = el('span', 'dot ' + ev.tipo);
+        var timeTxt = ev.todo_el_dia ? 'Todo el día' : hora12(ev.hora);
+        var titBox = el('div');
+        var outBadge = ev.es_outlook ? '<span class="badge-outlook-tag">📧 OUTLOOK</span>' : '';
+        var orgInfo = ev.organizador ? '<span style="color:var(--muted); font-size:11px; margin-left:4px;">(Organiza: ' + ev.organizador + ')</span>' : '';
+        titBox.innerHTML = '<div class="day-ev-title">' + outBadge + (ev.serie_id ? '🔄 ' : '') + ev.titulo + orgInfo + '</div><div class="day-ev-time">' + timeTxt + (ev.serie_id ? ' · Serie recurrente' : '') + '</div>';
+        info.appendChild(dot);
+        info.appendChild(titBox);
+        item.appendChild(info);
+
+        var btns = el('div', 'day-ev-btns', '');
+        btns.style.display = 'flex';
+        btns.style.gap = '6px';
+
+        // Si tiene enlace de Microsoft Teams, botón para unirse directamente
+        var teamsMatch = (ev.descripcion || '').match(/https?:\/\/teams\.microsoft\.com[\S]+/i);
+        if (teamsMatch) {
+          var btnTeams = el('a', 'btn-ev-action', '🎥 Unirse a Teams');
+          btnTeams.href = teamsMatch[0];
+          btnTeams.target = '_blank';
+          btnTeams.rel = 'noopener noreferrer';
+          btnTeams.style.color = '#6264a7';
+          btnTeams.style.borderColor = 'rgba(98,100,167,0.4)';
+          btnTeams.style.background = 'rgba(98,100,167,0.1)';
+          btnTeams.style.textDecoration = 'none';
+          btns.appendChild(btnTeams);
+        }
+
+        // Botón editar
+        var btnEd = el('button', 'btn-ev-action', '✏️ Editar');
+        btnEd.type = 'button';
+        btnEd.addEventListener('click', function() {
+          cerrarDiaModal();
+          abrir(ev);
+        });
+        btns.appendChild(btnEd);
+
+        // Si es de serie y es sábado o domingo, botón para quitarlo solo en fin de semana
+        if (ev.serie_id && esFinde) {
+          var btnQ = el('button', 'btn-ev-action danger', '🧹 Quitar serie en sáb/dom');
+          btnQ.type = 'button';
+          btnQ.title = 'Elimina de esta serie solo los sábados y domingos';
+          btnQ.addEventListener('click', function() {
+            if (!confirm('¿Eliminar los eventos de fin de semana de la serie "' + ev.titulo + '"?\nLos días hábiles (lunes a viernes) se mantendrán intactos.')) return;
+            api('/calendario/api/' + ev.id + '/eliminar-serie-fines-de-semana', { method: 'POST' }).then(function(r) {
+              cerrarDiaModal();
+              cargar();
+              cargarProximos();
+              actualizarStatsFinde();
+              alert('✔ Se eliminaron ' + (r.eliminados || 0) + ' eventos de fin de semana de la serie.');
+            }).catch(function(err){ alert('Error: ' + err.message); });
+          });
+          btns.appendChild(btnQ);
+        }
+
+        // Botón eliminar evento individual
+        var btnDel = el('button', 'btn-ev-action danger', '🗑️');
+        btnDel.type = 'button';
+        btnDel.title = 'Eliminar este evento';
+        btnDel.addEventListener('click', function() {
+          if (!confirm('¿Eliminar "' + ev.titulo + '" de esta fecha?')) return;
+          api('/calendario/api/' + ev.id + '/eliminar', { method: 'POST' }).then(function() {
+            cerrarDiaModal();
+            cargar();
+            cargarProximos();
+            actualizarStatsFinde();
+          }).catch(function(err){ alert('Error: ' + err.message); });
+        });
+        btns.appendChild(btnDel);
+
+        item.appendChild(btns);
+        listaEl.appendChild(item);
+      });
+    }
+
+    $('modalDiaBack').classList.add('open');
+  }
+
+  function cerrarDiaModal(){ $('modalDiaBack').classList.remove('open'); }
+  $('btnCerrarDiaModal').addEventListener('click', cerrarDiaModal);
+  $('btnCerrarDiaModal2').addEventListener('click', cerrarDiaModal);
+  $('modalDiaBack').addEventListener('mousedown', function(e){ if (e.target === $('modalDiaBack')) cerrarDiaModal(); });
+
+  $('btnAgregarEnDia').addEventListener('click', function(){
+    cerrarDiaModal();
+    abrir(null, diaInspectorFecha);
+  });
+
+  $('btnEliminarTodosDelDia').addEventListener('click', function(){
+    if (!diaInspectorEventos.length) return;
+    if (!confirm('¿Eliminar los ' + diaInspectorEventos.length + ' eventos de este día?')) return;
+    var ids = diaInspectorEventos.map(function(x){ return x.id; });
+    api('/calendario/api/eliminar-masivo', { body: { ids: ids } }).then(function(r){
+      cerrarDiaModal();
+      cargar();
+      cargarProximos();
+      actualizarStatsFinde();
+      alert('✔ Se eliminaron ' + (r.eliminados || ids.length) + ' eventos.');
+    }).catch(function(err){ alert('Error: ' + err.message); });
+  });
+
+  /* ----- BOTONES DIRECTOS DE PURGA DE FINES DE SEMANA ----- */
+  function purgarFinesDeSemanaGlobal() {
+    if (!confirm('¿Estás seguro de eliminar TODOS los eventos que caen en Sábados y Domingos del calendario?\n\n✔ Esto limpiará de forma segura todos los eventos de fines de semana.\n✔ Todos los eventos de lunes a viernes se mantendrán intactos.')) return;
+    api('/calendario/api/eliminar-fines-de-semana', { body: { todo: true } }).then(function(r){
+      cargar();
+      cargarProximos();
+      actualizarStatsFinde();
+      alert('✔ Éxito: Se eliminaron ' + (r.eliminados || 0) + ' eventos de fin de semana en todo el calendario.');
+    }).catch(function(err){
+      alert('Error eliminando fines de semana: ' + err.message);
+    });
+  }
+
+  $('btnQuickPurgeFinde').addEventListener('click', purgarFinesDeSemanaGlobal);
+  $('btnKpiPurgeFinde').addEventListener('click', purgarFinesDeSemanaGlobal);
+
+  /* ----- MODAL DE LIMPIEZA MASIVA ----- */
+  function abrirLimpieza(){ $('modalLimpiezaBack').classList.add('open'); $('batchMsg').style.display = 'none'; }
+  function cerrarLimpieza(){ $('modalLimpiezaBack').classList.remove('open'); }
+  $('btnAbrirLimpieza').addEventListener('click', abrirLimpieza);
+  $('btnCerrarLimpieza').addEventListener('click', cerrarLimpieza);
+  $('btnVolverLimpieza').addEventListener('click', cerrarLimpieza);
+  $('modalLimpiezaBack').addEventListener('mousedown', function(e){ if (e.target === $('modalLimpiezaBack')) cerrarLimpieza(); });
+
+  $('btnEjecutarBorradoFinde').addEventListener('click', function(){
+    var ambito = $('selAmbitoFinde').value;
+    var texto = ambito === 'todo' ? 'de TODO el calendario histórico' : 'del mes visible actualmente';
+    if (!confirm('¿Confirmas eliminar los eventos de sábado y domingo ' + texto + '?')) return;
+
+    var body = { todo: ambito === 'todo' };
+    if (ambito === 'mes') {
+      var r = rango();
+      body.desde = ymd(r.inicio);
+      body.hasta = ymd(r.fin);
+    }
+
+    var btn = this; btn.disabled = true;
+    api('/calendario/api/eliminar-fines-de-semana', { body: body }).then(function(res){
+      btn.disabled = false;
+      cargar();
+      cargarProximos();
+      actualizarStatsFinde();
+      $('batchMsg').style.display = 'block';
+      $('batchMsg').style.background = 'rgba(16,185,129,0.18)';
+      $('batchMsg').style.color = '#10b981';
+      $('batchMsg').textContent = '✔ Éxito: Se eliminaron ' + (res.eliminados || 0) + ' eventos de fin de semana (' + texto + ').';
+    }).catch(function(err){
+      btn.disabled = false;
+      $('batchMsg').style.display = 'block';
+      $('batchMsg').style.background = 'rgba(239,68,68,0.18)';
+      $('batchMsg').style.color = '#ef4444';
+      $('batchMsg').textContent = 'Error: ' + err.message;
+    });
+  });
+
+  $('btnEjecutarBorradoTipo').addEventListener('click', function(){
+    var tipo = $('selTipoBatch').value;
+    if (!confirm('¿Eliminar todos los eventos de tipo "' + tipo + '" en el mes visible actualmente?')) return;
+    var r = rango();
+    var btn = this; btn.disabled = true;
+    api('/calendario/api/eliminar-fines-de-semana', { body: { tipo: tipo, desde: ymd(r.inicio), hasta: ymd(r.fin) } }).then(function(res){
+      btn.disabled = false;
+      cargar();
+      cargarProximos();
+      actualizarStatsFinde();
+      $('batchMsg').style.display = 'block';
+      $('batchMsg').style.background = 'rgba(16,185,129,0.18)';
+      $('batchMsg').style.color = '#10b981';
+      $('batchMsg').textContent = '✔ Se eliminaron los eventos seleccionados de este mes.';
+    }).catch(function(err){
+      btn.disabled = false;
+      $('batchMsg').style.display = 'block';
+      $('batchMsg').style.background = 'rgba(239,68,68,0.18)';
+      $('batchMsg').style.color = '#ef4444';
+      $('batchMsg').textContent = 'Error: ' + err.message;
+    });
+  });
+
+  /* ----- NAVEGACIÓN DE MESES ----- */
   $('prev').addEventListener('click', function(){ mes--; if (mes < 0) { mes = 11; anio--; } cargar(); });
   $('next').addEventListener('click', function(){ mes++; if (mes > 11) { mes = 0; anio++; } cargar(); });
   $('hoyBtn').addEventListener('click', function(){ var h = new Date(); anio = h.getFullYear(); mes = h.getMonth(); cargar(); });
 
-  /* ----- Próximos ----- */
-  function cargarProximos(){
-    api('/calendario/api/proximos').then(function(j){
-      var box = $('proximos'); box.textContent = '';
-      var hoyDate = new Date();
-      var hoyStr = ymd(hoyDate);
-      var limDate = new Date(hoyDate);
-      limDate.setDate(hoyDate.getDate() + 45);
-      var limStr = ymd(limDate);
+  /* ----- FILTROS DE PRÓXIMOS EVENTOS ----- */
+  var filtroTipoActivo = 'todos';
+  document.querySelectorAll('#filtrosProximos button').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('#filtrosProximos button').forEach(function(b){ b.classList.remove('active'); });
+      this.classList.add('active');
+      filtroTipoActivo = this.dataset.tipo;
+      aplicarFiltroProximos();
+    });
+  });
 
-      var listaFestivos = [];
-      [hoyDate.getFullYear(), hoyDate.getFullYear() + 1].forEach(function(y){
-        var m = festivosColombia(y);
-        for (var k in m) {
-          if (k >= hoyStr && k <= limStr) {
-            listaFestivos.push({
-              id: 'festivo-' + k,
-              titulo: m[k].nombre,
-              tipo: 'festivo',
-              fecha: k,
-              todo_el_dia: true,
-              esFestivo: true
-            });
-          }
-        }
-      });
-
-      var todosProximos = (j.eventos || []).concat(listaFestivos);
-      todosProximos.sort(function(a, b){ return a.fecha.localeCompare(b.fecha); });
-      todosProximos = todosProximos.slice(0, 8);
-
-      if (!todosProximos.length) { box.appendChild(el('div', 'vacio-prox', 'No tienes eventos próximos.')); return; }
-      todosProximos.forEach(function(e){
-        var row = el('div', 'prox' + (e.esFestivo ? ' festivo-row' : ''));
-        row.dataset.id = e.id;
-        var dot = el('span', 'dot ' + e.tipo);
-        if (e.esFestivo) dot.textContent = '🎉';
-        row.appendChild(dot);
-        var t = el('div');
-        t.appendChild(el('b', null, (e.esFestivo ? '🎉 ' : '') + e.titulo));
-        t.appendChild(el('small', null, fechaLarga(e.fecha) + (e.esFestivo ? ' · Festivo Colombia' : (e.todo_el_dia ? ' · todo el día' : ' · ' + hora12(e.hora)))));
-        row.appendChild(t);
-        row.addEventListener('click', function(){
-          var p = e.fecha.split('-'); anio = +p[0]; mes = +p[1] - 1;
-          if (e.esFestivo) {
-            cargar();
-          } else {
-            api('/calendario/api/eventos?desde=' + e.fecha + '&hasta=' + e.fecha).then(function(r){
-              var ev = (r.eventos || []).filter(function(x){ return x.id === e.id; })[0];
-              cargar(); if (ev) abrir(ev);
-            });
-          }
-        });
-        box.appendChild(row);
-      });
-    }).catch(function(){ $('proximos').textContent = 'No se pudieron cargar.'; });
+  function aplicarFiltroProximos() {
+    var items = document.querySelectorAll('#proximos .prox');
+    items.forEach(function(it){
+      if (filtroTipoActivo === 'todos') {
+        it.style.display = '';
+      } else {
+        var dot = it.querySelector('.dot');
+        it.style.display = (dot && dot.classList.contains(filtroTipoActivo)) ? '' : 'none';
+      }
+    });
   }
 
-  /* ----- Ventana agregar / editar ----- */
-  function mostrarError(m){ var b = $('evErr'); b.textContent = m || ''; b.style.display = m ? 'block' : 'none'; }
-  function sincronizarTodoDia(){ $('fHora').disabled = $('fTodo').checked; }
+  function cargarProximos(){
+    api('/calendario/api/proximos').then(function(res){
+      var box = $('proximos'); box.textContent = '';
+      var lista = Array.isArray(res) ? res : (res && Array.isArray(res.eventos) ? res.eventos : []);
+      if (!lista || lista.length === 0) {
+        box.innerHTML = '<div style="color:var(--muted); font-size:12px; padding:8px;">No hay eventos en los próximos 30 días.</div>';
+        return;
+      }
+      lista.forEach(function(ev){
+        var d = el('div', 'prox');
+        var head = el('div', 'prox-head');
+        var dotWrap = el('div');
+        dotWrap.style.display = 'flex';
+        dotWrap.style.alignItems = 'center';
+        dotWrap.style.gap = '6px';
+        dotWrap.appendChild(el('span', 'dot ' + ev.tipo));
+        dotWrap.appendChild(el('span', 'prox-tit', (ev.serie_id ? '🔄 ' : '') + ev.titulo));
+        head.appendChild(dotWrap);
 
-  function diaSemana(f){ var p = f.split('-'); return new Date(+p[0], +p[1] - 1, +p[2]).getDay(); }
-  function marcarDias(solo){
-    Array.prototype.forEach.call(document.querySelectorAll('.dsem'), function(c){ c.checked = (+c.value === solo); });
+        var badge = el('span', '', ev.todo_el_dia ? 'Todo el día' : hora12(ev.hora));
+        badge.style.fontSize = '11px'; badge.style.color = 'var(--muted)';
+        head.appendChild(badge);
+        d.appendChild(head);
+
+        var p = ev.fecha.split('-');
+        var fechaStr = +p[2] + ' ' + MESES[+p[1] - 1];
+        var foot = el('div', '', fechaStr);
+        foot.style.fontSize = '11px'; foot.style.color = 'var(--muted)'; foot.style.marginTop = '2px';
+        d.appendChild(foot);
+
+        d.addEventListener('click', function(){ abrir(ev); });
+        box.appendChild(d);
+      });
+      aplicarFiltroProximos();
+    }).catch(function(e){ console.error('Error cargando próximos:', e); });
+  }
+
+  /* ----- FORMULARIO NUEVO / EDITAR EVENTO ----- */
+  function sincronizarTodoDia(){
+    var checked = $('fTodo').checked;
+    $('fHora').disabled = checked;
+    $('fHora').style.opacity = checked ? '0.4' : '1';
   }
   function sincronizarRepetir(){
     var v = $('fRep').value;
-    $('repOpc').hidden = v === 'no';
-    $('repDias').hidden = v !== 'semanal';
+    $('repOpc').hidden = (v === 'no');
+    $('repDias').hidden = (v !== 'semanal');
     if (v !== 'no' && !$('fHasta').value && $('fFecha').value) {
       var p = $('fFecha').value.split('-'), d = new Date(+p[0], +p[1] - 1 + 3, +p[2]);
       $('fHasta').value = ymd(d);
     }
-    if (v === 'semanal' && !document.querySelector('.dsem:checked') && $('fFecha').value) marcarDias(diaSemana($('fFecha').value));
   }
+  function marcarDias(dSem){
+    document.querySelectorAll('.dsem').forEach(function(c){
+      c.checked = (+c.value === dSem);
+    });
+  }
+  function mostrarError(msg){ $('evErr').textContent = msg || ''; }
 
   function abrir(ev, fecha){
     editandoId = ev ? ev.id : null;
@@ -570,21 +2595,34 @@
     $('fHora').value = ev && !ev.todo_el_dia ? ev.hora : '09:00';
     $('fTodo').checked = ev ? !!ev.todo_el_dia : false;
     $('fDesc').value = ev ? (ev.descripcion || '') : '';
-    $('btnEliminar').hidden = !ev;
-    $('btnSerie').hidden = !(ev && ev.serie_id);
-    $('repBox').hidden = !!ev;                 // la repetición solo se elige al crear
+
+    if (ev) {
+      $('evEditActions').style.display = 'block';
+      $('btnEliminar').style.display = 'inline-flex';
+      $('btnSerie').style.display = ev.serie_id ? 'inline-flex' : 'none';
+      $('btnSerieFinde').style.display = ev.serie_id ? 'inline-flex' : 'none';
+      $('btnGuardar').textContent = 'Guardar cambios';
+    } else {
+      $('evEditActions').style.display = 'none';
+      $('btnEliminar').style.display = 'none';
+      $('btnSerie').style.display = 'none';
+      $('btnSerieFinde').style.display = 'none';
+      $('btnGuardar').textContent = 'Crear evento';
+    }
+
+    $('repBox').hidden = !!ev;
     $('fRep').value = 'no'; $('fHasta').value = ''; marcarDias(-1);
     sincronizarRepetir();
     sincronizarTodoDia(); mostrarError('');
     $('evBack').classList.add('open');
     setTimeout(function(){ $('fTitulo').focus(); }, 30);
   }
-  function cerrar(){ $('evBack').classList.remove('open'); }
 
+  function cerrar(){ $('evBack').classList.remove('open'); }
   $('btnNuevo').addEventListener('click', function(){ abrir(null); });
   $('btnCancelar').addEventListener('click', cerrar);
   $('evBack').addEventListener('mousedown', function(e){ if (e.target === $('evBack')) cerrar(); });
-  document.addEventListener('keydown', function(e){ if (e.key === 'Escape') cerrar(); });
+  document.addEventListener('keydown', function(e){ if (e.key === 'Escape') { cerrar(); cerrarDiaModal(); cerrarLimpieza(); } });
   $('fTodo').addEventListener('change', sincronizarTodoDia);
   $('fRep').addEventListener('change', sincronizarRepetir);
   $('fFecha').addEventListener('change', function(){
@@ -613,40 +2651,330 @@
     var btn = $('btnGuardar'); btn.disabled = true;
     api(url, { body: cuerpo }).then(function(r){
       cerrar();
-      if (r && r.creados > 1) {
-        var a = el('div', 'cal-aviso', '✔ Se crearon ' + r.creados + ' eventos.');
-        $('grid').parentNode.insertBefore(a, $('grid'));
-        setTimeout(function(){ a.remove(); }, 6000);
-      }
       var p = cuerpo.fecha.split('-'); anio = +p[0]; mes = +p[1] - 1;
       cargar(); cargarProximos();
-      if (window.recordatoriosRevisar) window.recordatoriosRevisar();
+      actualizarStatsFinde();
     }).catch(function(err){ mostrarError(err.message); })
       .then(function(){ btn.disabled = false; });
   });
 
+  // ELIMINAR SOLO FINES DE SEMANA DE LA SERIE
+  $('btnSerieFinde').addEventListener('click', function(){
+    if (!editandoId || !confirm('¿Eliminar de esta serie ÚNICAMENTE los eventos de sábados y domingos?\n\n✔ Los días hábiles (lunes a viernes) se mantendrán intactos en tu calendario.')) return;
+    api('/calendario/api/' + editandoId + '/eliminar-serie-fines-de-semana', { method: 'POST' }).then(function(r){
+      cerrar();
+      cargar();
+      cargarProximos();
+      actualizarStatsFinde();
+      alert('✔ Se eliminaron ' + (r.eliminados || 0) + ' eventos de fin de semana de esta serie.');
+    }).catch(function(err){ mostrarError(err.message); });
+  });
+
+  // ELIMINAR TODA LA SERIE (Lunes a Domingo)
   $('btnSerie').addEventListener('click', function(){
-    if (!editandoId || !confirm('¿Eliminar TODOS los eventos de esta serie (pasados y futuros)?')) return;
+    if (!editandoId || !confirm('¿Eliminar TODOS los eventos pasados y futuros de esta serie completa?')) return;
     api('/calendario/api/' + editandoId + '/eliminar-serie', { method: 'POST' }).then(function(){
-      cerrar(); cargar(); cargarProximos();
+      cerrar();
+      cargar();
+      cargarProximos();
+      actualizarStatsFinde();
     }).catch(function(err){ mostrarError(err.message); });
   });
 
+  // ELIMINAR EVENTO INDIVIDUAL
   $('btnEliminar').addEventListener('click', function(){
-    if (!editandoId || !confirm('¿Eliminar este evento?')) return;
+    if (!editandoId || !confirm('¿Eliminar este evento individual?')) return;
     api('/calendario/api/' + editandoId + '/eliminar', { method: 'POST' }).then(function(){
-      cerrar(); cargar(); cargarProximos();
+      cerrar();
+      cargar();
+      cargarProximos();
+      actualizarStatsFinde();
     }).catch(function(err){ mostrarError(err.message); });
   });
 
-  /* ----- Permiso de notificaciones ----- */
-  if ('Notification' in window && Notification.permission === 'default') {
-    $('notifBox').hidden = false;
-    $('btnNotif').addEventListener('click', function(){
-      Notification.requestPermission().then(function(){ $('notifBox').hidden = true; });
+
+  /* ----- NOTIFICADOR TOAST ELEGANTE ----- */
+  var toastTimeout = null;
+  function mostrarToastOutlook(titulo, mensaje) {
+    var toast = $('outlookSyncToast');
+    if (!toast) return;
+    $('toastSyncTitle').textContent = titulo || '¡Outlook Sincronizado!';
+    $('toastSyncMsg').textContent = mensaje || 'Se actualizaron tus reuniones y citas correctamente.';
+    toast.style.display = 'block';
+    if (toastTimeout) clearTimeout(toastTimeout);
+    toastTimeout = setTimeout(function() {
+      toast.style.display = 'none';
+    }, 4500);
+  }
+  $('btnCloseSyncToast').addEventListener('click', function() {
+    $('outlookSyncToast').style.display = 'none';
+    if (toastTimeout) clearTimeout(toastTimeout);
+  });
+
+  /* ----- BOTÓN DE SINCRONIZACIÓN CON OUTLOOK DESKTOP ----- */
+  $('btnSyncOutlook').addEventListener('click', function() {
+    var btn = this;
+    if (btn.classList.contains('loading')) return;
+
+    btn.classList.add('loading');
+    btn.classList.remove('success');
+    var txtSpan = btn.querySelector('.sync-txt');
+    var iconSpan = btn.querySelector('.sync-icon');
+    var origTxt = txtSpan.textContent;
+    txtSpan.textContent = 'Sincronizando con Outlook...';
+    iconSpan.textContent = '⏳';
+
+    api('/calendario/api/sincronizar-outlook', { method: 'POST' }).then(function(res) {
+      btn.classList.remove('loading');
+      if (res.error) {
+        txtSpan.textContent = origTxt;
+        iconSpan.textContent = '🔄';
+        alert('Aviso de Outlook: ' + res.error);
+        return;
+      }
+
+      // Estado de éxito en el botón
+      btn.classList.add('success');
+      txtSpan.textContent = '¡Sincronizado!';
+      iconSpan.textContent = '✔';
+
+      var total = res.total || 0;
+      var nuevos = res.insertados || 0;
+      var msg = total + ' reuniones examinadas: ' + nuevos + ' nuevas y ' + (res.actualizados || 0) + ' actualizadas.';
+      mostrarToastOutlook('✔ ¡Outlook Sincronizado con Éxito!', msg);
+
+      cargar();
+      cargarProximos();
+      actualizarStatsFinde();
+
+      setTimeout(function() {
+        btn.classList.remove('success');
+        txtSpan.textContent = origTxt;
+        iconSpan.textContent = '🔄';
+      }, 4000);
+    }).catch(function(err) {
+      btn.classList.remove('loading');
+      txtSpan.textContent = origTxt;
+      iconSpan.textContent = '🔄';
+      alert('Error al sincronizar con Outlook: ' + err.message);
+    });
+  });
+
+  // INICIO
+  
+  /* ==============================================================
+     LOGICA DEL ROL OFICIAL DE DISPONIBILIDAD
+     ============================================================== */
+  function abrirModalRol() {
+    document.body.classList.add('modal-abierto');
+    renderTablaRol();
+    var m = $('modalRolDisponibilidadBack');
+    if (m) m.style.display = 'flex';
+  }
+
+  function cerrarModalRol() {
+    document.body.classList.remove('modal-abierto');
+    var m = $('modalRolDisponibilidadBack');
+    if (m) m.style.display = 'none';
+  }
+
+  // Eliminar un turno de disponibilidad individual
+  window.eliminarTurnoDisp = function(id, nombre) {
+    if (!id) return;
+    var nombreTxt = nombre || 'este turno';
+    if (!confirm('¿Estás seguro de que deseas eliminar la disponibilidad de: ' + nombreTxt + '?')) {
+      return;
+    }
+    fetch('/api/disponibilidad/' + id + '/eliminar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    }).then(function(r) {
+      return r.json();
+    }).then(function(res) {
+      if (res && res.ok) {
+        cargarDisponibilidad(function() {
+          renderTablaRol();
+          renderGrid();
+        });
+      } else {
+        alert('Error al eliminar: ' + (res && res.error ? res.error : 'Desconocido'));
+      }
+    }).catch(function(err) {
+      alert('Error de conexión: ' + err.message);
+    });
+  };
+
+  function renderTablaRol() {
+    var tbody = $('tbodyRolDisponibilidad');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    var hoyStr = ymd(new Date());
+
+    var filtro = ($('filtroRolDisp') && $('filtroRolDisp').value || '').trim().toLowerCase();
+    var lista = (turnosDisponibilidad || []).filter(function(t) {
+      if (!filtro) return true;
+      var str = (t.usuario + ' ' + (t.cedula || '') + ' ' + (t.celular || '') + ' ' + t.inicio + ' ' + t.fin).toLowerCase();
+      return str.indexOf(filtro) !== -1;
+    });
+
+    var conteoEl = $('rolDispConteo');
+    if (conteoEl) {
+      conteoEl.textContent = lista.length + ' turno' + (lista.length === 1 ? '' : 's') + ' programado' + (lista.length === 1 ? '' : 's');
+    }
+
+    if (lista.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:24px; color:var(--muted); font-size:13.5px;">No hay turnos registrados que coincidan con la búsqueda.</td></tr>';
+      return;
+    }
+
+    lista.forEach(function(t) {
+      var tr = document.createElement('tr');
+      tr.style.borderBottom = '1px solid var(--panel-edge)';
+      tr.style.transition = 'background 0.15s ease';
+
+      var esHoy = hoyStr >= t.inicio && hoyStr <= t.fin;
+      var esPasado = hoyStr > t.fin;
+      var esProximo = hoyStr < t.inicio;
+      var esJames = /james|grisales/i.test(t.usuario || '');
+
+      if (esHoy) {
+        tr.style.background = 'rgba(245, 158, 11, 0.12)';
+      }
+
+      // Estado Badge
+      var estadoHtml = '';
+      if (esHoy) {
+        estadoHtml = '<span style="background:#f59e0b; color:#000; font-size:11.5px; font-weight:900; padding:4px 10px; border-radius:12px; display:inline-flex; align-items:center; gap:4px; box-shadow:0 0 12px rgba(245,158,11,0.4);">⚡ ACTIVO HOY' + (esJames ? ' (Tu Guardia)' : '') + '</span>';
+      } else if (esProximo) {
+        estadoHtml = '<span style="background:rgba(2,132,199,0.2); color:#38bdf8; border:1px solid rgba(2,132,199,0.45); font-size:11.5px; font-weight:800; padding:3px 9px; border-radius:12px;">⏳ PRÓXIMO</span>';
+      } else {
+        estadoHtml = '<span style="background:rgba(148,163,184,0.14); color:#94a3b8; font-size:11px; font-weight:700; padding:3px 8px; border-radius:12px;">⚪ Cumplido</span>';
+      }
+
+      // Cédula Pill
+      var cedulaHtml = t.cedula ? '<span class="ced-badge">' + t.cedula + '</span>' : '<span style="color:var(--muted);">---</span>';
+
+      // Celular Link
+      var celularHtml = t.celular ? '<a href="tel:' + t.celular + '" class="cel-link" title="Llamar a ' + t.usuario + '">📞 ' + t.celular + '</a>' : '<span style="color:var(--muted);">---</span>';
+
+      // Técnico Box
+      var tecHtml = '';
+      if (esJames) {
+        tecHtml = '<div style="display:flex; align-items:center; gap:8px;"><span style="background:rgba(245,158,11,0.25); color:#f59e0b; border:1px solid rgba(245,158,11,0.6); padding:2px 7px; border-radius:999px; font-size:12px; font-weight:900;">⚡</span> <strong style="font-size:13.5px; color:#f59e0b;">' + t.usuario + '</strong> <span style="background:#f59e0b; color:#000; font-size:10px; font-weight:900; padding:1px 6px; border-radius:4px;">TÚ</span></div>';
+      } else {
+        tecHtml = '<div style="display:flex; align-items:center; gap:8px;"><span style="background:rgba(2,132,199,0.2); color:#38bdf8; border:1px solid rgba(2,132,199,0.4); padding:2px 7px; border-radius:999px; font-size:12px;">🛡️</span> <span style="font-size:13.5px; font-weight:700; color:var(--text);">' + t.usuario + '</span></div>';
+      }
+
+      // Fechas Box
+      var pIni = t.inicio.split('-'), pFin = t.fin.split('-');
+      var fPretty = pIni[2] + '/' + pIni[1] + '/' + pIni[0] + ' ➔ ' + pFin[2] + '/' + pFin[1] + '/' + pFin[0];
+      var fechasHtml = '<div style="font-weight:700; font-size:12.5px; color:var(--text);">' + fPretty + '</div>';
+
+      // Mes Box
+      var mesHtml = '<span style="background:rgba(255,255,255,0.06); border:1px solid var(--panel-edge); font-size:11px; font-weight:800; padding:2px 8px; border-radius:6px; color:var(--muted);">' + (t.mes || 'OCTUBRE') + '</span>';
+
+      // Acciones Box: Botón Eliminar
+      var safeNombre = (t.usuario || '').replace(/'/g, "\'");
+      var accionesHtml = '<button type="button" class="btn-eliminar-disp" onclick="eliminarTurnoDisp(' + t.id + ', \'' + safeNombre + '\')" title="Eliminar este turno de disponibilidad">🗑️ Eliminar</button>';
+
+      tr.innerHTML = '<td style="padding:10px 14px;">' + cedulaHtml + '</td>' +
+                     '<td style="padding:10px 14px;">' + celularHtml + '</td>' +
+                     '<td style="padding:10px 14px;">' + tecHtml + '</td>' +
+                     '<td style="padding:10px 14px;">' + fechasHtml + '</td>' +
+                     '<td style="padding:10px 14px; text-align:center;">' + mesHtml + '</td>' +
+                     '<td style="padding:10px 14px; text-align:center;">' + estadoHtml + '</td>' +
+                     '<td style="padding:10px 14px; text-align:center;">' + accionesHtml + '</td>';
+
+      tbody.appendChild(tr);
     });
   }
 
-  cargar(); cargarProximos();
+  // Filtrado reactivo en tiempo real
+  $('filtroRolDisp') && ($('filtroRolDisp').oninput = renderTablaRol);
+
+  // Limpiar turnos dummy sin contacto
+  $('btnLimpiarTurnosDummy') && ($('btnLimpiarTurnosDummy').onclick = function() {
+    if (!confirm('¿Deseas eliminar los turnos antiguos que no tengan cédula ni celular registrado?')) return;
+    fetch('/api/disponibilidad/limpiar-antiguos', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    }).then(function(r){ return r.json(); }).then(function(res) {
+      if (res && res.ok) {
+        alert(res.mensaje || 'Turnos sin contacto eliminados.');
+        cargarDisponibilidad(function() {
+          renderTablaRol();
+          renderGrid();
+        });
+      }
+    }).catch(function(err){
+      alert('Error: ' + err.message);
+    });
+  });
+
+  $('btnAbrirRolDisponibilidad') && ($('btnAbrirRolDisponibilidad').onclick = abrirModalRol);
+  $('btnBannerVerRol') && ($('btnBannerVerRol').onclick = abrirModalRol);
+  $('btnCerrarRolDisp') && ($('btnCerrarRolDisp').onclick = cerrarModalRol);
+  $('btnCerrarRolDisp2') && ($('btnCerrarRolDisp2').onclick = cerrarModalRol);
+  $('modalRolDisponibilidadBack') && ($('modalRolDisponibilidadBack').onclick = function(e){
+    if (e.target === $('modalRolDisponibilidadBack')) cerrarModalRol();
+  });
+
+  // Guardar nuevo turno
+  var btnGuardarRol = $('btnGuardarNuevoRol');
+  if (btnGuardarRol) {
+    btnGuardarRol.onclick = function() {
+      var cedula = ($('nuevoRolCedula').value || '').trim();
+      var celular = ($('nuevoRolCelular').value || '').trim();
+      var usuario = ($('nuevoRolUsuario').value || '').trim();
+      var inicio = ($('nuevoRolInicio').value || '').trim();
+      var fin = ($('nuevoRolFin').value || '').trim();
+      var msgBox = $('rolMsg');
+
+      if (!usuario || !inicio || !fin) {
+        msgBox.style.display = 'block';
+        msgBox.style.color = '#ef4444';
+        msgBox.textContent = 'Por favor completa el nombre y las fechas de inicio y fin.';
+        return;
+      }
+
+      api('/api/disponibilidad/guardar-rol', {
+        rol: [{ cedula: cedula, celular: celular, usuario: usuario, inicio: inicio, fin: fin, mes: 'OCTUBRE', notas: 'Rol Oficial' }]
+      }).then(function(res){
+        if (res && res.ok) {
+          msgBox.style.display = 'block';
+          msgBox.style.color = '#10b981';
+          msgBox.textContent = '✔ Turno guardado exitosamente.';
+          $('nuevoRolCedula').value = '';
+          $('nuevoRolCelular').value = '';
+          $('nuevoRolUsuario').value = '';
+          $('nuevoRolInicio').value = '';
+          $('nuevoRolFin').value = '';
+          cargarDisponibilidad(function(){
+            renderTablaRol();
+            renderGrid();
+          });
+          setTimeout(function(){ msgBox.style.display = 'none'; }, 2500);
+        } else {
+          msgBox.style.display = 'block';
+          msgBox.style.color = '#ef4444';
+          msgBox.textContent = 'Error guardando turno: ' + (res.error || 'Desconocido');
+        }
+      }).catch(function(err){
+        msgBox.style.display = 'block';
+        msgBox.style.color = '#ef4444';
+        msgBox.textContent = 'Error: ' + err.message;
+      });
+    };
+  }
+
+  // Si la URL viene con ?verRol=1 abrir modal automáticamente
+  if (window.location.search.indexOf('verRol=1') !== -1) {
+    setTimeout(abrirModalRol, 400);
+  }
+
+  cargarDisponibilidad(function(){ renderGrid(); });
+  cargar();
+  cargarProximos();
+  actualizarStatsFinde();
 })();
 </script>

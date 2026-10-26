@@ -164,6 +164,22 @@ function celdaMoneda(n, ceroComoGuion) {
   return miles(n);
 }
 
+function estamparFirma(doc, firmaImagen, x, y, maxW, maxH) {
+  if (!firmaImagen || typeof firmaImagen !== "string") return;
+  try {
+    let b64 = firmaImagen.trim();
+    if (b64.indexOf(",") > -1) {
+      b64 = b64.split(",")[1];
+    }
+    const buf = Buffer.from(b64, "base64");
+    if (buf && buf.length > 0) {
+      doc.image(buf, x, y, { fit: [maxW, maxH], align: "center", valign: "bottom" });
+    }
+  } catch (err) {
+    console.warn("No se pudo estampar la firma en el PDF:", err.message);
+  }
+}
+
 // ---------------------------------------------------------------------------
 // 1) SOLICITUD DE ANTICIPOS DE VIÁTICOS
 // ---------------------------------------------------------------------------
@@ -249,6 +265,7 @@ async function generarSolicitudPdf(d) {
   const firmaAut = limpio(d.firmaAutoriza, 80);
   texto(doc, "Firma empleado", 54, 699, { font: NEG, size: 9 });
   linea(doc, 152, 707, 303, 707, 1);
+  estamparFirma(doc, d.firmaImagen, 152, 665, 151, 40);
   texto(doc, firmaEmp, 54, 713, { font: NEG, size: 9, w: 250 });
   linea(doc, 52, 741, 303, 741, 1);
 
@@ -423,15 +440,16 @@ async function generarLegalizacionPdf(d) {
   dinero(doc, miles(c.totalGastos), XT, XR - XT, y + hTotal / 2, { size: 8 });
   y += hTotal;
 
-  // --- Pie
-  texto(doc, "Anexo facturas y/o documentos equivalentes:", X0, y + 16, { font: NEG, size: 8 });
+    // --- Pie
+  texto(doc, "Anexo facturas y/o documentos equivalentes:", X0, y + 18, { font: NEG, size: 8.5 });
 
-  const ys = y + 44;
+  const ys = y + 85;
   linea(doc, X0, ys, XC, ys, 1);
   linea(doc, 437, ys, 575, ys, 1);
-  texto(doc, "Firma empleado", X0, ys + 6, { font: NEG, size: 8 });
-  texto(doc, "Firma de Autorizacion", 437, ys + 6, { font: NEG, size: 8 });
-  texto(doc, limpio(d.firmaEmpleado, 80) || nombre, X0, ys + 17, { size: 7.5, w: 270 });
+  estamparFirma(doc, d.firmaImagen, X0 + 25, ys - 52, 190, 50);
+  texto(doc, "Firma empleado", X0, ys + 7, { font: NEG, size: 8.5 });
+  texto(doc, "Firma de Autorizacion", 437, ys + 7, { font: NEG, size: 8.5 });
+  texto(doc, limpio(d.firmaEmpleado, 80) || nombre, X0, ys + 19, { size: 8, w: 270 });
 
   doc.end();
   const buffer = await terminado;

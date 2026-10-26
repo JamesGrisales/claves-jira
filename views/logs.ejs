@@ -78,6 +78,7 @@
   .lg-d .meta button{ margin-left:auto; } .lg-d .meta button + button{ margin-left:0; }
 </style>
 
+<div x-data="logsAlpineApp()">
 <div class="top">
   <h1>Revisor de logs</h1>
   <div style="display:inline-flex; align-items:center; gap:8px;">
@@ -117,8 +118,8 @@
     <select id="selArchivo" title="Archivo"></select>
     <span class="lg-seg" id="vista"><button type="button" data-v="g" class="on">Agrupados</button><button type="button" data-v="c">Uno por uno</button></span>
     <select id="orden"><option value="n">Más repetidos</option><option value="rec">Más recientes</option><option value="ant">Más antiguos</option></select>
-    <button type="button" id="bCopiar" class="secondary">Copiar resumen</button>
-    <button type="button" id="bDescargar" class="secondary">⬇ Descargar lo filtrado</button>
+    <button type="button" id="bCopiar" class="secondary" @click="copiarConFeedback()" :style="copiado ? 'border-color:#10b981; color:#10b981; font-weight:700;' : ''"><span x-text="copiado ? '✓ ¡Resumen copiado!' : 'Copiar resumen'">Copiar resumen</span></button>
+    <button type="button" id="bDescargar" class="secondary" @click="descargarFeedback()" :style="descargado ? 'border-color:#38bdf8; color:#38bdf8; font-weight:700;' : ''"><span x-text="descargado ? '✓ ¡Descargando!' : '⬇ Descargar lo filtrado'">⬇ Descargar lo filtrado</span></button>
     <button type="button" id="bExp" class="secondary">Expandir todo</button>
     <button type="button" id="bWrap" class="secondary">Ajustar texto</button>
   </div>
@@ -127,9 +128,28 @@
   <p class="lg-hint"><kbd>/</kbd> buscar · <kbd>j</kbd> <kbd>k</kbd> moverse · <kbd>Enter</kbd> abrir · <kbd>e</kbd> expandir/cerrar todo · <kbd>y</kbd> copiar · <kbd>Esc</kbd> salir del buscador · Shift+clic en un contador = ver solo ese nivel</p>
   <div class="lg-more" id="mas" style="display:none;"><button type="button" class="secondary" id="bMas">Mostrar más</button></div>
 </div>
+</div>
+
 <div class="toast" id="toast">Listo</div>
 
 <script>
+
+/* ---------- Controlador Reactivo Alpine.js de Logs ---------- */
+window.logsAlpineApp = function() {
+  return {
+    copiado: false,
+    descargado: false,
+    copiarConFeedback() {
+      this.copiado = true;
+      setTimeout(() => this.copiado = false, 1800);
+    },
+    descargarFeedback() {
+      this.descargado = true;
+      setTimeout(() => this.descargado = false, 1800);
+    }
+  };
+};
+
 (function(){
   var $ = function(id){ return document.getElementById(id); };
   var usuario = document.body.getAttribute('data-user') || '';

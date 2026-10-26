@@ -463,7 +463,7 @@ app.post("/cambiar-clave", requireLogin, async (req, res) => {
 
 app.get("/", requireLogin, async (req, res) => {
   const { rows } = await pool.query(
-    'SELECT id, empresa FROM companies ORDER BY empresa COLLATE "C" ASC'
+    'SELECT id, empresa, updated_at FROM companies ORDER BY empresa COLLATE "C" ASC'
   );
 
   res.render("dashboard", {
@@ -1921,7 +1921,7 @@ app.put("/api/kv/:k", requireLogin, express.json({ limit: "64kb" }), async (req,
 });
 
 app.get("/aceptados", requireLogin, (req, res) => {
-  res.render("aceptados", { title: "Aceptados" });
+  res.redirect("/informe?tab=aceptados");
 });
 
 // ---------------------------------------------------------------------------
@@ -1953,7 +1953,8 @@ app.get("/informe", requireLogin, async (req, res) => {
     console.error("No se pudo leer la tabla de empresas para el informe:", err.message);
     empresasError = true;
   }
-  res.render("informe", { title: "Informe diario", empresas, empresasError });
+  const defaultTab = req.query.tab === 'aceptados' ? 'aceptados' : 'informe';
+  res.render("informe", { title: "Informe y Aceptados", empresas, empresasError, defaultTab });
 });
 
 // La pantalla del informe vuelve a pedir esta lista al abrir el desplegable y al
@@ -2071,7 +2072,7 @@ app.post("/informe/enviar-email", requireLogin, express.json({ limit: "1mb" }), 
     // 1. Envío directo transparente a través de Outlook MAPI (Classic Outlook de 64-bit o 32-bit)
     const { enviarViaOutlookMapi } = require("./enviar-outlook");
     try {
-      await enviarViaOutlookMapi({
+      const resMapi = await enviarViaOutlookMapi({
         to,
         cc,
         asunto,
@@ -2079,9 +2080,20 @@ app.post("/informe/enviar-email", requireLogin, express.json({ limit: "1mb" }), 
         tecnico: tecnicoNombre,
         cargo: cargoNombre,
         pdfBuffer: buffer,
-        pdfFilename: filename
+        pdfFilename: filename,
+        abrirEnviados: req.body.abrirEnviados !== false
       });
-      return res.json({ ok: true, mensaje: "Informe enviado exitosamente desde tu cuenta de Outlook." });
+      return res.json({
+        ok: true,
+        mensaje: resMapi.mensaje || "Informe enviado exitosamente desde tu cuenta de Outlook.",
+        validadoEnviados: resMapi.validadoEnviados !== false,
+        detalle: resMapi.detalle || {
+          destinatario: Array.isArray(to) ? to.join("; ") : to,
+          asunto: asunto,
+          fechaEnvio: new Date().toLocaleTimeString("es-CO"),
+          carpeta: "Elementos enviados"
+        }
+      });
     } catch (mapiErr) {
       console.error("Error al enviar directamente por Outlook MAPI:", mapiErr.message);
       const m = mapiErr.message || "";
@@ -2097,6 +2109,57 @@ app.post("/informe/enviar-email", requireLogin, express.json({ limit: "1mb" }), 
     console.error("Error al enviar informe por correo:", err);
     res.status(500).json({ error: err.message || "Error al enviar el correo." });
   }
+});
+
+app.post("/informe/abrir-enviados", requireLogin, (req, res) => {
+  const { spawn } = require("child_process");
+  const path = require("path");
+  const fs = require("fs");
+
+  const scriptCandidates = [
+    path.join(__dirname, "abrir-enviados.ps1"),
+    path.join(__dirname, "..", "abrir-enviados.ps1")
+  ];
+  const scriptPath = scriptCandidates.find(p => fs.existsSync(p));
+
+  if (scriptPath) {
+    try {
+      const ps = spawn("powershell", [
+        "-NoProfile",
+        "-ExecutionPolicy", "Bypass",
+        "-File", scriptPath
+      ], {
+        detached: true,
+        stdio: "ignore"
+      });
+      ps.unref();
+    } catch (e) {
+      console.error("Error ejecutando abrir-enviados.ps1:", e);
+    }
+  } else {
+    try {
+      const psCmd = `
+        $exe = 'C:\\Program Files\\Microsoft Office\\root\\Office16\\OUTLOOK.EXE';
+        if (Test-Path $exe) {
+          Start-Process -FilePath $exe -ArgumentList '/recycle /select "outlook:Elementos enviados"';
+        } else {
+          Start-Process 'ms-outlook:';
+        }
+        Start-Sleep -Milliseconds 500;
+        $w = New-Object -ComObject WScript.Shell;
+        $w.AppActivate('Outlook');
+      `;
+      const ps = spawn("powershell", ["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", psCmd], {
+        detached: true,
+        stdio: "ignore"
+      });
+      ps.unref();
+    } catch (e) {
+      console.error("Error abriendo Outlook:", e);
+    }
+  }
+
+  return res.json({ ok: true, mensaje: "Abriendo Elementos Enviados en Outlook..." });
 });
 
 app.post("/informe/abrir-outlook", requireLogin, express.json({ limit: "1mb" }), async (req, res) => {
@@ -2258,7 +2321,7 @@ app.get("/viaticos", requireLogin, (req, res) => {
 });
 
 function crearRutaPdfViaticos(ruta, nombreFuncion, etiqueta) {
-  app.post(ruta, requireLogin, express.json({ limit: "256kb" }), async (req, res) => {
+  app.post(ruta, requireLogin, express.json({ limit: "10mb" }), async (req, res) => {
     try {
       const generador = require("./viaticos-pdf");
       const { buffer, filename } = await generador[nombreFuncion](req.body || {});
@@ -2319,6 +2382,122 @@ app.use((err, req, res, next) => {
 // ---------------------------------------------------------------------------
 // Inicialización
 // ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// Rutas de Actualización Automática desde GitHub
+// ---------------------------------------------------------------------------
+
+app.get("/api/health", (req, res) => {
+  res.json({ ok: true, version: "2.8.8", timestamp: Date.now() });
+});
+
+app.get("/api/sistema/verificar-actualizacion", requireLogin, (req, res) => {
+  const { exec } = require("child_process");
+  const path = require("path");
+  const fs = require("fs");
+
+  let gitDir = path.resolve(__dirname);
+  if (fs.existsSync(path.resolve(__dirname, "..", ".git"))) {
+    gitDir = path.resolve(__dirname, "..");
+  } else if (!fs.existsSync(path.resolve(gitDir, ".git"))) {
+    let cur = gitDir;
+    for (let i = 0; i < 3; i++) {
+      cur = path.dirname(cur);
+      if (fs.existsSync(path.join(cur, ".git"))) {
+        gitDir = cur;
+        break;
+      }
+    }
+  }
+
+  exec("git fetch origin main", { cwd: gitDir, timeout: 25000 }, (errFetch) => {
+    if (errFetch) {
+      console.warn("Aviso al consultar GitHub:", errFetch.message);
+      return res.json({
+        ok: false,
+        error: "No se pudo conectar con GitHub. Verifica que tengas conexión a internet o acceso al repositorio."
+      });
+    }
+
+    exec("git branch --show-current", { cwd: gitDir, timeout: 8000 }, (errBranch, branchOut) => {
+      const branch = (branchOut || "").trim() || "main";
+
+      exec(`git rev-list HEAD..origin/${branch} --count`, { cwd: gitDir, timeout: 8000 }, (errCount, countOut) => {
+        if (errCount) {
+          return res.json({
+            ok: false,
+            error: "Error al comparar versiones con GitHub: " + errCount.message
+          });
+        }
+
+        const count = parseInt((countOut || "").trim(), 10) || 0;
+        if (count === 0) {
+          return res.json({
+            ok: true,
+            hayCambios: false,
+            numCambios: 0,
+            branch: branch,
+            mensaje: "El sistema ya está actualizado con la última versión de GitHub (v2.8.8)."
+          });
+        }
+
+        exec(`git log -n 12 --pretty=format:"%s (%cr)" HEAD..origin/${branch}`, { cwd: gitDir, timeout: 8000 }, (errLog, logOut) => {
+          const commits = (logOut || "")
+            .split("\n")
+            .map(l => l.trim())
+            .filter(Boolean);
+
+          return res.json({
+            ok: true,
+            hayCambios: true,
+            numCambios: count,
+            branch: branch,
+            commits: commits
+          });
+        });
+      });
+    });
+  });
+});
+
+app.post("/api/sistema/ejecutar-actualizacion", requireLogin, (req, res) => {
+  const { spawn } = require("child_process");
+  const path = require("path");
+  const fs = require("fs");
+
+  let batPath = path.join(__dirname, "actualizar_y_reiniciar.bat");
+  if (!fs.existsSync(batPath)) {
+    batPath = path.join(__dirname, "..", "actualizar_y_reiniciar.bat");
+  }
+
+  if (!fs.existsSync(batPath)) {
+    return res.status(500).json({
+      ok: false,
+      error: "No se encontró el script de actualización actualizar_y_reiniciar.bat."
+    });
+  }
+
+  res.json({
+    ok: true,
+    mensaje: "Actualización iniciada. Descargando cambios de GitHub y reiniciando servidor..."
+  });
+
+  try {
+    const child = spawn("cmd.exe", ["/c", batPath], {
+      detached: true,
+      stdio: "ignore",
+      cwd: path.dirname(batPath)
+    });
+    child.unref();
+
+    setTimeout(() => {
+      console.log("Reiniciando servidor Node.js por actualización desde GitHub...");
+      process.exit(0);
+    }, 1200);
+  } catch (err) {
+    console.error("Error al disparar actualizador:", err);
+  }
+});
 
 initDb()
   .then(() => {

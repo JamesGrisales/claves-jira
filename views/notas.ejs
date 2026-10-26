@@ -320,18 +320,46 @@
   .xl-cuenta{ background:#ffd54a; color:#1c2530; font-size:10.5px; font-weight:700; border-radius:8px; padding:0 6px; margin-left:4px; }
   .content-wrap.fullscreen .xl-box{ flex:1; max-height:none; min-height:0; resize:none; }
   .solo-texto-oculto{ display:none; }
+
+  /* Dropdown inteligente para categorías en Notas / Jaivaná */
+  .cat-dropdown-wrap { position: relative; display: inline-block; }
+  .cat-more-btn { display: inline-flex !important; align-items: center !important; gap: 6px !important; background: var(--panel-alt) !important; border: 1px dashed var(--panel-edge) !important; }
+  .cat-more-btn:hover { border-color: var(--accent) !important; color: var(--accent) !important; }
+  .cat-more-btn.active { background: var(--accent) !important; border: 1px solid var(--accent) !important; color: #fff !important; box-shadow: 0 4px 14px rgba(var(--accent-rgb), 0.35) !important; }
+  .cat-dropdown-menu {
+    position: absolute; top: calc(100% + 6px); left: 0; z-index: 1000;
+    min-width: 250px; max-width: 320px; max-height: 380px;
+    background: var(--panel); border: 1px solid var(--panel-edge); border-radius: 14px;
+    box-shadow: 0 16px 36px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.06);
+    padding: 8px; display: flex; flex-direction: column; gap: 6px;
+    backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  }
+  .cat-dropdown-search { display: flex; align-items: center; gap: 6px; padding: 6px 10px; background: var(--panel-alt); border: 1px solid var(--panel-edge); border-radius: 9px; }
+  .cat-dropdown-search input { flex: 1; background: transparent; border: none; outline: none; font-size: 12.5px; color: var(--text); font-family: var(--sans); }
+  .cat-dropdown-clear { background: transparent; border: none; color: var(--muted); cursor: pointer; padding: 0 4px; font-size: 14px; line-height: 1; }
+  .cat-dropdown-list { overflow-y: auto; max-height: 280px; display: flex; flex-direction: column; gap: 2px; padding-right: 2px; }
+  .cat-dropdown-item {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%;
+    padding: 7px 10px; border: none; background: transparent; color: var(--text);
+    font-size: 12.5px; font-weight: 600; border-radius: 8px; cursor: pointer; text-align: left;
+    transition: all .12s ease;
+  }
+  .cat-dropdown-item:hover { background: var(--accent-soft) !important; color: var(--accent-dark) !important; transform: none !important; box-shadow: none !important; }
+  .cat-dropdown-item.active { background: var(--accent) !important; color: #fff !important; font-weight: 700; }
+  .cat-check { font-size: 12px; font-weight: 800; }
+
 </style>
 
 <% var C = (typeof cfg !== 'undefined') ? cfg : { base:'/notas', plural:'notas', titulo:'Notas y comandos', agregar:'+ Agregar nota', placeCat:'Ej: Ventoy USB', placeTit:'Ej: Preparar la USB', placeCont:'Pega aquí el comando, script o apunte…', vacio:'Todavía no hay notas guardadas. Agrega la primera arriba.', buscarDentro:'Buscar dentro de esta nota…', papeleraUno:'Mover esta nota a la papelera', el:'la nota', todos:'las' };
    var MAXMB = (typeof maxUploadMb !== 'undefined') ? maxUploadMb : 100;
    function fmtTam(n){ return n >= 1048576 ? (n/1048576).toFixed(1) + ' MB' : (n >= 1024 ? (n/1024).toFixed(1) + ' KB' : n + ' car.'); } %>
 
-<div>
+<div x-data="notasAlpineApp()">
   <div class="top">
     <h1><%= C.titulo %></h1>
     <div style="display:flex; align-items:center; gap:10px;">
       <span class="db-orb db-orb-pg" title="Notas almacenadas en PostgreSQL">🐘</span>
-      <span class="count"><%= notas.length %> <%= C.plural %></span>
+      <span class="count" x-text="contadorTexto"><%= notas.length %> <%= C.plural %></span>
       <% if (notas.length > 0) { %>
       <form method="post" action="<%= C.base %>/eliminar-todo" id="formEliminarTodo">
         <button type="button" class="danger" id="btnEliminarTodo" title="Mueve todo a la papelera (se puede restaurar)">🗑 Eliminar todo</button>
@@ -340,25 +368,57 @@
     </div>
   </div>
 
-  <div class="toolbar">
+    <div class="toolbar">
     <div class="search-wrap">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg>
-      <input type="text" id="searchInput" placeholder="Buscar por título o contenido…" autocomplete="off">
+      <input type="text" id="searchInput" x-model="q" @input="alEscribir()" placeholder="Buscar por título o contenido…" autocomplete="off">
       <span class="buscando" id="estadoBusqueda"></span>
     </div>
-    <button type="button" class="secondary" id="toggleAddBtn"><%= C.agregar %></button>
-    <button type="button" class="secondary" id="toggleUploadBtn">⬆ Subir archivos</button>
+    <button type="button" class="secondary" id="toggleAddBtn" @click="togglePanel('agregar')" :class="{ active: panelActivo === 'agregar' }"><%= C.agregar %></button>
+    <button type="button" class="secondary" id="toggleUploadBtn" @click="togglePanel('subir')" :class="{ active: panelActivo === 'subir' }">⬆ Subir archivos</button>
   </div>
 
   <div class="tabs" id="tabs">
-    <button type="button" class="tab active" data-cat="__todas__">Todas</button>
-    <% categorias.forEach(function(cat) { %>
-      <button type="button" class="tab" data-cat="<%= cat.toLowerCase() %>"><%= cat %></button>
+    <button type="button" class="tab" :class="{ active: catActiva === '__todas__' }" @click="setCategoria('__todas__')" data-cat="__todas__">Todas</button>
+    <% 
+      var LIMITE_PILLS = 6;
+      var pillsVisibles = categorias.slice(0, LIMITE_PILLS);
+      var pillsExtras = categorias.slice(LIMITE_PILLS);
+    %>
+    <% pillsVisibles.forEach(function(cat) { %>
+      <button type="button" class="tab" :class="{ active: catActiva === '<%= cat.toLowerCase() %>' }" @click="setCategoria('<%= cat.toLowerCase() %>')" data-cat="<%= cat.toLowerCase() %>"><%= cat %></button>
     <% }); %>
+
+    <% if (pillsExtras.length > 0) { %>
+      <div class="cat-dropdown-wrap" x-data="{ dropAbierto: false, filtroDrop: '' }" @click.outside="dropAbierto = false">
+        <button type="button" class="tab cat-more-btn" @click="dropAbierto = !dropAbierto" :class="{ active: esCatExtra(catActiva) }" title="Ver más categorías">
+          <span x-text="nombreCatExtra(catActiva) || ('📂 Más categorías (<%= pillsExtras.length %>) ▾')">📂 Más categorías (<%= pillsExtras.length %>) ▾</span>
+        </button>
+        <div class="cat-dropdown-menu" x-show="dropAbierto" x-cloak style="display:none;">
+          <div class="cat-dropdown-search">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+            <input type="text" x-model="filtroDrop" placeholder="Buscar categoría..." @keydown.escape="dropAbierto = false">
+            <button type="button" class="cat-dropdown-clear" x-show="filtroDrop" @click="filtroDrop = ''">×</button>
+          </div>
+          <div class="cat-dropdown-list">
+            <% pillsExtras.forEach(function(cat) { %>
+              <button type="button" 
+                      class="cat-dropdown-item" 
+                      :class="{ active: catActiva === '<%= cat.toLowerCase() %>' }"
+                      x-show="!filtroDrop || '<%= cat.toLowerCase() %>'.includes(filtroDrop.toLowerCase())"
+                      @click="setCategoria('<%= cat.toLowerCase() %>'); dropAbierto = false;">
+                <span><%= cat %></span>
+                <span class="cat-check" x-show="catActiva === '<%= cat.toLowerCase() %>'">✓</span>
+              </button>
+            <% }); %>
+          </div>
+        </div>
+      </div>
+    <% } %>
   </div>
 </div>
 
-<div class="card add-card" id="uploadCard">
+<div class="card add-card" id="uploadCard" :class="{ open: panelActivo === 'subir' }">
   <p class="sub" style="margin:0 0 14px;">Sube uno o <strong>varios</strong> archivos a la vez (.txt, .sql, .docx, .pdf y Excel: .xlsx, .xls, .csv). Cada uno se guarda como una nota: se conserva el archivo original (lo puedes descargar), se limpia el texto y se traen las imágenes. Los archivos de Excel se muestran como una hoja de cálculo, con sus pestañas.</p>
   <form method="post" action="<%= C.base %>/subir" enctype="multipart/form-data" id="formSubir">
     <div class="fields">
@@ -375,7 +435,7 @@
   </form>
 </div>
 
-<div class="card add-card" id="addCard">
+<div class="card add-card" id="addCard" :class="{ open: panelActivo === 'agregar' }">
   <form method="post" action="<%= C.base %>/agregar">
     <div class="fields">
       <div>
@@ -529,6 +589,109 @@
 <script type="application/json" id="notasMeta"><%- JSON.stringify(notas.map(function(n){ return { id: n.id, esSql: !!n.es_sql, esExcel: !!n.es_excel }; })) %></script>
 
 <script>
+/* ---------- Controlador Reactivo Alpine.js de Notas / Jaivaná ---------- */
+window.notasAlpineApp = function() {
+  return {
+    q: '',
+    catActiva: '__todas__',
+    panelActivo: null,
+    totalNotas: <%= notas.length %>,
+    visibles: <%= notas.length %>,
+
+    init() {
+      window.addEventListener('keydown', (e) => {
+        const t = e.target;
+        const escribiendo = t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable);
+        if (e.key === '/' && !escribiendo && !e.ctrlKey && !e.metaKey) {
+          e.preventDefault();
+          const inp = document.getElementById('searchInput');
+          if (inp) { inp.focus(); inp.select(); }
+        } else if (e.key === 'Escape') {
+          if (this.panelActivo) {
+            this.cerrarPaneles();
+          } else if (t && t.id === 'searchInput') {
+            this.q = '';
+            this.alEscribir();
+            t.blur();
+          }
+        }
+      });
+    },
+
+    togglePanel(nombre) {
+      if (this.panelActivo === nombre) {
+        this.cerrarPaneles();
+      } else {
+        this.panelActivo = nombre;
+        this.$nextTick(() => {
+          const card = document.getElementById(nombre === 'agregar' ? 'addCard' : 'uploadCard');
+          if (card) {
+            const ta = card.querySelector('.nt-ed-input, input[type=text]');
+            if (ta) {
+              if (typeof actualizarEditorNota === 'function') actualizarEditorNota(ta);
+              setTimeout(() => ta.focus(), 60);
+            }
+            card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
+        });
+      }
+    },
+
+    cerrarPaneles() {
+      this.panelActivo = null;
+    },
+
+        esCatExtra(cat) {
+      if (!cat || cat === '__todas__') return false;
+      const extras = <%- JSON.stringify(categorias.slice(6).map(function(c){ return { raw: c, low: c.toLowerCase() }; })) %>;
+      return extras.some(e => e.low === cat);
+    },
+
+    nombreCatExtra(cat) {
+      if (!cat || cat === '__todas__') return null;
+      const extras = <%- JSON.stringify(categorias.slice(6).map(function(c){ return { raw: c, low: c.toLowerCase() }; })) %>;
+      const m = extras.find(e => e.low === cat);
+      return m ? ('📂 ' + m.raw + ' ▾') : null;
+    },
+    setCategoria(cat) {
+      this.catActiva = cat;
+      categoriaActiva = cat;
+      if (typeof aplicarFiltros === 'function') {
+        aplicarFiltros();
+        this.actualizarVisibles();
+      }
+    },
+
+    alEscribir() {
+      textoBusqueda = (this.q || '').trim();
+      if (typeof aplicarFiltros === 'function') {
+        aplicarFiltros();
+        this.actualizarVisibles();
+      }
+      clearTimeout(debounceBusqueda);
+      debounceBusqueda = setTimeout(() => {
+        if (typeof buscarEnServidor === 'function') buscarEnServidor(this.q);
+      }, 180);
+    },
+
+    actualizarVisibles() {
+      const rows = document.querySelectorAll('#results .row');
+      let count = 0;
+      rows.forEach(r => { if (r.style.display !== 'none') count++; });
+      this.visibles = count;
+    },
+
+    get contadorTexto() {
+      const plural = <%- JSON.stringify(C.plural) %>;
+      if (this.q || this.catActiva !== '__todas__') {
+        const suf = this.catActiva === '__todas__' ? '' : (' [' + this.catActiva.toUpperCase() + ']');
+        return this.visibles + ' de ' + this.totalNotas + ' ' + plural + suf;
+      }
+      return this.totalNotas + ' ' + plural;
+    }
+  };
+};
+
 const RUTA_BASE = <%- JSON.stringify(C.base) %>;
 const MAX_MB = <%= MAXMB %>;
 const LOTE = 100;           // líneas que se dibujan por bloque (el resto se carga al desplazarse)

@@ -34,8 +34,23 @@
   .row:hover::before, .row.open::before{ opacity:1; transform:none; }
   .row.open{ transform:none; }
   @keyframes rowIn{ from{ opacity:0; transform:translateY(8px); } to{ opacity:1; transform:none; } }
-  .row .main{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
-  .row .name{ display:flex; align-items:center; gap:10px; font-size:15px; font-weight:600; min-width:0; }
+  .row .main{
+    display: grid;
+    grid-template-columns: minmax(320px, 1.35fr) minmax(280px, 1fr) auto;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+  }
+  .row .name{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    min-width: 0;
+    width: auto;
+    flex: 1 1 auto;
+  }
   .row .emp-name{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .row .avatar{ width:36px; height:36px; border-radius:11px; flex-shrink:0; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.12); color:var(--accent); display:flex; align-items:center; justify-content:center; font-size:14.5px; font-weight:800; box-shadow:none; transition:background .2s ease, border-color .2s ease, color .2s ease, transform .25s var(--spring); }
   :root[data-theme="light"] .row .avatar { background:rgba(0,0,0,.04); border-color:rgba(0,0,0,.08); color:var(--accent-dark); }
@@ -64,6 +79,207 @@
   .ep-sec.danger-zone h5{ margin:0; color:var(--danger); } .ep-sec.danger-zone h5 svg{ stroke:var(--danger); }
   .ep-sec.danger-zone small{ display:block; font-weight:500; color:var(--muted); margin-top:2px; }
   .ep-sec.danger-zone form{ margin:0 !important; }
+
+    /* ---- Metadatos de actualización y vencimiento mensual ---- */
+  .emp-center-meta{
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 36px;
+    margin: 0;
+    flex-wrap: nowrap;
+    min-width: 0;
+  }
+  @media (max-width: 960px){
+    .emp-center-meta{
+      margin: 6px 0 6px 44px;
+      justify-content: flex-start;
+      width: 100%;
+    }
+  }
+
+  .emp-date-pill{
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12px;
+    font-family: var(--sans);
+    padding: 5px 12px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--panel-edge);
+    backdrop-filter: blur(8px);
+    transition: all 0.22s ease;
+    cursor: default;
+    user-select: none;
+    white-space: nowrap;
+  }
+  .emp-date-pill:hover{
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px -2px rgba(0, 0, 0, 0.4);
+  }
+
+  .emp-cal-ico{
+    width: 13.5px;
+    height: 13.5px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.2;
+    flex-shrink: 0;
+  }
+  .emp-date-label{
+    color: var(--muted);
+    font-size: 11.5px;
+  }
+  .emp-date-val{
+    color: var(--text);
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+
+  /* Status beacon */
+  .emp-status-beacon{
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+  .beacon-dot{
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  /* 🟢 ESTADO VIGENTE (< 25 días) */
+  .emp-date-pill.vigente{
+    background: rgba(16, 185, 129, 0.07);
+    border-color: rgba(16, 185, 129, 0.32);
+    color: #10b981;
+  }
+  .emp-date-pill.vigente .emp-cal-ico{ stroke: #10b981; }
+  .emp-status-beacon.vigente{
+    background: rgba(16, 185, 129, 0.16);
+    border: 1px solid rgba(16, 185, 129, 0.35);
+    color: #34d399;
+  }
+  .emp-status-beacon.vigente .beacon-dot{
+    background: #10b981;
+    box-shadow: 0 0 6px #10b981;
+  }
+
+  /* 🟡 ESTADO POR VENCER (25 a 30 días) */
+  .emp-date-pill.por-vencer{
+    background: rgba(245, 158, 11, 0.12);
+    border-color: rgba(245, 158, 11, 0.5);
+    color: #f59e0b;
+    box-shadow: 0 0 14px -3px rgba(245, 158, 11, 0.35);
+  }
+  .emp-date-pill.por-vencer .emp-cal-ico{ stroke: #f59e0b; }
+  .emp-status-beacon.por-vencer{
+    background: rgba(245, 158, 11, 0.24);
+    border: 1px solid rgba(245, 158, 11, 0.6);
+    color: #fbbf24;
+    animation: amberPulse 2s infinite ease-in-out;
+  }
+  .emp-status-beacon.por-vencer .beacon-dot{
+    background: #f59e0b;
+    box-shadow: 0 0 8px #f59e0b;
+  }
+  @keyframes amberPulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.82; transform: scale(0.98); }
+  }
+
+  /* 🔴 ESTADO VENCIDA (> 30 días) - ¡ALUMBRE ROJA! */
+  .emp-date-pill.vencida{
+    background: rgba(239, 68, 68, 0.18) !important;
+    border: 1.5px solid rgba(239, 68, 68, 0.75) !important;
+    color: #ef4444 !important;
+    box-shadow: 0 0 22px 0 rgba(239, 68, 68, 0.6), inset 0 0 10px rgba(239, 68, 68, 0.25) !important;
+    animation: redBorderPulse 1.8s infinite ease-in-out !important;
+  }
+  .emp-date-pill.vencida .emp-cal-ico{ stroke: #ef4444; filter: drop-shadow(0 0 6px #ef4444); }
+  .emp-date-pill.vencida .emp-date-label{ color: rgba(254, 202, 202, 0.8); }
+  .emp-date-pill.vencida .emp-date-val{ color: #ffffff; text-shadow: 0 0 8px rgba(239, 68, 68, 0.8); }
+  .emp-status-beacon.vencida{
+    background: rgba(239, 68, 68, 0.35) !important;
+    border: 1px solid rgba(239, 68, 68, 0.85) !important;
+    color: #ffffff !important;
+    font-weight: 800;
+    text-shadow: 0 0 6px rgba(239, 68, 68, 0.9);
+  }
+  .emp-status-beacon.vencida .beacon-dot{
+    background: #ef4444;
+    box-shadow: 0 0 10px #ef4444, 0 0 20px #ef4444;
+    animation: beaconBlink 1s infinite ease-in-out;
+  }
+  @keyframes redBorderPulse {
+    0%, 100% {
+      border-color: rgba(239, 68, 68, 0.85);
+      box-shadow: 0 0 22px 0 rgba(239, 68, 68, 0.65), inset 0 0 10px rgba(239, 68, 68, 0.3);
+    }
+    50% {
+      border-color: rgba(239, 68, 68, 0.45);
+      box-shadow: 0 0 12px 0 rgba(239, 68, 68, 0.35), inset 0 0 4px rgba(239, 68, 68, 0.15);
+    }
+  }
+  @keyframes beaconBlink {
+    0%, 100% { opacity: 1; transform: scale(1.15); }
+    50% { opacity: 0.35; transform: scale(0.85); }
+  }
+
+  /* Borde y resplandor rojo en toda la fila de la empresa vencida */
+  .row.vencida{
+    border-color: rgba(239, 68, 68, 0.5) !important;
+    box-shadow: 0 0 20px -3px rgba(239, 68, 68, 0.4), var(--shadow) !important;
+  }
+  .row.vencida::before{
+    background: #ef4444 !important;
+    opacity: 1 !important;
+    transform: none !important;
+    box-shadow: 0 0 12px #ef4444 !important;
+  }
+  .row.por-vencer{
+    border-color: rgba(245, 158, 11, 0.45) !important;
+  }
+  .row.por-vencer::before{
+    background: #f59e0b !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  /* Barra de filtros de vencimiento */
+  .expiration-filter-bar{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin:0 0 16px; padding:10px 14px; background:var(--panel); border:1px solid var(--panel-edge); border-radius:14px; box-shadow:var(--shadow-sm); }
+  .efb-pills{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .efb-btn{ display:inline-flex; align-items:center; gap:7px; padding:7px 14px; font-size:13px; font-weight:600; border-radius:999px; background:var(--panel-alt); border:1px solid var(--panel-edge); color:var(--muted); cursor:pointer; transition:all .18s ease; user-select:none; }
+  .efb-btn:hover{ color:var(--text); border-color:var(--accent); background:var(--panel); transform:translateY(-1px); }
+  .efb-btn.active{ background:var(--accent-soft); border-color:var(--accent); color:var(--accent-dark); font-weight:700; box-shadow:0 0 14px -2px rgba(var(--accent-rgb),0.35); }
+  :root[data-theme="dark"] .efb-btn.active{ color:var(--accent); }
+  .efb-count{ font-size:11.5px; font-weight:800; padding:1px 7px; border-radius:999px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.1); }
+  .efb-btn.active .efb-count{ background:var(--accent); color:#040711; border:none; }
+  .efb-dot{ width:8px; height:8px; border-radius:50%; display:inline-block; }
+  .efb-vigente .efb-dot{ background:#10b981; box-shadow:0 0 6px rgba(16,185,129,0.7); }
+  .efb-por-vencer .efb-dot{ background:#f59e0b; box-shadow:0 0 6px rgba(245,158,11,0.7); }
+  .efb-vencida .efb-dot{ background:#ef4444; box-shadow:0 0 8px rgba(239,68,68,0.8); animation:pulseVencida 1.4s infinite; }
+
+  .efb-sort{ display:flex; align-items:center; gap:8px; margin-left:auto; }
+  .efb-sort-lbl{ font-size:12px; font-weight:700; color:var(--muted); display:inline-flex; align-items:center; gap:4px; margin:0; }
+  .efb-sort-lbl svg{ width:14px; height:14px; fill:none; stroke:currentColor; stroke-width:2.2; }
+  .efb-select{ height:34px; padding:0 12px; font-size:12.5px; font-weight:600; border-radius:8px; background:var(--panel-alt); border:1px solid var(--panel-edge); color:var(--text); cursor:pointer; }
+  .efb-select:focus{ outline:none; border-color:var(--accent); }
+
+  .ep-date-info{ display:flex; align-items:center; gap:8px; padding:8px 12px; margin-bottom:12px; border-radius:8px; font-size:12px; line-height:1.45; background:var(--panel); border:1px solid var(--panel-edge); color:var(--muted); }
+  .ep-date-info svg{ width:16px; height:16px; fill:none; stroke:var(--accent); stroke-width:2; flex-shrink:0; }
+  .ep-date-info strong{ color:var(--text); }
+  .ep-date-info.vencida{ border-color:rgba(239,68,68,0.5); background:rgba(239,68,68,0.1); color:#ef4444; }
+  .ep-date-info.vencida svg{ stroke:#ef4444; }
+  .ep-date-info.por-vencer{ border-color:rgba(245,158,11,0.5); background:rgba(245,158,11,0.1); color:#f59e0b; }
+  .ep-date-info.por-vencer svg{ stroke:#f59e0b; }
 
   .empty{ color:var(--muted); font-size:14px; text-align:center; padding:44px 20px; border:2px dashed var(--panel-edge); border-radius:16px; background:var(--panel-alt); }
   .empty .big{ font-size:34px; display:block; margin-bottom:8px; }
@@ -187,9 +403,10 @@
   .iconbtn.btn-sql:hover { border-color: #a855f7; background: rgba(168,85,247,0.12); color: #a855f7; }
   .iconbtn.btn-editar svg { stroke: #f59e0b; filter: drop-shadow(0 0 4px rgba(245,158,11,0.5)); }
   .iconbtn.btn-editar:hover { border-color: #f59e0b; background: rgba(245,158,11,0.12); color: #f59e0b; }
+  .efb-sort { position: relative; z-index: 50; }
 </style>
 
-<div>
+<div x-data="bovedaAlpineApp()">
   <div class="page-head">
     <div>
       <h1 style="margin:0;">Claves Jira por empresa</h1>
@@ -197,20 +414,20 @@
     </div>
     <div style="display:flex; align-items:center; gap:10px;">
       <span class="db-orb db-orb-lg db-orb-pg" id="dashHeaderOrb" title="Almacén de claves cifradas en PostgreSQL v16">🐘</span>
-      <span class="count" id="countBadge"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg><span id="countTxt"><%= companies.length %> empresas</span></span>
+      <span class="count" id="countBadge"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg><span id="countTxt" x-text="contadorTexto"><%= companies.length %> empresas</span></span>
     </div>
   </div>
 
-  <div class="toolbar">
-    <div class="search-wrap" id="searchWrap">
+    <div class="toolbar">
+    <div class="search-wrap" id="searchWrap" :class="{ 'has-text': q.length > 0 }">
       <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg>
-      <input type="text" id="searchInput" placeholder="Buscar empresa…" autocomplete="off" aria-label="Buscar empresa">
+      <input type="text" id="searchInput" x-model="q" @input="aplicarFiltros()" placeholder="Buscar empresa…" autocomplete="off" aria-label="Buscar empresa">
       <kbd>/</kbd>
-      <button type="button" class="iconbtn search-clear" id="searchClear" title="Limpiar búsqueda" aria-label="Limpiar búsqueda"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+      <button type="button" class="iconbtn search-clear" id="searchClear" x-show="q.length > 0" @click="limpiar()" title="Limpiar búsqueda" aria-label="Limpiar búsqueda"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
     </div>
-    <button type="button" class="secondary toolbar-ico-btn" id="toggleAuditBtn" aria-expanded="false"><svg viewBox="0 0 24 24" style="stroke:var(--accent);"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Auditar Bóveda</button>
-    <button type="button" class="secondary toolbar-ico-btn" id="toggleAddBtn" aria-expanded="false"><svg viewBox="0 0 24 24" style="stroke:#34d399; filter:drop-shadow(0 0 4px rgba(52,211,153,0.5));"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>Agregar empresa</button>
-    <button type="button" class="secondary toolbar-ico-btn" id="toggleImportBtn" aria-expanded="false"><svg viewBox="0 0 24 24" style="stroke:#38bdf8; filter:drop-shadow(0 0 4px rgba(56,189,248,0.5));"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>Importar claves</button>
+    <button type="button" class="secondary toolbar-ico-btn" id="toggleAuditBtn" @click="togglePanel('auditoria')" :class="{ active: panelActivo === 'auditoria' }" :aria-expanded="panelActivo === 'auditoria'"><svg viewBox="0 0 24 24" style="stroke:var(--accent);"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Auditar Bóveda</button>
+    <button type="button" class="secondary toolbar-ico-btn" id="toggleAddBtn" @click="togglePanel('agregar')" :class="{ active: panelActivo === 'agregar' }" :aria-expanded="panelActivo === 'agregar'"><svg viewBox="0 0 24 24" style="stroke:#34d399; filter:drop-shadow(0 0 4px rgba(52,211,153,0.5));"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>Agregar empresa</button>
+    <button type="button" class="secondary toolbar-ico-btn" id="toggleImportBtn" @click="togglePanel('importar')" :class="{ active: panelActivo === 'importar' }" :aria-expanded="panelActivo === 'importar'"><svg viewBox="0 0 24 24" style="stroke:#38bdf8; filter:drop-shadow(0 0 4px rgba(56,189,248,0.5));"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>Importar claves</button>
   </div>
 
   <div class="legend">
@@ -222,12 +439,12 @@
   </div>
 </div>
 
-<div class="card add-card" id="auditCard" style="padding:22px;">
+<div class="card add-card" id="auditCard" :class="{ open: panelActivo === 'auditoria' }" style="padding:22px;">
   <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:12px;">
     <div class="card-title" style="margin:0;"><span class="ico"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>Auditoría y Diagnóstico de la Bóveda</div>
     <div style="display:flex; gap:8px;">
       <button type="button" class="btn-sm" id="btnRecargarAuditoria"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Re-escanear</button>
-      <button type="button" class="secondary btn-sm" id="btnCerrarAuditoria">✕ Cerrar</button>
+      <button type="button" class="secondary btn-sm" id="btnCerrarAuditoria" @click="cerrarPaneles()">✕ Cerrar</button>
     </div>
   </div>
   <p class="sub" style="margin-bottom:14px;">Diagnóstico de salud de contraseñas: detecta claves débiles, contraseñas repetidas en varias empresas y credenciales sin actualizar.</p>
@@ -240,7 +457,7 @@
   <div id="auditContent"></div>
 </div>
 
-<div class="card add-card" id="addCard">
+<div class="card add-card" id="addCard" :class="{ open: panelActivo === 'agregar' }">
   <div class="card-title"><span class="ico"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></span>Nueva empresa</div>
   <p class="sub" style="margin-bottom:14px">Escribe el nombre y la clave. La clave se guardará cifrada.</p>
   <form method="post" action="/empresa/agregar">
@@ -275,7 +492,7 @@
   </form>
 </div>
 
-<div class="card add-card" id="importCard" style="padding:18px;">
+<div class="card add-card" id="importCard" :class="{ open: panelActivo === 'importar' }" style="padding:18px;">
   <div class="card-title" style="display:flex; justify-content:space-between; align-items:center;">
     <span style="display:inline-flex; align-items:center; gap:8px;"><span class="ico"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg></span>Importar claves desde un archivo</span>
     <span class="db-orb db-orb-pg" title="PostgreSQL Import">🐘</span>
@@ -311,22 +528,229 @@
   </div>
 </div>
 
+<%
+  var ahora = Date.now();
+  var mesesNombres = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+  var diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+  var mesesCompletos = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+
+  function parseEmpMeta(c) {
+    var f = c.updated_at ? new Date(c.updated_at) : null;
+    if (!f || isNaN(f.getTime())) {
+      return {
+        estado: 'sin-fecha',
+        dias: 9999,
+        timestamp: 0,
+        fechaCorta: 'Sin fecha',
+        fechaLarga: 'Sin fecha registrada',
+        badgePill: 'Sin fecha',
+        tooltip: 'Último cambio de clave: Sin registro · Se recomienda cambiar la clave para iniciar el ciclo mensual de 30 días.'
+      };
+    }
+
+    var ts = f.getTime();
+    var ahoraDate = new Date(ahora);
+    var hoyCal = new Date(ahoraDate.getFullYear(), ahoraDate.getMonth(), ahoraDate.getDate());
+    var fechaCal = new Date(f.getFullYear(), f.getMonth(), f.getDate());
+    var diffDias = Math.round((hoyCal.getTime() - fechaCal.getTime()) / (1000 * 60 * 60 * 24));
+    var dias = Math.max(0, diffDias);
+
+    var diaStr = String(f.getDate()).padStart(2, '0');
+    var mesStr = mesesNombres[f.getMonth()];
+    var anioStr = f.getFullYear();
+    var fechaCorta = diaStr + ' ' + mesStr + ' ' + anioStr;
+
+    var horas = f.getHours();
+    var mins = String(f.getMinutes()).padStart(2, '0');
+    var ampm = horas >= 12 ? 'PM' : 'AM';
+    horas = horas % 12 || 12;
+    var horaStr = String(horas).padStart(2, '0') + ':' + mins + ' ' + ampm;
+    var fechaLarga = diasSemana[f.getDay()] + ', ' + f.getDate() + ' de ' + mesesCompletos[f.getMonth()] + ' de ' + anioStr + ' · ' + horaStr;
+
+    var estado = 'vigente';
+    var badgePill = '';
+    var tooltip = '';
+
+    if (dias > 30) {
+      estado = 'vencida';
+      var diasVencida = dias - 30;
+      badgePill = '⛔ Vencida (+' + diasVencida + 'd)';
+      tooltip = 'Último cambio de clave: ' + fechaLarga + ' · ¡Vencida hace ' + diasVencida + ' día(s)! Las contraseñas de Jira vencen cada mes (30 días). Requiere cambio urgente.';
+    } else if (dias >= 25) {
+      estado = 'por-vencer';
+      var restan = 30 - dias;
+      badgePill = '⚠️ Vence en ' + restan + (restan === 1 ? ' día' : ' días');
+      tooltip = 'Último cambio de clave: ' + fechaLarga + ' · Próxima a vencer en ' + restan + ' día(s). Antigüedad: ' + dias + ' días.';
+    } else {
+      estado = 'vigente';
+      var restan = 30 - dias;
+      if (dias === 0) {
+        badgePill = '🟢 Cambiada hoy';
+        tooltip = 'Último cambio de clave: ' + fechaLarga + ' · Cambiada hoy mismo. Vigente por 30 días más.';
+      } else if (dias === 1) {
+        badgePill = '🟢 Ayer · Vence en 29d';
+        tooltip = 'Último cambio de clave: ' + fechaLarga + ' · Cambiada ayer. Le restan 29 días de vigencia mensual.';
+      } else {
+        badgePill = '🟢 Hace ' + dias + 'd · Vence en ' + restan + 'd';
+        tooltip = 'Último cambio de clave: ' + fechaLarga + ' · Antigüedad: ' + dias + ' días. Le restan ' + restan + ' días antes de vencer.';
+      }
+    }
+
+    return {
+      estado: estado,
+      dias: dias,
+      timestamp: ts,
+      fechaCorta: fechaCorta,
+      fechaLarga: fechaLarga,
+      badgePill: badgePill,
+      tooltip: tooltip
+    };
+  }
+
+  var stats = { total: companies.length, vigentes: 0, porVencer: 0, vencidas: 0, sinFecha: 0 };
+  companies.forEach(function(c) {
+    var meta = parseEmpMeta(c);
+    c._meta = meta;
+    if (meta.estado === 'vigente') stats.vigentes++;
+    else if (meta.estado === 'por-vencer') stats.porVencer++;
+    else if (meta.estado === 'vencida') stats.vencidas++;
+    else stats.sinFecha++;
+  });
+%>
+
+<!-- Barra de Filtros de Vencimiento Mensual y Ordenamiento -->
+<div class="expiration-filter-bar">
+  <div class="efb-pills" id="efbPills">
+    <button type="button" class="efb-btn" :class="{ active: filtroVencimiento === 'all' }" @click="setFiltro('all')" data-filter="all" title="Mostrar todas las empresas · Total: <%= companies.length %>">
+      <span>Todas</span>
+      <span class="efb-count" id="countAll"><%= companies.length %></span>
+    </button>
+    <button type="button" class="efb-btn efb-vigente" :class="{ active: filtroVencimiento === 'vigente' }" @click="setFiltro('vigente')" data-filter="vigente" title="Claves al día (< 25 días) · Vencen en más de 5 días">
+      <span class="efb-dot"></span>
+      <span>Vigentes</span>
+      <span class="efb-count" id="countVigentes"><%= stats.vigentes %></span>
+    </button>
+    <button type="button" class="efb-btn efb-por-vencer" :class="{ active: filtroVencimiento === 'por-vencer' }" @click="setFiltro('por-vencer')" data-filter="por-vencer" title="Claves por vencer (25 a 30 días) · Restan menos de 5 días">
+      <span class="efb-dot"></span>
+      <span>Por vencer</span>
+      <span class="efb-count" id="countPorVencer"><%= stats.porVencer %></span>
+    </button>
+    <button type="button" class="efb-btn efb-vencida" :class="{ active: filtroVencimiento === 'vencida' }" @click="setFiltro('vencida')" data-filter="vencida" title="Claves vencidas (> 30 días) · Requieren actualización">
+      <span class="efb-dot"></span>
+      <span>Vencidas (+30d)</span>
+      <span class="efb-count" id="countVencidas"><%= stats.vencidas %></span>
+    </button>
+  </div>
+
+  <div class="efb-sort">
+    <label for="sortEmpresas" class="efb-sort-lbl"><svg viewBox="0 0 24 24"><path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="m21 8-4-4-4 4"/><path d="M17 4v16"/></svg>Ordenar:</label>
+    <select id="sortEmpresas" class="efb-select" style="display:none;">
+      <option value="nombre-asc">Nombre (A → Z)</option>
+      <option value="nombre-desc">Nombre (Z → A)</option>
+      <option value="vencimiento-asc">Vencidas y por vencer primero</option>
+      <option value="fecha-desc">Último cambio (Más recientes primero)</option>
+      <option value="fecha-asc">Último cambio (Más antiguas primero)</option>
+    </select>
+    <div class="custom-select-wrap" 
+         x-data="{ 
+           abierto: false, 
+           sel: 'nombre-asc', 
+           label: 'Nombre (A → Z)',
+           elegir(val, txt) {
+             this.sel = val;
+             this.label = txt;
+             this.abierto = false;
+             const s = document.getElementById('sortEmpresas');
+             if (s) {
+               s.value = val;
+               s.dispatchEvent(new Event('change', { bubbles: true }));
+             }
+           }
+         }" 
+         @click.outside="abierto = false">
+      <button type="button" 
+              class="custom-select-btn" 
+              :class="{ open: abierto }" 
+              @click="abierto = !abierto"
+              title="Cambiar orden de las empresas">
+        <span x-text="label">Nombre (A → Z)</span>
+        <span class="cs-arrow">▾</span>
+      </button>
+      <div class="custom-select-dropdown" 
+           x-show="abierto" 
+           x-cloak 
+           style="display:none;">
+        <button type="button" 
+                class="custom-select-item" 
+                :class="{ active: sel === 'nombre-asc' }" 
+                @click="elegir('nombre-asc', 'Nombre (A → Z)')" data-val="nombre-asc">
+          <span>Nombre (A → Z)</span>
+          <span class="cs-check" x-show="sel === 'nombre-asc'">✓</span>
+        </button>
+        <button type="button" 
+                class="custom-select-item" 
+                :class="{ active: sel === 'nombre-desc' }" 
+                @click="elegir('nombre-desc', 'Nombre (Z → A)')" data-val="nombre-desc">
+          <span>Nombre (Z → A)</span>
+          <span class="cs-check" x-show="sel === 'nombre-desc'">✓</span>
+        </button>
+        <button type="button" 
+                class="custom-select-item" 
+                :class="{ active: sel === 'vencimiento-asc' }" 
+                @click="elegir('vencimiento-asc', 'Vencidas y por vencer primero')" data-val="vencimiento-asc">
+          <span>Vencidas y por vencer primero</span>
+          <span class="cs-check" x-show="sel === 'vencimiento-asc'">✓</span>
+        </button>
+        <button type="button" 
+                class="custom-select-item" 
+                :class="{ active: sel === 'fecha-desc' }" 
+                @click="elegir('fecha-desc', 'Último cambio (Más recientes)')" data-val="fecha-desc">
+          <span>Último cambio (Más recientes primero)</span>
+          <span class="cs-check" x-show="sel === 'fecha-desc'">✓</span>
+        </button>
+        <button type="button" 
+                class="custom-select-item" 
+                :class="{ active: sel === 'fecha-asc' }" 
+                @click="elegir('fecha-asc', 'Último cambio (Más antiguas)')" data-val="fecha-asc">
+          <span>Último cambio (Más antiguas primero)</span>
+          <span class="cs-check" x-show="sel === 'fecha-asc'">✓</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div id="results">
   <% companies.forEach(function(c, idx) { %>
   <% 
     var charCode = c.empresa.charCodeAt(0) || 65; 
     var hue = (charCode * 15) % 360; 
+    var empInfo = c._meta || parseEmpMeta(c);
   %>
-  <div class="row" data-name="<%= c.empresa.toLowerCase() %>" data-id="<%= c.id %>" style="animation-delay:<%= Math.min(idx, 12) * 30 %>ms">
+  <div class="row <%= empInfo.estado %>" data-name="<%= c.empresa.toLowerCase() %>" data-id="<%= c.id %>" data-estado="<%= empInfo.estado %>" data-dias="<%= empInfo.dias %>" data-fecha="<%= empInfo.timestamp %>" style="animation-delay:<%= Math.min(idx, 12) * 30 %>ms">
     <div class="main">
       <div class="name">
         <button type="button" class="iconbtn favbtn" id="fav-<%= c.id %>" onclick="toggleFav(<%= c.id %>)" title="Marcar como favorito (anclar arriba)" style="padding:0; width:28px; height:28px; background:none; border:none; box-shadow:none;">
           <svg viewBox="0 0 24 24" style="width:18px; height:18px;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
         </button>
         <span class="avatar" style="--hue: <%= hue %>"><%= c.empresa[0].toUpperCase() %></span>
-        <span class="db-orb db-orb-sm db-orb-pg" style="flex-shrink:0;" title="Registro activo en base de datos">🐘</span>
-        <span class="emp-name"><%= c.empresa %></span>
+        <span class="db-orb db-orb-sm db-orb-pg" style="flex-shrink:0;" title="Registro activo en PostgreSQL">🐘</span>
+        <span class="emp-name" title="<%= c.empresa %>"><%= c.empresa %></span>
       </div>
+
+      <!-- CENTRO: Donde señala la flecha roja (Fecha de actualización y semáforo) -->
+      <div class="emp-center-meta">
+        <div class="emp-date-pill <%= empInfo.estado %>" title="<%= empInfo.tooltip %>">
+          <svg class="emp-cal-ico" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <span class="emp-date-label">Cambio:</span>
+          <strong class="emp-date-val"><%= empInfo.fechaCorta %></strong>
+          <span class="emp-status-beacon <%= empInfo.estado %>">
+            <span class="beacon-dot"></span>
+            <span class="beacon-txt"><%= empInfo.badgePill %></span>
+          </span>
+        </div>
+      </div>
+
       <div class="pw-area">
         <div class="pw" id="pw-<%= c.id %>" title="Clave oculta">
           <span id="pw-txt-<%= c.id %>">••••••••••••••••</span>
@@ -406,61 +830,255 @@
 <div class="toast" id="toast"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg><span id="toastTxt">Copiado</span></div>
 
 <script>
-/* ---------- Búsqueda, atajos y paneles ---------- */
+/* ---------- Controlador Reactivo Alpine.js de la Bóveda ---------- */
+window.bovedaAlpineApp = function() {
+  return {
+    q: '',
+    filtroVencimiento: 'all',
+    ordenActivo: 'nombre-asc',
+    ordenTexto: 'Nombre (A → Z)',
+    ordenAbierto: false,
+
+    setOrden(val, txt) {
+      this.ordenActivo = val;
+      this.ordenTexto = txt;
+      this.ordenAbierto = false;
+      const s = document.getElementById('sortEmpresas');
+      if (s) {
+        s.value = val;
+        s.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    },
+
+    panelActivo: null,
+    totalEmpresas: <%= companies.length %>,
+    visibles: <%= companies.length %>,
+
+    init() {
+      // Sincronización con atajo de teclado '/' y Escape
+      window.addEventListener('keydown', (e) => {
+        const t = e.target;
+        const escribiendo = t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable);
+        if (e.key === '/' && !escribiendo && !e.ctrlKey && !e.metaKey) {
+          e.preventDefault();
+          const inp = document.getElementById('searchInput');
+          if (inp) { inp.focus(); inp.select(); }
+        } else if (e.key === 'Escape') {
+          if (this.panelActivo) {
+            this.cerrarPaneles();
+          } else if (t && t.id === 'searchInput') {
+            this.limpiar();
+            t.blur();
+          }
+        }
+      });
+    },
+
+    togglePanel(nombre) {
+      if (this.panelActivo === nombre) {
+        this.cerrarPaneles();
+      } else {
+        this.panelActivo = nombre;
+        this.$nextTick(() => {
+          const card = document.getElementById(nombre === 'agregar' ? 'addCard' : (nombre === 'importar' ? 'importCard' : 'auditCard'));
+          if (card) {
+            const f = card.querySelector('input[type=text], input[type=file]');
+            if (f) f.focus();
+            card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
+          if (nombre === 'auditoria') {
+            const btnRec = document.getElementById('btnRecargarAuditoria');
+            if (btnRec) btnRec.click();
+          }
+        });
+      }
+    },
+
+    cerrarPaneles() {
+      this.panelActivo = null;
+    },
+
+    setFiltro(tipo) {
+      this.filtroVencimiento = tipo;
+      this.aplicarFiltros();
+    },
+
+    limpiar() {
+      this.q = '';
+      this.aplicarFiltros();
+      const inp = document.getElementById('searchInput');
+      if (inp) inp.focus();
+    },
+
+    aplicarFiltros() {
+      const q = (this.q || '').trim().toLowerCase();
+      const rows = document.querySelectorAll('#results .row');
+      let vis = 0;
+
+      rows.forEach((row) => {
+        const name = (row.getAttribute('data-name') || '').toLowerCase();
+        const estado = row.getAttribute('data-estado') || 'vigente';
+        const matchQ = !q || name.includes(q);
+        const matchFiltro = (this.filtroVencimiento === 'all') || (estado === this.filtroVencimiento);
+
+        if (matchQ && matchFiltro) {
+          row.style.display = '';
+          vis++;
+        } else {
+          row.style.display = 'none';
+        }
+      });
+
+      this.visibles = vis;
+
+      const noMatch = document.getElementById('noMatch');
+      if (noMatch) {
+        noMatch.style.display = (this.totalEmpresas > 0 && vis === 0) ? 'block' : 'none';
+        const noMatchTxt = noMatch.querySelector('b');
+        if (noMatchTxt) {
+          noMatchTxt.textContent = this.filtroVencimiento !== 'all' && !q 
+            ? ('No hay empresas con estado ' + this.filtroVencimiento) 
+            : 'Sin resultados';
+        }
+      }
+    },
+
+    get contadorTexto() {
+      const sufijo = this.filtroVencimiento === 'all' ? '' : (' [' + this.filtroVencimiento.toUpperCase() + ']');
+      return (this.q || this.filtroVencimiento !== 'all') 
+        ? (this.visibles + ' de ' + this.totalEmpresas + ' empresas' + sufijo) 
+        : (this.totalEmpresas + ' empresas');
+    }
+  };
+};
+
+/* ---------- Búsqueda, atajos, filtros de vencimiento y paneles ---------- */
 (function(){
   var $ = function(id){ return document.getElementById(id); };
   var input = $('searchInput'), wrap = $('searchWrap'), total = <%= companies.length %>;
+  var currentFilter = 'all';
 
-  var rowsCache = null;
-  function getCachedRows(){
-    if (!rowsCache) {
-      rowsCache = Array.from(document.querySelectorAll('#results .row')).map(function(row){
-        return { el: row, name: (row.dataset.name || '').toLowerCase() };
-      });
-    }
-    return rowsCache;
-  }
-  var debounceDash = null;
-  function filtrar(){
-    clearTimeout(debounceDash);
-    debounceDash = setTimeout(function(){
-      var q = input.value.trim().toLowerCase(), vis = 0;
-      wrap.classList.toggle('has-text', q.length > 0);
-      var rows = getCachedRows();
-      for (var i = 0; i < rows.length; i++) {
-        var r = rows[i];
-        var ok = !q || r.name.includes(q);
-        r.el.style.display = ok ? '' : 'none';
-        if (ok) vis++;
+  function aplicarFiltros() {
+    var q = (input ? input.value : '').trim().toLowerCase();
+    if (wrap) wrap.classList.toggle('has-text', q.length > 0);
+    var rows = document.querySelectorAll('#results .row');
+    var vis = 0;
+
+    rows.forEach(function(row){
+      var name = (row.getAttribute('data-name') || '').toLowerCase();
+      var estado = row.getAttribute('data-estado') || 'vigente';
+      var matchQ = !q || name.includes(q);
+      var matchFilter = (currentFilter === 'all') || (estado === currentFilter);
+
+      if (matchQ && matchFilter) {
+        row.style.display = '';
+        vis++;
+      } else {
+        row.style.display = 'none';
       }
-      $('countTxt').textContent = q ? (vis + ' de ' + total + ' empresas') : (total + ' empresas');
-      $('noMatch').style.display = (total > 0 && vis === 0) ? 'block' : 'none';
-    }, 40);
+    });
+
+    var countTxt = $('countTxt');
+    if (countTxt) {
+      var sufijo = currentFilter === 'all' ? '' : (' [' + currentFilter.toUpperCase() + ']');
+      countTxt.textContent = (q || currentFilter !== 'all') ? (vis + ' de ' + total + ' empresas' + sufijo) : (total + ' empresas');
+    }
+    var noMatch = $('noMatch');
+    if (noMatch) {
+      noMatch.style.display = (total > 0 && vis === 0) ? 'block' : 'none';
+      var noMatchTxt = noMatch.querySelector('b');
+      if (noMatchTxt) {
+        noMatchTxt.textContent = currentFilter !== 'all' && !q 
+          ? ('No hay empresas con estado ' + currentFilter) 
+          : 'Sin resultados';
+      }
+    }
   }
-  input.addEventListener('input', filtrar);
-  $('searchClear').addEventListener('click', function(){ input.value = ''; filtrar(); input.focus(); });
-  document.addEventListener('keydown', function(e){
-    var t = e.target, escribiendo = t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable);
-    if (e.key === '/' && !escribiendo && !e.ctrlKey && !e.metaKey) { e.preventDefault(); input.focus(); input.select(); }
-    else if (e.key === 'Escape' && t === input) { input.value = ''; filtrar(); input.blur(); }
+
+  // Event listener global para los botones de filtro de vencimiento
+  document.addEventListener('click', function(e){
+    var btn = e.target.closest('.efb-btn');
+    if (!btn) return;
+    document.querySelectorAll('.efb-btn').forEach(function(b){ b.classList.remove('active'); });
+    btn.classList.add('active');
+    currentFilter = btn.getAttribute('data-filter') || 'all';
+    aplicarFiltros();
   });
 
+  if (input) {
+    input.addEventListener('input', function(){ aplicarFiltros(); });
+  }
+
+  var searchClear = $('searchClear');
+  if (searchClear && input) {
+    searchClear.addEventListener('click', function(){
+      input.value = '';
+      aplicarFiltros();
+      input.focus();
+    });
+  }
+
+  document.addEventListener('keydown', function(e){
+    var t = e.target, escribiendo = t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable);
+    if (e.key === '/' && !escribiendo && !e.ctrlKey && !e.metaKey) { e.preventDefault(); if (input) { input.focus(); input.select(); } }
+    else if (e.key === 'Escape' && t === input) { input.value = ''; aplicarFiltros(); input.blur(); }
+  });
+
+  // Selector de ordenamiento
+  var sortSelect = $('sortEmpresas');
+  if (sortSelect) {
+    sortSelect.addEventListener('change', function(){
+      var mode = this.value;
+      var container = $('results');
+      if (!container) return;
+      var rows = Array.from(container.querySelectorAll('.row'));
+
+      rows.sort(function(a, b){
+        var aFav = a.classList.contains('fav') ? 1 : 0;
+        var bFav = b.classList.contains('fav') ? 1 : 0;
+        if (aFav !== bFav) return bFav - aFav;
+
+        var nameA = (a.getAttribute('data-name') || '').toLowerCase();
+        var nameB = (b.getAttribute('data-name') || '').toLowerCase();
+        var diasA = parseInt(a.getAttribute('data-dias'), 10) || 0;
+        var diasB = parseInt(b.getAttribute('data-dias'), 10) || 0;
+        var fechaA = parseInt(a.getAttribute('data-fecha'), 10) || 0;
+        var fechaB = parseInt(b.getAttribute('data-fecha'), 10) || 0;
+
+        if (mode === 'nombre-asc') return nameA.localeCompare(nameB, 'es');
+        if (mode === 'nombre-desc') return nameB.localeCompare(nameA, 'es');
+        if (mode === 'vencimiento-asc') return diasB - diasA; // Vencidas (>30 días) primero
+        if (mode === 'fecha-desc') return fechaB - fechaA; // Más recientes primero
+        if (mode === 'fecha-asc') return fechaA - fechaB; // Más antiguas primero
+        return 0;
+      });
+
+      rows.forEach(function(r){ container.appendChild(r); });
+      var noMatch = $('noMatch');
+      if (noMatch) container.appendChild(noMatch);
+    });
+  }
+
   function panel(btnId, cardId, otroId, otroBtn){
-    $(btnId).addEventListener('click', function(){
+    var b = $(btnId);
+    if (!b) return;
+    b.addEventListener('click', function(){
       var abierto = $(cardId).classList.toggle('open');
       if (abierto) { $(otroId).classList.remove('open'); $(otroBtn).classList.remove('active'); $(otroBtn).setAttribute('aria-expanded', 'false'); var f = $(cardId).querySelector('input[type=text]'); if (f) f.focus(); $(cardId).scrollIntoView({ behavior:'smooth', block:'nearest' }); }
       this.classList.toggle('active', abierto); this.setAttribute('aria-expanded', abierto);
     });
   }
   panel('toggleAddBtn', 'addCard', 'importCard', 'toggleImportBtn');
-  /* el panel de importar lo abre su propio script más abajo; aquí solo sincronizamos el estado visual */
-  $('toggleImportBtn').addEventListener('click', function(){
-    var btn = this; setTimeout(function(){
-      var abierto = $('importCard').classList.contains('open');
-      btn.classList.toggle('active', abierto); btn.setAttribute('aria-expanded', abierto);
-      if (abierto) { $('addCard').classList.remove('open'); $('toggleAddBtn').classList.remove('active'); $('toggleAddBtn').setAttribute('aria-expanded', 'false'); }
-    }, 0);
-  });
+  var impBtn = $('toggleImportBtn');
+  if (impBtn) {
+    impBtn.addEventListener('click', function(){
+      var btn = this; setTimeout(function(){
+        var abierto = $('importCard').classList.contains('open');
+        btn.classList.toggle('active', abierto); btn.setAttribute('aria-expanded', abierto);
+        if (abierto) { $('addCard').classList.remove('open'); $('toggleAddBtn').classList.remove('active'); $('toggleAddBtn').setAttribute('aria-expanded', 'false'); }
+      }, 0);
+    });
+  }
 })();
 
 /* ---------- Importar claves desde archivo ---------- */
@@ -929,7 +1547,14 @@ async function ejecutarAuditoria() {
     auditContent.innerHTML = html;
   } catch (err) {
     auditLoading.style.display = 'none';
-    auditContent.innerHTML = `<div class="imp-msg err">${err.message}</div>`;
+    const msg = (err && err.message === 'Failed to fetch')
+      ? 'No se pudo conectar con el servidor local. Asegúrate de que el servidor esté activo y haz clic en Reintentar.'
+      : (err ? err.message : 'Error desconocido');
+    auditContent.innerHTML = `
+      <div class="imp-msg err" style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+        <span>⚠️ ${msg}</span>
+        <button type="button" class="btn-sm" onclick="ejecutarAuditoria()" style="cursor:pointer; padding:4px 12px; font-weight:700; border-radius:6px;">🔄 Reintentar</button>
+      </div>`;
   }
 }
 
