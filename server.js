@@ -1,6 +1,14 @@
 require("dotenv").config();
 
 const express = require("express");
+const pkgJson = require("./package.json");
+const APP_VERSION = pkgJson.version || "2.9.0";
+let GIT_COMMIT = "";
+try {
+  const { execSync } = require("child_process");
+  GIT_COMMIT = execSync("git rev-parse --short HEAD", { cwd: __dirname, timeout: 3000 }).toString().trim();
+} catch(e) {}
+
 const compression = require("compression");
 const session = require("express-session");
 const pgSession = require("connect-pg-simple")(session);
@@ -162,6 +170,10 @@ app.use(async (req, res, next) => {
   res.locals.flashes = req.session.flashes || [];
   res.locals.currentPath = req.path;
   res.locals.papeleraCount = papeleraCache.count;
+  res.locals.appVersion = "v" + APP_VERSION;
+  res.locals.rawVersion = APP_VERSION;
+  res.locals.gitCommit = GIT_COMMIT;
+  res.locals.buildString = "v" + APP_VERSION + (GIT_COMMIT ? " (" + GIT_COMMIT + ")" : "");
 
   req.session.flashes = [];
 
@@ -2388,7 +2400,7 @@ app.use((err, req, res, next) => {
 // ---------------------------------------------------------------------------
 
 app.get("/api/health", (req, res) => {
-  res.json({ ok: true, version: "2.8.8", timestamp: Date.now() });
+  res.json({ ok: true, version: APP_VERSION, commit: GIT_COMMIT, timestamp: Date.now() });
 });
 
 app.get("/api/sistema/verificar-actualizacion", requireLogin, (req, res) => {
@@ -2437,7 +2449,9 @@ app.get("/api/sistema/verificar-actualizacion", requireLogin, (req, res) => {
             hayCambios: false,
             numCambios: 0,
             branch: branch,
-            mensaje: "El sistema ya está actualizado con la última versión de GitHub (v2.8.8)."
+            mensaje: "El sistema ya está actualizado con la última versión de GitHub (v" + APP_VERSION + (GIT_COMMIT ? " · " + GIT_COMMIT : "") + ").",
+            version: APP_VERSION,
+            commit: GIT_COMMIT
           });
         }
 
@@ -2452,7 +2466,9 @@ app.get("/api/sistema/verificar-actualizacion", requireLogin, (req, res) => {
             hayCambios: true,
             numCambios: count,
             branch: branch,
-            commits: commits
+            commits: commits,
+            version: APP_VERSION,
+            commit: GIT_COMMIT
           });
         });
       });

@@ -23,6 +23,10 @@ git stash 2>nul
 echo Descargando ultimas mejoras de GitHub...
 git fetch origin main
 git pull origin main
+if %errorlevel% neq 0 (
+    echo [AVISO] git pull reportó conflicto local. Sincronizando limpiamente con origin/main...
+    git reset --hard origin/main
+)
 
 :: 4. Instalar o actualizar dependencias si hubo cambios
 if exist "package.json" (
