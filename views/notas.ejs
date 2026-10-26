@@ -348,6 +348,298 @@
   .cat-dropdown-item.active { background: var(--accent) !important; color: #fff !important; font-weight: 700; }
   .cat-check { font-size: 12px; font-weight: 800; }
 
+
+  /* ==========================================================================
+     BARRA DE FILTRADO, BÚSQUEDA Y NAVEGACIÓN EN EL EDITOR DE CÓDIGO (JAIVANÁ/NOTAS)
+     ========================================================================== */
+  .nt-ed-filter-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 6px 10px;
+    background: #1f1f20;
+    border-bottom: 1px solid #333333;
+    font-size: 12px;
+    color: #cccccc;
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 5;
+  }
+  .nt-ed-fb-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 280px;
+  }
+  .nt-ed-fb-search {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: #2d2d30;
+    border: 1px solid #3c3c3c;
+    border-radius: 6px;
+    padding: 2px 6px;
+    flex: 1;
+    max-width: 480px;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  .nt-ed-fb-search:focus-within {
+    border-color: #007acc;
+    box-shadow: 0 0 0 2px rgba(0, 122, 204, 0.35);
+  }
+  .nt-ed-fb-ico {
+    font-size: 12px;
+    opacity: 0.7;
+    user-select: none;
+  }
+  .nt-ed-fb-input {
+    flex: 1;
+    background: transparent !important;
+    border: none !important;
+    outline: none !important;
+    color: #ffffff !important;
+    font-family: var(--sans);
+    font-size: 12px !important;
+    padding: 4px 2px !important;
+    min-width: 140px;
+    box-shadow: none !important;
+  }
+  .nt-ed-fb-input::placeholder {
+    color: #858585;
+  }
+  .nt-ed-fb-count {
+    font-size: 11px;
+    color: #9cdcfe;
+    font-family: var(--mono);
+    white-space: nowrap;
+    user-select: none;
+    padding: 0 4px;
+  }
+  .nt-ed-fb-nav, .nt-ed-fb-btn-go {
+    background: #3e3e42;
+    border: 1px solid #4a4a4f;
+    color: #d4d4d4;
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: 11px;
+    cursor: pointer;
+    line-height: 1.2;
+    transition: all 0.15s ease;
+  }
+  .nt-ed-fb-nav:hover, .nt-ed-fb-btn-go:hover {
+    background: #007acc;
+    border-color: #007acc;
+    color: #ffffff;
+  }
+  .nt-ed-fb-goto {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: #858585;
+    background: #2d2d30;
+    border: 1px solid #3c3c3c;
+    border-radius: 6px;
+    padding: 2px 6px;
+  }
+  .nt-ed-fb-goto-inp {
+    width: 52px;
+    background: #1e1e1e !important;
+    border: 1px solid #3c3c3c !important;
+    border-radius: 4px !important;
+    color: #ffffff !important;
+    font-family: var(--mono);
+    font-size: 11.5px !important;
+    padding: 2px 4px !important;
+    text-align: center;
+    box-shadow: none !important;
+    outline: none !important;
+  }
+  .nt-ed-fb-goto-inp:focus {
+    border-color: #007acc !important;
+  }
+  .nt-ed-fb-right {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .nt-ed-fb-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: #2d2d30;
+    border: 1px solid #3c3c3c;
+    border-radius: 6px;
+    padding: 4px 8px;
+    color: #cccccc;
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    user-select: none;
+  }
+  .nt-ed-fb-pill:hover, .nt-ed-fb-pill.active {
+    background: #007acc;
+    border-color: #007acc;
+    color: #ffffff;
+  }
+  .nt-ed-fb-badge {
+    background: #094771;
+    color: #ffffff;
+    font-size: 10px;
+    font-weight: 700;
+    border-radius: 999px;
+    padding: 1px 6px;
+    font-family: var(--mono);
+  }
+  .nt-ed-fb-pill.active .nt-ed-fb-badge {
+    background: #ffffff;
+    color: #007acc;
+  }
+
+  /* Barra de Reemplazo */
+  .nt-ed-rep-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 10px;
+    background: #252526;
+    border-bottom: 1px solid #333333;
+    font-size: 12px;
+    animation: ntEdSlideDown 0.15s ease;
+  }
+  .nt-ed-rep-input {
+    flex: 1;
+    max-width: 380px;
+    background: #1e1e1e !important;
+    border: 1px solid #3c3c3c !important;
+    border-radius: 6px !important;
+    color: #ffffff !important;
+    font-family: var(--sans);
+    font-size: 12px !important;
+    padding: 4px 8px !important;
+    outline: none !important;
+    box-shadow: none !important;
+  }
+  .nt-ed-rep-input:focus {
+    border-color: #007acc !important;
+  }
+  .nt-ed-rep-btn {
+    background: #3e3e42;
+    border: 1px solid #4a4a4f;
+    color: #d4d4d4;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .nt-ed-rep-btn:hover {
+    background: #007acc;
+    border-color: #007acc;
+    color: #ffffff;
+  }
+
+  /* Panel Desplegable de Líneas Filtradas */
+  .nt-ed-results-panel {
+    background: #252526;
+    border-bottom: 1px solid #3c3c3c;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+    max-height: 240px;
+    overflow-y: auto;
+    position: relative;
+    z-index: 10;
+    animation: ntEdSlideDown 0.18s ease;
+  }
+  @keyframes ntEdSlideDown {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .nt-ed-rp-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 12px;
+    background: #1e1e1e;
+    border-bottom: 1px solid #2d2d2d;
+    font-size: 11px;
+    color: #858585;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+  }
+  .nt-ed-rp-head small {
+    color: #9cdcfe;
+    margin-left: 8px;
+  }
+  .nt-ed-rp-close {
+    background: none;
+    border: none;
+    color: #858585;
+    font-size: 11px;
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+  .nt-ed-rp-close:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+  }
+  .nt-ed-rp-list {
+    display: flex;
+    flex-direction: column;
+  }
+  .nt-ed-rp-item {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    padding: 5px 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    cursor: pointer;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: #d4d4d4;
+    transition: background 0.12s ease;
+  }
+  .nt-ed-rp-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+  }
+  .nt-ed-rp-item.active {
+    background: rgba(0, 122, 204, 0.3);
+    border-left: 3px solid #007acc;
+  }
+  .nt-ed-item-ln {
+    flex-shrink: 0;
+    width: 65px;
+    font-weight: 700;
+    color: #569cd6;
+    user-select: none;
+  }
+  .nt-ed-item-txt {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .nt-ed-item-txt mark {
+    background: #8a6d1f;
+    color: #ffffff;
+    border-radius: 2px;
+    padding: 0 2px;
+  }
+  .nt-ed-no-res {
+    padding: 14px;
+    text-align: center;
+    color: #858585;
+    font-size: 12px;
+    font-style: italic;
+  }
+  .btn-filtrar-ed {
+    color: var(--accent) !important;
+  }
+
 </style>
 
 <% var C = (typeof cfg !== 'undefined') ? cfg : { base:'/notas', plural:'notas', titulo:'Notas y comandos', agregar:'+ Agregar nota', placeCat:'Ej: Ventoy USB', placeTit:'Ej: Preparar la USB', placeCont:'Pega aquí el comando, script o apunte…', vacio:'Todavía no hay notas guardadas. Agrega la primera arriba.', buscarDentro:'Buscar dentro de esta nota…', papeleraUno:'Mover esta nota a la papelera', el:'la nota', todos:'las' };
@@ -510,6 +802,7 @@
       <div class="body-actions">
         <button type="button" class="secondary" onclick="event.stopPropagation(); copiarNota(<%= n.id %>)">Copiar</button>
         <button type="button" class="secondary" onclick="event.stopPropagation(); toggleEdit(<%= n.id %>)">Editar</button>
+        <button type="button" class="secondary btn-filtrar-ed" onclick="event.stopPropagation(); abrirEditarConFiltro(<%= n.id %>)" title="Abrir editor y filtrar líneas directamente">🔍 Filtrar / Editar</button>
         <% if (!n.es_excel) { %>
         <button type="button" class="secondary" id="btnModo-<%= n.id %>" onclick="event.stopPropagation(); alternarModoCodigo(<%= n.id %>)"><%= n.es_sql ? '📄 Ver como texto' : '🎨 Ver con colores' %></button>
         <% } %>
@@ -554,6 +847,51 @@
                   <span class="nt-ed-pos">Lín 1, Col 1</span>
                 </div>
               </div>
+              
+              <!-- BARRA DE FILTRADO, BÚSQUEDA Y NAVEGACIÓN DEL EDITOR -->
+              <div class="nt-ed-filter-bar" id="edFilterBar-<%= n.id %>">
+                <div class="nt-ed-fb-left">
+                  <div class="nt-ed-fb-search">
+                    <span class="nt-ed-fb-ico">🔍</span>
+                    <input type="text" class="nt-ed-fb-input" id="filtroEd-<%= n.id %>" placeholder="Filtrar texto o línea (ej. nit, select, id...)" oninput="filtrarEnEditor(<%= n.id %>, this.value)" onkeydown="teclaFiltroEditor(event, <%= n.id %>)" autocomplete="off" spellcheck="false">
+                    <span class="nt-ed-fb-count" id="countEd-<%= n.id %>"></span>
+                    <button type="button" class="nt-ed-fb-nav" title="Coincidencia anterior (Shift+Enter)" onclick="irCoincidenciaEditor(<%= n.id %>, -1)">▲</button>
+                    <button type="button" class="nt-ed-fb-nav" title="Siguiente coincidencia (Enter)" onclick="irCoincidenciaEditor(<%= n.id %>, 1)">▼</button>
+                  </div>
+                  <div class="nt-ed-fb-goto">
+                    <span>Lín:</span>
+                    <input type="number" class="nt-ed-fb-goto-inp" id="gotoEd-<%= n.id %>" min="1" placeholder="4140" onkeydown="if(event.key==='Enter'){event.preventDefault(); saltarALineaEditor(<%= n.id %>, this.value);}">
+                    <button type="button" class="nt-ed-fb-btn-go" onclick="saltarALineaEditor(<%= n.id %>, document.getElementById('gotoEd-<%= n.id %>').value)">Ir</button>
+                  </div>
+                </div>
+                <div class="nt-ed-fb-right">
+                  <button type="button" class="nt-ed-fb-pill" id="btnListEd-<%= n.id %>" onclick="alternarListaFiltradas(<%= n.id %>)" title="Ver listado desplegable de líneas que coinciden">
+                    <span>📋 Líneas filtradas</span>
+                    <span class="nt-ed-fb-badge" id="badgeEd-<%= n.id %>" style="display:none;">0</span>
+                  </button>
+                  <button type="button" class="nt-ed-fb-pill" id="btnRepEd-<%= n.id %>" onclick="alternarReemplazarEditor(<%= n.id %>)" title="Buscar y Reemplazar">
+                    <span>⇄ Reemplazar</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Sub-barra de Reemplazo -->
+              <div class="nt-ed-rep-bar" id="repBar-<%= n.id %>" style="display:none;">
+                <input type="text" class="nt-ed-rep-input" id="repInput-<%= n.id %>" placeholder="Reemplazar por..." onkeydown="if(event.key==='Enter'){event.preventDefault(); reemplazarActualEditor(<%= n.id %>);}">
+                <button type="button" class="nt-ed-rep-btn" onclick="reemplazarActualEditor(<%= n.id %>)">Reemplazar</button>
+                <button type="button" class="nt-ed-rep-btn" onclick="reemplazarTodoEditor(<%= n.id %>)">Reemplazar todo</button>
+              </div>
+
+              <!-- Panel Desplegable de Líneas Filtradas -->
+              <div class="nt-ed-results-panel" id="resultsPanel-<%= n.id %>" style="display:none;">
+                <div class="nt-ed-rp-head">
+                  <span>Líneas que coinciden con el filtro:</span>
+                  <small>Haz clic en cualquier línea para saltar a ella y modificarla</small>
+                  <button type="button" class="nt-ed-rp-close" onclick="alternarListaFiltradas(<%= n.id %>, false)">✕ Cerrar</button>
+                </div>
+                <div class="nt-ed-rp-list" id="resultsList-<%= n.id %>"></div>
+              </div>
+
               <div class="nt-ed-box">
                 <div class="nt-ed-gut" aria-hidden="true"><div class="nt-ed-gut-in">1</div></div>
                 <div class="nt-ed-code">
@@ -1558,6 +1896,345 @@ function sincronizarScrollEditor(ta){
     gutIn.style.transform = 'translateY(' + (-ta.scrollTop) + 'px)';
   }
 }
+
+// =========================================================================
+// FILTRADO Y BÚSQUEDA INTERACTIVA DENTRO DEL EDITOR DE EDICIÓN
+// =========================================================================
+const editorSearchState = {};
+
+function getEditorSearchState(id) {
+  if (!editorSearchState[id]) {
+    editorSearchState[id] = { query: "", matches: [], idx: -1 };
+  }
+  return editorSearchState[id];
+}
+
+function abrirEditarConFiltro(id) {
+  const p = document.getElementById("edit-" + id);
+  if (!p || !p.classList.contains("open")) {
+    toggleEdit(id);
+  }
+  setTimeout(function() {
+    const inp = document.getElementById("filtroEd-" + id);
+    if (inp) {
+      inp.focus();
+      inp.select();
+    }
+  }, 120);
+}
+
+function filtrarEnEditor(id, query) {
+  const st = getEditorSearchState(id);
+  st.query = (query || "").trim();
+  st.matches = [];
+  st.idx = -1;
+
+  const panel = document.getElementById("edit-" + id);
+  if (!panel) return;
+  const ta = panel.querySelector(".nt-ed-input");
+  if (!ta) return;
+
+  const val = ta.value || "";
+  const countEl = document.getElementById("countEd-" + id);
+  const badgeEl = document.getElementById("badgeEd-" + id);
+  const resultsList = document.getElementById("resultsList-" + id);
+
+  if (!st.query) {
+    if (countEl) countEl.textContent = "";
+    if (badgeEl) { badgeEl.style.display = "none"; badgeEl.textContent = "0"; }
+    if (resultsList) resultsList.innerHTML = '<div class="nt-ed-no-res">Escribe para filtrar líneas o buscar texto...</div>';
+    return;
+  }
+
+  const queryLower = st.query.toLowerCase();
+  const lines = val.split("\n");
+  let currentOffset = 0;
+
+  lines.forEach(function(lineText, lineIdx) {
+    const lineNum = lineIdx + 1;
+    const lineLower = lineText.toLowerCase();
+    let colIdx = 0;
+
+    if (lineLower.includes(queryLower)) {
+      let searchPos = 0;
+      while ((colIdx = lineLower.indexOf(queryLower, searchPos)) !== -1) {
+        st.matches.push({
+          start: currentOffset + colIdx,
+          end: currentOffset + colIdx + queryLower.length,
+          lineNum: lineNum,
+          lineText: lineText.trim() || "(Línea vacía)"
+        });
+        searchPos = colIdx + Math.max(1, queryLower.length);
+      }
+    } else if (String(lineNum) === st.query) {
+      st.matches.push({
+        start: currentOffset,
+        end: currentOffset + lineText.length,
+        lineNum: lineNum,
+        lineText: lineText.trim() || "(Línea vacía)"
+      });
+    }
+
+    currentOffset += lineText.length + 1;
+  });
+
+  const total = st.matches.length;
+  if (badgeEl) {
+    badgeEl.textContent = total;
+    badgeEl.style.display = total > 0 ? "inline-flex" : "none";
+  }
+
+  if (resultsList) {
+    if (total === 0) {
+      resultsList.innerHTML = '<div class="nt-ed-no-res">No se encontraron líneas con «' + escapeHtml(st.query) + '»</div>';
+    } else {
+      let html = "";
+      const linesMap = new Map();
+      st.matches.forEach(function(m, mIdx) {
+        if (!linesMap.has(m.lineNum)) {
+          linesMap.set(m.lineNum, { mIdx: mIdx, lineNum: m.lineNum, lineText: m.lineText });
+        }
+      });
+
+      linesMap.forEach(function(item) {
+        html += '<div class="nt-ed-rp-item" onclick="saltarAMatchEditor(' + id + ', ' + item.mIdx + ')">' +
+          '<span class="nt-ed-item-ln">Lín ' + item.lineNum + '</span>' +
+          '<span class="nt-ed-item-txt">' + resaltarCoincidenciaItem(item.lineText, st.query) + '</span>' +
+        '</div>';
+      });
+      resultsList.innerHTML = html;
+    }
+  }
+
+  if (total > 0) {
+    irCoincidenciaEditor(id, 1, true);
+  } else {
+    if (countEl) countEl.textContent = "0 encontrados";
+  }
+}
+
+function resaltarCoincidenciaItem(text, query) {
+  if (!text) return "";
+  const escaped = escapeHtml(text);
+  const qEsc = escapeHtml(query);
+  const parts = escaped.split(new RegExp("(" + qEsc.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\// Delegación global de eventos para los editores de notas") + ")", "gi"));
+  return parts.map(function(p) {
+    return p.toLowerCase() === qEsc.toLowerCase() ? "<mark>" + p + "</mark>" : p;
+  }).join("");
+}
+
+function irCoincidenciaEditor(id, dir, esInicial) {
+  const st = getEditorSearchState(id);
+  if (!st.matches || st.matches.length === 0) return;
+
+  if (esInicial) {
+    st.idx = 0;
+  } else {
+    st.idx = (st.idx + dir + st.matches.length) % st.matches.length;
+  }
+
+  saltarAMatchEditor(id, st.idx);
+}
+
+function saltarAMatchEditor(id, matchIdx) {
+  const st = getEditorSearchState(id);
+  if (!st.matches || !st.matches[matchIdx]) return;
+  st.idx = matchIdx;
+
+  const match = st.matches[matchIdx];
+  const panel = document.getElementById("edit-" + id);
+  if (!panel) return;
+  const ta = panel.querySelector(".nt-ed-input");
+  if (!ta) return;
+
+  const countEl = document.getElementById("countEd-" + id);
+  if (countEl) {
+    countEl.textContent = (st.idx + 1) + " / " + st.matches.length;
+  }
+
+  ta.focus();
+  ta.setSelectionRange(match.start, match.end);
+
+  const lineHeight = 20.8;
+  const targetScroll = Math.max(0, (match.lineNum - 1) * lineHeight - (ta.clientHeight / 2) + 20);
+  ta.scrollTop = targetScroll;
+  sincronizarScrollEditor(ta);
+  actualizarEditorNota(ta);
+
+  const resultsList = document.getElementById("resultsList-" + id);
+  if (resultsList) {
+    resultsList.querySelectorAll(".nt-ed-rp-item").forEach(function(el) {
+      el.classList.toggle("active", el.textContent.includes("Lín " + match.lineNum));
+    });
+  }
+}
+
+function saltarALineaEditor(id, numStr) {
+  const lineNum = parseInt(numStr, 10);
+  if (isNaN(lineNum) || lineNum < 1) return;
+
+  const panel = document.getElementById("edit-" + id);
+  if (!panel) return;
+  const ta = panel.querySelector(".nt-ed-input");
+  if (!ta) return;
+
+  const val = ta.value || "";
+  const lines = val.split("\n");
+  if (lineNum > lines.length) {
+    alert("El documento tiene " + lines.length + " líneas.");
+    return;
+  }
+
+  let offset = 0;
+  for (let i = 0; i < lineNum - 1; i++) {
+    offset += lines[i].length + 1;
+  }
+  const endOffset = offset + lines[lineNum - 1].length;
+
+  ta.focus();
+  ta.setSelectionRange(offset, endOffset);
+
+  const lineHeight = 20.8;
+  const targetScroll = Math.max(0, (lineNum - 1) * lineHeight - (ta.clientHeight / 2) + 20);
+  ta.scrollTop = targetScroll;
+  sincronizarScrollEditor(ta);
+  actualizarEditorNota(ta);
+}
+
+function alternarListaFiltradas(id, forzar) {
+  const panel = document.getElementById("resultsPanel-" + id);
+  if (!panel) return;
+  const nuevoEstado = (typeof forzar === "boolean") ? forzar : (panel.style.display === "none");
+  panel.style.display = nuevoEstado ? "block" : "none";
+  const btn = document.getElementById("btnListEd-" + id);
+  if (btn) btn.classList.toggle("active", nuevoEstado);
+}
+
+function alternarReemplazarEditor(id) {
+  const row = document.getElementById("repBar-" + id);
+  if (!row) return;
+  const abierto = row.style.display !== "none";
+  row.style.display = abierto ? "none" : "flex";
+  const btn = document.getElementById("btnRepEd-" + id);
+  if (btn) btn.classList.toggle("active", !abierto);
+  if (!abierto) {
+    const inp = document.getElementById("repInput-" + id);
+    if (inp) inp.focus();
+  }
+}
+
+function reemplazarActualEditor(id) {
+  const st = getEditorSearchState(id);
+  if (!st.matches || st.idx < 0 || !st.matches[st.idx]) return;
+
+  const repInp = document.getElementById("repInput-" + id);
+  const nuevoTexto = repInp ? repInp.value : "";
+
+  const panel = document.getElementById("edit-" + id);
+  if (!panel) return;
+  const ta = panel.querySelector(".nt-ed-input");
+  if (!ta) return;
+
+  const match = st.matches[st.idx];
+  const s = match.start, e = match.end;
+
+  if (document.execCommand) {
+    ta.focus();
+    ta.setSelectionRange(s, e);
+    document.execCommand("insertText", false, nuevoTexto);
+  } else {
+    ta.setRangeText(nuevoTexto, s, e, "end");
+  }
+
+  actualizarEditorNota(ta);
+  filtrarEnEditor(id, st.query);
+}
+
+function reemplazarTodoEditor(id) {
+  const st = getEditorSearchState(id);
+  if (!st.query) return;
+
+  const repInp = document.getElementById("repInput-" + id);
+  const nuevoTexto = repInp ? repInp.value : "";
+
+  const panel = document.getElementById("edit-" + id);
+  if (!panel) return;
+  const ta = panel.querySelector(".nt-ed-input");
+  if (!ta) return;
+
+  const val = ta.value || "";
+  const regex = new RegExp(st.query.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\// Delegación global de eventos para los editores de notas"), "gi");
+  const count = (val.match(regex) || []).length;
+  if (count === 0) {
+    alert("No se encontraron coincidencias para reemplazar.");
+    return;
+  }
+
+  if (!confirm("¿Reemplazar " + count + " coincidencia(s) en todo el texto?")) return;
+
+  ta.value = val.replace(regex, nuevoTexto);
+  actualizarEditorNota(ta);
+  filtrarEnEditor(id, st.query);
+  alert("Se reemplazaron " + count + " coincidencia(s).");
+}
+
+function teclaFiltroEditor(e, id) {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    irCoincidenciaEditor(id, e.shiftKey ? -1 : 1);
+  } else if (e.key === "Escape") {
+    alternarListaFiltradas(id, false);
+    const panel = document.getElementById("edit-" + id);
+    if (panel) {
+      const ta = panel.querySelector(".nt-ed-input");
+      if (ta) ta.focus();
+    }
+  }
+}
+
+// Atajo Ctrl+F y Ctrl+G en los textareas del editor
+document.addEventListener("keydown", function(e) {
+  if ((e.ctrlKey || e.metaKey) && (e.key === "f" || e.key === "F")) {
+    const ta = e.target;
+    if (ta && ta.classList && ta.classList.contains("nt-ed-input")) {
+      const panel = ta.closest(".edit-panel");
+      if (panel) {
+        e.preventDefault();
+        const idMatch = panel.id.match(/^edit-(\d+)$/);
+        if (idMatch) {
+          const id = idMatch[1];
+          const filtroInp = document.getElementById("filtroEd-" + id);
+          if (filtroInp) {
+            const sel = ta.value.substring(ta.selectionStart, ta.selectionEnd).trim();
+            if (sel && sel.length < 60) {
+              filtroInp.value = sel;
+              filtrarEnEditor(id, sel);
+            }
+            filtroInp.focus();
+            filtroInp.select();
+          }
+        }
+      }
+    }
+  } else if ((e.ctrlKey || e.metaKey) && (e.key === "g" || e.key === "G")) {
+    const ta = e.target;
+    if (ta && ta.classList && ta.classList.contains("nt-ed-input")) {
+      const panel = ta.closest(".edit-panel");
+      if (panel) {
+        e.preventDefault();
+        const idMatch = panel.id.match(/^edit-(\d+)$/);
+        if (idMatch) {
+          const id = idMatch[1];
+          const gotoInp = document.getElementById("gotoEd-" + id);
+          if (gotoInp) {
+            gotoInp.focus();
+            gotoInp.select();
+          }
+        }
+      }
+    }
+  }
+});
 
 // Delegación global de eventos para los editores de notas
 document.addEventListener('input', function(e){
