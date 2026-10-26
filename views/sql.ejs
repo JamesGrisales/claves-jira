@@ -1869,7 +1869,7 @@ window.sqlAlpineStudio = function() {
 var LOTE = 1500; // líneas dibujadas por bloque
 var $ = function(id){ return document.getElementById(id); };
 var entrada = $('entrada');
-var opts = { kw: 'upper', perRow: 10, indent: '4', selectMode: 'one', vista: 'format' };
+var opts = { kw: 'upper', perRow: 10, indent: '4', selectMode: 'group', vista: 'format' };
 var resultado = null;   // { text, statements, warnings }
 var lineasHtml = [];    // líneas ya coloreadas
 var dibujadas = 0;
@@ -2371,6 +2371,7 @@ $('perRow').addEventListener('input', function(){
   var n = parseInt(this.value, 10);
   if (n >= 1) {
     opts.perRow = n;
+    opts.selectMode = (n === 1 ? 'one' : 'group');
     guardarOpts();
     pintarOpts();
     if (entrada.value.trim()) formatearEditor('Ajustado a ' + opts.perRow + ' por línea');
@@ -2383,6 +2384,7 @@ document.querySelectorAll('.btn-perrow-chip').forEach(function(b){
     var n = parseInt(this.getAttribute('data-n'), 10);
     if (n >= 1) {
       opts.perRow = n;
+      opts.selectMode = (n === 1 ? 'one' : 'group');
       guardarOpts();
       pintarOpts();
       if (entrada.value.trim()) formatearEditor('Ajustado a ' + opts.perRow + ' por línea');
@@ -2403,12 +2405,14 @@ if (menuPRSel) {
       var p = parseInt(num, 10);
       if (p >= 1 && p <= 1000) {
         opts.perRow = p;
+        opts.selectMode = (p === 1 ? 'one' : 'group');
       } else {
         alert('Por favor ingresa un número válido entre 1 y 1000.');
         return;
       }
     } else {
       opts.perRow = parseInt(val, 10) || 10;
+      opts.selectMode = (opts.perRow === 1 ? 'one' : 'group');
     }
     guardarOpts();
     pintarOpts();
@@ -5513,7 +5517,7 @@ function aplicarEstiloPreset(nombre) {
   if (nombre === 'estandar') {
     opts.kw = 'upper';
     opts.indent = '4';
-    opts.selectMode = 'one';
+    opts.selectMode = 'group';
     opts.perRow = 10;
     opts.vista = 'format';
   } else if (nombre === 'expandido') {
@@ -5525,13 +5529,13 @@ function aplicarEstiloPreset(nombre) {
   } else if (nombre === '5col') {
     opts.kw = 'upper';
     opts.indent = '4';
-    opts.selectMode = 'one';
+    opts.selectMode = 'group';
     opts.perRow = 5;
     opts.vista = 'format';
   } else if (nombre === '8col') {
     opts.kw = 'upper';
     opts.indent = '4';
-    opts.selectMode = 'one';
+    opts.selectMode = 'group';
     opts.perRow = 8;
     opts.vista = 'format';
   } else if (nombre === 'compacto') {

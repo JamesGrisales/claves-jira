@@ -326,7 +326,7 @@
     return '(\n' + rows.map(function (r) { return sub + r; }).join(',\n') + '\n' + base + ')';
   }
 
-  function renderCase(caseTok, endTok, inner, ind, o) {
+  function renderCase(caseTok, endTok, inner, ind, o, ctx) {
     var m = matchParens(inner), parts = [{ kw: '', toks: [] }], cur = parts[0], depth = 0, j, t;
     for (j = 0; j < inner.length; j++) {
       t = inner[j];
@@ -338,6 +338,20 @@
       }
       cur.toks.push(t);
     }
+
+    var isInline = o.flat || (ctx && ctx.inlineCase) || (o.selectMode === 'group' && parts.length <= 4);
+    if (isInline) {
+      var inlineStr = kwText(caseTok, o);
+      if (parts[0].toks.length) inlineStr += ' ' + renderExpr(parts[0].toks, ind, o, { inlineCase: true });
+      for (j = 1; j < parts.length; j++) {
+        inlineStr += ' ' + parts[j].kw + (parts[j].toks.length ? ' ' + renderExpr(parts[j].toks, ind, o, { inlineCase: true }) : '');
+      }
+      inlineStr += ' ' + kwText(endTok, o);
+      if (inlineStr.length <= 160 || o.selectMode === 'group') {
+        return inlineStr;
+      }
+    }
+
     var sub = ind + o.indent;
     var out = kwText(caseTok, o);
     if (parts[0].toks.length) out += ' ' + renderExpr(parts[0].toks, ind, o);
@@ -366,7 +380,7 @@
       if (!o.flat && isW(t, 'CASE')) {
         var e = findEnd(toks, i, m);
         if (e > i) {
-          s += (needSpace(prev, t, prevUnary) ? ' ' : '') + renderCase(t, toks[e], toks.slice(i + 1, e), ind, o);
+          s += (needSpace(prev, t, prevUnary) ? ' ' : '') + renderCase(t, toks[e], toks.slice(i + 1, e), ind, o, ctx);
           prev = { t: 'w', u: 'END', v: 'END' }; prevUnary = false; i = e; continue;
         }
       }
@@ -531,7 +545,8 @@
       items = splitComma(body).filter(nonEmpty);
       if (!items.length) return ind + kw;
       if (items.length === 1) return ind + kw + ' ' + renderExpr(items[0], ind, o);
-      if (o.selectMode === 'group' && key === 'SELECT') {
+      var useGroup = (o.selectMode === 'group' || o.perRow > 1) && o.perRow !== 1 && key === 'SELECT';
+      if (useGroup) {
         return ind + kw + '\n' + rowsOf(items, sub, o).join(',\n');
       }
       return ind + kw + '\n' + items.map(function (it) { return sub + renderExpr(it, sub, o); }).join(',\n');
@@ -643,7 +658,7 @@
       kw: (opts.kw === 'lower' || opts.kw === 'keep') ? opts.kw : 'upper',
       perRow: flat ? Infinity : per,
       indent: ind === 'tab' ? '\t' : (ind === '2' ? '  ' : '    '),
-      selectMode: opts.selectMode === 'group' ? 'group' : 'one',
+      selectMode: (opts.selectMode === 'group' || (per > 1 && opts.selectMode !== 'one')) ? 'group' : (per === 1 ? 'one' : (opts.selectMode || 'group')),
       flat: !!flat
     };
   }
