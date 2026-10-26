@@ -2495,21 +2495,24 @@ app.post("/api/sistema/ejecutar-actualizacion", requireLogin, (req, res) => {
 
   res.json({
     ok: true,
-    mensaje: "Actualización iniciada. Descargando cambios de GitHub y reiniciando servidor..."
+    mensaje: "Actualización iniciada en segundo plano. Descargando cambios de GitHub y reiniciando servidor..."
   });
 
   try {
-    const child = spawn("cmd.exe", ["/c", batPath], {
+    const batDir = path.dirname(batPath);
+    // Ejecución 100% en segundo plano: windowsHide oculta cualquier consola de Windows
+    const child = spawn(process.env.COMSPEC || "cmd.exe", ["/c", batPath, "--segundo-plano"], {
       detached: true,
       stdio: "ignore",
-      cwd: path.dirname(batPath)
+      windowsHide: true,
+      cwd: batDir
     });
     child.unref();
 
     setTimeout(() => {
-      console.log("Reiniciando servidor Node.js por actualización desde GitHub...");
+      console.log("Reiniciando servidor Node.js por actualización desde GitHub (en segundo plano)...");
       process.exit(0);
-    }, 1200);
+    }, 1500);
   } catch (err) {
     console.error("Error al disparar actualizador:", err);
   }
