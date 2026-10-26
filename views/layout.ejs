@@ -4716,6 +4716,27 @@ select option {
   box-shadow: 0 0 8px var(--accent) !important;
 }
 
+.btn-git-update.bgu-has-updates {
+  background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.25), rgba(16, 185, 129, 0.22)) !important;
+  border-color: #10b981 !important;
+  color: #fff !important;
+  animation: bguPulseGlow 2.2s infinite ease-in-out !important;
+}
+.btn-git-update.bgu-has-updates .bgu-badge {
+  background: #10b981 !important;
+  color: #04100c !important;
+  box-shadow: 0 0 10px #10b981 !important;
+  animation: bguPulseBadge 1.8s infinite ease-in-out !important;
+}
+@keyframes bguPulseGlow {
+  0%, 100% { box-shadow: 0 0 8px rgba(16, 185, 129, 0.35); border-color: rgba(16, 185, 129, 0.6); }
+  50% { box-shadow: 0 0 18px rgba(16, 185, 129, 0.8), 0 0 30px rgba(var(--accent-rgb), 0.4); border-color: #10b981; }
+}
+@keyframes bguPulseBadge {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
+
 /* Modal Revisor de Actualizaciones - Posicionamiento Fijo Centrado */
 .git-modal-overlay {
   position: fixed !important;
@@ -5784,10 +5805,10 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
       </button>
       <div class="topbar-ver-update-group" style="display:inline-flex; align-items:center; gap:6px; flex-wrap:wrap;">
         <!-- Insignia Holográfica de Versión del Sistema (Visible en todo el programa) -->
-        <div class="cyber-version-pill" data-title="Suite Bóveda Jira · Versión activa: <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.9.0') %>" title="Suite Bóveda Jira · Versión <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.9.0') %>">
+        <div class="cyber-version-pill" data-title="Suite Bóveda Jira · Versión activa: <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.9.1') %>" title="Suite Bóveda Jira · Versión <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.9.1') %>">
           <span class="cvp-icon"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></span>
           <span class="cvp-lbl">BUILD</span>
-          <strong class="cvp-ver"><%= typeof appVersion !== 'undefined' ? appVersion : 'v2.9.0' %></strong>
+          <strong class="cvp-ver"><%= typeof appVersion !== 'undefined' ? appVersion : 'v2.9.1' %></strong>
           <% if (typeof gitCommit !== 'undefined' && gitCommit) { %><span class="cvp-commit" style="font-size:10px; opacity:0.75; font-family:var(--mono); margin-left:3px;">(<%= gitCommit %>)</span><% } %>
           <span class="cvp-pulse"></span>
         </div>
@@ -7043,6 +7064,41 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
           h1.style.setProperty('margin-bottom', '6px', 'important');
           h1.insertAdjacentElement('afterend', badge);
         }
+
+        // 3. Comprobación automática y silenciosa al iniciar y periódicamente
+        function autoVerificarGitHubEnSegundoPlano() {
+          if (!window.fetch) return;
+          fetch('/api/sistema/verificar-actualizacion')
+            .then(function(r){ return r.json(); })
+            .then(function(data){
+              if (data && data.ok && data.hayCambios && data.numCambios > 0) {
+                if (bguBadge) {
+                  bguBadge.textContent = data.numCambios;
+                  bguBadge.style.display = 'inline-block';
+                }
+                if (btn) {
+                  btn.classList.add('bgu-has-updates');
+                  btn.title = '¡Hay ' + data.numCambios + ' actualización(es) disponible(s) en GitHub! Haz clic para bajar cambios a la nueva versión';
+                }
+                if (bguTxt) {
+                  bguTxt.textContent = 'Nueva Versión (' + data.numCambios + ')';
+                }
+              } else {
+                if (bguBadge) bguBadge.style.display = 'none';
+                if (btn) {
+                  btn.classList.remove('bgu-has-updates');
+                  btn.title = 'Buscar y descargar últimas mejoras desde GitHub';
+                }
+                if (bguTxt) bguTxt.textContent = 'Bajar Cambios';
+              }
+            })
+            .catch(function(){});
+        }
+
+        // Ejecutar silenciosamente a los 2.5 segundos de cargar la página
+        setTimeout(autoVerificarGitHubEnSegundoPlano, 2500);
+        // Y revisar cada 3 minutos en segundo plano
+        setInterval(autoVerificarGitHubEnSegundoPlano, 180000);
       }
 
       if (document.readyState === 'loading') {
@@ -7387,7 +7443,7 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
             </div>
             <div class="gub-info">
               <div class="gub-branch" style="color:#10b981;">✅ Sistema Sincronizado y Estable</div>
-              <div class="gub-desc">Tu versión actual (<%= typeof appVersion !== "undefined" ? appVersion : "v2.9.0" %>) cuenta con todas las mejoras y parches más recientes publicados en GitHub. No hay versiones ni cambios nuevos pendientes de descargar.</div>
+              <div class="gub-desc">Tu versión actual (<%= typeof appVersion !== "undefined" ? appVersion : "v2.9.1" %>) cuenta con todas las mejoras y parches más recientes publicados en GitHub. No hay versiones ni cambios nuevos pendientes de descargar.</div>
             </div>
           </div>
           <div style="padding: 12px 14px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; font-size: 12.5px; color: var(--muted); line-height: 1.45;">
@@ -7562,7 +7618,7 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
                 // Estado: Al día (0 cambios)
                 if (bguBadge) bguBadge.style.display = 'none';
                 if (modalIcon) modalIcon.textContent = '✨';
-                if (modalTitle) modalTitle.textContent = 'Sistema al Día (' + (data.version ? 'v' + data.version : '<%= typeof appVersion !== "undefined" ? appVersion : "v2.9.0" %>') + (data.commit ? ' · ' + data.commit : '') + ')';
+                if (modalTitle) modalTitle.textContent = 'Sistema al Día (' + (data.version ? 'v' + data.version : '<%= typeof appVersion !== "undefined" ? appVersion : "v2.9.1" %>') + (data.commit ? ' · ' + data.commit : '') + ')';
                 if (modalSubtitle) modalSubtitle.textContent = 'No existen versiones o cambios nuevos disponibles';
                 if (viewPending) viewPending.style.display = 'none';
                 if (viewUpToDate) viewUpToDate.style.display = 'block';
@@ -7581,8 +7637,8 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
                 bguBadge.style.display = 'inline-block';
               }
               if (modalIcon) modalIcon.textContent = '🚀';
-              if (modalTitle) modalTitle.textContent = 'Actualizaciones en GitHub';
-              if (modalSubtitle) modalSubtitle.textContent = 'Nuevas mejoras listas para descargar e instalar';
+              if (modalTitle) modalTitle.textContent = 'Nueva Versión Lista en GitHub';
+              if (modalSubtitle) modalSubtitle.textContent = 'Descarga e instala la nueva versión con 1 solo clic';
               if (viewPending) viewPending.style.display = 'block';
               if (viewUpToDate) viewUpToDate.style.display = 'none';
               if (viewError) viewError.style.display = 'none';
