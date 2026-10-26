@@ -1898,24 +1898,24 @@ function sincronizarScrollEditor(ta){
 }
 
 // =========================================================================
-// FILTRADO Y BÚSQUEDA INTERACTIVA DENTRO DEL EDITOR DE EDICIÓN
+// FILTRADO Y BÚSQUEDA INTERACTIVA DENTRO DEL EDITOR DE EDICIÓN (SIN ROBO DE FOCO)
 // =========================================================================
 const editorSearchState = {};
 
 function getEditorSearchState(id) {
   if (!editorSearchState[id]) {
-    editorSearchState[id] = { query: "", matches: [], idx: -1 };
+    editorSearchState[id] = { query: '', matches: [], idx: -1 };
   }
   return editorSearchState[id];
 }
 
 function abrirEditarConFiltro(id) {
-  const p = document.getElementById("edit-" + id);
-  if (!p || !p.classList.contains("open")) {
+  const p = document.getElementById('edit-' + id);
+  if (!p || !p.classList.contains('open')) {
     toggleEdit(id);
   }
   setTimeout(function() {
-    const inp = document.getElementById("filtroEd-" + id);
+    const inp = document.getElementById('filtroEd-' + id);
     if (inp) {
       inp.focus();
       inp.select();
@@ -1925,29 +1925,29 @@ function abrirEditarConFiltro(id) {
 
 function filtrarEnEditor(id, query) {
   const st = getEditorSearchState(id);
-  st.query = (query || "").trim();
+  st.query = (query || '').trim();
   st.matches = [];
   st.idx = -1;
 
-  const panel = document.getElementById("edit-" + id);
+  const panel = document.getElementById('edit-' + id);
   if (!panel) return;
-  const ta = panel.querySelector(".nt-ed-input");
+  const ta = panel.querySelector('.nt-ed-input');
   if (!ta) return;
 
-  const val = ta.value || "";
-  const countEl = document.getElementById("countEd-" + id);
-  const badgeEl = document.getElementById("badgeEd-" + id);
-  const resultsList = document.getElementById("resultsList-" + id);
+  const val = ta.value || '';
+  const countEl = document.getElementById('countEd-' + id);
+  const badgeEl = document.getElementById('badgeEd-' + id);
+  const resultsList = document.getElementById('resultsList-' + id);
 
   if (!st.query) {
-    if (countEl) countEl.textContent = "";
-    if (badgeEl) { badgeEl.style.display = "none"; badgeEl.textContent = "0"; }
+    if (countEl) countEl.textContent = '';
+    if (badgeEl) { badgeEl.style.display = 'none'; badgeEl.textContent = '0'; }
     if (resultsList) resultsList.innerHTML = '<div class="nt-ed-no-res">Escribe para filtrar líneas o buscar texto...</div>';
     return;
   }
 
   const queryLower = st.query.toLowerCase();
-  const lines = val.split("\n");
+  const lines = val.split('\n');
   let currentOffset = 0;
 
   lines.forEach(function(lineText, lineIdx) {
@@ -1962,7 +1962,7 @@ function filtrarEnEditor(id, query) {
           start: currentOffset + colIdx,
           end: currentOffset + colIdx + queryLower.length,
           lineNum: lineNum,
-          lineText: lineText.trim() || "(Línea vacía)"
+          lineText: lineText.trim() || '(Línea vacía)'
         });
         searchPos = colIdx + Math.max(1, queryLower.length);
       }
@@ -1971,7 +1971,7 @@ function filtrarEnEditor(id, query) {
         start: currentOffset,
         end: currentOffset + lineText.length,
         lineNum: lineNum,
-        lineText: lineText.trim() || "(Línea vacía)"
+        lineText: lineText.trim() || '(Línea vacía)'
       });
     }
 
@@ -1981,14 +1981,14 @@ function filtrarEnEditor(id, query) {
   const total = st.matches.length;
   if (badgeEl) {
     badgeEl.textContent = total;
-    badgeEl.style.display = total > 0 ? "inline-flex" : "none";
+    badgeEl.style.display = total > 0 ? 'inline-flex' : 'none';
   }
 
   if (resultsList) {
     if (total === 0) {
       resultsList.innerHTML = '<div class="nt-ed-no-res">No se encontraron líneas con «' + escapeHtml(st.query) + '»</div>';
     } else {
-      let html = "";
+      let html = '';
       const linesMap = new Map();
       st.matches.forEach(function(m, mIdx) {
         if (!linesMap.has(m.lineNum)) {
@@ -1997,7 +1997,7 @@ function filtrarEnEditor(id, query) {
       });
 
       linesMap.forEach(function(item) {
-        html += '<div class="nt-ed-rp-item" onclick="saltarAMatchEditor(' + id + ', ' + item.mIdx + ')">' +
+        html += '<div class="nt-ed-rp-item" onclick="saltarAMatchEditor(' + id + ', ' + item.mIdx + ', true)">' +
           '<span class="nt-ed-item-ln">Lín ' + item.lineNum + '</span>' +
           '<span class="nt-ed-item-txt">' + resaltarCoincidenciaItem(item.lineText, st.query) + '</span>' +
         '</div>';
@@ -2007,64 +2007,64 @@ function filtrarEnEditor(id, query) {
   }
 
   if (total > 0) {
-    irCoincidenciaEditor(id, 1, true);
+    st.idx = 0;
+    if (countEl) countEl.textContent = '1 / ' + total;
+    // OJO: Al escribir (oninput) NO llamamos ta.focus() para que el usuario pueda seguir escribiendo en el filtro!
   } else {
-    if (countEl) countEl.textContent = "0 encontrados";
+    if (countEl) countEl.textContent = '0 encontrados';
   }
 }
 
 function resaltarCoincidenciaItem(text, query) {
-  if (!text) return "";
-  const escaped = escapeHtml(text);
-  const qEsc = escapeHtml(query);
-  const parts = escaped.split(new RegExp("(" + qEsc.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\// Delegación global de eventos para los editores de notas") + ")", "gi"));
-  return parts.map(function(p) {
-    return p.toLowerCase() === qEsc.toLowerCase() ? "<mark>" + p + "</mark>" : p;
-  }).join("");
+  if (!text || !query) return escapeHtml(text || '');
+  const t = escapeHtml(text);
+  const q = escapeHtml(query);
+  const idx = t.toLowerCase().indexOf(q.toLowerCase());
+  if (idx === -1) return t;
+  return t.slice(0, idx) + '<mark>' + t.slice(idx, idx + q.length) + '</mark>' + t.slice(idx + q.length);
 }
 
-function irCoincidenciaEditor(id, dir, esInicial) {
+function irCoincidenciaEditor(id, dir, enfocar) {
   const st = getEditorSearchState(id);
   if (!st.matches || st.matches.length === 0) return;
 
-  if (esInicial) {
-    st.idx = 0;
-  } else {
-    st.idx = (st.idx + dir + st.matches.length) % st.matches.length;
-  }
-
-  saltarAMatchEditor(id, st.idx);
+  st.idx = (st.idx + dir + st.matches.length) % st.matches.length;
+  saltarAMatchEditor(id, st.idx, enfocar);
 }
 
-function saltarAMatchEditor(id, matchIdx) {
+function saltarAMatchEditor(id, matchIdx, enfocar) {
   const st = getEditorSearchState(id);
   if (!st.matches || !st.matches[matchIdx]) return;
   st.idx = matchIdx;
 
   const match = st.matches[matchIdx];
-  const panel = document.getElementById("edit-" + id);
+  const panel = document.getElementById('edit-' + id);
   if (!panel) return;
-  const ta = panel.querySelector(".nt-ed-input");
+  const ta = panel.querySelector('.nt-ed-input');
   if (!ta) return;
 
-  const countEl = document.getElementById("countEd-" + id);
+  const countEl = document.getElementById('countEd-' + id);
   if (countEl) {
-    countEl.textContent = (st.idx + 1) + " / " + st.matches.length;
+    countEl.textContent = (st.idx + 1) + ' / ' + st.matches.length;
   }
 
-  ta.focus();
-  ta.setSelectionRange(match.start, match.end);
-
+  // Desplazar el textarea a la línea exacta
   const lineHeight = 20.8;
   const targetScroll = Math.max(0, (match.lineNum - 1) * lineHeight - (ta.clientHeight / 2) + 20);
   ta.scrollTop = targetScroll;
   sincronizarScrollEditor(ta);
   actualizarEditorNota(ta);
 
-  const resultsList = document.getElementById("resultsList-" + id);
+  // Solo enfocar y seleccionar en el textarea si se solicita explícitamente (ej: Enter, botón o clic)
+  if (enfocar) {
+    ta.focus();
+    ta.setSelectionRange(match.start, match.end);
+  }
+
+  const resultsList = document.getElementById('resultsList-' + id);
   if (resultsList) {
-    resultsList.querySelectorAll(".nt-ed-rp-item").forEach(function(el) {
-      el.classList.toggle("active", el.textContent.includes("Lín " + match.lineNum));
+    resultsList.querySelectorAll('.nt-ed-rp-item').forEach(function(el) {
+      el.classList.toggle('active', el.textContent.includes('Lín ' + match.lineNum));
     });
   }
 }
@@ -2073,15 +2073,15 @@ function saltarALineaEditor(id, numStr) {
   const lineNum = parseInt(numStr, 10);
   if (isNaN(lineNum) || lineNum < 1) return;
 
-  const panel = document.getElementById("edit-" + id);
+  const panel = document.getElementById('edit-' + id);
   if (!panel) return;
-  const ta = panel.querySelector(".nt-ed-input");
+  const ta = panel.querySelector('.nt-ed-input');
   if (!ta) return;
 
-  const val = ta.value || "";
-  const lines = val.split("\n");
+  const val = ta.value || '';
+  const lines = val.split('\n');
   if (lineNum > lines.length) {
-    alert("El documento tiene " + lines.length + " líneas.");
+    alert('El documento tiene ' + lines.length + ' líneas.');
     return;
   }
 
@@ -2102,23 +2102,23 @@ function saltarALineaEditor(id, numStr) {
 }
 
 function alternarListaFiltradas(id, forzar) {
-  const panel = document.getElementById("resultsPanel-" + id);
+  const panel = document.getElementById('resultsPanel-' + id);
   if (!panel) return;
-  const nuevoEstado = (typeof forzar === "boolean") ? forzar : (panel.style.display === "none");
-  panel.style.display = nuevoEstado ? "block" : "none";
-  const btn = document.getElementById("btnListEd-" + id);
-  if (btn) btn.classList.toggle("active", nuevoEstado);
+  const nuevoEstado = (typeof forzar === 'boolean') ? forzar : (panel.style.display === 'none');
+  panel.style.display = nuevoEstado ? 'block' : 'none';
+  const btn = document.getElementById('btnListEd-' + id);
+  if (btn) btn.classList.toggle('active', nuevoEstado);
 }
 
 function alternarReemplazarEditor(id) {
-  const row = document.getElementById("repBar-" + id);
+  const row = document.getElementById('repBar-' + id);
   if (!row) return;
-  const abierto = row.style.display !== "none";
-  row.style.display = abierto ? "none" : "flex";
-  const btn = document.getElementById("btnRepEd-" + id);
-  if (btn) btn.classList.toggle("active", !abierto);
+  const abierto = row.style.display !== 'none';
+  row.style.display = abierto ? 'none' : 'flex';
+  const btn = document.getElementById('btnRepEd-' + id);
+  if (btn) btn.classList.toggle('active', !abierto);
   if (!abierto) {
-    const inp = document.getElementById("repInput-" + id);
+    const inp = document.getElementById('repInput-' + id);
     if (inp) inp.focus();
   }
 }
@@ -2127,12 +2127,12 @@ function reemplazarActualEditor(id) {
   const st = getEditorSearchState(id);
   if (!st.matches || st.idx < 0 || !st.matches[st.idx]) return;
 
-  const repInp = document.getElementById("repInput-" + id);
-  const nuevoTexto = repInp ? repInp.value : "";
+  const repInp = document.getElementById('repInput-' + id);
+  const nuevoTexto = repInp ? repInp.value : '';
 
-  const panel = document.getElementById("edit-" + id);
+  const panel = document.getElementById('edit-' + id);
   if (!panel) return;
-  const ta = panel.querySelector(".nt-ed-input");
+  const ta = panel.querySelector('.nt-ed-input');
   if (!ta) return;
 
   const match = st.matches[st.idx];
@@ -2141,9 +2141,9 @@ function reemplazarActualEditor(id) {
   if (document.execCommand) {
     ta.focus();
     ta.setSelectionRange(s, e);
-    document.execCommand("insertText", false, nuevoTexto);
+    document.execCommand('insertText', false, nuevoTexto);
   } else {
-    ta.setRangeText(nuevoTexto, s, e, "end");
+    ta.setRangeText(nuevoTexto, s, e, 'end');
   }
 
   actualizarEditorNota(ta);
@@ -2154,56 +2154,56 @@ function reemplazarTodoEditor(id) {
   const st = getEditorSearchState(id);
   if (!st.query) return;
 
-  const repInp = document.getElementById("repInput-" + id);
-  const nuevoTexto = repInp ? repInp.value : "";
+  const repInp = document.getElementById('repInput-' + id);
+  const nuevoTexto = repInp ? repInp.value : '';
 
-  const panel = document.getElementById("edit-" + id);
+  const panel = document.getElementById('edit-' + id);
   if (!panel) return;
-  const ta = panel.querySelector(".nt-ed-input");
+  const ta = panel.querySelector('.nt-ed-input');
   if (!ta) return;
 
-  const val = ta.value || "";
-  const regex = new RegExp(st.query.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\// Delegación global de eventos para los editores de notas"), "gi");
+  const val = ta.value || '';
+  const regex = new RegExp(st.query.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&'), 'gi');
   const count = (val.match(regex) || []).length;
   if (count === 0) {
-    alert("No se encontraron coincidencias para reemplazar.");
+    alert('No se encontraron coincidencias para reemplazar.');
     return;
   }
 
-  if (!confirm("¿Reemplazar " + count + " coincidencia(s) en todo el texto?")) return;
+  if (!confirm('¿Reemplazar ' + count + ' coincidencia(s) en todo el texto?')) return;
 
   ta.value = val.replace(regex, nuevoTexto);
   actualizarEditorNota(ta);
   filtrarEnEditor(id, st.query);
-  alert("Se reemplazaron " + count + " coincidencia(s).");
+  alert('Se reemplazaron ' + count + ' coincidencia(s).');
 }
 
 function teclaFiltroEditor(e, id) {
-  if (e.key === "Enter") {
+  if (e.key === 'Enter') {
     e.preventDefault();
-    irCoincidenciaEditor(id, e.shiftKey ? -1 : 1);
-  } else if (e.key === "Escape") {
+    irCoincidenciaEditor(id, e.shiftKey ? -1 : 1, true); // Enter = salta y enfoca
+  } else if (e.key === 'Escape') {
     alternarListaFiltradas(id, false);
-    const panel = document.getElementById("edit-" + id);
+    const panel = document.getElementById('edit-' + id);
     if (panel) {
-      const ta = panel.querySelector(".nt-ed-input");
+      const ta = panel.querySelector('.nt-ed-input');
       if (ta) ta.focus();
     }
   }
 }
 
 // Atajo Ctrl+F y Ctrl+G en los textareas del editor
-document.addEventListener("keydown", function(e) {
-  if ((e.ctrlKey || e.metaKey) && (e.key === "f" || e.key === "F")) {
+document.addEventListener('keydown', function(e) {
+  if ((e.ctrlKey || e.metaKey) && (e.key === 'f' || e.key === 'F')) {
     const ta = e.target;
-    if (ta && ta.classList && ta.classList.contains("nt-ed-input")) {
-      const panel = ta.closest(".edit-panel");
+    if (ta && ta.classList && ta.classList.contains('nt-ed-input')) {
+      const panel = ta.closest('.edit-panel');
       if (panel) {
         e.preventDefault();
         const idMatch = panel.id.match(/^edit-(\d+)$/);
         if (idMatch) {
           const id = idMatch[1];
-          const filtroInp = document.getElementById("filtroEd-" + id);
+          const filtroInp = document.getElementById('filtroEd-' + id);
           if (filtroInp) {
             const sel = ta.value.substring(ta.selectionStart, ta.selectionEnd).trim();
             if (sel && sel.length < 60) {
@@ -2216,16 +2216,16 @@ document.addEventListener("keydown", function(e) {
         }
       }
     }
-  } else if ((e.ctrlKey || e.metaKey) && (e.key === "g" || e.key === "G")) {
+  } else if ((e.ctrlKey || e.metaKey) && (e.key === 'g' || e.key === 'G')) {
     const ta = e.target;
-    if (ta && ta.classList && ta.classList.contains("nt-ed-input")) {
-      const panel = ta.closest(".edit-panel");
+    if (ta && ta.classList && ta.classList.contains('nt-ed-input')) {
+      const panel = ta.closest('.edit-panel');
       if (panel) {
         e.preventDefault();
         const idMatch = panel.id.match(/^edit-(\d+)$/);
         if (idMatch) {
           const id = idMatch[1];
-          const gotoInp = document.getElementById("gotoEd-" + id);
+          const gotoInp = document.getElementById('gotoEd-' + id);
           if (gotoInp) {
             gotoInp.focus();
             gotoInp.select();
@@ -2235,6 +2235,7 @@ document.addEventListener("keydown", function(e) {
     }
   }
 });
+
 
 // Delegación global de eventos para los editores de notas
 document.addEventListener('input', function(e){
