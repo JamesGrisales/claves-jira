@@ -187,6 +187,7 @@
   .nt-ed-capa{
     position:absolute;
     inset:0;
+    z-index:3;
     margin:0;
     padding:12px 14px 24px 14px;
     overflow:hidden;
@@ -205,7 +206,7 @@
   }
   .nt-ed-input{
     position:relative;
-    z-index:2;
+    z-index:4 !important;
     display:block;
     width:100% !important;
     height:100% !important;
@@ -641,8 +642,8 @@
   }
 
 
-  /* Capa de resaltado de búsqueda en el editor */
-  .nt-ed-search-layer {
+  /* Capa de líneas resaltadas de búsqueda */
+  .nt-ed-search-lines {
     position: absolute;
     inset: 0;
     margin: 0;
@@ -651,41 +652,66 @@
     pointer-events: none;
     z-index: 1;
   }
-  .nt-ed-search-layer-content {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    will-change: transform;
-  }
   .nt-ed-hl-line {
     position: absolute;
     left: 0;
     right: 0;
     height: 20.8px;
-    background: rgba(245, 158, 11, 0.14);
-    border-left: 3px solid rgba(245, 158, 11, 0.65);
+    background: rgba(245, 158, 11, 0.12);
+    border-left: 3px solid rgba(245, 158, 11, 0.55);
     pointer-events: none;
     transition: background 0.12s ease;
   }
   .nt-ed-hl-line.active {
-    background: rgba(245, 158, 11, 0.32);
+    background: rgba(245, 158, 11, 0.28);
     border-left: 4px solid #f59e0b;
-    box-shadow: inset 0 0 10px rgba(245, 158, 11, 0.25);
+    box-shadow: inset 0 0 12px rgba(245, 158, 11, 0.22);
+  }
+
+  /* Capa de palabras resaltadas de búsqueda (espejo idéntico al textarea) */
+  .nt-ed-search-layer {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    padding: 12px 14px 24px 14px;
+    overflow: hidden;
+    pointer-events: none;
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 1.6;
+    tab-size: 4;
+    white-space: pre;
+    letter-spacing: normal;
+    word-spacing: normal;
+    background: transparent;
+    border: 0;
+    box-sizing: border-box;
+    color: transparent !important;
+    -webkit-text-fill-color: transparent !important;
+    z-index: 2;
   }
   .nt-ed-hl-word {
-    position: absolute;
-    height: 19px;
-    background: #ffd700;
-    opacity: 0.42;
-    border-radius: 3px;
-    box-shadow: 0 0 6px rgba(255, 215, 0, 0.6);
-    pointer-events: none;
-    transition: opacity 0.12s ease;
+    display: inline;
+    padding: 0;
+    margin: 0;
+    border: 0;
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+    letter-spacing: inherit;
+    word-spacing: inherit;
+    white-space: pre;
+    background: rgba(255, 215, 0, 0.42);
+    color: transparent !important;
+    -webkit-text-fill-color: transparent !important;
+    border-radius: 2px;
+    outline: 1px solid rgba(255, 215, 0, 0.45);
+    transition: background 0.1s ease, outline 0.1s ease;
   }
   .nt-ed-hl-word.active {
-    background: #f59e0b;
-    opacity: 0.85;
-    box-shadow: 0 0 10px #f59e0b, 0 0 2px #ffffff;
+    background: rgba(255, 152, 0, 0.85) !important;
+    outline: 1.5px solid #ffa726 !important;
+    box-shadow: 0 0 10px rgba(255, 152, 0, 0.65) !important;
   }
   .nt-ed-input::selection,
   .nt-ed-box.plain .nt-ed-input::selection {
@@ -949,7 +975,8 @@
               <div class="nt-ed-box">
                 <div class="nt-ed-gut" aria-hidden="true"><div class="nt-ed-gut-in">1</div></div>
                 <div class="nt-ed-code">
-                  <div class="nt-ed-search-layer" aria-hidden="true"><div class="nt-ed-search-layer-content" id="searchContent-<%= n.id %>"></div></div>
+                  <div class="nt-ed-search-lines" id="searchLines-<%= n.id %>" aria-hidden="true"></div>
+                  <pre class="nt-ed-search-layer" id="searchContent-<%= n.id %>" aria-hidden="true"></pre>
                   <pre class="nt-ed-capa" aria-hidden="true"></pre>
                   <textarea class="nt-ed-input" name="contenido" <% if (!n.es_excel) { %>required<% } %> readonly placeholder="Cargando contenido…" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off"></textarea>
                 </div>
@@ -1942,7 +1969,8 @@ function sincronizarScrollEditor(ta){
   if (!frame) return;
   const capa = frame.querySelector('.nt-ed-capa');
   const gutIn = frame.querySelector('.nt-ed-gut-in');
-  const searchContent = frame.querySelector('.nt-ed-search-layer-content');
+  const searchLines = frame.querySelector('.nt-ed-search-lines');
+  const searchLayer = frame.querySelector('.nt-ed-search-layer');
 
   if (capa) {
     capa.scrollTop = ta.scrollTop;
@@ -1951,8 +1979,12 @@ function sincronizarScrollEditor(ta){
   if (gutIn) {
     gutIn.style.transform = 'translateY(' + (-ta.scrollTop) + 'px)';
   }
-  if (searchContent) {
-    searchContent.style.transform = 'translate(' + (-ta.scrollLeft) + 'px, ' + (-ta.scrollTop) + 'px)';
+  if (searchLines) {
+    searchLines.style.transform = 'translateY(' + (-ta.scrollTop) + 'px)';
+  }
+  if (searchLayer) {
+    searchLayer.scrollTop = ta.scrollTop;
+    searchLayer.scrollLeft = ta.scrollLeft;
   }
 }
 
@@ -1980,6 +2012,33 @@ function abrirEditarConFiltro(id) {
       inp.select();
     }
   }, 120);
+}
+
+function buildHighlightedText(val, matches, activeIdx, maxLimit) {
+  if (!matches || matches.length === 0) return '';
+  const limit = maxLimit || 500;
+  let subMatches = matches;
+  if (matches.length > limit) {
+    if (activeIdx < limit) {
+      subMatches = matches.slice(0, limit);
+    } else {
+      subMatches = matches.slice(0, limit - 1).concat([matches[activeIdx]]);
+      subMatches.sort(function(a, b) { return a.start - b.start; });
+    }
+  }
+
+  let html = '';
+  let lastIdx = 0;
+  for (let i = 0; i < subMatches.length; i++) {
+    const m = subMatches[i];
+    if (m.start < lastIdx) continue;
+    html += escapeHtml(val.slice(lastIdx, m.start));
+    const isCurrent = (m.origIdx !== undefined ? m.origIdx === activeIdx : i === activeIdx);
+    html += '<mark class="nt-ed-hl-word' + (isCurrent ? ' active' : '') + '">' + escapeHtml(val.slice(m.start, m.end)) + '</mark>';
+    lastIdx = m.end;
+  }
+  html += escapeHtml(val.slice(lastIdx));
+  return html;
 }
 
 function filtrarEnEditor(id, query) {
@@ -2019,22 +2078,20 @@ function filtrarEnEditor(id, query) {
       let searchPos = 0;
       while ((colIdx = lineLower.indexOf(queryLower, searchPos)) !== -1) {
         st.matches.push({
+          origIdx: st.matches.length,
           start: currentOffset + colIdx,
           end: currentOffset + colIdx + queryLower.length,
           lineNum: lineNum,
-          colIdx: colIdx,
-          len: queryLower.length,
           lineText: lineText.trim() || '(Línea vacía)'
         });
         searchPos = colIdx + Math.max(1, queryLower.length);
       }
     } else if (String(lineNum) === st.query) {
       st.matches.push({
+        origIdx: st.matches.length,
         start: currentOffset,
         end: currentOffset + lineText.length,
         lineNum: lineNum,
-        colIdx: 0,
-        len: lineText.length,
         lineText: lineText.trim() || '(Línea vacía)'
       });
     }
@@ -2054,9 +2111,9 @@ function filtrarEnEditor(id, query) {
     } else {
       let html = '';
       const linesMap = new Map();
-      st.matches.forEach(function(m, mIdx) {
+      st.matches.forEach(function(m) {
         if (!linesMap.has(m.lineNum)) {
-          linesMap.set(m.lineNum, { mIdx: mIdx, lineNum: m.lineNum, lineText: m.lineText });
+          linesMap.set(m.lineNum, { mIdx: m.origIdx, lineNum: m.lineNum, lineText: m.lineText });
         }
       });
 
@@ -2077,53 +2134,62 @@ function filtrarEnEditor(id, query) {
     if (countEl) countEl.textContent = '0 encontrados';
   }
 
-  // Renderizar resaltados visuales en el editor
+  // Renderizar resaltados visuales milimétricos en el editor
   actualizarResaltadosEditor(id);
 }
 
 function actualizarResaltadosEditor(id) {
   const st = getEditorSearchState(id);
   const searchContent = document.getElementById('searchContent-' + id);
-  if (!searchContent) return;
+  const searchLines = document.getElementById('searchLines-' + id);
+  const panel = document.getElementById('edit-' + id);
+  if (!panel) return;
+  const ta = panel.querySelector('.nt-ed-input');
+  if (!ta) return;
 
   if (!st.query || !st.matches || st.matches.length === 0) {
-    searchContent.innerHTML = '';
+    if (searchContent) searchContent.innerHTML = '';
+    if (searchLines) searchLines.innerHTML = '';
     return;
   }
 
-  const matches = st.matches;
+  const val = ta.value || '';
   const currentIdx = st.idx;
-  const maxHighlights = 250;
-  const count = Math.min(matches.length, maxHighlights);
 
-  let html = '';
-  const linesRendered = new Set();
+  // 1. Renderizar líneas de coincidencia en capa searchLines
+  if (searchLines) {
+    let linesHtml = '';
+    const linesRendered = new Set();
+    const maxLines = 150;
+    let lineCount = 0;
 
-  for (let i = 0; i < count; i++) {
-    const m = matches[i];
-    const isCurrent = (i === currentIdx);
-    const top = 12 + (m.lineNum - 1) * 20.8;
-
-    if (!linesRendered.has(m.lineNum) || isCurrent) {
-      linesRendered.add(m.lineNum);
-      html += '<div class="nt-ed-hl-line' + (isCurrent ? ' active' : '') + '" style="top:' + top + 'px;"></div>';
+    for (let i = 0; i < st.matches.length && lineCount < maxLines; i++) {
+      const m = st.matches[i];
+      if (!linesRendered.has(m.lineNum)) {
+        linesRendered.add(m.lineNum);
+        lineCount++;
+        const isCurrent = (currentIdx >= 0 && st.matches[currentIdx] && st.matches[currentIdx].lineNum === m.lineNum);
+        const top = 12 + (m.lineNum - 1) * 20.8;
+        linesHtml += '<div class="nt-ed-hl-line' + (isCurrent ? ' active' : '') + '" style="top:' + top + 'px;"></div>';
+      }
     }
 
-    if (m.colIdx !== undefined && m.len !== undefined) {
-      html += '<div class="nt-ed-hl-word' + (isCurrent ? ' active' : '') + '" style="top:' + (top + 1) + 'px; left:calc(14px + ' + m.colIdx + 'ch); width:calc(' + m.len + 'ch);"></div>';
+    if (currentIdx >= 0 && st.matches[currentIdx]) {
+      const curMatch = st.matches[currentIdx];
+      if (!linesRendered.has(curMatch.lineNum)) {
+        const top = 12 + (curMatch.lineNum - 1) * 20.8;
+        linesHtml += '<div class="nt-ed-hl-line active" style="top:' + top + 'px;"></div>';
+      }
     }
+    searchLines.innerHTML = linesHtml;
   }
 
-  if (currentIdx >= maxHighlights && matches[currentIdx]) {
-    const m = matches[currentIdx];
-    const top = 12 + (m.lineNum - 1) * 20.8;
-    html += '<div class="nt-ed-hl-line active" style="top:' + top + 'px;"></div>';
-    if (m.colIdx !== undefined && m.len !== undefined) {
-      html += '<div class="nt-ed-hl-word active" style="top:' + (top + 1) + 'px; left:calc(14px + ' + m.colIdx + 'ch); width:calc(' + m.len + 'ch);"></div>';
-    }
+  // 2. Renderizar palabras resaltadas con precisión milimétrica en el <pre> espejo
+  if (searchContent) {
+    searchContent.innerHTML = buildHighlightedText(val, st.matches, currentIdx, 500);
   }
 
-  searchContent.innerHTML = html;
+  sincronizarScrollEditor(ta);
 }
 
 function resaltarCoincidenciaItem(text, query) {
@@ -2163,11 +2229,12 @@ function saltarAMatchEditor(id, matchIdx, enfocar) {
   const lineHeight = 20.8;
   const targetScroll = Math.max(0, (match.lineNum - 1) * lineHeight - (ta.clientHeight / 2) + 20);
   ta.scrollTop = targetScroll;
-  sincronizarScrollEditor(ta);
-  actualizarEditorNota(ta);
 
   // Actualizar resaltado activo
   actualizarResaltadosEditor(id);
+
+  sincronizarScrollEditor(ta);
+  actualizarEditorNota(ta);
 
   // Solo enfocar y seleccionar en el textarea si se solicita explícitamente (Enter, botón o clic)
   if (enfocar) {
