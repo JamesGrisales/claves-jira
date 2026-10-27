@@ -1,6 +1,6 @@
 {
   "name": "boveda-claves-jira",
-  "version": "2.9.1",
+  "version": "2.9.2",
   "description": "Boveda local de claves de Jira por empresa (Node.js + PostgreSQL)",
   "main": "server.js",
   "scripts": {

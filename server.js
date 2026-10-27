@@ -2500,13 +2500,25 @@ app.post("/api/sistema/ejecutar-actualizacion", requireLogin, (req, res) => {
 
   try {
     const batDir = path.dirname(batPath);
-    // Ejecución 100% en segundo plano: windowsHide oculta cualquier consola de Windows
-    const child = spawn(process.env.COMSPEC || "cmd.exe", ["/c", batPath, "--segundo-plano"], {
-      detached: true,
-      stdio: "ignore",
-      windowsHide: true,
-      cwd: batDir
-    });
+    const vbsRunner = path.join(batDir, "ejecutar_segundo_plano.vbs");
+
+    // Ejecución 100% invisible en segundo plano usando wscript.exe (proceso GUI que jamás abre ventana de consola)
+    let child;
+    if (fs.existsSync(vbsRunner)) {
+      child = spawn("wscript.exe", ["//B", "//Nologo", vbsRunner, batPath, "--oculto"], {
+        detached: true,
+        stdio: "ignore",
+        windowsHide: true,
+        cwd: batDir
+      });
+    } else {
+      child = spawn(process.env.COMSPEC || "cmd.exe", ["/c", `"${batPath}"`, "--oculto"], {
+        detached: true,
+        stdio: "ignore",
+        windowsHide: true,
+        cwd: batDir
+      });
+    }
     child.unref();
 
     setTimeout(() => {
