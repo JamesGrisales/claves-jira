@@ -241,6 +241,58 @@
     max-height: 52vh;
   }
 
+  /* Cuando Envolver en UPDATE (#ew) está activo, ocultar el editor principal inferior (#edFrame) para evitar duplicidad y desborde */
+  .ed-layout:has(#ew.on) #edFrame,
+  .ed-layout:has(#ew.on) .hint,
+  .ed-layout:has(#ew.on) #salida,
+  .ed-layout:has(#ew.on) #edDiag {
+    display: none !important;
+  }
+
+  #ew.rp.on {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    background: transparent !important;
+    overflow: hidden !important;
+  }
+  #ew.rp.on .ew-grid {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+    gap: 14px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+  }
+  #ew.rp.on .ew-col {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 6px !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+  }
+  #ewEntrada,
+  #ewCodigo {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    height: calc(100vh - 290px) !important;
+    min-height: 380px !important;
+    max-height: 74vh !important;
+    resize: none !important;
+  }
+  #ewCodigo {
+    overflow: auto !important;
+  }
+
   /* Buscar y reemplazar no tiene editor central, debe ocultarse para no dejar un espacio gigante */
   #rp.rp.on { flex: 0; min-height: 0; height: 0; margin: 0; padding: 0; display: none !important; }
 
@@ -377,7 +429,7 @@
     padding: 6px 14px;
   }
   
-  .ed-tools-sidebar { width:240px; flex-shrink:0; display:none; flex-direction:column; background:var(--panel-alt); border:1px solid var(--panel-edge); padding:12px; overflow-y:auto; border-radius:10px; }
+  .ed-tools-sidebar { width:250px; flex-shrink:0; display:none; flex-direction:column; background:var(--panel-alt); border:1px solid var(--panel-edge); padding:12px; overflow-y:auto; border-radius:10px; position:relative; z-index:20; box-sizing:border-box; }
   .ed-layout:has(.rp.on) .ed-tools-sidebar { display:flex; }
   /* AISLAMIENTO ESTRICTO: Ocultar todas las opciones por defecto */
   .tool-opts,
@@ -1349,7 +1401,7 @@
       </div>
     </div>
     
-    <div class="ed-main" style="flex:1; display:flex; flex-direction:column; min-width:0; position:relative;">
+    <div class="ed-main" style="flex:1; display:flex; flex-direction:column; min-width:0; max-width:100%; position:relative; overflow:hidden;">
   <!-- PANEL: Envolver en UPDATE / Comillas escapadas (' -> '') -->
   <div class="rp" id="ew">
     <!-- Encabezado con selector directo UPDATE / INSERT / AUTO -->
@@ -1372,9 +1424,9 @@
     </div>
 
     <!-- Área de entrada y salida con estética SQL auténtica (dos columnas amplias) -->
-    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; width:100%; margin-bottom:10px;">
+    <div class="ew-grid" style="display:grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap:14px; width:100%; max-width:100%; min-width:0; margin-bottom:10px; box-sizing:border-box;">
       <!-- Entrada -->
-      <div style="display:flex; flex-direction:column; gap:6px;">
+      <div class="ew-col" style="display:flex; flex-direction:column; gap:6px; min-width:0; max-width:100%; overflow:hidden;">
         <div style="display:flex; justify-content:space-between; align-items:center;">
           <span style="font-size:11.5px; font-weight:700; color:var(--muted); text-transform:uppercase; display:flex; align-items:center; gap:5px;">
             <span>1. Consulta Original</span>
@@ -1385,11 +1437,11 @@
             <span id="ewInLines" style="font-size:11px; color:var(--muted); font-family:var(--mono);"></span>
           </div>
         </div>
-        <textarea id="ewEntrada" spellcheck="false" wrap="off" placeholder="Pega o escribe tu consulta...&#10;ejemplo:&#10;select * from facturac where estado = 'A' and tipo = 'FC';" style="width:100% !important; height:340px !important; min-height:260px; font-family:var(--mono); font-size:13px; line-height:1.6; padding:12px 14px; background:var(--ed-bg, #0a1124); color:var(--ed-fg, #d6e0f5); border:1px solid var(--panel-edge); border-radius:10px; box-sizing:border-box; outline:none;"></textarea>
+        <textarea id="ewEntrada" spellcheck="false" wrap="off" placeholder="Pega o escribe tu consulta...&#10;ejemplo:&#10;select * from facturac where estado = 'A' and tipo = 'FC';" style="width:100% !important; max-width:100% !important; min-width:0 !important; height:calc(100vh - 290px) !important; min-height:380px; max-height:74vh; font-family:var(--mono); font-size:13px; line-height:1.6; padding:12px 14px; background:var(--ed-bg, #0a1124); color:var(--ed-fg, #d6e0f5); border:1px solid var(--panel-edge); border-radius:10px; box-sizing:border-box; outline:none;"></textarea>
       </div>
 
       <!-- Salida con visor SQL (colores y líneas) -->
-      <div style="display:flex; flex-direction:column; gap:6px;">
+      <div class="ew-col" style="display:flex; flex-direction:column; gap:6px; min-width:0; max-width:100%; overflow:hidden;">
         <div style="display:flex; justify-content:space-between; align-items:center;">
           <span style="font-size:11.5px; font-weight:700; color:var(--accent); text-transform:uppercase; display:flex; align-items:center; gap:5px;">
             <span>2. Resultado con Escape SQL</span>
@@ -1400,7 +1452,7 @@
             <span id="ewOutLines" style="font-size:11px; color:var(--accent); font-family:var(--mono);"></span>
           </div>
         </div>
-        <div class="code-block" id="ewCodigo" style="width:100% !important; height:340px !important; min-height:260px; margin:0; border-radius:10px; overflow:auto; box-sizing:border-box; cursor:text;"></div>
+        <div class="code-block" id="ewCodigo" style="width:100% !important; max-width:100% !important; min-width:0 !important; height:calc(100vh - 290px) !important; min-height:380px; max-height:74vh; margin:0; border-radius:10px; overflow:auto !important; box-sizing:border-box; cursor:text; resize:none;"></div>
         <textarea id="ewSalida" style="display:none;" readonly></textarea>
       </div>
     </div>

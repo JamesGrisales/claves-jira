@@ -4,9 +4,9 @@ title Actualizador Automatico - Boveda Jira
 
 :: 1. Ir a la carpeta principal del proyecto
 cd /d "%~dp0"
-if exist "..\\.git" cd /d ".."
+if exist "..\.git" cd /d ".."
 
-:: 2. Si se ejecutó directamente (sin --oculto), re-lanzarse en segundo plano con wscript para cerrar la terminal inmediatamente
+:: 2. Si se ejecuto directamente (sin --oculto), re-lanzarse en segundo plano con wscript para cerrar la terminal inmediatamente
 if not "%1"=="--oculto" (
     if exist "ejecutar_segundo_plano.vbs" (
         start "" wscript.exe //B //Nologo "%~dp0ejecutar_segundo_plano.vbs" "%~f0" --oculto
@@ -14,7 +14,7 @@ if not "%1"=="--oculto" (
     )
 )
 
-:: 3. Definir archivos de log para que NINGÚN comando emita texto a la consola
+:: 3. Definir archivos de log para que NINGUN comando emita texto a la consola
 set "LOGFILE=%~dp0actualizacion.log"
 set "SERVER_LOG=%~dp0servidor.log"
 
@@ -31,7 +31,7 @@ ping 127.0.0.1 -n 2 >nul 2>&1
 echo [%date% %time%] Guardando cambios locales si existen (git stash)... >> "%LOGFILE%"
 git stash >> "%LOGFILE%" 2>&1
 
-:: 7. Descargar últimas mejoras de GitHub
+:: 7. Descargar ultimas mejoras de GitHub
 echo [%date% %time%] Descargando mejoras de GitHub (git fetch y git pull)... >> "%LOGFILE%"
 git fetch origin main >> "%LOGFILE%" 2>&1
 git pull origin main >> "%LOGFILE%" 2>&1
@@ -56,7 +56,7 @@ echo [%date% %time%] Reiniciando servidor Node.js en segundo plano... >> "%LOGFI
 ping 127.0.0.1 -n 2 >nul 2>&1
 
 if exist "ejecutar_segundo_plano.vbs" (
-    start "" wscript.exe //B //Nologo "%~dp0ejecutar_segundo_plano.vbs" "node server.js"
+    start "" wscript.exe //B //Nologo "%~dp0ejecutar_segundo_plano.vbs" node server.js
 ) else (
     start "" /B node server.js >> "%SERVER_LOG%" 2>&1
 )
