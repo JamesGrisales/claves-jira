@@ -7115,6 +7115,40 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
             .catch(function(){});
         }
 
+        // Función global para simular y probar la alerta en cualquier momento
+        window.simularAlertaActualizacion = function(num) {
+          var count = typeof num === 'number' ? num : 3;
+          var btnEl = document.getElementById('btnGitUpdate');
+          var bguBadgeEl = document.getElementById('bguBadge');
+          var bguTxtEl = document.getElementById('bguTxt');
+          if (bguBadgeEl) {
+            bguBadgeEl.textContent = count;
+            bguBadgeEl.style.display = 'inline-block';
+          }
+          if (btnEl) {
+            btnEl.classList.add('bgu-has-updates');
+            btnEl.title = '¡Hay ' + count + ' actualización(es) disponible(s) en GitHub! Haz clic para bajar cambios a la nueva versión';
+          }
+          if (bguTxtEl) {
+            bguTxtEl.textContent = 'Nueva Versión (' + count + ')';
+          }
+          var flExisting = document.getElementById('bguFloatingAlert');
+          if (flExisting) flExisting.remove();
+          var fl = document.createElement('div');
+          fl.id = 'bguFloatingAlert';
+          fl.style.cssText = 'position:fixed; bottom:24px; right:24px; z-index:99999; background:linear-gradient(135deg, #0284c7, #2563eb); color:#fff; padding:12px 18px; border-radius:14px; box-shadow:0 12px 30px rgba(0,0,0,0.4); display:flex; align-items:center; gap:12px; font-family:var(--sans); font-size:13px; font-weight:600; cursor:pointer; border:1px solid rgba(255,255,255,0.25);';
+          fl.innerHTML = '<span style="font-size:20px;">🚀</span>' +
+                         '<div><div>¡Nueva versión lista! (' + count + ' cambios)</div>' +
+                         '<div style="font-size:11px; opacity:0.85; font-weight:normal;">Haz clic aquí para Bajar Cambios ahora</div></div>' +
+                         '<button type="button" style="background:rgba(255,255,255,0.2); border:none; color:#fff; border-radius:999px; width:22px; height:22px; cursor:pointer; font-size:11px; display:flex; align-items:center; justify-content:center; margin-left:6px;">✕</button>';
+          fl.querySelector('button').onclick = function(e){ e.stopPropagation(); fl.remove(); };
+          fl.onclick = function(){
+            fl.remove();
+            if (btnEl) btnEl.click();
+          };
+          document.body.appendChild(fl);
+        };
+
         // Ejecutar silenciosamente a los 2.5 segundos de cargar la página
         setTimeout(autoVerificarGitHubEnSegundoPlano, 2500);
         // Y revisar cada 3 minutos en segundo plano
@@ -7488,7 +7522,10 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
             <span>Descargar e Instalar Ahora</span>
           </button>
         </div>
-        <div id="gitFootUpToDate" style="display:none;">
+        <div id="gitFootUpToDate" style="display:none; align-items:center; gap:10px;">
+          <button type="button" class="secondary btn-sm" id="btnTestSimularAlerta" title="Simula cómo se verá la alerta visual cuando haya una nueva versión en GitHub" style="border-color:var(--accent); color:var(--accent); font-weight:700;">
+            <span>🧪 Probar alerta de nueva versión</span>
+          </button>
           <button type="button" class="btn-update-confirm" id="btnOkGitUpdate">
             <span>Entendido</span>
           </button>
@@ -7596,6 +7633,15 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
         if (btnClose) btnClose.addEventListener('click', cerrarModal);
         if (btnCancel) btnCancel.addEventListener('click', cerrarModal);
         if (btnOk) btnOk.addEventListener('click', cerrarModal);
+        var btnTest = document.getElementById('btnTestSimularAlerta');
+        if (btnTest) {
+          btnTest.addEventListener('click', function(){
+            cerrarModal();
+            if (typeof window.simularAlertaActualizacion === 'function') {
+              window.simularAlertaActualizacion(3);
+            }
+          });
+        }
         if (btnErrClose) btnErrClose.addEventListener('click', cerrarModal);
 
         if (modal) {
