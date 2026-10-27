@@ -1,0 +1,4 @@
+# Garantizar que todos los scripts de Windows mantengan siempre terminaciones de línea CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.vbs text eol=crlf
