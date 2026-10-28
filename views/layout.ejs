@@ -5449,12 +5449,12 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
   .cme-row {
     background: rgba(255,255,255,0.025);
     border: 1px solid var(--panel-edge, rgba(255,255,255,0.08));
-    border-radius: 12px;
-    padding: 10px 14px;
+    border-radius: 14px;
+    padding: 12px 16px;
     display: grid;
-    grid-template-columns: 56px 1fr 140px auto;
+    grid-template-columns: 66px 1fr 140px auto;
     align-items: center;
-    gap: 12px;
+    gap: 14px;
     transition: all .2s ease;
   }
   .cme-row:hover {
@@ -5463,10 +5463,11 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
   }
 
   .cme-icon-pick-btn {
-    width: 46px;
-    height: 46px;
-    border-radius: 12px;
-    background: rgba(0,0,0,0.3);
+    width: 56px;
+    height: 56px;
+    min-width: 56px;
+    border-radius: 14px;
+    background: rgba(0,0,0,0.35);
     border: 1.5px solid var(--panel-edge);
     color: var(--accent, #00f5ff);
     display: flex;
@@ -5480,24 +5481,25 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
   .cme-icon-pick-btn:hover {
     transform: scale(1.08);
     border-color: var(--accent, #00f5ff);
-    box-shadow: 0 0 16px rgba(var(--accent-rgb, 0, 245, 255), 0.5);
-    background: rgba(var(--accent-rgb, 0, 245, 255), 0.15);
+    box-shadow: 0 0 18px rgba(var(--accent-rgb, 0, 245, 255), 0.55);
+    background: rgba(var(--accent-rgb, 0, 245, 255), 0.18);
   }
-  .cme-icon-pick-btn svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 2.2; }
+  .cme-icon-pick-btn svg { width: 28px; height: 28px; stroke: currentColor; fill: none; stroke-width: 2.2; }
   .cme-icon-pick-btn .cme-edit-badge {
     position: absolute;
-    bottom: -3px;
-    right: -3px;
+    bottom: -2px;
+    right: -2px;
     background: var(--accent, #00f5ff);
     color: #04100c;
     border-radius: 999px;
-    width: 15px;
-    height: 15px;
-    font-size: 9px;
+    width: 17px;
+    height: 17px;
+    font-size: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 800;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.5);
   }
 
   .cme-input-wrap { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
@@ -5543,14 +5545,14 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
     z-index: 99995;
     background: var(--panel, #0f172a);
     border: 1px solid var(--accent, #00f5ff);
-    box-shadow: 0 20px 50px rgba(0,0,0,0.7), 0 0 30px rgba(var(--accent-rgb, 0, 245, 255), 0.25);
-    border-radius: 16px;
-    width: 380px;
-    max-width: 95vw;
-    padding: 14px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.8), 0 0 35px rgba(var(--accent-rgb, 0, 245, 255), 0.3);
+    border-radius: 18px;
+    width: 530px;
+    max-width: calc(100vw - 28px);
+    padding: 16px;
     display: none;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
     box-sizing: border-box;
     animation: cmePopUp 0.18s cubic-bezier(0.16, 1, 0.3, 1);
   }
@@ -5562,8 +5564,8 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
     background: rgba(0,0,0,0.3);
     border: 1px solid var(--panel-edge);
     color: #fff;
-    padding: 7px 10px;
-    font-size: 12px;
+    padding: 9px 12px;
+    font-size: 12.5px;
     border-radius: 8px;
     outline: none;
     box-sizing: border-box;
@@ -5572,42 +5574,49 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
 
   .cme-pal-tabs {
     display: flex;
-    gap: 4px;
-    overflow-x: auto;
-    padding-bottom: 4px;
-    scrollbar-width: none;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 2px 0 4px;
   }
-  .cme-pal-tabs::-webkit-scrollbar { display: none; }
   .cme-pal-tab-btn {
-    border: none;
-    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--panel-edge);
+    background: rgba(255,255,255,0.04);
     color: var(--muted);
-    font-size: 10.5px;
-    font-weight: 700;
-    padding: 4px 8px;
-    border-radius: 6px;
+    font-size: 11.5px;
+    font-weight: 600;
+    padding: 5px 11px;
+    border-radius: 8px;
     cursor: pointer;
     white-space: nowrap;
     transition: all .15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
   }
-  .cme-pal-tab-btn.active, .cme-pal-tab-btn:hover { background: var(--accent); color: #04100c; }
+  .cme-pal-tab-btn.active, .cme-pal-tab-btn:hover {
+    background: var(--accent);
+    color: #04100c;
+    border-color: var(--accent);
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(var(--accent-rgb), 0.35);
+  }
 
   .cme-icons-grid {
     display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 6px;
-    max-height: 220px;
+    grid-template-columns: repeat(auto-fill, minmax(48px, 1fr));
+    gap: 8px;
+    max-height: 250px;
     overflow-y: auto;
-    padding: 2px;
+    padding: 4px 2px;
     box-sizing: border-box;
   }
   .cme-icons-grid::-webkit-scrollbar { width: 5px; }
   .cme-icons-grid::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 999px; }
 
   .cme-icon-choice {
-    width: 42px;
-    height: 42px;
-    border-radius: 10px;
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
     background: rgba(255,255,255,0.04);
     border: 1px solid var(--panel-edge);
     color: var(--text);
@@ -5618,7 +5627,7 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
     transition: all .15s ease;
     padding: 0;
   }
-  .cme-icon-choice svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2.2; }
+  .cme-icon-choice svg { width: 24px; height: 24px; stroke: currentColor; fill: none; stroke-width: 2.2; }
   .cme-icon-choice:hover {
     background: rgba(var(--accent-rgb, 0, 245, 255), 0.25);
     border-color: var(--accent);
@@ -6060,14 +6069,14 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
     </div>
     <input type="text" class="cme-pal-search" id="cmePalSearch" placeholder="🔍 Buscar icono (llave, código, nube, avión...)" autocomplete="off">
     <div class="cme-pal-tabs" id="cmePalTabs">
-      <button type="button" class="cme-pal-tab-btn active" data-cat="all">Todos</button>
-      <button type="button" class="cme-pal-tab-btn" data-cat="negocio">Empresa / Claves</button>
-      <button type="button" class="cme-pal-tab-btn" data-cat="datos">Código / Datos</button>
-      <button type="button" class="cme-pal-tab-btn" data-cat="docs">Notas / Listas</button>
-      <button type="button" class="cme-pal-tab-btn" data-cat="redes">Redes / Viajes</button>
-      <button type="button" class="cme-pal-tab-btn" data-cat="tiempo">Tiempo / Gráficas</button>
-      <button type="button" class="cme-pal-tab-btn" data-cat="sistema">Sistema / Medios</button>
-      <button type="button" class="cme-pal-tab-btn" data-cat="emojis">Emojis</button>
+      <button type="button" class="cme-pal-tab-btn active" data-cat="all">✨ Todos</button>
+      <button type="button" class="cme-pal-tab-btn" data-cat="negocio">💼 Empresa</button>
+      <button type="button" class="cme-pal-tab-btn" data-cat="datos">⚡ Código</button>
+      <button type="button" class="cme-pal-tab-btn" data-cat="docs">📝 Notas</button>
+      <button type="button" class="cme-pal-tab-btn" data-cat="redes">✈️ Viajes</button>
+      <button type="button" class="cme-pal-tab-btn" data-cat="tiempo">📅 Tiempo</button>
+      <button type="button" class="cme-pal-tab-btn" data-cat="sistema">⚙️ Sistema</button>
+      <button type="button" class="cme-pal-tab-btn" data-cat="emojis">😀 Emojis</button>
     </div>
     <div class="cme-icons-grid" id="cmeIconsGrid">
       <!-- Iconos inyectados por JS -->
@@ -6190,10 +6199,10 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
       </button>
       <div class="topbar-ver-update-group" style="display:inline-flex; align-items:center; gap:6px; flex-wrap:wrap;">
         <!-- Insignia Holográfica de Versión del Sistema (Visible en todo el programa) -->
-        <div class="cyber-version-pill" data-title="Suite Bóveda Jira · Versión activa: <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.9.5') %>" title="Suite Bóveda Jira · Versión <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.9.5') %>">
+        <div class="cyber-version-pill" data-title="Suite Bóveda Jira · Versión activa: <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.9.6') %>" title="Suite Bóveda Jira · Versión <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.9.6') %>">
           <span class="cvp-icon"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></span>
           <span class="cvp-lbl">BUILD</span>
-          <strong class="cvp-ver"><%= typeof appVersion !== 'undefined' ? appVersion : 'v2.9.5' %></strong>
+          <strong class="cvp-ver"><%= typeof appVersion !== 'undefined' ? appVersion : 'v2.9.6' %></strong>
           <% if (typeof gitCommit !== 'undefined' && gitCommit) { %><span class="cvp-commit" style="font-size:10px; opacity:0.75; font-family:var(--mono); margin-left:3px;">(<%= gitCommit %>)</span><% } %>
           <span class="cvp-pulse"></span>
         </div>
@@ -7475,7 +7484,7 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
                   var fl = document.createElement('div');
                   fl.id = 'bguFloatingAlert';
                   fl.style.cssText = 'position:fixed; bottom:24px; right:24px; z-index:99999; background:linear-gradient(135deg, #0284c7, #2563eb); color:#fff; padding:12px 18px; border-radius:14px; box-shadow:0 12px 30px rgba(0,0,0,0.4); display:flex; align-items:center; gap:12px; font-family:var(--sans); font-size:13px; font-weight:600; cursor:pointer; border:1px solid rgba(255,255,255,0.25);';
-                  fl.innerHTML = '<span style="font-size:20px;">🚀</span>' +
+                  fl.innerHTML = '<span style="font-size:27px; line-height:1;">🚀</span>' +
                                  '<div><div>¡Nueva versión lista! (' + data.numCambios + ' cambios)</div>' +
                                  '<div style="font-size:11px; opacity:0.85; font-weight:normal;">Haz clic aquí para Bajar Cambios ahora</div></div>' +
                                  '<button type="button" style="background:rgba(255,255,255,0.2); border:none; color:#fff; border-radius:999px; width:22px; height:22px; cursor:pointer; font-size:11px; display:flex; align-items:center; justify-content:center; margin-left:6px;">✕</button>';
@@ -7522,7 +7531,7 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
           var fl = document.createElement('div');
           fl.id = 'bguFloatingAlert';
           fl.style.cssText = 'position:fixed; bottom:24px; right:24px; z-index:99999; background:linear-gradient(135deg, #0284c7, #2563eb); color:#fff; padding:12px 18px; border-radius:14px; box-shadow:0 12px 30px rgba(0,0,0,0.4); display:flex; align-items:center; gap:12px; font-family:var(--sans); font-size:13px; font-weight:600; cursor:pointer; border:1px solid rgba(255,255,255,0.25);';
-          fl.innerHTML = '<span style="font-size:20px;">🚀</span>' +
+          fl.innerHTML = '<span style="font-size:27px; line-height:1;">🚀</span>' +
                          '<div><div>¡Nueva versión lista! (' + count + ' cambios)</div>' +
                          '<div style="font-size:11px; opacity:0.85; font-weight:normal;">Haz clic aquí para Bajar Cambios ahora</div></div>' +
                          '<button type="button" style="background:rgba(255,255,255,0.2); border:none; color:#fff; border-radius:999px; width:22px; height:22px; cursor:pointer; font-size:11px; display:flex; align-items:center; justify-content:center; margin-left:6px;">✕</button>';
@@ -7882,7 +7891,7 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
             </div>
             <div class="gub-info">
               <div class="gub-branch" style="color:#10b981;">✅ Sistema Sincronizado y Estable</div>
-              <div class="gub-desc">Tu versión actual (<%= typeof appVersion !== "undefined" ? appVersion : "v2.9.5" %>) cuenta con todas las mejoras y parches más recientes publicados en GitHub. No hay versiones ni cambios nuevos pendientes de descargar.</div>
+              <div class="gub-desc">Tu versión actual (<%= typeof appVersion !== "undefined" ? appVersion : "v2.9.6" %>) cuenta con todas las mejoras y parches más recientes publicados en GitHub. No hay versiones ni cambios nuevos pendientes de descargar.</div>
             </div>
           </div>
           <div style="padding: 12px 14px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; font-size: 12.5px; color: var(--muted); line-height: 1.45;">
@@ -8069,7 +8078,7 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
                 // Estado: Al día (0 cambios)
                 if (bguBadge) bguBadge.style.display = 'none';
                 if (modalIcon) modalIcon.textContent = '✨';
-                if (modalTitle) modalTitle.textContent = 'Sistema al Día (' + (data.version ? 'v' + data.version : '<%= typeof appVersion !== "undefined" ? appVersion : "v2.9.5" %>') + (data.commit ? ' · ' + data.commit : '') + ')';
+                if (modalTitle) modalTitle.textContent = 'Sistema al Día (' + (data.version ? 'v' + data.version : '<%= typeof appVersion !== "undefined" ? appVersion : "v2.9.6" %>') + (data.commit ? ' · ' + data.commit : '') + ')';
                 if (modalSubtitle) modalSubtitle.textContent = 'No existen versiones o cambios nuevos disponibles';
                 if (viewPending) viewPending.style.display = 'none';
                 if (viewUpToDate) viewUpToDate.style.display = 'block';
@@ -8421,7 +8430,7 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
               if (itemConf.i.indexOf('<svg') !== -1) {
                 icEl.innerHTML = itemConf.i;
               } else {
-                icEl.innerHTML = '<span style="font-size:18px; line-height:1; display:flex; align-items:center; justify-content:center;">' + itemConf.i + '</span>';
+                icEl.innerHTML = '<span style="font-size:24px; line-height:1; line-height:1; display:flex; align-items:center; justify-content:center;">' + itemConf.i + '</span>';
               }
             }
           }
@@ -8478,7 +8487,7 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
           row.innerHTML =
             '<div>' +
               '<button type="button" class="cme-icon-pick-btn" title="Haz clic para elegir un nuevo icono">' +
-                '<span class="cme-cur-icon">' + (activeIconHtml.indexOf('<svg') !== -1 ? activeIconHtml : '<span style="font-size:20px;">' + activeIconHtml + '</span>') + '</span>' +
+                '<span class="cme-cur-icon">' + (activeIconHtml.indexOf('<svg') !== -1 ? activeIconHtml : '<span style="font-size:27px; line-height:1;">' + activeIconHtml + '</span>') + '</span>' +
                 '<span class="cme-edit-badge">✎</span>' +
               '</button>' +
             '</div>' +
@@ -8526,13 +8535,16 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
         activeEditingBtn = anchorBtn;
 
         var rect = anchorBtn.getBoundingClientRect();
+        var popWidth = Math.min(530, window.innerWidth - 28);
+        var popHeight = 440;
         var top = rect.bottom + 8;
         var left = rect.left;
-        if (top + 340 > window.innerHeight) top = rect.top - 340;
-        if (left + 380 > window.innerWidth) left = window.innerWidth - 390;
-        if (left < 10) left = 10;
+        if (top + popHeight > window.innerHeight) top = Math.max(12, rect.top - popHeight - 8);
+        if (left + popWidth > window.innerWidth) left = window.innerWidth - popWidth - 14;
+        if (left < 14) left = 14;
 
-        palPop.style.top = Math.max(10, top) + 'px';
+        palPop.style.width = popWidth + 'px';
+        palPop.style.top = Math.max(12, top) + 'px';
         palPop.style.left = left + 'px';
         palPop.classList.add('show');
         renderizarGridIconos('all');
@@ -8557,7 +8569,7 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
           btn.type = 'button';
           btn.className = 'cme-icon-choice';
           btn.title = ic.name;
-          btn.innerHTML = ic.svg ? ic.svg : ('<span style="font-size:18px;">' + ic.emoji + '</span>');
+          btn.innerHTML = ic.svg ? ic.svg : ('<span style="font-size:24px; line-height:1;">' + ic.emoji + '</span>');
           btn.onclick = function(){
             seleccionarIcono(ic.svg ? ic.svg : ic.emoji);
           };
@@ -8577,7 +8589,7 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
         if (activeEditingBtn) {
           var curSpan = activeEditingBtn.querySelector('.cme-cur-icon');
           if (curSpan) {
-            curSpan.innerHTML = iconHtmlOrEmoji.indexOf('<svg') !== -1 ? iconHtmlOrEmoji : ('<span style="font-size:20px;">' + iconHtmlOrEmoji + '</span>');
+            curSpan.innerHTML = iconHtmlOrEmoji.indexOf('<svg') !== -1 ? iconHtmlOrEmoji : ('<span style="font-size:27px; line-height:1;">' + iconHtmlOrEmoji + '</span>');
           }
         }
         if (palPop) palPop.classList.remove('show');
