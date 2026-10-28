@@ -6178,31 +6178,12 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
   <% if (currentUser) { %>
   <div class="topbar">
     <div class="topbar-left">
-      <button type="button" class="btn-nav-modal" id="btnOpenNavModal" title="Cambiar estilo de navegación y menú" aria-label="Cambiar estilo de menú">
-        <span class="bnm-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="18" rx="2"/><rect x="14" y="3" width="7" height="8" rx="2"/><rect x="14" y="15" width="7" height="6" rx="2"/></svg>
-        </span>
-        <span class="bnm-text">
-          <span class="bnm-label">Estilo de Menú</span>
-          <span class="bnm-pill" id="bnmActivePill"><i class="bnm-dot"></i><span id="bnmActiveTxt">Zen Oculto</span></span>
-        </span>
-        <svg class="bnm-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="6 9 12 15 18 9"/></svg>
-      </button>
-      <button type="button" class="btn-nav-modal btn-custom-menu-trigger" id="btnPersonalizarMenu" title="Personalizar nombres e iconos de los módulos del menú" aria-label="Personalizar menú">
-        <span class="bnm-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-        </span>
-        <span class="bnm-text">
-          <span class="bnm-label">Menú</span>
-          <span class="bnm-pill"><i class="bnm-dot" style="background:#00f5ff;"></i><span>Personalizar</span></span>
-        </span>
-      </button>
       <div class="topbar-ver-update-group" style="display:inline-flex; align-items:center; gap:6px; flex-wrap:wrap;">
         <!-- Insignia Holográfica de Versión del Sistema (Visible en todo el programa) -->
-        <div class="cyber-version-pill" data-title="Suite Bóveda Jira · Versión activa: <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.9.7') %>" title="Suite Bóveda Jira · Versión <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.9.7') %>">
+        <div class="cyber-version-pill" data-title="Suite Bóveda Jira · Versión activa: <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.9.8') %>" title="Suite Bóveda Jira · Versión <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.9.8') %>">
           <span class="cvp-icon"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></span>
           <span class="cvp-lbl">BUILD</span>
-          <strong class="cvp-ver"><%= typeof appVersion !== 'undefined' ? appVersion : 'v2.9.7' %></strong>
+          <strong class="cvp-ver"><%= typeof appVersion !== 'undefined' ? appVersion : 'v2.9.8' %></strong>
           <% if (typeof gitCommit !== 'undefined' && gitCommit) { %><span class="cvp-commit" style="font-size:10px; opacity:0.75; font-family:var(--mono); margin-left:3px;">(<%= gitCommit %>)</span><% } %>
           <span class="cvp-pulse"></span>
         </div>
@@ -7891,7 +7872,7 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
             </div>
             <div class="gub-info">
               <div class="gub-branch" style="color:#10b981;">✅ Sistema Sincronizado y Estable</div>
-              <div class="gub-desc">Tu versión actual (<%= typeof appVersion !== "undefined" ? appVersion : "v2.9.7" %>) cuenta con todas las mejoras y parches más recientes publicados en GitHub. No hay versiones ni cambios nuevos pendientes de descargar.</div>
+              <div class="gub-desc">Tu versión actual (<%= typeof appVersion !== "undefined" ? appVersion : "v2.9.8" %>) cuenta con todas las mejoras y parches más recientes publicados en GitHub. No hay versiones ni cambios nuevos pendientes de descargar.</div>
             </div>
           </div>
           <div style="padding: 12px 14px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; font-size: 12.5px; color: var(--muted); line-height: 1.45;">
@@ -8078,7 +8059,7 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
                 // Estado: Al día (0 cambios)
                 if (bguBadge) bguBadge.style.display = 'none';
                 if (modalIcon) modalIcon.textContent = '✨';
-                if (modalTitle) modalTitle.textContent = 'Sistema al Día (' + (data.version ? 'v' + data.version : '<%= typeof appVersion !== "undefined" ? appVersion : "v2.9.7" %>') + (data.commit ? ' · ' + data.commit : '') + ')';
+                if (modalTitle) modalTitle.textContent = 'Sistema al Día (' + (data.version ? 'v' + data.version : '<%= typeof appVersion !== "undefined" ? appVersion : "v2.9.8" %>') + (data.commit ? ' · ' + data.commit : '') + ')';
                 if (modalSubtitle) modalSubtitle.textContent = 'No existen versiones o cambios nuevos disponibles';
                 if (viewPending) viewPending.style.display = 'none';
                 if (viewUpToDate) viewUpToDate.style.display = 'block';
