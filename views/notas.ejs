@@ -40,6 +40,18 @@
   .body-actions{ display:flex; gap:8px; margin-bottom:10px; flex-wrap:wrap; }
 
   .sql-badge{ font-size:10.5px; font-weight:800; letter-spacing:.05em; color:#fff; background:linear-gradient(135deg, var(--accent), var(--accent-dark)); padding:2px 7px; border-radius:5px; }
+  .pdf-badge{ font-size:10.5px; font-weight:800; letter-spacing:.05em; color:#fff; background:linear-gradient(135deg, #ef4444, #dc2626); padding:2px 7px; border-radius:5px; box-shadow:0 0 8px rgba(239,68,68,0.4); }
+  .pdf-container{ background:var(--panel-alt); border:1px solid var(--panel-edge); border-radius:10px; overflow:hidden; margin-bottom:12px; box-shadow:0 4px 18px rgba(0,0,0,0.25); }
+  .pdf-top-bar{ display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:#18181b; border-bottom:1px solid var(--panel-edge); flex-wrap:wrap; gap:8px; }
+  .pdf-tabs{ display:flex; align-items:center; gap:6px; }
+  .pdf-tab{ background:#27272a; border:1px solid rgba(255,255,255,0.08); color:#cbd5e1; font-size:12px; font-weight:600; padding:5px 12px; border-radius:6px; cursor:pointer; transition:all .15s ease; user-select:none; display:inline-flex; align-items:center; gap:6px; }
+  .pdf-tab:hover{ background:#3f3f46; color:#fff; border-color:rgba(255,255,255,0.2); }
+  .pdf-tab.active{ background:linear-gradient(135deg, #dc2626, #b91c1c); color:#ffffff; border-color:#ef4444; box-shadow:0 0 10px rgba(239,68,68,0.35); }
+  .pdf-actions-right{ display:flex; align-items:center; gap:8px; }
+  .pdf-actions-right .btn-pdf-link{ display:inline-flex; align-items:center; gap:5px; background:#27272a; border:1px solid rgba(255,255,255,0.1); color:#93c5fd; font-size:11.5px; padding:4px 10px; border-radius:6px; text-decoration:none; font-weight:500; transition:all .15s ease; }
+  .pdf-actions-right .btn-pdf-link:hover{ background:#3b82f6; color:#ffffff; border-color:#3b82f6; }
+  .pdf-frame-wrapper{ width:100%; height:680px; background:#18181b; position:relative; }
+  .pdf-iframe{ width:100%; height:100%; border:none; display:block; background:#2a2a2e; }
   .search-in-note{ display:flex; align-items:center; gap:8px; margin-bottom:8px; }
   .search-in-note input{
     flex:1; background:var(--panel-alt); border:1px solid var(--panel-edge); color:var(--text);
@@ -859,8 +871,8 @@
     <div class="main" onclick="toggleRow(<%= n.id %>)">
       <div class="name">
         <span class="cat-badge"><%= n.categoria %></span>
-        <span class="titulo"><%= n.titulo %><% if (n.es_sql) { %> <span class="sql-badge">SQL</span><% } %><% if (n.es_excel) { %> <span class="excel-badge">EXCEL</span><% } %></span>
-        <span class="meta"><% if (n.es_excel) { %>Hoja de cálculo<% } else { %><%= n.lineas.toLocaleString('es-CO') %> línea<%= n.lineas === 1 ? '' : 's' %> · <%= fmtTam(n.largo) %><% } %><% if (n.archivo_nombre) { %> · 📎 <%= n.archivo_nombre %><% } %></span>
+        <span class="titulo"><%= n.titulo %><% if (n.es_sql) { %> <span class="sql-badge">SQL</span><% } %><% if (n.es_excel) { %> <span class="excel-badge">EXCEL</span><% } %><% if (n.es_pdf) { %> <span class="pdf-badge">PDF</span><% } %></span>
+        <span class="meta"><% if (n.es_excel) { %>Hoja de cálculo<% } else if (n.es_pdf) { %>Documento PDF · <%= fmtTam(n.largo) %><% } else { %><%= n.lineas.toLocaleString('es-CO') %> línea<%= n.lineas === 1 ? '' : 's' %> · <%= fmtTam(n.largo) %><% } %><% if (n.archivo_nombre) { %> · 📎 <%= n.archivo_nombre %><% } %></span>
       </div>
       <div class="actions">
         <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="m9 18 6-6-6-6"></path></svg>
@@ -868,7 +880,31 @@
     </div>
 
     <div class="body-panel">
-      <div class="content-wrap" id="wrap-<%= n.id %>">
+      <% if (n.es_pdf) { %>
+      <div class="pdf-container" id="pdf-box-<%= n.id %>">
+        <div class="pdf-top-bar">
+          <div class="pdf-tabs">
+            <button type="button" class="pdf-tab active" id="tabPdf-<%= n.id %>" onclick="event.stopPropagation(); alternarVistaPdf(<%= n.id %>, 'pdf')">
+              📄 Documento PDF Original
+            </button>
+            <button type="button" class="pdf-tab" id="tabTxt-<%= n.id %>" onclick="event.stopPropagation(); alternarVistaPdf(<%= n.id %>, 'texto')">
+              📝 Texto Extraído
+            </button>
+          </div>
+          <div class="pdf-actions-right">
+            <a class="btn-pdf-link" href="<%= C.base %>/<%= n.id %>/pdf" target="_blank" onclick="event.stopPropagation();" title="Abrir en pestaña nueva del navegador">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+              Pestaña nueva
+            </a>
+            <button type="button" class="iconbtn" title="Pantalla completa" onclick="event.stopPropagation(); pantallaCompletaPdf(<%= n.id %>)">⤢</button>
+          </div>
+        </div>
+        <div class="pdf-frame-wrapper" id="pdfWrapper-<%= n.id %>">
+          <iframe class="pdf-iframe" id="pdfFrame-<%= n.id %>" data-src="<%= C.base %>/<%= n.id %>/pdf#toolbar=1&navpanes=1" src="about:blank" title="Documento PDF - <%= n.titulo %>"></iframe>
+        </div>
+      </div>
+      <% } %>
+      <div class="content-wrap" id="wrap-<%= n.id %>" style="<%= n.es_pdf ? 'display:none;' : '' %>">
         <div class="search-in-note">
           <input type="text" placeholder="<%= C.buscarDentro %>" oninput="buscarEnNota(<%= n.id %>, this.value)" onkeydown="teclaBusqueda(event, <%= n.id %>)" onclick="event.stopPropagation();">
           <span class="match-count" id="matches-<%= n.id %>"></span>
@@ -883,8 +919,15 @@
         <button type="button" class="secondary" onclick="event.stopPropagation(); copiarNota(<%= n.id %>)">Copiar</button>
         <button type="button" class="secondary" onclick="event.stopPropagation(); toggleEdit(<%= n.id %>)">Editar</button>
         <button type="button" class="secondary btn-filtrar-ed" onclick="event.stopPropagation(); abrirEditarConFiltro(<%= n.id %>)" title="Abrir editor y filtrar líneas directamente">🔍 Filtrar / Editar</button>
-        <% if (!n.es_excel) { %>
+        <% if (!n.es_excel && !n.es_pdf) { %>
         <button type="button" class="secondary" id="btnModo-<%= n.id %>" onclick="event.stopPropagation(); alternarModoCodigo(<%= n.id %>)"><%= n.es_sql ? '📄 Ver como texto' : '🎨 Ver con colores' %></button>
+        <% } %>
+        <% if (n.es_pdf) { %>
+        <a class="btn secondary" style="text-decoration:none; display:inline-flex; align-items:center; gap:6px; background:rgba(239,68,68,0.12); border-color:rgba(239,68,68,0.35); color:#fca5a5;"
+           href="<%= C.base %>/<%= n.id %>/pdf" download="<%= n.archivo_nombre || 'documento.pdf' %>" onclick="event.stopPropagation();" title="Descargar PDF Original">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          Descargar PDF original
+        </a>
         <% } %>
         <% if (n.archivo_nombre) { %>
         <a class="btn secondary" style="text-decoration:none; display:inline-flex; align-items:center; gap:6px;"
@@ -1006,7 +1049,7 @@
 
 <div class="toast" id="toast">Copiado</div>
 
-<script type="application/json" id="notasMeta"><%- JSON.stringify(notas.map(function(n){ return { id: n.id, esSql: !!n.es_sql, esExcel: !!n.es_excel }; })) %></script>
+<script type="application/json" id="notasMeta"><%- JSON.stringify(notas.map(function(n){ return { id: n.id, esSql: !!n.es_sql, esExcel: !!n.es_excel, esPdf: !!n.es_pdf }; })) %></script>
 
 <script>
 /* ---------- Controlador Reactivo Alpine.js de Notas / Jaivaná ---------- */
@@ -1127,7 +1170,7 @@ let seqBusqueda = 0;
 const notasData = {};
 JSON.parse(document.getElementById('notasMeta').textContent).forEach(function(n){
   notasData[n.id] = {
-    esSql: n.esSql, esExcel: n.esExcel, xl: null, cargandoHoja: null, xlHits: [], xlHitSets: [], xlPorHoja: [], xlIdx: -1, xlTotal: 0, texto: null, lineas: null, clases: null, modo: 'auto',
+    esSql: n.esSql, esExcel: n.esExcel, esPdf: !!n.esPdf, xl: null, cargandoHoja: null, xlHits: [], xlHitSets: [], xlPorHoja: [], xlIdx: -1, xlTotal: 0, texto: null, lineas: null, clases: null, modo: 'auto',
     query: '', regex: null, usarCodigo: false, hasta: 0, estado: { bloque: false },
     expandidas: new Set(), coinc: [], idx: -1, cargando: null, desde: 0
   };
@@ -1840,6 +1883,13 @@ function toggleRow(id){
   fila.classList.toggle('open');
   if (!seAbre) return;
 
+  if (notasData[id] && notasData[id].esPdf) {
+    const frame = document.getElementById('pdfFrame-' + id);
+    if (frame && (frame.src === 'about:blank' || !frame.src) && frame.dataset.src) {
+      frame.src = frame.dataset.src;
+    }
+  }
+
   const consulta = textoBusqueda || '';
   const buscador = fila.querySelector('.search-in-note input');
   if (buscador) buscador.value = consulta;
@@ -2494,6 +2544,37 @@ document.addEventListener('keydown', function(e){
 });
 
 let nodoNotaOrig = {};
+function alternarVistaPdf(id, vista){
+  const boxPdf = document.getElementById('pdfWrapper-' + id);
+  const wrapTxt = document.getElementById('wrap-' + id);
+  const tabPdf = document.getElementById('tabPdf-' + id);
+  const tabTxt = document.getElementById('tabTxt-' + id);
+  if (vista === 'pdf') {
+    if (boxPdf) boxPdf.style.display = 'block';
+    if (wrapTxt) wrapTxt.style.display = 'none';
+    if (tabPdf) tabPdf.classList.add('active');
+    if (tabTxt) tabTxt.classList.remove('active');
+  } else {
+    if (boxPdf) boxPdf.style.display = 'none';
+    if (wrapTxt) wrapTxt.style.display = 'block';
+    if (tabPdf) tabPdf.classList.remove('active');
+    if (tabTxt) tabTxt.classList.add('active');
+    cargarContenido(id).then(function(){
+      renderContenido(id, '');
+    });
+  }
+}
+
+function pantallaCompletaPdf(id){
+  const el = document.getElementById('pdf-box-' + id) || document.getElementById('pdfWrapper-' + id);
+  if (!el) return;
+  if (!document.fullscreenElement) {
+    el.requestFullscreen().catch(function(){});
+  } else {
+    document.exitFullscreen().catch(function(){});
+  }
+}
+
 function pantallaCompleta(id){
   const wrap = document.getElementById('wrap-' + id);
   if (!wrap) return;

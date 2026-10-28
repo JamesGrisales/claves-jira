@@ -1043,8 +1043,10 @@ function crearRutasDeListado({ base, tabla, vista, titulo, cfg }) {
 
     rows.forEach((r) => {
       r.es_excel = esExcel(r.archivo_tipo);
+      r.es_pdf = (r.archivo_tipo || "").toLowerCase() === "pdf";
       r.es_sql =
         !r.es_excel &&
+        !r.es_pdf &&
         pareceSql({
           contenido: r.muestra,
           archivo_tipo: r.archivo_tipo,
@@ -1328,6 +1330,33 @@ function crearRutasDeSubida({ base, tabla, tablaImg }) {
     } catch (error) {
       console.error("Error leyendo hoja de cálculo:", error.message);
       res.status(500).json({ error: "No fue posible leer la hoja de cálculo." });
+    }
+  });
+
+  // Servir PDF original inline para visor interactivo integrado con formato completo
+  app.get(base + "/:id/pdf", requireLogin, async (req, res) => {
+    try {
+      if (!/^\d+$/.test(req.params.id)) return res.status(400).send("Id inválido.");
+
+      const { rows } = await pool.query(
+        `SELECT archivo_nombre, archivo_tipo, archivo_datos FROM ${tabla} WHERE id = $1`,
+        [req.params.id]
+      );
+
+      const row = rows[0];
+
+      if (!row || !row.archivo_datos || (row.archivo_tipo || "").toLowerCase() !== "pdf") {
+        return res.status(404).send("Este apunte no tiene un documento PDF original disponible.");
+      }
+
+      const nombreLimpio = (row.archivo_nombre || "documento.pdf").replace(/[^\w.\- ]+/g, "_");
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader("Content-Disposition", `inline; filename="${nombreLimpio}"`);
+      res.setHeader("Cache-Control", "private, max-age=3600");
+      res.send(row.archivo_datos);
+    } catch (error) {
+      console.error("Error sirviendo PDF (" + base + "):", error.message);
+      res.status(500).send("No fue posible cargar el documento PDF.");
     }
   });
 

@@ -158,40 +158,47 @@ async function procesarPdf(buffer) {
   const imagenes = [];
   let texto = "";
 
-  const parser = new PDFParse({ data: buffer });
   try {
-    const rt = await parser.getText();
-    texto = (rt.text || "").replace(/^-- \d+ of \d+ --$/gm, "");
-
+    const parser = new PDFParse({ data: buffer });
     try {
-      const ri = await parser.getImage({ imageThreshold: 40 });
-      let n = 0;
-      const marcas = [];
-      for (const pagina of ri.pages || []) {
-        for (const im of pagina.images || []) {
-          if (!im.data) continue;
-          n++;
-          imagenes.push({
-            numero: n,
-            mime: "image/png",
-            datos: Buffer.from(im.data),
-          });
-          marcas.push("[[IMG:" + n + "]]");
+      const rt = await parser.getText();
+      texto = (rt.text || "").replace(/^-- \d+ of \d+ --$/gm, "");
+
+      try {
+        const ri = await parser.getImage({ imageThreshold: 40 });
+        let n = 0;
+        const marcas = [];
+        for (const pagina of ri.pages || []) {
+          for (const im of pagina.images || []) {
+            if (!im.data) continue;
+            n++;
+            imagenes.push({
+              numero: n,
+              mime: "image/png",
+              datos: Buffer.from(im.data),
+            });
+            marcas.push("[[IMG:" + n + "]]");
+          }
         }
+        if (marcas.length) {
+          texto += "\n\nImágenes del PDF\n" + marcas.join("\n\n");
+        }
+      } catch (e) {
+        // Ignorar si el PDF no contiene imágenes extraíbles
       }
-      if (marcas.length) {
-        texto += "\n\nImágenes del PDF\n" + marcas.join("\n\n");
-      }
-    } catch (e) {
-      console.error("No se pudieron extraer imágenes del PDF:", e.message);
+    } finally {
+      await parser.destroy().catch(() => {});
     }
-  } finally {
-    await parser.destroy();
+  } catch (errPdf) {
+    console.error("Aviso: extracción de texto de PDF falló, se conservará el documento original:", errPdf.message);
+  }
+
+  if (!texto || !texto.trim()) {
+    texto = "[Documento PDF con formato original adjunto]\n\nEste archivo se visualiza con su diseño, gráficos, páginas y formato original en el visor integrado de la nota.";
   }
 
   return { texto, imagenes };
 }
-
 // Devuelve { texto (ya limpio), imagenes: [{numero, mime, datos}] }
 async function procesarArchivo(file) {
   const ext = path.extname(file.originalname).toLowerCase();
