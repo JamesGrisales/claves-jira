@@ -1901,7 +1901,7 @@ require("./manual-video")(app, { requireLogin });
 // Datos pequeños compartidos entre pestañas y navegadores
 // ---------------------------------------------------------------------------
 
-const KV_PERMITIDAS = new Set(["aceptados-resumen"]);
+const KV_PERMITIDAS = new Set(["aceptados-resumen", "menu-personalizado"]);
 
 app.get("/api/kv/:k", requireLogin, async (req, res) => {
   if (!KV_PERMITIDAS.has(req.params.k)) return res.status(404).json({ v: null });

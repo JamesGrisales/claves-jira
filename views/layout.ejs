@@ -5349,6 +5349,314 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
   color: var(--accent, #00f5ff) !important;
 }
 
+
+  /* ==========================================================================
+     MODAL Y PALETA DE PERSONALIZACIÓN DE MENÚ (NOMBRES E ICONOS)
+     ========================================================================== */
+  .cme-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 99990;
+    background: rgba(4, 8, 16, 0.78);
+    backdrop-filter: blur(12px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    box-sizing: border-box;
+    animation: cmeFadeIn 0.22s ease-out;
+  }
+  .cme-modal-overlay.show { display: flex; }
+  @keyframes cmeFadeIn { from { opacity:0; } to { opacity:1; } }
+
+  .cme-card {
+    background: var(--panel-alt, #0b1329);
+    border: 1px solid var(--panel-edge, rgba(255,255,255,0.12));
+    border-radius: 18px;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.65), 0 0 40px rgba(var(--accent-rgb, 0, 245, 255), 0.15);
+    width: 100%;
+    max-width: 860px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+    color: var(--text, #e2e8f0);
+    box-sizing: border-box;
+  }
+
+  .cme-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--panel-edge, rgba(255,255,255,0.1));
+    background: rgba(255,255,255,0.02);
+  }
+  .cme-title-wrap { display: flex; align-items: center; gap: 12px; }
+  .cme-title-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, rgba(var(--accent-rgb, 0, 245, 255), 0.25), rgba(59, 130, 246, 0.2));
+    border: 1px solid var(--accent, #00f5ff);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 19px;
+  }
+  .cme-title { font-size: 16px; font-weight: 800; color: #fff; margin: 0; }
+  .cme-sub { font-size: 11.5px; color: var(--muted, #94a3b8); margin: 2px 0 0; }
+  .cme-close {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--panel-edge);
+    color: var(--muted);
+    border-radius: 10px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all .15s ease;
+  }
+  .cme-close:hover { background: rgba(239, 68, 68, 0.2); color: #f87171; border-color: #ef4444; }
+
+  .cme-body {
+    padding: 20px 24px;
+    overflow-y: auto;
+    max-height: calc(90vh - 150px);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .cme-body::-webkit-scrollbar { width: 6px; }
+  .cme-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 999px; }
+
+  .cme-tip-box {
+    background: rgba(var(--accent-rgb, 0, 245, 255), 0.06);
+    border: 1px solid rgba(var(--accent-rgb, 0, 245, 255), 0.25);
+    border-radius: 12px;
+    padding: 10px 14px;
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .cme-row {
+    background: rgba(255,255,255,0.025);
+    border: 1px solid var(--panel-edge, rgba(255,255,255,0.08));
+    border-radius: 12px;
+    padding: 10px 14px;
+    display: grid;
+    grid-template-columns: 56px 1fr 140px auto;
+    align-items: center;
+    gap: 12px;
+    transition: all .2s ease;
+  }
+  .cme-row:hover {
+    border-color: rgba(var(--accent-rgb, 0, 245, 255), 0.4);
+    background: rgba(255,255,255,0.04);
+  }
+
+  .cme-icon-pick-btn {
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+    background: rgba(0,0,0,0.3);
+    border: 1.5px solid var(--panel-edge);
+    color: var(--accent, #00f5ff);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all .2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    padding: 0;
+  }
+  .cme-icon-pick-btn:hover {
+    transform: scale(1.08);
+    border-color: var(--accent, #00f5ff);
+    box-shadow: 0 0 16px rgba(var(--accent-rgb, 0, 245, 255), 0.5);
+    background: rgba(var(--accent-rgb, 0, 245, 255), 0.15);
+  }
+  .cme-icon-pick-btn svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 2.2; }
+  .cme-icon-pick-btn .cme-edit-badge {
+    position: absolute;
+    bottom: -3px;
+    right: -3px;
+    background: var(--accent, #00f5ff);
+    color: #04100c;
+    border-radius: 999px;
+    width: 15px;
+    height: 15px;
+    font-size: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+  }
+
+  .cme-input-wrap { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .cme-input-wrap label { font-size: 10.5px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  .cme-name-input {
+    width: 100%;
+    background: rgba(0,0,0,0.25);
+    border: 1px solid var(--panel-edge);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 8px 12px;
+    border-radius: 8px;
+    outline: none;
+    box-sizing: border-box;
+    transition: border-color .15s ease;
+  }
+  .cme-name-input:focus { border-color: var(--accent, #00f5ff); box-shadow: 0 0 0 2px rgba(var(--accent-rgb), 0.2); }
+
+  .cme-meta-wrap { display: flex; flex-direction: column; gap: 2px; }
+  .cme-badge-path { font-family: var(--mono); font-size: 11px; color: var(--accent); opacity: 0.85; }
+  .cme-badge-grupo { font-size: 10.5px; color: var(--muted); }
+
+  .cme-row-actions { display: flex; align-items: center; gap: 6px; }
+  .cme-btn-reset-item {
+    background: transparent;
+    border: 1px solid var(--panel-edge);
+    color: var(--muted);
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all .15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .cme-btn-reset-item:hover { color: #fff; border-color: var(--accent); background: rgba(255,255,255,0.05); }
+
+  /* PALETA FLOTANTE DE ICONOS */
+  .cme-icon-palette-pop {
+    position: fixed;
+    z-index: 99995;
+    background: var(--panel, #0f172a);
+    border: 1px solid var(--accent, #00f5ff);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.7), 0 0 30px rgba(var(--accent-rgb, 0, 245, 255), 0.25);
+    border-radius: 16px;
+    width: 380px;
+    max-width: 95vw;
+    padding: 14px;
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+    box-sizing: border-box;
+    animation: cmePopUp 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .cme-icon-palette-pop.show { display: flex; }
+  @keyframes cmePopUp { from { transform: scale(0.95); opacity:0; } to { transform: scale(1); opacity:1; } }
+
+  .cme-pal-search {
+    width: 100%;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid var(--panel-edge);
+    color: #fff;
+    padding: 7px 10px;
+    font-size: 12px;
+    border-radius: 8px;
+    outline: none;
+    box-sizing: border-box;
+  }
+  .cme-pal-search:focus { border-color: var(--accent); }
+
+  .cme-pal-tabs {
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scrollbar-width: none;
+  }
+  .cme-pal-tabs::-webkit-scrollbar { display: none; }
+  .cme-pal-tab-btn {
+    border: none;
+    background: rgba(255,255,255,0.05);
+    color: var(--muted);
+    font-size: 10.5px;
+    font-weight: 700;
+    padding: 4px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all .15s ease;
+  }
+  .cme-pal-tab-btn.active, .cme-pal-tab-btn:hover { background: var(--accent); color: #04100c; }
+
+  .cme-icons-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+    max-height: 220px;
+    overflow-y: auto;
+    padding: 2px;
+    box-sizing: border-box;
+  }
+  .cme-icons-grid::-webkit-scrollbar { width: 5px; }
+  .cme-icons-grid::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 999px; }
+
+  .cme-icon-choice {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--panel-edge);
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all .15s ease;
+    padding: 0;
+  }
+  .cme-icon-choice svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2.2; }
+  .cme-icon-choice:hover {
+    background: rgba(var(--accent-rgb, 0, 245, 255), 0.25);
+    border-color: var(--accent);
+    color: #fff;
+    transform: scale(1.12);
+  }
+
+  .cme-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    border-top: 1px solid var(--panel-edge, rgba(255,255,255,0.1));
+    background: rgba(255,255,255,0.02);
+  }
+  .cme-btn-save {
+    background: linear-gradient(135deg, var(--accent, #00f5ff), #2563eb);
+    color: #fff;
+    border: none;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 8px 18px;
+    border-radius: 10px;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(var(--accent-rgb, 0, 245, 255), 0.4);
+    transition: all .2s ease;
+  }
+  .cme-btn-save:hover { transform: translateY(-1px); filter: brightness(1.1); box-shadow: 0 6px 20px rgba(var(--accent-rgb), 0.6); }
+
+  .btn-custom-menu-trigger {
+    background: rgba(255,255,255,0.04) !important;
+    border-color: rgba(var(--accent-rgb, 0, 245, 255), 0.3) !important;
+  }
+  .btn-custom-menu-trigger:hover {
+    border-color: var(--accent, #00f5ff) !important;
+    background: rgba(var(--accent-rgb, 0, 245, 255), 0.12) !important;
+  }
+
 </style>
 <style>
   /* Badge de Disponibilidad en la Cabecera */
@@ -5704,7 +6012,74 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
       <%- clockBox %><%- themeBtn %><%- palBtn %></div>
   <% } %>
 
-  <!-- Panel de apariencia: modo + paleta de colores -->
+  
+  <!-- =====================================================================
+       MODAL DE PERSONALIZACIÓN DE MENÚ: NOMBRES E ICONOS
+       ===================================================================== -->
+  <div class="cme-modal-overlay" id="modalPersonalizarMenu" role="dialog" aria-modal="true" aria-labelledby="cmeTitle">
+    <div class="cme-card">
+      <div class="cme-header">
+        <div class="cme-title-wrap">
+          <div class="cme-title-icon">🎨</div>
+          <div>
+            <h3 class="cme-title" id="cmeTitle">Personalizar Menú del Sistema</h3>
+            <p class="cme-sub">Elige el nombre y el icono que desees para cada módulo. Funciona al 100% en todos los estilos de menú.</p>
+          </div>
+        </div>
+        <button type="button" class="cme-close" id="cmeBtnCerrarTop" title="Cerrar ventana">✕</button>
+      </div>
+
+      <div class="cme-body">
+        <div class="cme-tip-box">
+          <span style="font-size:16px;">💡</span>
+          <div><strong>Consejo:</strong> Haz clic en el <strong>recuadro del icono</strong> para abrir la paleta con más de 60 iconos vectoriales y emojis, y escribe en la caja de texto para cambiarle el nombre.</div>
+        </div>
+
+        <div id="cmeRowsContainer" style="display:flex; flex-direction:column; gap:10px;">
+          <!-- Filas de módulos generadas dinámicamente -->
+        </div>
+      </div>
+
+      <div class="cme-footer">
+        <button type="button" class="secondary btn-sm" id="cmeBtnRestaurarTodo" style="border-color:#ef4444; color:#ef4444;" title="Vuelve a los nombres e iconos originales de fábrica">
+          ↺ Restaurar Todo por Defecto
+        </button>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <button type="button" class="secondary btn-sm" id="cmeBtnCancelar">Cancelar</button>
+          <button type="button" class="cme-btn-save" id="cmeBtnGuardar">💾 Guardar y Aplicar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PALETA FLOTANTE DE ICONOS -->
+  <div class="cme-icon-palette-pop" id="cmeIconPalettePop">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <span style="font-size:12px; font-weight:800; color:#fff; text-transform:uppercase; letter-spacing:0.04em;">Elegir Icono</span>
+      <button type="button" class="cme-close" id="cmePalClose" style="width:22px; height:22px; font-size:11px;">✕</button>
+    </div>
+    <input type="text" class="cme-pal-search" id="cmePalSearch" placeholder="🔍 Buscar icono (llave, código, nube, avión...)" autocomplete="off">
+    <div class="cme-pal-tabs" id="cmePalTabs">
+      <button type="button" class="cme-pal-tab-btn active" data-cat="all">Todos</button>
+      <button type="button" class="cme-pal-tab-btn" data-cat="negocio">Empresa / Claves</button>
+      <button type="button" class="cme-pal-tab-btn" data-cat="datos">Código / Datos</button>
+      <button type="button" class="cme-pal-tab-btn" data-cat="docs">Notas / Listas</button>
+      <button type="button" class="cme-pal-tab-btn" data-cat="redes">Redes / Viajes</button>
+      <button type="button" class="cme-pal-tab-btn" data-cat="tiempo">Tiempo / Gráficas</button>
+      <button type="button" class="cme-pal-tab-btn" data-cat="sistema">Sistema / Medios</button>
+      <button type="button" class="cme-pal-tab-btn" data-cat="emojis">Emojis</button>
+    </div>
+    <div class="cme-icons-grid" id="cmeIconsGrid">
+      <!-- Iconos inyectados por JS -->
+    </div>
+    <div style="display:flex; align-items:center; gap:6px; border-top:1px solid var(--panel-edge); padding-top:8px;">
+      <span style="font-size:11px; color:var(--muted);">O escribe un emoji:</span>
+      <input type="text" id="cmeCustomEmoji" placeholder="ej: 🚀" style="width:50px; text-align:center; padding:4px; font-size:13px; background:rgba(0,0,0,0.3); border:1px solid var(--panel-edge); border-radius:6px; color:#fff;">
+      <button type="button" class="secondary btn-sm" id="cmeBtnAplicarEmoji" style="padding:3px 8px; font-size:11px;">Usar</button>
+    </div>
+  </div>
+
+<!-- Panel de apariencia: modo + paleta de colores -->
   <div class="pal-panel" id="palPanel" role="dialog" aria-label="Apariencia">
     <h4>Apariencia</h4>
     <p class="hint">Elige cómo quieres ver la aplicación. Se guarda en este navegador.</p>
@@ -5787,6 +6162,7 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
       <button type="button" class="plain sw" data-pal="custom" id="swCustom" style="--a:#2563eb;--b:#4f46e5" title="Tu propio color"><span class="dot"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>Propio</button>
     </div>
     <label class="pal-custom">Elegir un color propio <input type="color" id="palCustom" value="#2563eb"></label>
+    <button type="button" class="secondary pal-reset btn-sm" id="palBtnCustomMenu" style="width:100%; margin-bottom:8px; border-color:var(--accent); color:var(--accent); font-weight:700;">🎨 Personalizar Nombres e Iconos del Menú</button>
     <button type="button" class="secondary pal-reset btn-sm" id="palReset">Restablecer apariencia</button>
   </div>
 
@@ -5803,12 +6179,21 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
         </span>
         <svg class="bnm-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="6 9 12 15 18 9"/></svg>
       </button>
+      <button type="button" class="btn-nav-modal btn-custom-menu-trigger" id="btnPersonalizarMenu" title="Personalizar nombres e iconos de los módulos del menú" aria-label="Personalizar menú">
+        <span class="bnm-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        </span>
+        <span class="bnm-text">
+          <span class="bnm-label">Menú</span>
+          <span class="bnm-pill"><i class="bnm-dot" style="background:#00f5ff;"></i><span>Personalizar</span></span>
+        </span>
+      </button>
       <div class="topbar-ver-update-group" style="display:inline-flex; align-items:center; gap:6px; flex-wrap:wrap;">
         <!-- Insignia Holográfica de Versión del Sistema (Visible en todo el programa) -->
-        <div class="cyber-version-pill" data-title="Suite Bóveda Jira · Versión activa: <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.9.3') %>" title="Suite Bóveda Jira · Versión <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.9.3') %>">
+        <div class="cyber-version-pill" data-title="Suite Bóveda Jira · Versión activa: <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.9.4') %>" title="Suite Bóveda Jira · Versión <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.9.4') %>">
           <span class="cvp-icon"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></span>
           <span class="cvp-lbl">BUILD</span>
-          <strong class="cvp-ver"><%= typeof appVersion !== 'undefined' ? appVersion : 'v2.9.3' %></strong>
+          <strong class="cvp-ver"><%= typeof appVersion !== 'undefined' ? appVersion : 'v2.9.4' %></strong>
           <% if (typeof gitCommit !== 'undefined' && gitCommit) { %><span class="cvp-commit" style="font-size:10px; opacity:0.75; font-family:var(--mono); margin-left:3px;">(<%= gitCommit %>)</span><% } %>
           <span class="cvp-pulse"></span>
         </div>
@@ -7497,7 +7882,7 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
             </div>
             <div class="gub-info">
               <div class="gub-branch" style="color:#10b981;">✅ Sistema Sincronizado y Estable</div>
-              <div class="gub-desc">Tu versión actual (<%= typeof appVersion !== "undefined" ? appVersion : "v2.9.3" %>) cuenta con todas las mejoras y parches más recientes publicados en GitHub. No hay versiones ni cambios nuevos pendientes de descargar.</div>
+              <div class="gub-desc">Tu versión actual (<%= typeof appVersion !== "undefined" ? appVersion : "v2.9.4" %>) cuenta con todas las mejoras y parches más recientes publicados en GitHub. No hay versiones ni cambios nuevos pendientes de descargar.</div>
             </div>
           </div>
           <div style="padding: 12px 14px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; font-size: 12.5px; color: var(--muted); line-height: 1.45;">
@@ -7684,7 +8069,7 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
                 // Estado: Al día (0 cambios)
                 if (bguBadge) bguBadge.style.display = 'none';
                 if (modalIcon) modalIcon.textContent = '✨';
-                if (modalTitle) modalTitle.textContent = 'Sistema al Día (' + (data.version ? 'v' + data.version : '<%= typeof appVersion !== "undefined" ? appVersion : "v2.9.3" %>') + (data.commit ? ' · ' + data.commit : '') + ')';
+                if (modalTitle) modalTitle.textContent = 'Sistema al Día (' + (data.version ? 'v' + data.version : '<%= typeof appVersion !== "undefined" ? appVersion : "v2.9.4" %>') + (data.commit ? ' · ' + data.commit : '') + ')';
                 if (modalSubtitle) modalSubtitle.textContent = 'No existen versiones o cambios nuevos disponibles';
                 if (viewPending) viewPending.style.display = 'none';
                 if (viewUpToDate) viewUpToDate.style.display = 'block';
@@ -7867,5 +8252,453 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
     })();
 
   </script>
+
+    /* ==========================================================================
+       SISTEMA DE PERSONALIZACIÓN DE MENÚ: NOMBRES E ICONOS
+       ========================================================================== */
+    (function(){
+      // Biblioteca enriquecida de iconos SVG y Emojis
+      var S = function(d){ return '<svg viewBox="0 0 24 24" aria-hidden="true">' + d + '</svg>'; };
+      var ICON_LIBRARY = [
+        // NEGOCIO & CLAVES & SEGURIDAD
+        { id:'vault', cat:'negocio', name:'Bóveda', svg: S('<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>') },
+        { id:'key', cat:'negocio', name:'Llave', svg: S('<path d="M21 2l-2 2m-1.5 1.5L14 9l-1.5-1.5L11 9l-1.5-1.5L8 9l-4 4a5.65 5.65 0 0 0 8 8l4-4v-1.5l1.5-1.5V11l1.5-1.5z"/>') },
+        { id:'lock', cat:'negocio', name:'Candado', svg: S('<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>') },
+        { id:'shield', cat:'negocio', name:'Escudo', svg: S('<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>') },
+        { id:'building', cat:'negocio', name:'Edificio', svg: S('<path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/>') },
+        { id:'users', cat:'negocio', name:'Usuarios', svg: S('<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>') },
+        { id:'briefcase', cat:'negocio', name:'Maletín', svg: S('<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>') },
+        { id:'credit-card', cat:'negocio', name:'Tarjeta', svg: S('<rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/>') },
+        { id:'dollar', cat:'negocio', name:'Dinero', svg: S('<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>') },
+
+        // CÓDIGO & DATOS
+        { id:'database', cat:'datos', name:'Base de datos', svg: S('<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>') },
+        { id:'code', cat:'datos', name:'Código', svg: S('<polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>') },
+        { id:'terminal', cat:'datos', name:'Terminal', svg: S('<polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/>') },
+        { id:'server', cat:'datos', name:'Servidor', svg: S('<rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/>') },
+        { id:'cpu', cat:'datos', name:'CPU Chip', svg: S('<rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/>') },
+        { id:'zap', cat:'datos', name:'Rayo', svg: S('<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>') },
+        { id:'git-branch', cat:'datos', name:'Git Branch', svg: S('<line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/>') },
+        { id:'cloud', cat:'datos', name:'Nube', svg: S('<path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/>') },
+        { id:'sliders', cat:'datos', name:'Ajustes', svg: S('<line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/>') },
+
+        // DOCUMENTOS & LISTAS
+        { id:'book', cat:'docs', name:'Libro / Jaivaná', svg: S('<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>') },
+        { id:'file-text', cat:'docs', name:'Documento', svg: S('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>') },
+        { id:'clipboard', cat:'docs', name:'Portapapeles', svg: S('<path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/>') },
+        { id:'list', cat:'docs', name:'Lista tareas', svg: S('<line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>') },
+        { id:'check-square', cat:'docs', name:'Check Tareas', svg: S('<polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>') },
+        { id:'edit', cat:'docs', name:'Editar lápiz', svg: S('<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>') },
+        { id:'folder', cat:'docs', name:'Carpeta', svg: S('<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>') },
+        { id:'bookmark', cat:'docs', name:'Marcador', svg: S('<path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>') },
+
+        // REDES & VIAJES
+        { id:'plane', cat:'redes', name:'Avión / Viáticos', svg: S('<path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/>') },
+        { id:'link', cat:'redes', name:'Enlace', svg: S('<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>') },
+        { id:'globe', cat:'redes', name:'Mundo web', svg: S('<circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>') },
+        { id:'compass', cat:'redes', name:'Brújula', svg: S('<circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>') },
+        { id:'map-pin', cat:'redes', name:'Ubicación', svg: S('<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>') },
+        { id:'share', cat:'redes', name:'Compartir', svg: S('<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>') },
+
+        // TIEMPO & GRÁFICAS
+        { id:'calendar', cat:'tiempo', name:'Calendario', svg: S('<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>') },
+        { id:'clock', cat:'tiempo', name:'Reloj', svg: S('<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>') },
+        { id:'bell', cat:'tiempo', name:'Campana', svg: S('<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>') },
+        { id:'star', cat:'tiempo', name:'Estrella', svg: S('<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>') },
+        { id:'rocket', cat:'tiempo', name:'Cohete', svg: S('<path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/>') },
+        { id:'activity', cat:'tiempo', name:'Actividad', svg: S('<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>') },
+
+        // SISTEMA & MEDIOS
+        { id:'video', cat:'sistema', name:'Cámara video', svg: S('<polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/>') },
+        { id:'trash', cat:'sistema', name:'Papelera', svg: S('<polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>') },
+        { id:'eye', cat:'sistema', name:'Ojo visor', svg: S('<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>') },
+        { id:'monitor', cat:'sistema', name:'Monitor', svg: S('<rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>') },
+        { id:'help-circle', cat:'sistema', name:'Manual ayuda', svg: S('<circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>') },
+        { id:'archive', cat:'sistema', name:'Archivador', svg: S('<polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/>') },
+
+        // EMOJIS
+        { id:'em-lock', cat:'emojis', name:'Candado 🔐', emoji:'🔐' },
+        { id:'em-key', cat:'emojis', name:'Llave 🗝️', emoji:'🗝️' },
+        { id:'em-briefcase', cat:'emojis', name:'Maletín 💼', emoji:'💼' },
+        { id:'em-building', cat:'emojis', name:'Edificio 🏢', emoji:'🏢' },
+        { id:'em-plane', cat:'emojis', name:'Avión ✈️', emoji:'✈️' },
+        { id:'em-compass', cat:'emojis', name:'Brújula 🧭', emoji:'🧭' },
+        { id:'em-link', cat:'emojis', name:'Enlace 🔗', emoji:'🔗' },
+        { id:'em-calendar', cat:'emojis', name:'Calendario 📅', emoji:'📅' },
+        { id:'em-clock', cat:'emojis', name:'Reloj ⏰', emoji:'⏰' },
+        { id:'em-video', cat:'emojis', name:'Video 🎥', emoji:'🎥' },
+        { id:'em-computer', cat:'emojis', name:'Computador 💻', emoji:'💻' },
+        { id:'em-gear', cat:'emojis', name:'Engranaje ⚙️', emoji:'⚙️' },
+        { id:'em-trash', cat:'emojis', name:'Papelera 🗑️', emoji:'🗑️' },
+        { id:'em-rocket', cat:'emojis', name:'Cohete 🚀', emoji:'🚀' },
+        { id:'em-bulb', cat:'emojis', name:'Idea 💡', emoji:'💡' },
+        { id:'em-shield', cat:'emojis', name:'Escudo 🛡️', emoji:'🛡️' },
+        { id:'em-package', cat:'emojis', name:'Paquete 📦', emoji:'📦' },
+        { id:'em-chart', cat:'emojis', name:'Gráfica 📊', emoji:'📊' },
+        { id:'em-notes', cat:'emojis', name:'Notas 📝', emoji:'📝' },
+        { id:'em-file', cat:'emojis', name:'Documento 📄', emoji:'📄' },
+        { id:'em-elephant', cat:'emojis', name:'Postgres 🐘', emoji:'🐘' },
+        { id:'em-oracle', cat:'emojis', name:'Oracle 🏛️', emoji:'🏛️' },
+        { id:'em-sql', cat:'emojis', name:'SQL Server 🟦', emoji:'🟦' },
+        { id:'em-dolphin', cat:'emojis', name:'MySQL 🐬', emoji:'🐬' },
+        { id:'em-leaf', cat:'emojis', name:'Mongo 🍃', emoji:'🍃' },
+        { id:'em-zap', cat:'emojis', name:'Redis ⚡', emoji:'⚡' }
+      ];
+
+      // Mapeo inicial de ítems por defecto
+      var DEFAULT_MENU_ITEMS = [
+        { h:'/',          t:'Empresas',      desc:'Contraseñas de clientes', grupo:'Gestión', svg: S('<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>') },
+        { h:'/jaivana',   t:'Jaivaná',       desc:'Datos del proyecto', grupo:'Gestión', svg: S('<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>') },
+        { h:'/informe',   t:'Informe',       desc:'Reportes y Aceptados', grupo:'Gestión', svg: S('<path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/>') },
+        { h:'/viaticos',  t:'Viáticos',      desc:'Gastos de viajes', grupo:'Gestión', svg: S('<path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/>') },
+        { h:'/sql',       t:'SQL',           desc:'Formateador y Revisor SQL', grupo:'Herramientas', svg: S('<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>') },
+        { h:'/visor',     t:'Visor XML/JSON',desc:'Previsualizar archivos', grupo:'Herramientas', svg: S('<polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>') },
+        { h:'/listas',    t:'Listas',        desc:'Tareas pendientes', grupo:'Herramientas', svg: S('<line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>') },
+        { h:'/logs',      t:'Logs',          desc:'Registro de actividad', grupo:'Herramientas', svg: S('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="14" y2="17"/>') },
+        { h:'/notas',     t:'Notas',         desc:'Tus apuntes rápidos', grupo:'Productividad', svg: S('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>') },
+        { h:'/enlaces',   t:'Enlaces',       desc:'Accesos directos', grupo:'Productividad', svg: S('<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>') },
+        { h:'/calendario', t:'Calendario',   desc:'Fechas importantes', grupo:'Productividad', svg: S('<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>') },
+        { h:'/manual',    t:'Manual',        desc:'Cómo usar el sistema', grupo:'Productividad', svg: S('<polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/>') },
+        { h:'/papelera',  t:'Papelera',      desc:'Cosas eliminadas', grupo:'Sistema', svg: S('<polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>') }
+      ];
+
+      function obtenerPersonalizacionGuardada() {
+        try {
+          var data = localStorage.getItem('boveda_custom_menu');
+          return data ? JSON.parse(data) : {};
+        } catch(e) { return {}; }
+      }
+
+      function guardarPersonalizacion(data) {
+        try {
+          localStorage.setItem('boveda_custom_menu', JSON.stringify(data));
+          // Sincronizar en segundo plano con el backend
+          if (window.fetch) {
+            fetch('/api/kv/menu-personalizado', {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ v: data })
+            }).catch(function(){});
+          }
+        } catch(e) {}
+      }
+
+      // Aplica los nombres e iconos personalizados en TODOS los estilos de menú
+      window.aplicarPersonalizacionMenu = function() {
+        var customData = obtenerPersonalizacionGuardada();
+        if (!customData || typeof customData !== 'object') return;
+
+        var navTabs = document.getElementById('navTabs');
+        if (!navTabs) return;
+
+        var links = navTabs.querySelectorAll('a[href]');
+        links.forEach(function(a){
+          var href = a.getAttribute('href');
+          var itemConf = customData[href];
+          if (!itemConf) return;
+
+          // 1. Actualizar Nombre
+          if (itemConf.t && typeof itemConf.t === 'string') {
+            var titEl = a.querySelector('.nav-tit');
+            if (titEl) titEl.textContent = itemConf.t;
+            a.setAttribute('data-title', itemConf.t);
+            var grp = a.getAttribute('data-grupo') || '';
+            a.setAttribute('title', itemConf.t + (grp ? ' (' + grp + ')' : ''));
+
+            // Si es el módulo activo en la página actual, actualizar la insignia de título
+            var curHref = document.body.dataset.activeModuleHref || '';
+            if (curHref === href || (href === '/' && curHref === '')) {
+              var badgeTitle = document.querySelector('#cyberActiveModuleBadge .camb-title');
+              if (badgeTitle) badgeTitle.textContent = itemConf.t;
+              document.body.dataset.activeModuleTitle = itemConf.t;
+            }
+          }
+
+          // 2. Actualizar Icono
+          if (itemConf.i) {
+            var icEl = a.querySelector('.nav-ic');
+            if (icEl) {
+              if (itemConf.i.indexOf('<svg') !== -1) {
+                icEl.innerHTML = itemConf.i;
+              } else {
+                icEl.innerHTML = '<span style="font-size:18px; line-height:1; display:flex; align-items:center; justify-content:center;">' + itemConf.i + '</span>';
+              }
+            }
+          }
+        });
+
+        // 3. Actualizar la paleta de comandos Ctrl+K si está disponible
+        if (window.NAV && Array.isArray(window.NAV)) {
+          window.NAV.forEach(function(navItem){
+            var itemConf = customData[navItem.h];
+            if (itemConf) {
+              if (itemConf.t) navItem.t = itemConf.t;
+              if (itemConf.i) navItem.i = itemConf.i;
+            }
+          });
+        }
+      };
+
+      // Control del Modal de Edición
+      var modal = document.getElementById('modalPersonalizarMenu');
+      var container = document.getElementById('cmeRowsContainer');
+      var palPop = document.getElementById('cmeIconPalettePop');
+      var activeEditingHref = null;
+      var activeEditingBtn = null;
+      var tempMenuState = {};
+
+      window.abrirModalPersonalizarMenu = function() {
+        if (!modal) return;
+        tempMenuState = JSON.parse(JSON.stringify(obtenerPersonalizacionGuardada()));
+        renderizarFilasModal();
+        modal.classList.add('show');
+        document.body.style.overflow = 'hidden';
+      };
+
+      window.cerrarModalPersonalizarMenu = function() {
+        if (!modal) return;
+        modal.classList.remove('show');
+        if (palPop) palPop.classList.remove('show');
+        document.body.style.overflow = '';
+      };
+
+      function renderizarFilasModal() {
+        if (!container) return;
+        container.innerHTML = '';
+
+        DEFAULT_MENU_ITEMS.forEach(function(item){
+          var custom = tempMenuState[item.h] || {};
+          var activeName = custom.t || item.t;
+          var activeIconHtml = custom.i || item.svg;
+
+          var row = document.createElement('div');
+          row.className = 'cme-row';
+          row.dataset.href = item.h;
+
+          row.innerHTML =
+            '<div>' +
+              '<button type="button" class="cme-icon-pick-btn" title="Haz clic para elegir un nuevo icono">' +
+                '<span class="cme-cur-icon">' + (activeIconHtml.indexOf('<svg') !== -1 ? activeIconHtml : '<span style="font-size:20px;">' + activeIconHtml + '</span>') + '</span>' +
+                '<span class="cme-edit-badge">✎</span>' +
+              '</button>' +
+            '</div>' +
+            '<div class="cme-input-wrap">' +
+              '<label>Nombre del Módulo</label>' +
+              '<input type="text" class="cme-name-input" value="' + activeName.replace(/"/g, '&quot;') + '" placeholder="Nombre visible en el menú">' +
+            '</div>' +
+            '<div class="cme-meta-wrap">' +
+              '<span class="cme-badge-path">' + item.h + '</span>' +
+              '<span class="cme-badge-grupo">Grupo: ' + item.grupo + '</span>' +
+            '</div>' +
+            '<div class="cme-row-actions">' +
+              '<button type="button" class="cme-btn-reset-item" title="Restaurar nombre e icono original de este módulo">↺ Original</button>' +
+            '</div>';
+
+          // Listener para cambiar icono
+          var pickBtn = row.querySelector('.cme-icon-pick-btn');
+          pickBtn.onclick = function(e){
+            e.stopPropagation();
+            abrirPaletaIconos(item.h, pickBtn);
+          };
+
+          // Listener para cambiar nombre
+          var nameInput = row.querySelector('.cme-name-input');
+          nameInput.oninput = function(){
+            if (!tempMenuState[item.h]) tempMenuState[item.h] = {};
+            tempMenuState[item.h].t = nameInput.value.trim() || item.t;
+          };
+
+          // Listener para resetear ítem
+          var resetBtn = row.querySelector('.cme-btn-reset-item');
+          resetBtn.onclick = function(){
+            delete tempMenuState[item.h];
+            nameInput.value = item.t;
+            row.querySelector('.cme-cur-icon').innerHTML = item.svg;
+          };
+
+          container.appendChild(row);
+        });
+      }
+
+      function abrirPaletaIconos(href, anchorBtn) {
+        if (!palPop) return;
+        activeEditingHref = href;
+        activeEditingBtn = anchorBtn;
+
+        var rect = anchorBtn.getBoundingClientRect();
+        var top = rect.bottom + 8;
+        var left = rect.left;
+        if (top + 340 > window.innerHeight) top = rect.top - 340;
+        if (left + 380 > window.innerWidth) left = window.innerWidth - 390;
+        if (left < 10) left = 10;
+
+        palPop.style.top = Math.max(10, top) + 'px';
+        palPop.style.left = left + 'px';
+        palPop.classList.add('show');
+        renderizarGridIconos('all');
+        var searchInput = document.getElementById('cmePalSearch');
+        if (searchInput) { searchInput.value = ''; searchInput.focus(); }
+      }
+
+      function renderizarGridIconos(filterCat, searchTerm) {
+        var grid = document.getElementById('cmeIconsGrid');
+        if (!grid) return;
+        grid.innerHTML = '';
+
+        var s = (searchTerm || '').toLowerCase().trim();
+        var items = ICON_LIBRARY.filter(function(ic){
+          if (filterCat && filterCat !== 'all' && ic.cat !== filterCat) return false;
+          if (s && ic.name.toLowerCase().indexOf(s) === -1 && ic.cat.toLowerCase().indexOf(s) === -1) return false;
+          return true;
+        });
+
+        items.forEach(function(ic){
+          var btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'cme-icon-choice';
+          btn.title = ic.name;
+          btn.innerHTML = ic.svg ? ic.svg : ('<span style="font-size:18px;">' + ic.emoji + '</span>');
+          btn.onclick = function(){
+            seleccionarIcono(ic.svg ? ic.svg : ic.emoji);
+          };
+          grid.appendChild(btn);
+        });
+
+        if (items.length === 0) {
+          grid.innerHTML = '<div style="grid-column:span 7; font-size:11.5px; color:var(--muted); text-align:center; padding:16px;">No se encontraron iconos</div>';
+        }
+      }
+
+      function seleccionarIcono(iconHtmlOrEmoji) {
+        if (!activeEditingHref) return;
+        if (!tempMenuState[activeEditingHref]) tempMenuState[activeEditingHref] = {};
+        tempMenuState[activeEditingHref].i = iconHtmlOrEmoji;
+
+        if (activeEditingBtn) {
+          var curSpan = activeEditingBtn.querySelector('.cme-cur-icon');
+          if (curSpan) {
+            curSpan.innerHTML = iconHtmlOrEmoji.indexOf('<svg') !== -1 ? iconHtmlOrEmoji : ('<span style="font-size:20px;">' + iconHtmlOrEmoji + '</span>');
+          }
+        }
+        if (palPop) palPop.classList.remove('show');
+      }
+
+      // Eventos de botones
+      var btnTopCustom = document.getElementById('btnPersonalizarMenu');
+      if (btnTopCustom) btnTopCustom.onclick = window.abrirModalPersonalizarMenu;
+
+      var btnPalCustom = document.getElementById('palBtnCustomMenu');
+      if (btnPalCustom) btnPalCustom.onclick = function(){
+        if (typeof togglePal === 'function') togglePal(false);
+        window.abrirModalPersonalizarMenu();
+      };
+
+      var btnCerrarTop = document.getElementById('cmeBtnCerrarTop');
+      if (btnCerrarTop) btnCerrarTop.onclick = window.cerrarModalPersonalizarMenu;
+
+      var btnCancelar = document.getElementById('cmeBtnCancelar');
+      if (btnCancelar) btnCancelar.onclick = window.cerrarModalPersonalizarMenu;
+
+      var btnPalClose = document.getElementById('cmePalClose');
+      if (btnPalClose) btnPalClose.onclick = function(){ if (palPop) palPop.classList.remove('show'); };
+
+      var btnSave = document.getElementById('cmeBtnGuardar');
+      if (btnSave) {
+        btnSave.onclick = function(){
+          guardarPersonalizacion(tempMenuState);
+          window.aplicarPersonalizacionMenu();
+          window.cerrarModalPersonalizarMenu();
+          if (typeof window.toast === 'function') window.toast('✓ Menú personalizado guardado con éxito');
+        };
+      }
+
+      var btnResetAll = document.getElementById('cmeBtnRestaurarTodo');
+      if (btnResetAll) {
+        btnResetAll.onclick = function(){
+          if (confirm('¿Restablecer todos los nombres e iconos del menú a los valores por defecto?')) {
+            tempMenuState = {};
+            guardarPersonalizacion({});
+            renderizarFilasModal();
+            window.aplicarPersonalizacionMenu();
+            if (typeof window.toast === 'function') window.toast('↺ Menú restablecido a valores por defecto');
+          }
+        };
+      }
+
+      // Pestañas de la paleta
+      var palTabs = document.getElementById('cmePalTabs');
+      if (palTabs) {
+        palTabs.onclick = function(e){
+          var tBtn = e.target.closest('.cme-pal-tab-btn');
+          if (!tBtn) return;
+          palTabs.querySelectorAll('.cme-pal-tab-btn').forEach(function(b){ b.classList.remove('active'); });
+          tBtn.classList.add('active');
+          var cat = tBtn.dataset.cat || 'all';
+          var searchInput = document.getElementById('cmePalSearch');
+          renderizarGridIconos(cat, searchInput ? searchInput.value : '');
+        };
+      }
+
+      var searchPalInput = document.getElementById('cmePalSearch');
+      if (searchPalInput) {
+        searchPalInput.oninput = function(){
+          var activeTab = palTabs ? palTabs.querySelector('.cme-pal-tab-btn.active') : null;
+          var cat = activeTab ? activeTab.dataset.cat : 'all';
+          renderizarGridIconos(cat, searchPalInput.value);
+        };
+      }
+
+      var btnAplicarEmoji = document.getElementById('cmeBtnAplicarEmoji');
+      var customEmojiInput = document.getElementById('cmeCustomEmoji');
+      if (btnAplicarEmoji && customEmojiInput) {
+        btnAplicarEmoji.onclick = function(){
+          var em = customEmojiInput.value.trim();
+          if (em) {
+            seleccionarIcono(em);
+            customEmojiInput.value = '';
+          }
+        };
+      }
+
+      // Cerrar paleta al hacer clic afuera
+      document.addEventListener('click', function(e){
+        if (palPop && palPop.classList.contains('show') && !e.target.closest('#cmeIconPalettePop, .cme-icon-pick-btn')) {
+          palPop.classList.remove('show');
+        }
+      });
+
+      // Añadir acceso a la paleta de comandos Ctrl+K
+      if (window.L && Array.isArray(window.L)) {
+        window.L.push({
+          g: 'Apariencia & Menú',
+          t: 'Personalizar Menú (Cambiar Nombres e Iconos)',
+          i: S('<path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>'),
+          k: 'personalizar menu nombres iconos cambiar editar estilo paleta',
+          run: function(){ window.abrirModalPersonalizarMenu(); }
+        });
+      }
+
+      // Intentar cargar desde el backend si no existe en localStorage
+      try {
+        if (!localStorage.getItem('boveda_custom_menu') && window.fetch) {
+          fetch('/api/kv/menu-personalizado')
+            .then(function(r){ return r.json(); })
+            .then(function(res){
+              if (res && res.v && typeof res.v === 'object') {
+                localStorage.setItem('boveda_custom_menu', JSON.stringify(res.v));
+                window.aplicarPersonalizacionMenu();
+              }
+            }).catch(function(){});
+        }
+      } catch(e) {}
+
+      // Aplicar al cargar
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', window.aplicarPersonalizacionMenu);
+      } else {
+        window.aplicarPersonalizacionMenu();
+      }
+    })();
+  
 </body>
 </html>
