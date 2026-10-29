@@ -413,30 +413,67 @@
     position: relative;
     width: 100%;
   }
-  .pw-input-wrap .pw-style-input {
+  .pw-input-box {
+    position: relative;
+    overflow: hidden;
+    border-radius: 9px;
     flex: 1;
+    display: flex;
+    align-items: center;
+    background: var(--panel-alt);
+    border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+    transition: all 0.2s ease;
+  }
+  .pw-input-box.revealed {
+    border-color: color-mix(in srgb, var(--accent) 55%, transparent) !important;
+    background: var(--accent-soft) !important;
+    box-shadow: 0 0 14px rgba(var(--accent-rgb), 0.28);
+  }
+  .pw-input-box.bump {
+    animation: bump 0.35s var(--spring);
+  }
+  .pw-input-box.loading {
+    animation: pulse 0.8s infinite alternate;
+    border-color: var(--accent) !important;
+  }
+  .pw-input-box .pw-style-input {
+    width: 100%;
     font-family: var(--mono) !important;
     font-size: 13.5px !important;
     font-weight: 600 !important;
     letter-spacing: 0.04em !important;
     color: var(--accent-dark) !important;
-    background: var(--panel-alt) !important;
-    border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent) !important;
-    border-radius: 9px !important;
+    background: transparent !important;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
     padding: 7px 12px !important;
     height: 38px !important;
     box-sizing: border-box !important;
     transition: all 0.2s ease !important;
   }
-  .pw-input-wrap .pw-style-input:focus {
-    border-color: var(--accent) !important;
-    box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.35) !important;
-    background: var(--panel) !important;
+  .pw-input-box.revealed .pw-style-input {
+    color: var(--accent-dark) !important;
+    letter-spacing: 0.03em !important;
   }
-  .pw-input-wrap .pw-style-input[type="password"] {
+  .pw-input-box .pw-style-input[type="password"] {
     letter-spacing: 0.25em !important;
     color: var(--muted) !important;
     font-weight: 800 !important;
+  }
+  .pw-input-box .pw-timer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    background: var(--accent);
+    width: 0%;
+    transition: width linear;
+    opacity: 0;
+    z-index: 2;
+  }
+  .pw-input-box.revealed .pw-timer {
+    opacity: 1;
   }
   .pw-input-wrap .pw-toggle-btn {
     flex-shrink: 0;
@@ -834,9 +871,12 @@
                 <span class="auto-fill-tag" id="tag-anterior-<%= c.id %>" style="font-size:11px; color:var(--accent); font-family:var(--mono); opacity:0.85;">⚡ Auto-completada</span>
               </div>
               <div class="pw-input-wrap">
-                <input type="text" name="clave_anterior" id="edit-anterior-<%= c.id %>" class="pw-style-input" required autocomplete="off" placeholder="Cargando clave actual...">
-                <button type="button" class="iconbtn lbl btn-ver pw-toggle-btn on" id="eye-anterior-<%= c.id %>" title="Mostrar u ocultar la clave anterior" onclick="toggleInputVisibility('edit-anterior-<%= c.id %>', 'eye-anterior-<%= c.id %>')">
-                  <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8Z"></path><circle cx="12" cy="12" r="3"></circle></svg><span class="t">Ocultar</span>
+                <div class="pw-input-box" id="box-anterior-<%= c.id %>">
+                  <input type="password" name="clave_anterior" id="edit-anterior-<%= c.id %>" class="pw-style-input" required autocomplete="off" placeholder="••••••••••••••••">
+                  <div class="pw-timer" id="timer-anterior-<%= c.id %>"></div>
+                </div>
+                <button type="button" class="iconbtn lbl btn-ver pw-toggle-btn" id="eye-anterior-<%= c.id %>" title="Mostrar u ocultar la clave anterior" onclick="toggleRevealEditAnterior(<%= c.id %>)">
+                  <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8Z"></path><circle cx="12" cy="12" r="3"></circle></svg><span class="t">Ver</span>
                 </button>
               </div>
             </div>
@@ -848,9 +888,12 @@
                 </button>
               </div>
               <div class="pw-input-wrap">
-                <input type="text" name="clave_nueva" id="edit-clave-<%= c.id %>" class="pw-style-input" oninput="evaluarClaveInput(this, 'edit-meter-<%= c.id %>', 'edit-status-<%= c.id %>', 'edit-crack-<%= c.id %>', 'edit-warn-<%= c.id %>')" required autocomplete="off" placeholder="Escribe la clave nueva...">
-                <button type="button" class="iconbtn lbl btn-ver pw-toggle-btn on" id="eye-nueva-<%= c.id %>" title="Mostrar u ocultar la clave nueva" onclick="toggleInputVisibility('edit-clave-<%= c.id %>', 'eye-nueva-<%= c.id %>')">
-                  <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8Z"></path><circle cx="12" cy="12" r="3"></circle></svg><span class="t">Ocultar</span>
+                <div class="pw-input-box" id="box-nueva-<%= c.id %>">
+                  <input type="password" name="clave_nueva" id="edit-clave-<%= c.id %>" class="pw-style-input" oninput="evaluarClaveInput(this, 'edit-meter-<%= c.id %>', 'edit-status-<%= c.id %>', 'edit-crack-<%= c.id %>', 'edit-warn-<%= c.id %>')" required autocomplete="off" placeholder="Escribe la clave nueva...">
+                  <div class="pw-timer" id="timer-nueva-<%= c.id %>"></div>
+                </div>
+                <button type="button" class="iconbtn lbl btn-ver pw-toggle-btn" id="eye-nueva-<%= c.id %>" title="Mostrar u ocultar la clave nueva" onclick="toggleRevealEditNueva(<%= c.id %>)">
+                  <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8Z"></path><circle cx="12" cy="12" r="3"></circle></svg><span class="t">Ver</span>
                 </button>
               </div>
               <div class="pw-health-box">
@@ -1444,64 +1487,240 @@ if (addGenBtn && addInputClave) {
 }
 
 // Generador para las filas de edición
-function toggleInputVisibility(inputId, eyeId) {
-  const inp = document.getElementById(inputId);
-  const eye = document.getElementById(eyeId);
-  if (!inp) return;
-  const esPass = inp.type === 'password';
-  inp.type = esPass ? 'text' : 'password';
-  if (eye) {
-    eye.classList.toggle('on', esPass);
-    const txt = eye.querySelector('.t');
-    if (txt) txt.textContent = esPass ? 'Ocultar' : 'Ver';
+// === CONTROLADORES DE VISIBILIDAD, ANIMACIÓN SCRAMBLE Y BARRA DE TIEMPO PARA EDITAR CLAVE ===
+const editAnteriorTimers = {};
+const editAnteriorState = {};
+const editNuevaTimers = {};
+
+function ocultarEditAnterior(id) {
+  const box = document.getElementById('box-anterior-' + id);
+  const inp = document.getElementById('edit-anterior-' + id);
+  const eye = document.getElementById('eye-anterior-' + id);
+  const timer = document.getElementById('timer-anterior-' + id);
+  if (box) box.classList.remove('revealed', 'loading', 'bump');
+  if (inp) {
+    inp.type = 'password';
+    if (editAnteriorState[id] && editAnteriorState[id].realVal) {
+      inp.value = editAnteriorState[id].realVal;
+    }
   }
+  if (eye) {
+    eye.classList.remove('on');
+    const t = eye.querySelector('.t');
+    if (t) t.textContent = 'Ver';
+  }
+  if (timer) {
+    timer.style.transition = 'none';
+    timer.style.width = '0%';
+  }
+  clearTimeout(editAnteriorTimers[id]);
 }
 
-async function cargarClaveAnterior(id) {
+async function toggleRevealEditAnterior(id) {
+  const box = document.getElementById('box-anterior-' + id);
+  const inp = document.getElementById('edit-anterior-' + id);
+  const eye = document.getElementById('eye-anterior-' + id);
+  const timer = document.getElementById('timer-anterior-' + id);
+  if (!box || !inp) return;
+
+  if (box.classList.contains('revealed')) {
+    ocultarEditAnterior(id);
+    return;
+  }
+
+  box.classList.add('loading');
+  inp.type = 'text';
+  inp.value = 'Descifrando...';
+
+  let realPw = (editAnteriorState[id] && editAnteriorState[id].realVal) || (revealedState[id] && revealedState[id].value) || '';
+  if (!realPw) {
+    try {
+      const res = await fetch('/empresa/' + id + '/clave');
+      if (res.ok) {
+        const data = await res.json();
+        realPw = data.clave || '';
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  box.classList.remove('loading');
+
+  if (!realPw) {
+    inp.value = 'Error al descifrar';
+    setTimeout(() => ocultarEditAnterior(id), 1500);
+    return;
+  }
+
+  editAnteriorState[id] = { realVal: realPw };
+  revealedState[id] = { value: realPw };
+
+  // Animación de caracteres (Matrix glyph scramble)
+  const glyphs = 'ABCDEF0123456789!@#$%^&*<>?';
+  let iter = 0;
+  const maxIter = 12;
+  const scramble = setInterval(() => {
+    inp.value = realPw.split('').map((char, index) => {
+      if (index < (iter / maxIter) * realPw.length) return char;
+      return glyphs[Math.floor(Math.random() * glyphs.length)];
+    }).join('');
+    iter++;
+    if (iter > maxIter) {
+      clearInterval(scramble);
+      inp.value = realPw;
+    }
+  }, 40);
+
+  box.classList.add('revealed');
+  box.classList.remove('bump');
+  void box.offsetWidth;
+  box.classList.add('bump');
+
+  if (eye) {
+    eye.classList.add('on');
+    const t = eye.querySelector('.t');
+    if (t) t.textContent = 'Ocultar';
+  }
+
+  if (timer) {
+    timer.style.transition = 'none';
+    timer.style.width = '100%';
+    void timer.offsetWidth;
+    timer.style.transition = 'width 10s linear';
+    timer.style.width = '0%';
+  }
+
+  clearTimeout(editAnteriorTimers[id]);
+  editAnteriorTimers[id] = setTimeout(() => {
+    ocultarEditAnterior(id);
+  }, 10000);
+}
+
+function ocultarEditNueva(id) {
+  const box = document.getElementById('box-nueva-' + id);
+  const inp = document.getElementById('edit-clave-' + id);
+  const eye = document.getElementById('eye-nueva-' + id);
+  const timer = document.getElementById('timer-nueva-' + id);
+  if (box) box.classList.remove('revealed', 'loading', 'bump');
+  if (inp) inp.type = 'password';
+  if (eye) {
+    eye.classList.remove('on');
+    const t = eye.querySelector('.t');
+    if (t) t.textContent = 'Ver';
+  }
+  if (timer) {
+    timer.style.transition = 'none';
+    timer.style.width = '0%';
+  }
+  clearTimeout(editNuevaTimers[id]);
+}
+
+function toggleRevealEditNueva(id) {
+  const box = document.getElementById('box-nueva-' + id);
+  const inp = document.getElementById('edit-clave-' + id);
+  const eye = document.getElementById('eye-nueva-' + id);
+  const timer = document.getElementById('timer-nueva-' + id);
+  if (!box || !inp) return;
+
+  if (box.classList.contains('revealed')) {
+    ocultarEditNueva(id);
+    return;
+  }
+
+  const val = inp.value;
+  if (!val) {
+    inp.focus();
+    return;
+  }
+
+  inp.type = 'text';
+  box.classList.add('revealed', 'bump');
+  if (eye) {
+    eye.classList.add('on');
+    const t = eye.querySelector('.t');
+    if (t) t.textContent = 'Ocultar';
+  }
+
+  if (timer) {
+    timer.style.transition = 'none';
+    timer.style.width = '100%';
+    void timer.offsetWidth;
+    timer.style.transition = 'width 10s linear';
+    timer.style.width = '0%';
+  }
+
+  clearTimeout(editNuevaTimers[id]);
+  editNuevaTimers[id] = setTimeout(() => {
+    ocultarEditNueva(id);
+  }, 10000);
+}
+
+async function precargarClaveAnterior(id) {
   const inp = document.getElementById('edit-anterior-' + id);
   const tag = document.getElementById('tag-anterior-' + id);
   if (!inp) return;
-  if (inp.value && inp.value.trim().length > 0 && inp.value !== 'Descifrando clave...') return;
+  if (editAnteriorState[id] && editAnteriorState[id].realVal) {
+    inp.value = editAnteriorState[id].realVal;
+    if (tag) tag.style.display = 'inline-block';
+    return;
+  }
   if (revealedState[id] && revealedState[id].value) {
+    editAnteriorState[id] = { realVal: revealedState[id].value };
     inp.value = revealedState[id].value;
     if (tag) tag.style.display = 'inline-block';
     return;
   }
   try {
-    inp.placeholder = 'Descifrando clave...';
     const res = await fetch('/empresa/' + id + '/clave');
     if (res.ok) {
       const data = await res.json();
       if (data && data.clave) {
-        inp.value = data.clave;
+        editAnteriorState[id] = { realVal: data.clave };
         revealedState[id] = { value: data.clave };
+        inp.value = data.clave;
         if (tag) tag.style.display = 'inline-block';
       }
-    } else {
-      inp.placeholder = 'Escribe la clave anterior';
     }
   } catch (e) {
-    console.error('Error cargando clave anterior:', e);
-    inp.placeholder = 'Escribe la clave anterior';
+    console.error('Error precargando clave anterior:', e);
   }
 }
 
 window.generarClaveFila = function(id) {
+  const box = document.getElementById('box-nueva-' + id);
   const inp = document.getElementById('edit-clave-' + id);
-  if (!inp) return;
-  const pw = generarClaveSegura(18);
-  inp.value = pw;
-  inp.type = 'text';
   const eye = document.getElementById('eye-nueva-' + id);
+  const timer = document.getElementById('timer-nueva-' + id);
+  if (!inp) return;
+
+  const pw = generarClaveSegura(18);
+  inp.type = 'text';
+  inp.value = pw;
+
+  if (box) {
+    box.classList.add('revealed', 'bump');
+  }
   if (eye) {
     eye.classList.add('on');
-    const txt = eye.querySelector('.t');
-    if (txt) txt.textContent = 'Ocultar';
+    const t = eye.querySelector('.t');
+    if (t) t.textContent = 'Ocultar';
   }
+  if (timer) {
+    timer.style.transition = 'none';
+    timer.style.width = '100%';
+    void timer.offsetWidth;
+    timer.style.transition = 'width 10s linear';
+    timer.style.width = '0%';
+  }
+  clearTimeout(editNuevaTimers[id]);
+  editNuevaTimers[id] = setTimeout(() => {
+    ocultarEditNueva(id);
+  }, 10000);
+
   evaluarClaveInput(inp, 'edit-meter-' + id, 'edit-status-' + id, 'edit-crack-' + id, 'edit-warn-' + id);
   showToast('Clave segura generada');
 };
-
 // === AUDITORÍA GLOBAL DE LA BÓVEDA ===
 const toggleAuditBtn = document.getElementById('toggleAuditBtn');
 const auditCard = document.getElementById('auditCard');
@@ -1745,7 +1964,10 @@ function toggleEdit(id){
   const b = document.getElementById('editbtn-' + id);
   if (b){ b.classList.toggle('on', abierto); b.querySelector('.t').textContent = abierto ? 'Cerrar' : 'Editar'; }
   if (abierto) {
-    cargarClaveAnterior(id);
+    precargarClaveAnterior(id);
+  } else {
+    ocultarEditAnterior(id);
+    ocultarEditNueva(id);
   }
 }
 
