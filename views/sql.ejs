@@ -2239,18 +2239,10 @@ entrada.addEventListener('input', programar);
 $('btnFormatear').addEventListener('click', function(){ formatearEditor(); });
 $('btnLimpiar').addEventListener('click', function(){ entrada.value = ''; localStorage.removeItem('boveda-sql-draft'); procesar(); entrada.focus(); });
 
-// Auto-formatear al pegar si la consulta viene en 1 sola línea o comprimida
+// Al pegar: se preserva siempre la estructura original exacta tal como la pega el usuario
 entrada.addEventListener('paste', function(e) {
   setTimeout(function() {
-    var txt = entrada.value;
-    if (!txt.trim()) return;
-    var lineas = txt.split('\n').length;
-    var esSql = /(INSERT\s+INTO|VALUES|SELECT\s+|UPDATE\s+|DELETE\s+FROM|CREATE\s+TABLE)/i.test(txt);
-    if (esSql && (lineas <= 3 || (txt.indexOf(',') >= 0 && txt.length > 70))) {
-      formatearEditor('Pegado y formateado a ' + opts.perRow + ' por línea');
-    } else {
-      procesar();
-    }
+    procesar();
   }, 35);
 });
 
@@ -4957,7 +4949,7 @@ if (edLayout) {
 
       '<div id="ewWrapAutoFormatear" class="ew-field" style="margin-top:2px;">' +
         '<label class="chk" title="Organiza y formatea la consulta SQL (cada columna en su propia línea, indentación de CASE y cláusulas)">' +
-          '<input type="checkbox" id="ewAutoFormatear" checked> ✨ Organizar / Formatear SQL' +
+          '<input type="checkbox" id="ewAutoFormatear"> ✨ Organizar / Formatear SQL' +
         '</label>' +
       '</div>' +
 
