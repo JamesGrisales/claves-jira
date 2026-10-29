@@ -404,6 +404,49 @@
   .iconbtn.btn-editar svg { stroke: #f59e0b; filter: drop-shadow(0 0 4px rgba(245,158,11,0.5)); }
   .iconbtn.btn-editar:hover { border-color: #f59e0b; background: rgba(245,158,11,0.12); color: #f59e0b; }
   .efb-sort { position: relative; z-index: 50; }
+
+  /* Estilo Cyber/Mono idéntico al 'Ver' de las claves para Clave Anterior y Clave Nueva en Editar */
+  .pw-input-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+    width: 100%;
+  }
+  .pw-input-wrap .pw-style-input {
+    flex: 1;
+    font-family: var(--mono) !important;
+    font-size: 13.5px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.04em !important;
+    color: var(--accent-dark) !important;
+    background: var(--panel-alt) !important;
+    border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent) !important;
+    border-radius: 9px !important;
+    padding: 7px 12px !important;
+    height: 38px !important;
+    box-sizing: border-box !important;
+    transition: all 0.2s ease !important;
+  }
+  .pw-input-wrap .pw-style-input:focus {
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.35) !important;
+    background: var(--panel) !important;
+  }
+  .pw-input-wrap .pw-style-input[type="password"] {
+    letter-spacing: 0.25em !important;
+    color: var(--muted) !important;
+    font-weight: 800 !important;
+  }
+  .pw-input-wrap .pw-toggle-btn {
+    flex-shrink: 0;
+    height: 38px;
+    padding: 0 12px;
+    border-radius: 9px;
+  }
+  .auto-fill-tag {
+    animation: fadeIn 0.3s ease;
+  }
 </style>
 
 <div x-data="bovedaAlpineApp()">
@@ -785,7 +828,18 @@
         <h5><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>Cambiar clave <span class="db-orb db-orb-sm db-orb-pg" style="margin-left:auto;" title="Cifrado AES-256">🔒</span></h5>
         <form method="post" action="/empresa/<%= c.id %>/actualizar">
           <div class="fields">
-            <div><label>Clave anterior</label><input type="text" name="clave_anterior" required autocomplete="off"></div>
+            <div>
+              <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px;">
+                <label style="margin:0;">Clave anterior</label>
+                <span class="auto-fill-tag" id="tag-anterior-<%= c.id %>" style="font-size:11px; color:var(--accent); font-family:var(--mono); opacity:0.85;">⚡ Auto-completada</span>
+              </div>
+              <div class="pw-input-wrap">
+                <input type="text" name="clave_anterior" id="edit-anterior-<%= c.id %>" class="pw-style-input" required autocomplete="off" placeholder="Cargando clave actual...">
+                <button type="button" class="iconbtn lbl btn-ver pw-toggle-btn on" id="eye-anterior-<%= c.id %>" title="Mostrar u ocultar la clave anterior" onclick="toggleInputVisibility('edit-anterior-<%= c.id %>', 'eye-anterior-<%= c.id %>')">
+                  <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8Z"></path><circle cx="12" cy="12" r="3"></circle></svg><span class="t">Ocultar</span>
+                </button>
+              </div>
+            </div>
             <div>
               <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px;">
                 <label style="margin:0;">Clave nueva</label>
@@ -793,7 +847,12 @@
                   🎲 Generar segura
                 </button>
               </div>
-              <input type="text" name="clave_nueva" id="edit-clave-<%= c.id %>" oninput="evaluarClaveInput(this, 'edit-meter-<%= c.id %>', 'edit-status-<%= c.id %>', 'edit-crack-<%= c.id %>', 'edit-warn-<%= c.id %>')" required autocomplete="off">
+              <div class="pw-input-wrap">
+                <input type="text" name="clave_nueva" id="edit-clave-<%= c.id %>" class="pw-style-input" oninput="evaluarClaveInput(this, 'edit-meter-<%= c.id %>', 'edit-status-<%= c.id %>', 'edit-crack-<%= c.id %>', 'edit-warn-<%= c.id %>')" required autocomplete="off" placeholder="Escribe la clave nueva...">
+                <button type="button" class="iconbtn lbl btn-ver pw-toggle-btn on" id="eye-nueva-<%= c.id %>" title="Mostrar u ocultar la clave nueva" onclick="toggleInputVisibility('edit-clave-<%= c.id %>', 'eye-nueva-<%= c.id %>')">
+                  <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8Z"></path><circle cx="12" cy="12" r="3"></circle></svg><span class="t">Ocultar</span>
+                </button>
+              </div>
               <div class="pw-health-box">
                 <div class="meter"><i id="edit-meter-<%= c.id %>"></i></div>
                 <div class="health-meta">
@@ -1385,11 +1444,60 @@ if (addGenBtn && addInputClave) {
 }
 
 // Generador para las filas de edición
+function toggleInputVisibility(inputId, eyeId) {
+  const inp = document.getElementById(inputId);
+  const eye = document.getElementById(eyeId);
+  if (!inp) return;
+  const esPass = inp.type === 'password';
+  inp.type = esPass ? 'text' : 'password';
+  if (eye) {
+    eye.classList.toggle('on', esPass);
+    const txt = eye.querySelector('.t');
+    if (txt) txt.textContent = esPass ? 'Ocultar' : 'Ver';
+  }
+}
+
+async function cargarClaveAnterior(id) {
+  const inp = document.getElementById('edit-anterior-' + id);
+  const tag = document.getElementById('tag-anterior-' + id);
+  if (!inp) return;
+  if (inp.value && inp.value.trim().length > 0 && inp.value !== 'Descifrando clave...') return;
+  if (revealedState[id] && revealedState[id].value) {
+    inp.value = revealedState[id].value;
+    if (tag) tag.style.display = 'inline-block';
+    return;
+  }
+  try {
+    inp.placeholder = 'Descifrando clave...';
+    const res = await fetch('/empresa/' + id + '/clave');
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.clave) {
+        inp.value = data.clave;
+        revealedState[id] = { value: data.clave };
+        if (tag) tag.style.display = 'inline-block';
+      }
+    } else {
+      inp.placeholder = 'Escribe la clave anterior';
+    }
+  } catch (e) {
+    console.error('Error cargando clave anterior:', e);
+    inp.placeholder = 'Escribe la clave anterior';
+  }
+}
+
 window.generarClaveFila = function(id) {
   const inp = document.getElementById('edit-clave-' + id);
   if (!inp) return;
   const pw = generarClaveSegura(18);
   inp.value = pw;
+  inp.type = 'text';
+  const eye = document.getElementById('eye-nueva-' + id);
+  if (eye) {
+    eye.classList.add('on');
+    const txt = eye.querySelector('.t');
+    if (txt) txt.textContent = 'Ocultar';
+  }
   evaluarClaveInput(inp, 'edit-meter-' + id, 'edit-status-' + id, 'edit-crack-' + id, 'edit-warn-' + id);
   showToast('Clave segura generada');
 };
@@ -1636,6 +1744,9 @@ function toggleEdit(id){
   p.closest('.row').classList.toggle('open', abierto);
   const b = document.getElementById('editbtn-' + id);
   if (b){ b.classList.toggle('on', abierto); b.querySelector('.t').textContent = abierto ? 'Cerrar' : 'Editar'; }
+  if (abierto) {
+    cargarClaveAnterior(id);
+  }
 }
 
 let toastTimer;
