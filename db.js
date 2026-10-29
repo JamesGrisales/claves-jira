@@ -13,6 +13,10 @@ const pool = new Pool({
   connectionTimeoutMillis: 10000,
 });
 
+pool.on("error", (err) => {
+  console.error("Aviso en pool de PostgreSQL (cliente inactivo o reconexión):", err.message);
+});
+
 async function initDb() {
   const schema = fs.readFileSync(path.join(__dirname, "db", "schema.sql"), "utf8");
   await pool.query(schema);

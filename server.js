@@ -1,4 +1,11 @@
 require("dotenv").config();
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("Unhandled Rejection:", reason);
+});
+process.on("uncaughtException", (err) => {
+  console.error("Uncaught Exception capturada:", err);
+});
+
 
 const express = require("express");
 const pkgJson = require("./package.json");
