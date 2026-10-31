@@ -536,6 +536,7 @@ app.post("/empresa/:id/registrar-copia", requireLogin, async (req, res) => {
       "UPDATE companies SET copias_count = COALESCE(copias_count, 0) + 1 WHERE id = $1 RETURNING copias_count",
       [id]
     );
+    memCache.del("companies:list");
     memCache.del("companies");
     res.json({ ok: true, copias_count: rows[0] ? rows[0].copias_count : 1 });
   } catch (e) {

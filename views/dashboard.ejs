@@ -1144,9 +1144,8 @@
 %>
 
 
-<% if (typeof topFrecuentes !== 'undefined' && topFrecuentes && topFrecuentes.length > 0) { %>
 <!-- CINTA BENTO: EMPRESAS MÁS FRECUENTES (TOP COPIADAS) -->
-<div class="top-frecuentes-ribbon" id="topFrecuentesRibbon">
+<div class="top-frecuentes-ribbon" id="topFrecuentesRibbon" style="<%= (typeof topFrecuentes === 'undefined' || !topFrecuentes || topFrecuentes.length === 0) ? 'display:none;' : '' %>">
   <div class="tfr-header">
     <div class="tfr-title">
       <span class="tfr-flame-icon">🔥</span>
@@ -1155,10 +1154,11 @@
     </div>
     <span class="tfr-legend">Basado en tus claves más copiadas</span>
   </div>
-  <div class="tfr-grid">
+  <div class="tfr-grid" id="tfrGrid">
     <% 
-      var maxCopias = Math.max.apply(null, topFrecuentes.map(function(t){ return t.copias_count || 1; })) || 1;
-      topFrecuentes.forEach(function(item, idx) { 
+      var topList = (typeof topFrecuentes !== 'undefined' && topFrecuentes) ? topFrecuentes : [];
+      var maxCopias = topList.length > 0 ? (Math.max.apply(null, topList.map(function(t){ return t.copias_count || 1; })) || 1) : 1;
+      topList.forEach(function(item, idx) { 
         var pct = Math.min(Math.round(((item.copias_count || 0) / maxCopias) * 100), 100);
     %>
     <div class="tfr-card" data-id="<%= item.id %>" data-name="<%= item.empresa %>">
@@ -1168,7 +1168,7 @@
           <div class="tfr-name" title="<%= item.empresa %>"><%= item.empresa %></div>
           <div class="tfr-stats">
             <span class="tfr-flame">🔥</span>
-            <span class="tfr-copies" id="top-copies-<%= item.id %>"><%= item.copias_count %> copias</span>
+            <span class="tfr-copies" id="top-copies-<%= item.id %>"><%= item.copias_count %> <%= item.copias_count === 1 ? 'copia' : 'copias' %></span>
             <span class="tfr-rank">#<%= idx + 1 %></span>
           </div>
         </div>
@@ -1176,7 +1176,7 @@
       <div class="tfr-heat-bar">
         <div class="tfr-heat-fill" style="width: <%= pct %>%;"></div>
       </div>
-      <button type="button" class="tfr-btn-copy" onclick="copiarClaveDirecta(<%= item.id %>, '<%= item.empresa.replace(/'/g, '\\\'') %>', this)" title="Copiar clave de <%= item.empresa %>">
+      <button type="button" class="tfr-btn-copy" onclick="copiarClaveDirecta(<%= item.id %>, '<%= item.empresa.replace(/'/g, '\'') %>', this)" title="Copiar clave de <%= item.empresa %>">
         <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
         <span>Copiar clave</span>
       </button>
@@ -1184,7 +1184,6 @@
     <% }); %>
   </div>
 </div>
-<% } %>
 
 <!-- Barra de Filtros de Vencimiento Mensual y Ordenamiento -->
 <div class="expiration-filter-bar">
@@ -1296,7 +1295,7 @@
     var hue = (charCode * 15) % 360; 
     var empInfo = c._meta || parseEmpMeta(c);
   %>
-  <div class="row <%= empInfo.estado %>" data-name="<%= c.empresa.toLowerCase() %>" data-id="<%= c.id %>" data-estado="<%= empInfo.estado %>" data-dias="<%= empInfo.dias %>" data-fecha="<%= empInfo.timestamp %>" data-copias="<%= c.copias_count || 0 %>" style="animation-delay:<%= Math.min(idx, 12) * 30 %>ms">
+  <div class="row <%= empInfo.estado %>" data-name="<%= c.empresa.toLowerCase() %>" data-display-name="<%= c.empresa %>" data-id="<%= c.id %>" data-estado="<%= empInfo.estado %>" data-dias="<%= empInfo.dias %>" data-fecha="<%= empInfo.timestamp %>" data-copias="<%= c.copias_count || 0 %>" style="animation-delay:<%= Math.min(idx, 12) * 30 %>ms">
     <div class="main">
       <div class="name">
         <button type="button" class="iconbtn favbtn" id="fav-<%= c.id %>" onclick="toggleFav(<%= c.id %>)" title="Marcar como favorito (anclar arriba)" style="padding:0; width:28px; height:28px; background:none; border:none; box-shadow:none;">
@@ -1305,6 +1304,10 @@
         <span class="avatar" style="--hue: <%= hue %>"><%= c.empresa[0].toUpperCase() %></span>
         <span class="db-orb db-orb-sm db-orb-pg" style="flex-shrink:0;" title="Registro activo en PostgreSQL">🐘</span>
         <span class="emp-name" title="<%= c.empresa %>"><%= c.empresa %></span>
+        <span class="row-heat-badge" id="heat-badge-<%= c.id %>" style="<%= ((c.copias_count || 0) > 0) ? 'display:inline-flex;' : 'display:none;' %>" title="Empresa copiada <%= c.copias_count || 0 %> veces">
+          <span class="rhb-flame">🔥</span>
+          <span class="rhb-num"><%= c.copias_count || 0 %></span>
+        </span>
       </div>
 
       <!-- CENTRO: Donde señala la flecha roja (Fecha de actualización y semáforo) -->
@@ -2435,7 +2438,9 @@ function registrarCopiaEmpresa(id) {
       if (data && data.ok) {
         var n = data.copias_count;
         var row = document.querySelector('.row[data-id="' + id + '"]');
-        if (row) row.setAttribute('data-copias', n);
+        if (row) {
+          row.setAttribute('data-copias', n);
+        }
         var badge = document.getElementById('heat-badge-' + id);
         if (badge) {
           badge.style.display = 'inline-flex';
@@ -2444,12 +2449,75 @@ function registrarCopiaEmpresa(id) {
           badge.classList.remove('bump');
           void badge.offsetWidth;
           badge.classList.add('bump');
+          badge.setAttribute('title', 'Empresa copiada ' + n + (n === 1 ? ' vez' : ' veces'));
         }
         var topCopy = document.getElementById('top-copies-' + id);
-        if (topCopy) topCopy.textContent = n + ' copias';
+        if (topCopy) topCopy.textContent = n + (n === 1 ? ' copia' : ' copias');
+        actualizarCintaFrecuentes();
       }
     })
     .catch(function(){});
+}
+
+function actualizarCintaFrecuentes() {
+  var rows = Array.from(document.querySelectorAll('#results .row'));
+  var items = [];
+  rows.forEach(function(r) {
+    var copias = parseInt(r.getAttribute('data-copias') || '0', 10);
+    if (copias > 0) {
+      items.push({
+        id: r.getAttribute('data-id'),
+        empresa: r.getAttribute('data-display-name') || (r.querySelector('.emp-name') ? r.querySelector('.emp-name').textContent.trim() : '') || r.getAttribute('data-name') || '',
+        copias: copias
+      });
+    }
+  });
+
+  // Actualizar contador en el filtro "🔥 Más usadas"
+  var countTop = document.getElementById('countTop');
+  if (countTop) countTop.textContent = items.length;
+
+  var ribbon = document.getElementById('topFrecuentesRibbon');
+  var grid = document.getElementById('tfrGrid');
+  if (!ribbon || !grid) return;
+
+  if (items.length === 0) {
+    ribbon.style.display = 'none';
+    grid.innerHTML = '';
+    return;
+  }
+
+  items.sort(function(a, b){ return b.copias - a.copias; });
+  var top4 = items.slice(0, 4);
+  var maxCopias = top4[0].copias || 1;
+
+  ribbon.style.display = 'block';
+  grid.innerHTML = top4.map(function(item, idx) {
+    var pct = Math.min(Math.round((item.copias / maxCopias) * 100), 100);
+    var initial = (item.empresa || '?').charAt(0).toUpperCase();
+    var safeName = item.empresa.replace(/'/g, "\'");
+    var copiesTxt = item.copias + (item.copias === 1 ? ' copia' : ' copias');
+    return '<div class="tfr-card" data-id="' + item.id + '" data-name="' + item.empresa + '">' +
+      '<div class="tfr-card-top">' +
+        '<div class="tfr-avatar">' + initial + '</div>' +
+        '<div class="tfr-info">' +
+          '<div class="tfr-name" title="' + item.empresa + '">' + item.empresa + '</div>' +
+          '<div class="tfr-stats">' +
+            '<span class="tfr-flame">🔥</span>' +
+            '<span class="tfr-copies" id="top-copies-' + item.id + '">' + copiesTxt + '</span>' +
+            '<span class="tfr-rank">#' + (idx + 1) + '</span>' +
+          </div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="tfr-heat-bar">' +
+        '<div class="tfr-heat-fill" style="width: ' + pct + '%;"></div>' +
+      '</div>' +
+      '<button type="button" class="tfr-btn-copy" onclick="copiarClaveDirecta(' + item.id + ', \'' + safeName + '\', this)" title="Copiar clave de ' + item.empresa + '">' +
+        '<svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>' +
+        '<span>Copiar clave</span>' +
+      '</button>' +
+    '</div>';
+  }).join('');
 }
 
 async function copyPassword(id){
