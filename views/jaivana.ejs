@@ -1,1 +1,2936 @@
-<%- include('notas') %>
+<style>
+  .top{ display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+  .top h1{ margin:0; }
+  .top .count{ color:var(--accent-dark); background:var(--accent-soft); font-size:12px; font-weight:700; padding:4px 11px; border-radius:999px; }
+  .toolbar{ display:flex; gap:10px; margin-bottom:14px; }
+  .toolbar .search-wrap{ position:relative; flex:1; }
+  .toolbar .search-wrap input{ padding-left:38px; font-family:var(--sans); font-size:14.5px; }
+  .toolbar .search-wrap svg{ position:absolute; left:12px; top:50%; transform:translateY(-50%); width:16px; height:16px; stroke:var(--muted); pointer-events:none; }
+  .toolbar button{ white-space:nowrap; }
+
+  .tabs{ display:flex; gap:6px; flex-wrap:wrap; margin-bottom:16px; }
+  .tab{ background:var(--panel); border:1px solid var(--panel-edge); color:var(--muted); font-size:12.5px; font-weight:600; padding:7px 14px; border-radius:999px; cursor:pointer; transition:border-color .15s ease, color .15s ease, background-color .15s ease, transform .12s cubic-bezier(.34,1.56,.64,1), box-shadow .15s ease; }
+  .tab:hover{ border-color:var(--accent); color:var(--accent-dark); transform:translateY(-1px); box-shadow:0 2px 8px rgba(20,30,45,.08); }
+  .tab:active{ transform:translateY(0) scale(.96); }
+  .tab.active{ background:linear-gradient(135deg, var(--accent), var(--accent-dark)); border-color:var(--accent); color:#fff; box-shadow:0 2px 8px rgba(47,158,143,.3); }
+
+  #results{ display:flex; flex-direction:column; gap:8px; }
+  .row{ position:relative; overflow:hidden; background:var(--panel); border:1px solid var(--panel-edge); border-radius:12px; padding:13px 15px; box-shadow:var(--shadow); transition: border-color .18s ease, transform .18s ease, box-shadow .18s ease, background-color .2s ease; }
+  .row:hover{ border-color:var(--accent); transform:translateY(-1px); box-shadow:0 0 16px -2px rgba(var(--accent-rgb), 0.35), var(--shadow); }
+  .row .main{ display:flex; align-items:center; justify-content:space-between; gap:12px; cursor:pointer; }
+  .row .name{ display:flex; flex-direction:column; gap:3px; min-width:0; }
+  .row .name .titulo{ font-size:14.5px; font-weight:600; overflow-wrap:anywhere; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  .row .name .meta{ font-size:11.5px; color:var(--muted); overflow-wrap:anywhere; }
+  .row .name .cat-badge{ font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.03em; color:var(--accent-dark); background:var(--accent-soft); display:inline-block; padding:2px 8px; border-radius:6px; width:fit-content; transition:background-color .18s ease, color .18s ease; }
+  .row:hover .cat-badge{ background:var(--accent); color:#fff; }
+  .row .actions{ display:flex; align-items:center; gap:6px; flex-shrink:0; }
+  .iconbtn{ background:transparent; border:1px solid var(--panel-edge); color:var(--muted); width:30px; height:30px; border-radius:7px; padding:0; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:border-color .15s ease, color .15s ease, transform .12s cubic-bezier(.34,1.56,.64,1), background-color .15s ease; flex-shrink:0; }
+  .iconbtn:hover{ border-color:var(--accent); color:var(--accent-dark); background:var(--accent-soft); transform:translateY(-1px); }
+  .iconbtn:active{ transform:translateY(0) scale(.92); }
+  .iconbtn svg{ width:14px; height:14px; }
+  .chev{ transition: transform .2s cubic-bezier(.34,1.56,.64,1); color:var(--muted); }
+  .row:hover .chev{ color:var(--accent-dark); }
+  .row.open .chev{ transform:rotate(90deg); color:var(--accent-dark); }
+
+  @keyframes panelIn{ from{ opacity:0; transform:translateY(-4px); } to{ opacity:1; transform:translateY(0); } }
+  .body-panel{ display:none; margin-top:12px; padding-top:12px; border-top:1px dashed var(--panel-edge); }
+  .row.open .body-panel{ display:block; animation:panelIn .18s ease; }
+  .contenido{ background:var(--panel-alt); border:1px solid var(--panel-edge); border-radius:9px; padding:12px 14px; font-family:var(--mono); font-size:13px; line-height:1.55; color:var(--text); margin:0; height:48vh; min-height:420px; max-height:80vh; overflow:auto; resize:vertical; tab-size:4; box-sizing:border-box; }
+  .content-wrap{ margin-bottom:10px; }
+  .body-actions{ display:flex; gap:8px; margin-bottom:10px; flex-wrap:wrap; }
+
+  .sql-badge{ font-size:10.5px; font-weight:800; letter-spacing:.05em; color:#fff; background:linear-gradient(135deg, var(--accent), var(--accent-dark)); padding:2px 7px; border-radius:5px; }
+  .pdf-badge{ font-size:10.5px; font-weight:800; letter-spacing:.05em; color:#fff; background:linear-gradient(135deg, #ef4444, #dc2626); padding:2px 7px; border-radius:5px; box-shadow:0 0 8px rgba(239,68,68,0.4); }
+  .pdf-container{ background:var(--panel-alt); border:1px solid var(--panel-edge); border-radius:10px; overflow:hidden; margin-bottom:12px; box-shadow:0 4px 18px rgba(0,0,0,0.25); }
+  .pdf-top-bar{ display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:#18181b; border-bottom:1px solid var(--panel-edge); flex-wrap:wrap; gap:8px; }
+  .pdf-tabs{ display:flex; align-items:center; gap:6px; }
+  .pdf-tab{ background:#27272a; border:1px solid rgba(255,255,255,0.08); color:#cbd5e1; font-size:12px; font-weight:600; padding:5px 12px; border-radius:6px; cursor:pointer; transition:all .15s ease; user-select:none; display:inline-flex; align-items:center; gap:6px; }
+  .pdf-tab:hover{ background:#3f3f46; color:#fff; border-color:rgba(255,255,255,0.2); }
+  .pdf-tab.active{ background:linear-gradient(135deg, #dc2626, #b91c1c); color:#ffffff; border-color:#ef4444; box-shadow:0 0 10px rgba(239,68,68,0.35); }
+  .pdf-actions-right{ display:flex; align-items:center; gap:8px; }
+  .pdf-actions-right .btn-pdf-link{ display:inline-flex; align-items:center; gap:5px; background:#27272a; border:1px solid rgba(255,255,255,0.1); color:#93c5fd; font-size:11.5px; padding:4px 10px; border-radius:6px; text-decoration:none; font-weight:500; transition:all .15s ease; }
+  .pdf-actions-right .btn-pdf-link:hover{ background:#3b82f6; color:#ffffff; border-color:#3b82f6; }
+  .pdf-frame-wrapper{ width:100%; height:680px; background:#18181b; position:relative; }
+  .pdf-iframe{ width:100%; height:100%; border:none; display:block; background:#2a2a2e; }
+  .search-in-note{ display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+  .search-in-note input{
+    flex:1; background:var(--panel-alt); border:1px solid var(--panel-edge); color:var(--text);
+    font-family:var(--sans); font-size:13px; padding:8px 11px; border-radius:8px; outline:none;
+    transition:border-color .15s ease, box-shadow .15s ease;
+  }
+  .search-in-note input:focus{ border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft); }
+  .search-in-note .match-count{ font-size:11.5px; color:var(--muted); white-space:nowrap; flex-shrink:1; min-width:0; max-width:38%; overflow:hidden; text-overflow:ellipsis; text-align:right; }
+  div.contenido mark, .code-text mark{ background:#ffe58a; color:#1c2530; border-radius:2px; padding:0 1px; }
+  :root[data-theme="dark"] div.contenido mark, :root[data-theme="dark"] .code-text mark{ background:#8a6d1f; color:#fff; }
+
+  /* Bloque de código estilo editor (siempre oscuro, como VS Code) */
+  .code-block{ background:#1e1e1e; color:#d4d4d4; border:1px solid #2d2d2d; border-radius:9px; padding:10px 0; font-family:var(--mono); font-size:13px; line-height:1.6; margin:0; height:48vh; min-height:420px; max-height:80vh; overflow:auto; resize:vertical; cursor:context-menu; tab-size:4; box-sizing:border-box; }
+  .code-line{ display:flex; contain:layout style; }
+  .code-line:hover{ background:rgba(255,255,255,.04); }
+  .code-line .ln{ flex-shrink:0; width:46px; text-align:right; padding-right:12px; margin-right:12px; color:#6e7681; border-right:1px solid #333; user-select:none; }
+  .code-line .code-text{ flex:1; min-width:0; white-space:pre-wrap; word-break:break-word; padding-right:14px; user-select:text; }
+  .tk-kw{ color:#569cd6; font-weight:600; }
+  .tk-fn{ color:#dcdcaa; }
+  .tk-st{ color:#ce9178; }
+  .tk-nu{ color:#b5cea8; }
+  .tk-id{ color:#9cdcfe; }
+  .tk-cm{ color:#7f8c8d; font-style:italic; }
+  .tk-op{ color:#d4d4d4; }
+  .tk-pl{ color:#4ade80; font-style:italic; }
+  .tk-pa{ color:#fb923c; font-weight:600; }
+  .code-block mark{ background:#ffd54a; color:#1e1e1e; border-radius:2px; padding:0 1px; }
+  .img-wrap{ display:block; margin:6px 0; }
+  .nota-img{ display:block; max-width:100%; max-height:460px; border-radius:6px; border:1px solid var(--panel-edge); background:#fff; }
+
+  .ctx-menu{
+    position:fixed; display:none; flex-direction:column; gap:2px; background:var(--panel); border:1px solid var(--panel-edge);
+    border-radius:10px; box-shadow:var(--shadow-lg); padding:6px; z-index:1000; min-width:220px;
+  }
+  .ctx-menu button{
+    background:transparent; color:var(--text); border:none; text-align:left; font-size:13px; font-weight:500;
+    padding:9px 11px; border-radius:7px; box-shadow:none; transform:none; width:100%;
+  }
+  .ctx-menu button:hover{ background:var(--accent-soft); color:var(--accent-dark); filter:none; transform:none; box-shadow:none; }
+  .ctx-menu button:active{ transform:none; }
+  .ctx-hint{ font-size:11px; color:var(--muted); text-align:center; margin-top:4px; }
+
+  .edit-panel{ display:none; margin-top:10px; padding-top:10px; border-top:1px dashed var(--panel-edge); }
+  .edit-panel.open{ display:block; animation:panelIn .18s ease; }
+  .edit-panel .fields{ display:flex; gap:10px; flex-wrap:wrap; }
+  .edit-panel .fields > div{ flex:1; min-width:150px; }
+  .edit-panel label{ margin-top:0; }
+  /* ---------- Editor estilo VS Code con resaltado SQL y números de línea ---------- */
+  .nt-ed-frame{
+    display:flex;
+    flex-direction:column;
+    background:#1e1e1e;
+    border:1px solid #2d2d2d;
+    border-radius:9px;
+    overflow:hidden;
+    box-shadow:0 4px 16px rgba(0,0,0,.22);
+    transition:border-color .15s ease, box-shadow .15s ease;
+    margin-top:6px;
+  }
+  .nt-ed-frame:focus-within{
+    border-color:var(--accent);
+    box-shadow:0 0 0 3px rgba(var(--accent-rgb),.22);
+  }
+  .nt-ed-toolbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:6px 12px;
+    background:#252526;
+    border-bottom:1px solid #2d2d2d;
+    font-size:11.5px;
+    color:#858585;
+    user-select:none;
+  }
+  .nt-ed-tit{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    font-weight:600;
+    color:#cccccc;
+  }
+  .nt-ed-dot{
+    width:7px;
+    height:7px;
+    border-radius:50%;
+    background:#569cd6;
+    box-shadow:0 0 6px rgba(86,156,214,.6);
+  }
+  .nt-ed-meta{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    font-family:var(--mono);
+    font-size:11px;
+    color:#858585;
+  }
+  .nt-ed-status{
+    color:#9cdcfe;
+  }
+  .nt-ed-pos{
+    color:#858585;
+  }
+  .nt-ed-box{
+    display:flex;
+    position:relative;
+    background:#1e1e1e;
+    height:48vh;
+    min-height:420px;
+    max-height:80vh;
+    resize:vertical;
+    overflow:hidden;
+  }
+  .nt-ed-gut{
+    position:relative;
+    overflow:hidden;
+    flex-shrink:0;
+    width:48px;
+    background:#181818;
+    border-right:1px solid #2d2d2d;
+    color:#6e7681;
+    user-select:none;
+  }
+  .nt-ed-gut-in{
+    position:absolute;
+    left:0;
+    right:0;
+    top:0;
+    padding:12px 10px 24px 6px;
+    text-align:right;
+    white-space:pre;
+    font-family:var(--mono);
+    font-size:13px;
+    line-height:1.6;
+    color:#6e7681;
+    will-change:transform;
+  }
+  .nt-ed-code{
+    position:relative;
+    flex:1;
+    min-width:0;
+    height:100%;
+    background:#1e1e1e;
+    overflow:hidden;
+  }
+  .nt-ed-capa{
+    position:absolute;
+    inset:0;
+    z-index:3;
+    margin:0;
+    padding:12px 14px 24px 14px;
+    overflow:hidden;
+    pointer-events:none;
+    color:#d4d4d4;
+    font-family:var(--mono);
+    font-size:13px;
+    line-height:1.6;
+    tab-size:4;
+    white-space:pre;
+    letter-spacing:normal;
+    word-spacing:normal;
+    background:transparent;
+    border:0;
+    box-sizing:border-box;
+  }
+  .nt-ed-input{
+    position:relative;
+    z-index:4 !important;
+    display:block;
+    width:100% !important;
+    height:100% !important;
+    min-height:100% !important;
+    max-height:100% !important;
+    margin:0;
+    padding:12px 14px 24px 14px;
+    background:transparent !important;
+    color:transparent !important;
+    -webkit-text-fill-color:transparent !important;
+    caret-color:#569cd6;
+    border:0 !important;
+    border-radius:0 !important;
+    box-shadow:none !important;
+    outline:none !important;
+    font-family:var(--mono);
+    font-size:13px;
+    line-height:1.6;
+    tab-size:4;
+    white-space:pre;
+    letter-spacing:normal;
+    word-spacing:normal;
+    overflow:auto;
+    box-sizing:border-box;
+    resize:none !important;
+  }
+  .nt-ed-input::placeholder{
+    color:#5a5a5a;
+  }
+  .nt-ed-input::selection{
+    background:rgba(38, 79, 120, 0.65) !important;
+    color:transparent !important;
+  }
+  .nt-ed-box.plain .nt-ed-input{
+    color:#d4d4d4 !important;
+    -webkit-text-fill-color:#d4d4d4 !important;
+  }
+  .nt-ed-box.plain .nt-ed-input::selection{
+    background:rgba(38, 79, 120, 0.65) !important;
+    color:#ffffff !important;
+    -webkit-text-fill-color:#ffffff !important;
+  }
+  .nt-ed-box.plain .nt-ed-capa{
+    display:none;
+  }
+  .nt-ed-input::-webkit-scrollbar, .nt-ed-gut::-webkit-scrollbar, .code-block::-webkit-scrollbar{
+    width:10px; height:10px;
+  }
+  .nt-ed-input::-webkit-scrollbar-track, .nt-ed-gut::-webkit-scrollbar-track, .code-block::-webkit-scrollbar-track{
+    background:#1e1e1e;
+  }
+  .nt-ed-input::-webkit-scrollbar-thumb, .nt-ed-gut::-webkit-scrollbar-thumb, .code-block::-webkit-scrollbar-thumb{
+    background:#3e3e42; border-radius:5px; border:2px solid #1e1e1e;
+  }
+  .nt-ed-input::-webkit-scrollbar-thumb:hover, .nt-ed-gut::-webkit-scrollbar-thumb:hover, .code-block::-webkit-scrollbar-thumb:hover{
+    background:#55555d;
+  }
+  .edit-panel .actions{ display:flex; gap:8px; margin-top:12px; }
+  .edit-panel .actions form{ display:inline; }
+
+  .empty{ color:var(--muted); font-size:13.5px; text-align:center; padding:30px 0; }
+  .add-card{ margin-bottom:16px; display:none; }
+  .add-card.open{ display:block; animation:panelIn .18s ease; }
+  .add-card .fields{ display:flex; gap:10px; flex-wrap:wrap; }
+  .add-card .fields > div{ flex:1; min-width:160px; }
+  .add-card label{ margin-top:0; }
+  .toast{ position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(10px) scale(.96); background:linear-gradient(135deg, var(--accent), var(--accent-dark)); color:#fff; font-size:13px; font-weight:600; padding:9px 18px; border-radius:8px; opacity:0; pointer-events:none; transition:opacity .22s ease, transform .22s cubic-bezier(.34,1.56,.64,1); box-shadow:0 6px 20px rgba(20,30,45,.18); }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0) scale(1); }
+
+  .toolbar .search-wrap .buscando{ position:absolute; right:12px; top:50%; transform:translateY(-50%); font-size:11.5px; color:var(--muted); pointer-events:none; }
+  .pl-line{ white-space:pre-wrap; word-break:break-word; min-height:1.55em; }
+  .cargando{ color:var(--muted); font-family:var(--sans); font-size:13px; padding:6px 2px; }
+  .cargando.error{ color:var(--danger); }
+  .mas-lineas{ text-align:center; font-family:var(--sans); font-size:12px; color:var(--muted); padding:10px 8px 4px; }
+  .mas-arriba{ padding:8px 14px; font-size:12px; color:var(--muted); font-style:italic; }
+  .code-block .mas-arriba{ color:#8b949e; }
+  .code-block .mas-arriba a{ color:#4fc1ff; }
+  .code-block .mas-lineas{ color:#8b949e; }
+  .code-block .mas-lineas a{ color:#4fc1ff; }
+  .ver-mas{ color:var(--accent-dark); font-style:italic; text-decoration:none; }
+  .code-block .ver-mas{ color:#4fc1ff; }
+  .cur-line{ outline:1px solid #ffd54a; outline-offset:-1px; background:rgba(255,213,74,.09); }
+  .row.open, .row.open:hover{ transform:none; }
+  .content-wrap.fullscreen{ position:fixed; inset:0; z-index:999999; background:var(--bg); padding:16px 24px; margin:0; display:flex; flex-direction:column; }
+  .content-wrap.fullscreen .contenido, .content-wrap.fullscreen .code-block{ flex:1; max-height:none; min-height:0; resize:none; }
+  .file-list{ margin-top:8px; display:flex; flex-direction:column; gap:4px; }
+  .file-item{ display:flex; justify-content:space-between; gap:12px; font-size:12.5px; color:var(--muted); background:var(--panel-alt); border:1px solid var(--panel-edge); border-radius:7px; padding:6px 10px; }
+  .file-item.bad{ color:var(--danger); border-color:var(--danger); }
+
+  /* ---------- Hojas de cálculo (se ven como Excel) ---------- */
+  .excel-badge{ font-size:10.5px; font-weight:800; letter-spacing:.05em; color:#fff; background:linear-gradient(135deg,#21a366,#107c41); padding:2px 7px; border-radius:5px; }
+  .xl-box{ display:flex; flex-direction:column; background:#fff; color:#1f2328; border:1px solid #bfc5cc; border-radius:9px; overflow:hidden; max-height:68vh; min-height:120px; resize:vertical; font-family:Calibri,'Segoe UI',Arial,sans-serif; font-size:13px; }
+  .xl-barra{ display:flex; align-items:center; gap:8px; background:#f3f3f3; border-bottom:1px solid #d0d0d0; padding:5px 8px; flex-shrink:0; }
+  .xl-ref{ min-width:58px; text-align:center; background:#fff; border:1px solid #c6c6c6; padding:2px 8px; font-size:12px; }
+  .xl-fx{ color:#7a7a7a; font-style:italic; font-family:'Times New Roman',serif; font-size:13px; }
+  .xl-valor{ flex:1; min-width:0; background:#fff; border:1px solid #c6c6c6; padding:2px 8px; height:20px; line-height:20px; font-size:12.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .xl-aviso{ background:#fff8e1; color:#6b5300; font-size:12px; padding:4px 10px; border-bottom:1px solid #f0e2a8; flex-shrink:0; }
+  .xl-scroll{ flex:1; min-height:60px; overflow:auto; background:#fff; }
+  .xl-table{ border-collapse:separate; border-spacing:0; table-layout:fixed; }
+  .xl-table th, .xl-table td{ border-right:1px solid #d9d9d9; border-bottom:1px solid #d9d9d9; padding:2px 5px; height:21px; line-height:17px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; background:#fff; }
+  .xl-table thead th{ position:sticky; top:0; z-index:2; background:#f3f3f3; color:#444; font-weight:400; text-align:center; border-right:1px solid #c8c8c8; border-bottom:1px solid #c8c8c8; }
+  .xl-table thead th.xl-esq{ left:0; z-index:3; }
+  .xl-table td.xl-rh{ position:sticky; left:0; z-index:1; background:#f3f3f3; color:#444; text-align:center; padding:2px 0; border-right:1px solid #c8c8c8; user-select:none; }
+  .xl-table td.xl-n{ text-align:right; }
+  .xl-table td.xl-hit{ background:#fff2a8; }
+  .xl-table td.xl-cur{ background:#ffe566; }
+  .xl-table td.xl-sel, .xl-table td.xl-cur{ outline:2px solid #107c41; outline-offset:-2px; }
+  .xl-hojas{ display:flex; gap:2px; background:#f3f3f3; border-top:1px solid #c8c8c8; padding:0 6px; overflow-x:auto; flex-shrink:0; }
+  .xl-hoja{ color:#444; font-size:12.5px; padding:6px 14px; cursor:pointer; white-space:nowrap; border-bottom:2px solid transparent; user-select:none; }
+  .xl-hoja:hover{ background:#e4e4e4; }
+  .xl-hoja.activa{ background:#fff; color:#107c41; font-weight:700; border-bottom-color:#107c41; }
+  .xl-cuenta{ background:#ffd54a; color:#1c2530; font-size:10.5px; font-weight:700; border-radius:8px; padding:0 6px; margin-left:4px; }
+  .content-wrap.fullscreen .xl-box{ flex:1; max-height:none; min-height:0; resize:none; }
+  .solo-texto-oculto{ display:none; }
+
+  /* Dropdown inteligente para categorías en Notas / Jaivaná */
+  .cat-dropdown-wrap { position: relative; display: inline-block; }
+  .cat-more-btn { display: inline-flex !important; align-items: center !important; gap: 6px !important; background: var(--panel-alt) !important; border: 1px dashed var(--panel-edge) !important; }
+  .cat-more-btn:hover { border-color: var(--accent) !important; color: var(--accent) !important; }
+  .cat-more-btn.active { background: var(--accent) !important; border: 1px solid var(--accent) !important; color: #fff !important; box-shadow: 0 4px 14px rgba(var(--accent-rgb), 0.35) !important; }
+  .cat-dropdown-menu {
+    position: absolute; top: calc(100% + 6px); left: 0; z-index: 1000;
+    min-width: 250px; max-width: 320px; max-height: 380px;
+    background: var(--panel); border: 1px solid var(--panel-edge); border-radius: 14px;
+    box-shadow: 0 16px 36px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.06);
+    padding: 8px; display: flex; flex-direction: column; gap: 6px;
+    backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  }
+  .cat-dropdown-search { display: flex; align-items: center; gap: 6px; padding: 6px 10px; background: var(--panel-alt); border: 1px solid var(--panel-edge); border-radius: 9px; }
+  .cat-dropdown-search input { flex: 1; background: transparent; border: none; outline: none; font-size: 12.5px; color: var(--text); font-family: var(--sans); }
+  .cat-dropdown-clear { background: transparent; border: none; color: var(--muted); cursor: pointer; padding: 0 4px; font-size: 14px; line-height: 1; }
+  .cat-dropdown-list { overflow-y: auto; max-height: 280px; display: flex; flex-direction: column; gap: 2px; padding-right: 2px; }
+  .cat-dropdown-item {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%;
+    padding: 7px 10px; border: none; background: transparent; color: var(--text);
+    font-size: 12.5px; font-weight: 600; border-radius: 8px; cursor: pointer; text-align: left;
+    transition: all .12s ease;
+  }
+  .cat-dropdown-item:hover { background: var(--accent-soft) !important; color: var(--accent-dark) !important; transform: none !important; box-shadow: none !important; }
+  .cat-dropdown-item.active { background: var(--accent) !important; color: #fff !important; font-weight: 700; }
+  .cat-check { font-size: 12px; font-weight: 800; }
+
+
+  /* ==========================================================================
+     BARRA DE FILTRADO, BÚSQUEDA Y NAVEGACIÓN EN EL EDITOR DE CÓDIGO (JAIVANÁ/NOTAS)
+     ========================================================================== */
+  .nt-ed-filter-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 6px 10px;
+    background: #1f1f20;
+    border-bottom: 1px solid #333333;
+    font-size: 12px;
+    color: #cccccc;
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 5;
+  }
+  .nt-ed-fb-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 280px;
+  }
+  .nt-ed-fb-search {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: #2d2d30;
+    border: 1px solid #3c3c3c;
+    border-radius: 6px;
+    padding: 2px 6px;
+    flex: 1;
+    max-width: 480px;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  .nt-ed-fb-search:focus-within {
+    border-color: #007acc;
+    box-shadow: 0 0 0 2px rgba(0, 122, 204, 0.35);
+  }
+  .nt-ed-fb-ico {
+    font-size: 12px;
+    opacity: 0.7;
+    user-select: none;
+  }
+  .nt-ed-fb-input {
+    flex: 1;
+    background: transparent !important;
+    border: none !important;
+    outline: none !important;
+    color: #ffffff !important;
+    font-family: var(--sans);
+    font-size: 12px !important;
+    padding: 4px 2px !important;
+    min-width: 140px;
+    box-shadow: none !important;
+  }
+  .nt-ed-fb-input::placeholder {
+    color: #858585;
+  }
+  .nt-ed-fb-count {
+    font-size: 11px;
+    color: #9cdcfe;
+    font-family: var(--mono);
+    white-space: nowrap;
+    user-select: none;
+    padding: 0 4px;
+  }
+  .nt-ed-fb-nav, .nt-ed-fb-btn-go {
+    background: #3e3e42;
+    border: 1px solid #4a4a4f;
+    color: #d4d4d4;
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: 11px;
+    cursor: pointer;
+    line-height: 1.2;
+    transition: all 0.15s ease;
+  }
+  .nt-ed-fb-nav:hover, .nt-ed-fb-btn-go:hover {
+    background: #007acc;
+    border-color: #007acc;
+    color: #ffffff;
+  }
+  .nt-ed-fb-goto {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: #858585;
+    background: #2d2d30;
+    border: 1px solid #3c3c3c;
+    border-radius: 6px;
+    padding: 2px 6px;
+  }
+  .nt-ed-fb-goto-inp {
+    width: 52px;
+    background: #1e1e1e !important;
+    border: 1px solid #3c3c3c !important;
+    border-radius: 4px !important;
+    color: #ffffff !important;
+    font-family: var(--mono);
+    font-size: 11.5px !important;
+    padding: 2px 4px !important;
+    text-align: center;
+    box-shadow: none !important;
+    outline: none !important;
+  }
+  .nt-ed-fb-goto-inp:focus {
+    border-color: #007acc !important;
+  }
+  .nt-ed-fb-right {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .nt-ed-fb-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: #2d2d30;
+    border: 1px solid #3c3c3c;
+    border-radius: 6px;
+    padding: 4px 8px;
+    color: #cccccc;
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    user-select: none;
+  }
+  .nt-ed-fb-pill:hover, .nt-ed-fb-pill.active {
+    background: #007acc;
+    border-color: #007acc;
+    color: #ffffff;
+  }
+  .nt-ed-fb-badge {
+    background: #094771;
+    color: #ffffff;
+    font-size: 10px;
+    font-weight: 700;
+    border-radius: 999px;
+    padding: 1px 6px;
+    font-family: var(--mono);
+  }
+  .nt-ed-fb-pill.active .nt-ed-fb-badge {
+    background: #ffffff;
+    color: #007acc;
+  }
+
+  /* Barra de Reemplazo */
+  .nt-ed-rep-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 10px;
+    background: #252526;
+    border-bottom: 1px solid #333333;
+    font-size: 12px;
+    animation: ntEdSlideDown 0.15s ease;
+  }
+  .nt-ed-rep-input {
+    flex: 1;
+    max-width: 380px;
+    background: #1e1e1e !important;
+    border: 1px solid #3c3c3c !important;
+    border-radius: 6px !important;
+    color: #ffffff !important;
+    font-family: var(--sans);
+    font-size: 12px !important;
+    padding: 4px 8px !important;
+    outline: none !important;
+    box-shadow: none !important;
+  }
+  .nt-ed-rep-input:focus {
+    border-color: #007acc !important;
+  }
+  .nt-ed-rep-btn {
+    background: #3e3e42;
+    border: 1px solid #4a4a4f;
+    color: #d4d4d4;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .nt-ed-rep-btn:hover {
+    background: #007acc;
+    border-color: #007acc;
+    color: #ffffff;
+  }
+
+  /* Panel Desplegable de Líneas Filtradas */
+  .nt-ed-results-panel {
+    background: #252526;
+    border-bottom: 1px solid #3c3c3c;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+    max-height: 240px;
+    overflow-y: auto;
+    position: relative;
+    z-index: 10;
+    animation: ntEdSlideDown 0.18s ease;
+  }
+  @keyframes ntEdSlideDown {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .nt-ed-rp-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 12px;
+    background: #1e1e1e;
+    border-bottom: 1px solid #2d2d2d;
+    font-size: 11px;
+    color: #858585;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+  }
+  .nt-ed-rp-head small {
+    color: #9cdcfe;
+    margin-left: 8px;
+  }
+  .nt-ed-rp-close {
+    background: none;
+    border: none;
+    color: #858585;
+    font-size: 11px;
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+  .nt-ed-rp-close:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+  }
+  .nt-ed-rp-list {
+    display: flex;
+    flex-direction: column;
+  }
+  .nt-ed-rp-item {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    padding: 5px 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    cursor: pointer;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: #d4d4d4;
+    transition: background 0.12s ease;
+  }
+  .nt-ed-rp-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+  }
+  .nt-ed-rp-item.active {
+    background: rgba(0, 122, 204, 0.3);
+    border-left: 3px solid #007acc;
+  }
+  .nt-ed-item-ln {
+    flex-shrink: 0;
+    width: 65px;
+    font-weight: 700;
+    color: #569cd6;
+    user-select: none;
+  }
+  .nt-ed-item-txt {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .nt-ed-item-txt mark {
+    background: #8a6d1f;
+    color: #ffffff;
+    border-radius: 2px;
+    padding: 0 2px;
+  }
+  .nt-ed-no-res {
+    padding: 14px;
+    text-align: center;
+    color: #858585;
+    font-size: 12px;
+    font-style: italic;
+  }
+  .btn-filtrar-ed {
+    color: var(--accent) !important;
+  }
+
+
+  /* Capa de líneas resaltadas de búsqueda */
+  .nt-ed-search-lines {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 1;
+  }
+  .nt-ed-hl-line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 20.8px;
+    background: rgba(245, 158, 11, 0.12);
+    border-left: 3px solid rgba(245, 158, 11, 0.55);
+    pointer-events: none;
+    transition: background 0.12s ease;
+  }
+  .nt-ed-hl-line.active {
+    background: rgba(245, 158, 11, 0.28);
+    border-left: 4px solid #f59e0b;
+    box-shadow: inset 0 0 12px rgba(245, 158, 11, 0.22);
+  }
+
+  /* Capa de palabras resaltadas de búsqueda (espejo idéntico al textarea) */
+  .nt-ed-search-layer {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    padding: 12px 14px 24px 14px;
+    overflow: hidden;
+    pointer-events: none;
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 1.6;
+    tab-size: 4;
+    white-space: pre;
+    letter-spacing: normal;
+    word-spacing: normal;
+    background: transparent;
+    border: 0;
+    box-sizing: border-box;
+    color: transparent !important;
+    -webkit-text-fill-color: transparent !important;
+    z-index: 2;
+  }
+  .nt-ed-hl-word {
+    display: inline;
+    padding: 0;
+    margin: 0;
+    border: 0;
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+    letter-spacing: inherit;
+    word-spacing: inherit;
+    white-space: pre;
+    background: rgba(255, 215, 0, 0.42);
+    color: transparent !important;
+    -webkit-text-fill-color: transparent !important;
+    border-radius: 2px;
+    outline: 1px solid rgba(255, 215, 0, 0.45);
+    transition: background 0.1s ease, outline 0.1s ease;
+  }
+  .nt-ed-hl-word.active {
+    background: rgba(255, 152, 0, 0.85) !important;
+    outline: 1.5px solid #ffa726 !important;
+    box-shadow: 0 0 10px rgba(255, 152, 0, 0.65) !important;
+  }
+  .nt-ed-input::selection,
+  .nt-ed-box.plain .nt-ed-input::selection {
+    background: #f59e0b !important;
+    color: #000000 !important;
+    -webkit-text-fill-color: #000000 !important;
+  }
+
+
+  /* =========================================================================
+     BOTONES DE ACCIÓN Y TABS CON RESPLANDOR NEÓN VIBRANTE (STYLE UPGRADE)
+     ========================================================================= */
+  #toggleAddBtn {
+    background: linear-gradient(135deg, #00c6ff, #0072ff) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+    font-weight: 700 !important;
+    border-radius: 999px !important;
+    box-shadow: 0 0 22px rgba(0, 198, 255, 0.65), 0 2px 8px rgba(0, 0, 0, 0.4) !important;
+    transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  }
+  #toggleAddBtn:hover {
+    box-shadow: 0 0 32px rgba(0, 198, 255, 0.95), 0 0 12px rgba(255, 255, 255, 0.7) !important;
+    transform: translateY(-2px) scale(1.02);
+  }
+
+  #toggleUploadBtn {
+    background: rgba(14, 165, 233, 0.18) !important;
+    color: #38bdf8 !important;
+    border: 1.5px solid #0ea5e9 !important;
+    font-weight: 700 !important;
+    border-radius: 999px !important;
+    box-shadow: 0 0 18px rgba(14, 165, 233, 0.45), inset 0 0 8px rgba(14, 165, 233, 0.22) !important;
+    transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  }
+  #toggleUploadBtn:hover {
+    background: rgba(14, 165, 233, 0.28) !important;
+    border-color: #38bdf8 !important;
+    box-shadow: 0 0 28px rgba(56, 189, 248, 0.8), inset 0 0 12px rgba(56, 189, 248, 0.35) !important;
+    transform: translateY(-2px) scale(1.02);
+  }
+
+  #btnEliminarTodo {
+    background: linear-gradient(135deg, #f43f5e, #e11d48) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(255, 255, 255, 0.35) !important;
+    font-weight: 700 !important;
+    border-radius: 999px !important;
+    box-shadow: 0 0 22px rgba(244, 63, 94, 0.65), 0 2px 8px rgba(0, 0, 0, 0.4) !important;
+    transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  }
+  #btnEliminarTodo:hover {
+    box-shadow: 0 0 32px rgba(244, 63, 94, 0.95), 0 0 12px rgba(255, 255, 255, 0.7) !important;
+    transform: translateY(-2px) scale(1.02);
+  }
+
+  .tab {
+    backdrop-filter: blur(8px);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  }
+  .tab.active {
+    background: linear-gradient(135deg, #00c6ff, #0284c7) !important;
+    border-color: #38bdf8 !important;
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    box-shadow: 0 0 20px rgba(0, 198, 255, 0.65), inset 0 0 6px rgba(255, 255, 255, 0.3) !important;
+  }
+
+</style>
+
+<% var C = (typeof cfg !== 'undefined') ? cfg : { base:'/notas', plural:'notas', titulo:'Notas y comandos', agregar:'+ Agregar nota', placeCat:'Ej: Ventoy USB', placeTit:'Ej: Preparar la USB', placeCont:'Pega aquí el comando, script o apunte…', vacio:'Todavía no hay notas guardadas. Agrega la primera arriba.', buscarDentro:'Buscar dentro de esta nota…', papeleraUno:'Mover esta nota a la papelera', el:'la nota', todos:'las' };
+   var MAXMB = (typeof maxUploadMb !== 'undefined') ? maxUploadMb : 100;
+   function fmtTam(n){ return n >= 1048576 ? (n/1048576).toFixed(1) + ' MB' : (n >= 1024 ? (n/1024).toFixed(1) + ' KB' : n + ' car.'); } %>
+
+<div x-data="notasAlpineApp()">
+  <div class="top">
+    <h1><%= C.titulo %></h1>
+    <div style="display:flex; align-items:center; gap:10px;">
+      <span class="db-orb db-orb-pg" title="Notas almacenadas en PostgreSQL">🐘</span>
+      <span class="count" x-text="contadorTexto"><%= notas.length %> <%= C.plural %></span>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <div class="search-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg>
+      <input type="text" id="searchInput" x-model="q" @input="alEscribir()" placeholder="Buscar por título o contenido…" autocomplete="off">
+      <span class="buscando" id="estadoBusqueda"></span>
+    </div>
+    <button type="button" class="secondary" id="toggleAddBtn" @click="togglePanel('agregar')" :class="{ active: panelActivo === 'agregar' }"><%= C.agregar %></button>
+    <button type="button" class="secondary" id="toggleUploadBtn" @click="togglePanel('subir')" :class="{ active: panelActivo === 'subir' }">⬆ Subir archivos</button>
+    <% if (notas.length > 0) { %>
+    <form method="post" action="<%= C.base %>/eliminar-todo" id="formEliminarTodo" style="display:inline-flex; margin:0;">
+      <button type="button" class="danger" id="btnEliminarTodo" title="Mueve todo a la papelera (se puede restaurar)">🗑 Eliminar todo</button>
+    </form>
+    <% } %>
+  </div>
+
+  <div class="tabs" id="tabs">
+    <button type="button" class="tab" :class="{ active: catActiva === '__todas__' }" @click="setCategoria('__todas__')" data-cat="__todas__">Todas</button>
+    <% 
+      var LIMITE_PILLS = 6;
+      var pillsVisibles = categorias.slice(0, LIMITE_PILLS);
+      var pillsExtras = categorias.slice(LIMITE_PILLS);
+    %>
+    <% pillsVisibles.forEach(function(cat) { %>
+      <button type="button" class="tab" :class="{ active: catActiva === '<%= cat.toLowerCase() %>' }" @click="setCategoria('<%= cat.toLowerCase() %>')" data-cat="<%= cat.toLowerCase() %>"><%= cat %></button>
+    <% }); %>
+
+    <% if (pillsExtras.length > 0) { %>
+      <div class="cat-dropdown-wrap" x-data="{ dropAbierto: false, filtroDrop: '' }" @click.outside="dropAbierto = false">
+        <button type="button" class="tab cat-more-btn" @click="dropAbierto = !dropAbierto" :class="{ active: esCatExtra(catActiva) }" title="Ver más categorías">
+          <span x-text="nombreCatExtra(catActiva) || ('📂 Más categorías (<%= pillsExtras.length %>) ▾')">📂 Más categorías (<%= pillsExtras.length %>) ▾</span>
+        </button>
+        <div class="cat-dropdown-menu" x-show="dropAbierto" x-cloak style="display:none;">
+          <div class="cat-dropdown-search">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+            <input type="text" x-model="filtroDrop" placeholder="Buscar categoría..." @keydown.escape="dropAbierto = false">
+            <button type="button" class="cat-dropdown-clear" x-show="filtroDrop" @click="filtroDrop = ''">×</button>
+          </div>
+          <div class="cat-dropdown-list">
+            <% pillsExtras.forEach(function(cat) { %>
+              <button type="button" 
+                      class="cat-dropdown-item" 
+                      :class="{ active: catActiva === '<%= cat.toLowerCase() %>' }"
+                      x-show="!filtroDrop || '<%= cat.toLowerCase() %>'.includes(filtroDrop.toLowerCase())"
+                      @click="setCategoria('<%= cat.toLowerCase() %>'); dropAbierto = false;">
+                <span><%= cat %></span>
+                <span class="cat-check" x-show="catActiva === '<%= cat.toLowerCase() %>'">✓</span>
+              </button>
+            <% }); %>
+          </div>
+        </div>
+      </div>
+    <% } %>
+  </div>
+</div>
+
+<div class="card add-card" id="uploadCard" :class="{ open: panelActivo === 'subir' }">
+  <p class="sub" style="margin:0 0 14px;">Sube uno o <strong>varios</strong> archivos a la vez (.txt, .sql, .docx, .pdf y Excel: .xlsx, .xls, .csv). Cada uno se guarda como una nota: se conserva el archivo original (lo puedes descargar), se limpia el texto y se traen las imágenes. Los archivos de Excel se muestran como una hoja de cálculo, con sus pestañas.</p>
+  <form method="post" action="<%= C.base %>/subir" enctype="multipart/form-data" id="formSubir">
+    <div class="fields">
+      <div>
+        <label>Apartado (categoría)</label>
+        <input type="text" name="categoria" list="listaCategorias" placeholder="<%= C.placeCat %>" required>
+      </div>
+      <div><label>Título (opcional, solo si subes un archivo)</label><input type="text" name="titulo" placeholder="Si lo dejas vacío, se usa el nombre del archivo"></div>
+    </div>
+    <label>Archivos (puedes elegir varios — máx. <%= MAXMB %> MB cada uno)</label>
+    <input type="file" name="archivos" id="inputArchivos" accept=".txt,.sql,.docx,.pdf,.xlsx,.xlsm,.xls,.csv" multiple required>
+    <div class="file-list" id="listaArchivos"></div>
+    <button class="full" type="submit" id="btnSubir">Subir y guardar</button>
+  </form>
+</div>
+
+<div class="card add-card" id="addCard" :class="{ open: panelActivo === 'agregar' }">
+  <form method="post" action="<%= C.base %>/agregar">
+    <div class="fields">
+      <div>
+        <label>Apartado (categoría)</label>
+        <input type="text" name="categoria" list="listaCategorias" placeholder="<%= C.placeCat %>" required>
+        <datalist id="listaCategorias">
+          <% categorias.forEach(function(cat) { %><option value="<%= cat %>"></option><% }); %>
+        </datalist>
+      </div>
+      <div><label>Título</label><input type="text" name="titulo" placeholder="<%= C.placeTit %>" required></div>
+      <div style="flex:0 0 230px; min-width:180px;">
+        <label style="display:flex; justify-content:space-between; align-items:center;">
+          Formato / Resaltado
+          <span class="db-orb db-orb-sm db-orb-pg" title="Sintaxis PostgreSQL / SQL">🐘</span>
+        </label>
+        <select name="formato" style="font-family:var(--sans); font-size:13px;">
+          <option value="sql" selected>🎨 Código / SQL / Comandos (en color)</option>
+          <option value="texto">📄 Texto plano</option>
+        </select>
+      </div>
+    </div>
+    <label style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;"><span>Contenido (Editor con resaltado de sintaxis a color)</span><span style="font-size:11px; font-weight:normal; color:var(--muted); font-family:var(--mono);"><kbd style="font-family:var(--mono); font-size:10px; padding:1px 5px; border-radius:4px; border:1px solid var(--panel-edge); background:var(--panel);">Tab</kbd> para sangría · Mitad de pantalla</span></label>
+    <div class="nt-ed-frame">
+      <div class="nt-ed-toolbar">
+        <div class="nt-ed-tit">
+          <span class="nt-ed-dot"></span>
+          <span>Editor de código SQL</span>
+        </div>
+        <div class="nt-ed-meta">
+          <span class="nt-ed-status">1 línea</span>
+          <span class="nt-ed-pos">Lín 1, Col 1</span>
+        </div>
+      </div>
+      <div class="nt-ed-box">
+        <div class="nt-ed-gut" aria-hidden="true"><div class="nt-ed-gut-in">1</div></div>
+        <div class="nt-ed-code">
+          <pre class="nt-ed-capa" aria-hidden="true"></pre>
+          <textarea class="nt-ed-input" name="contenido" placeholder="<%= C.placeCont %>" required spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off"></textarea>
+        </div>
+      </div>
+    </div>
+    <button class="full" type="submit" style="margin-top:14px;">Guardar</button>
+  </form>
+</div>
+
+<div id="results">
+  <% notas.forEach(function(n) { %>
+  <div class="row" data-id="<%= n.id %>" data-cat="<%= n.categoria.toLowerCase() %>" data-tit="<%= n.titulo.toLowerCase() %>" id="row-<%= n.id %>">
+    <div class="main" onclick="toggleRow(<%= n.id %>)">
+      <div class="name">
+        <span class="cat-badge"><%= n.categoria %></span>
+        <span class="titulo"><%= n.titulo %><% if (n.es_sql) { %> <span class="sql-badge">SQL</span><% } %><% if (n.es_excel) { %> <span class="excel-badge">EXCEL</span><% } %><% if (n.es_pdf) { %> <span class="pdf-badge">PDF</span><% } %></span>
+        <span class="meta"><% if (n.es_excel) { %>Hoja de cálculo<% } else if (n.es_pdf) { %>Documento PDF · <%= fmtTam(n.largo) %><% } else { %><%= n.lineas.toLocaleString('es-CO') %> línea<%= n.lineas === 1 ? '' : 's' %> · <%= fmtTam(n.largo) %><% } %><% if (n.archivo_nombre) { %> · 📎 <%= n.archivo_nombre %><% } %></span>
+      </div>
+      <div class="actions">
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="m9 18 6-6-6-6"></path></svg>
+      </div>
+    </div>
+
+    <div class="body-panel">
+      <% if (n.es_pdf) { %>
+      <div class="pdf-container" id="pdf-box-<%= n.id %>">
+        <div class="pdf-top-bar">
+          <div class="pdf-tabs">
+            <button type="button" class="pdf-tab active" id="tabPdf-<%= n.id %>" onclick="event.stopPropagation(); alternarVistaPdf(<%= n.id %>, 'pdf')">
+              📄 Documento PDF Original
+            </button>
+            <button type="button" class="pdf-tab" id="tabTxt-<%= n.id %>" onclick="event.stopPropagation(); alternarVistaPdf(<%= n.id %>, 'texto')">
+              📝 Texto Extraído
+            </button>
+          </div>
+          <div class="pdf-actions-right">
+            <a class="btn-pdf-link" href="<%= C.base %>/<%= n.id %>/pdf" target="_blank" onclick="event.stopPropagation();" title="Abrir en pestaña nueva del navegador">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+              Pestaña nueva
+            </a>
+            <button type="button" class="iconbtn" title="Pantalla completa" onclick="event.stopPropagation(); pantallaCompletaPdf(<%= n.id %>)">⤢</button>
+          </div>
+        </div>
+        <div class="pdf-frame-wrapper" id="pdfWrapper-<%= n.id %>">
+          <iframe class="pdf-iframe" id="pdfFrame-<%= n.id %>" data-src="<%= C.base %>/<%= n.id %>/pdf#toolbar=1&navpanes=1" src="about:blank" title="Documento PDF - <%= n.titulo %>"></iframe>
+        </div>
+      </div>
+      <% } %>
+      <div class="content-wrap" id="wrap-<%= n.id %>" style="<%= n.es_pdf ? 'display:none;' : '' %>">
+        <div class="search-in-note">
+          <input type="text" placeholder="<%= C.buscarDentro %>" oninput="buscarEnNota(<%= n.id %>, this.value)" onkeydown="teclaBusqueda(event, <%= n.id %>)" onclick="event.stopPropagation();">
+          <span class="match-count" id="matches-<%= n.id %>"></span>
+          <button type="button" class="iconbtn" title="Coincidencia anterior (Shift+Enter)" onclick="event.stopPropagation(); irACoincidencia(<%= n.id %>, -1)">▲</button>
+          <button type="button" class="iconbtn" title="Siguiente coincidencia (Enter)" onclick="event.stopPropagation(); irACoincidencia(<%= n.id %>, 1)">▼</button>
+          <button type="button" class="iconbtn" title="Pantalla completa (Esc para salir)" onclick="event.stopPropagation(); pantallaCompleta(<%= n.id %>)">⤢</button>
+        </div>
+        <div class="contenido" id="texto-<%= n.id %>" oncontextmenu="mostrarMenuContextual(event, <%= n.id %>)"><div class="cargando">Cargando contenido…</div></div>
+      </div>
+
+      <div class="body-actions">
+        <button type="button" class="secondary" onclick="event.stopPropagation(); copiarNota(<%= n.id %>)">Copiar</button>
+        <button type="button" class="secondary" onclick="event.stopPropagation(); toggleEdit(<%= n.id %>)">Editar</button>
+        <button type="button" class="secondary btn-filtrar-ed" onclick="event.stopPropagation(); abrirEditarConFiltro(<%= n.id %>)" title="Abrir editor y filtrar líneas directamente">🔍 Filtrar / Editar</button>
+        <% if (!n.es_excel && !n.es_pdf) { %>
+        <button type="button" class="secondary" id="btnModo-<%= n.id %>" onclick="event.stopPropagation(); alternarModoCodigo(<%= n.id %>)"><%= n.es_sql ? '📄 Ver como texto' : '🎨 Ver con colores' %></button>
+        <% } %>
+        <% if (n.es_pdf) { %>
+        <a class="btn secondary" style="text-decoration:none; display:inline-flex; align-items:center; gap:6px; background:rgba(239,68,68,0.12); border-color:rgba(239,68,68,0.35); color:#fca5a5;"
+           href="<%= C.base %>/<%= n.id %>/pdf" download="<%= n.archivo_nombre || 'documento.pdf' %>" onclick="event.stopPropagation();" title="Descargar PDF Original">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          Descargar PDF original
+        </a>
+        <% } %>
+        <% if (n.archivo_nombre) { %>
+        <a class="btn secondary" style="text-decoration:none; display:inline-flex; align-items:center; gap:6px;"
+           href="<%= C.base %>/<%= n.id %>/archivo" onclick="event.stopPropagation();" title="Descargar <%= n.archivo_nombre %>">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          <%= n.archivo_nombre %>
+        </a>
+        <form method="post" action="<%= C.base %>/<%= n.id %>/quitar-archivo" style="display:inline;"
+              onsubmit="event.stopPropagation(); return confirm('¿Quitar el archivo «<%= n.archivo_nombre %>»? El texto se conserva.');"
+              onclick="event.stopPropagation();">
+          <button type="submit" class="iconbtn" title="Quitar solo el archivo adjunto">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </form>
+        <% } %>
+        <form method="post" action="<%= C.base %>/<%= n.id %>/eliminar" style="margin-left:auto; display:inline;"
+              onsubmit="event.stopPropagation(); return confirm('¿Mover <%= C.el %> «<%= n.titulo.replace(/'/g, "\\'") %>» a la papelera? Podrás restaurarla desde 🗑 Papelera.');"
+              onclick="event.stopPropagation();">
+          <button type="submit" class="danger" title="<%= C.papeleraUno %>">🗑 Eliminar</button>
+        </form>
+      </div>
+
+      <div class="edit-panel" id="edit-<%= n.id %>">
+        <form method="post" action="<%= C.base %>/<%= n.id %>/actualizar">
+          <div class="fields">
+            <div><label>Apartado (categoría)</label><input type="text" name="categoria" value="<%= n.categoria %>" required></div>
+            <div><label>Título</label><input type="text" name="titulo" value="<%= n.titulo %>" required></div>
+          </div>
+          <% if (n.es_excel) { %><p class="sub" style="margin:10px 0 0;">Aquí puedes cambiar el apartado y el título. Para cambiar los datos de la hoja, sube el archivo de Excel de nuevo.</p><% } %>
+          <div class="<%= n.es_excel ? 'solo-texto-oculto' : '' %>" style="margin-top:10px;">
+            <label style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;"><span>Contenido (Editor SQL)</span><span style="font-size:11px; font-weight:normal; color:var(--muted); font-family:var(--mono);"><kbd style="font-family:var(--mono); font-size:10px; padding:1px 5px; border-radius:4px; border:1px solid var(--panel-edge); background:var(--panel);">Tab</kbd> para sangría · Mitad de pantalla</span></label>
+            <div class="nt-ed-frame">
+              <div class="nt-ed-toolbar">
+                <div class="nt-ed-tit">
+                  <span class="nt-ed-dot"></span>
+                  <span>Editor de código SQL</span>
+                </div>
+                <div class="nt-ed-meta">
+                  <span class="nt-ed-status">0 líneas</span>
+                  <span class="nt-ed-pos">Lín 1, Col 1</span>
+                </div>
+              </div>
+              
+              <!-- BARRA DE FILTRADO, BÚSQUEDA Y NAVEGACIÓN DEL EDITOR -->
+              <div class="nt-ed-filter-bar" id="edFilterBar-<%= n.id %>">
+                <div class="nt-ed-fb-left">
+                  <div class="nt-ed-fb-search">
+                    <span class="nt-ed-fb-ico">🔍</span>
+                    <input type="text" class="nt-ed-fb-input" id="filtroEd-<%= n.id %>" placeholder="Filtrar texto o línea (ej. nit, select, id...)" oninput="filtrarEnEditor(<%= n.id %>, this.value)" onkeydown="teclaFiltroEditor(event, <%= n.id %>)" autocomplete="off" spellcheck="false">
+                    <span class="nt-ed-fb-count" id="countEd-<%= n.id %>"></span>
+                    <button type="button" class="nt-ed-fb-nav" title="Coincidencia anterior (Shift+Enter)" onclick="irCoincidenciaEditor(<%= n.id %>, -1)">▲</button>
+                    <button type="button" class="nt-ed-fb-nav" title="Siguiente coincidencia (Enter)" onclick="irCoincidenciaEditor(<%= n.id %>, 1)">▼</button>
+                  </div>
+                  <div class="nt-ed-fb-goto">
+                    <span>Lín:</span>
+                    <input type="number" class="nt-ed-fb-goto-inp" id="gotoEd-<%= n.id %>" min="1" placeholder="4140" onkeydown="if(event.key==='Enter'){event.preventDefault(); saltarALineaEditor(<%= n.id %>, this.value);}">
+                    <button type="button" class="nt-ed-fb-btn-go" onclick="saltarALineaEditor(<%= n.id %>, document.getElementById('gotoEd-<%= n.id %>').value)">Ir</button>
+                  </div>
+                </div>
+                <div class="nt-ed-fb-right">
+                  <button type="button" class="nt-ed-fb-pill" id="btnListEd-<%= n.id %>" onclick="alternarListaFiltradas(<%= n.id %>)" title="Ver listado desplegable de líneas que coinciden">
+                    <span>📋 Líneas filtradas</span>
+                    <span class="nt-ed-fb-badge" id="badgeEd-<%= n.id %>" style="display:none;">0</span>
+                  </button>
+                  <button type="button" class="nt-ed-fb-pill" id="btnRepEd-<%= n.id %>" onclick="alternarReemplazarEditor(<%= n.id %>)" title="Buscar y Reemplazar">
+                    <span>⇄ Reemplazar</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Sub-barra de Reemplazo -->
+              <div class="nt-ed-rep-bar" id="repBar-<%= n.id %>" style="display:none;">
+                <input type="text" class="nt-ed-rep-input" id="repInput-<%= n.id %>" placeholder="Reemplazar por..." onkeydown="if(event.key==='Enter'){event.preventDefault(); reemplazarActualEditor(<%= n.id %>);}">
+                <button type="button" class="nt-ed-rep-btn" onclick="reemplazarActualEditor(<%= n.id %>)">Reemplazar</button>
+                <button type="button" class="nt-ed-rep-btn" onclick="reemplazarTodoEditor(<%= n.id %>)">Reemplazar todo</button>
+              </div>
+
+              <!-- Panel Desplegable de Líneas Filtradas -->
+              <div class="nt-ed-results-panel" id="resultsPanel-<%= n.id %>" style="display:none;">
+                <div class="nt-ed-rp-head">
+                  <span>Líneas que coinciden con el filtro:</span>
+                  <small>Haz clic en cualquier línea para saltar a ella y modificarla</small>
+                  <button type="button" class="nt-ed-rp-close" onclick="alternarListaFiltradas(<%= n.id %>, false)">✕ Cerrar</button>
+                </div>
+                <div class="nt-ed-rp-list" id="resultsList-<%= n.id %>"></div>
+              </div>
+
+              <div class="nt-ed-box">
+                <div class="nt-ed-gut" aria-hidden="true"><div class="nt-ed-gut-in">1</div></div>
+                <div class="nt-ed-code">
+                  <div class="nt-ed-search-lines" id="searchLines-<%= n.id %>" aria-hidden="true"></div>
+                  <pre class="nt-ed-search-layer" id="searchContent-<%= n.id %>" aria-hidden="true"></pre>
+                  <pre class="nt-ed-capa" aria-hidden="true"></pre>
+                  <textarea class="nt-ed-input" name="contenido" <% if (!n.es_excel) { %>required<% } %> readonly placeholder="Cargando contenido…" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off"></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="actions">
+            <button type="submit" disabled>Guardar cambios</button>
+            <button type="button" class="secondary" onclick="event.stopPropagation(); toggleEdit(<%= n.id %>)">Cancelar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <% }); %>
+  <% if (notas.length === 0) { %>
+    <div class="empty"><%= C.vacio %></div>
+  <% } %>
+</div>
+<div class="empty" id="sinResultados" style="display:none;">Ninguna coincidencia con la búsqueda.</div>
+
+<div class="ctx-menu" id="ctxMenu">
+  <button type="button" onclick="formatearNota(ctxMenuNotaId)">🎨 Vista de código (resaltar SQL)</button>
+  <button type="button" onclick="deshacerFormato(ctxMenuNotaId)">↩ Ver como texto normal</button>
+  <div class="ctx-hint">Lo que no es SQL se muestra en verde</div>
+</div>
+
+<div class="toast" id="toast">Copiado</div>
+
+<script type="application/json" id="notasMeta"><%- JSON.stringify(notas.map(function(n){ return { id: n.id, esSql: !!n.es_sql, esExcel: !!n.es_excel, esPdf: !!n.es_pdf }; })) %></script>
+
+<script>
+/* ---------- Controlador Reactivo Alpine.js de Notas / Jaivaná ---------- */
+window.notasAlpineApp = function() {
+  return {
+    q: '',
+    catActiva: '__todas__',
+    panelActivo: null,
+    totalNotas: <%= notas.length %>,
+    visibles: <%= notas.length %>,
+
+    init() {
+      window.addEventListener('keydown', (e) => {
+        const t = e.target;
+        const escribiendo = t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable);
+        if (e.key === '/' && !escribiendo && !e.ctrlKey && !e.metaKey) {
+          e.preventDefault();
+          const inp = document.getElementById('searchInput');
+          if (inp) { inp.focus(); inp.select(); }
+        } else if (e.key === 'Escape') {
+          if (this.panelActivo) {
+            this.cerrarPaneles();
+          } else if (t && t.id === 'searchInput') {
+            this.q = '';
+            this.alEscribir();
+            t.blur();
+          }
+        }
+      });
+    },
+
+    togglePanel(nombre) {
+      if (this.panelActivo === nombre) {
+        this.cerrarPaneles();
+      } else {
+        this.panelActivo = nombre;
+        this.$nextTick(() => {
+          const card = document.getElementById(nombre === 'agregar' ? 'addCard' : 'uploadCard');
+          if (card) {
+            const ta = card.querySelector('.nt-ed-input, input[type=text]');
+            if (ta) {
+              if (typeof actualizarEditorNota === 'function') actualizarEditorNota(ta);
+              setTimeout(() => ta.focus(), 60);
+            }
+            card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
+        });
+      }
+    },
+
+    cerrarPaneles() {
+      this.panelActivo = null;
+    },
+
+        esCatExtra(cat) {
+      if (!cat || cat === '__todas__') return false;
+      const extras = <%- JSON.stringify(categorias.slice(6).map(function(c){ return { raw: c, low: c.toLowerCase() }; })) %>;
+      return extras.some(e => e.low === cat);
+    },
+
+    nombreCatExtra(cat) {
+      if (!cat || cat === '__todas__') return null;
+      const extras = <%- JSON.stringify(categorias.slice(6).map(function(c){ return { raw: c, low: c.toLowerCase() }; })) %>;
+      const m = extras.find(e => e.low === cat);
+      return m ? ('📂 ' + m.raw + ' ▾') : null;
+    },
+    setCategoria(cat) {
+      this.catActiva = cat;
+      categoriaActiva = cat;
+      if (typeof aplicarFiltros === 'function') {
+        aplicarFiltros();
+        this.actualizarVisibles();
+      }
+    },
+
+    alEscribir() {
+      textoBusqueda = (this.q || '').trim();
+      if (typeof aplicarFiltros === 'function') {
+        aplicarFiltros();
+        this.actualizarVisibles();
+      }
+      clearTimeout(debounceBusqueda);
+      debounceBusqueda = setTimeout(() => {
+        if (typeof buscarEnServidor === 'function') buscarEnServidor(this.q);
+      }, 180);
+    },
+
+    actualizarVisibles() {
+      const rows = document.querySelectorAll('#results .row');
+      let count = 0;
+      rows.forEach(r => { if (r.style.display !== 'none') count++; });
+      this.visibles = count;
+    },
+
+    get contadorTexto() {
+      const plural = <%- JSON.stringify(C.plural) %>;
+      if (this.q || this.catActiva !== '__todas__') {
+        const suf = this.catActiva === '__todas__' ? '' : (' [' + this.catActiva.toUpperCase() + ']');
+        return this.visibles + ' de ' + this.totalNotas + ' ' + plural + suf;
+      }
+      return this.totalNotas + ' ' + plural;
+    }
+  };
+};
+
+const RUTA_BASE = <%- JSON.stringify(C.base) %>;
+const MAX_MB = <%= MAXMB %>;
+const LOTE = 100;           // líneas que se dibujan por bloque (el resto se carga al desplazarse)
+const MAX_LINEA = 20000;    // las líneas más largas se recortan, con botón para verlas completas
+const SALTO = 120;          // si una coincidencia está más lejos que esto, se dibuja solo una ventana alrededor de ella
+const AVISO_CARGAR_TODO = 60000; // "cargar todo" pide confirmación si faltan más líneas que esto
+
+let categoriaActiva = '__todas__';
+let textoBusqueda = '';
+let idsCoinciden = null;
+let seqBusqueda = 0;
+
+const notasData = {};
+JSON.parse(document.getElementById('notasMeta').textContent).forEach(function(n){
+  notasData[n.id] = {
+    esSql: n.esSql, esExcel: n.esExcel, esPdf: !!n.esPdf, xl: null, cargandoHoja: null, xlHits: [], xlHitSets: [], xlPorHoja: [], xlIdx: -1, xlTotal: 0, texto: null, lineas: null, clases: null, modo: 'auto',
+    query: '', regex: null, usarCodigo: false, hasta: 0, estado: { bloque: false },
+    expandidas: new Set(), coinc: [], idx: -1, cargando: null, desde: 0
+  };
+});
+
+function escapeHtml(str){
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function escapeRegExp(str){
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+// ---------------------------------------------------------------------------
+// Imágenes: en el texto aparecen como una línea [[IMG:n]]
+// ---------------------------------------------------------------------------
+const RE_IMG = /^\s*\[\[IMG:(\d+)\]\]\s*$/;
+
+function htmlImagen(id, n){
+  const src = RUTA_BASE + '/' + id + '/imagen/' + n;
+  return '<a class="img-wrap" href="' + src + '" target="_blank" rel="noopener" onclick="event.stopPropagation()"><img class="nota-img" loading="lazy" src="' + src + '" alt="Imagen ' + n + '"></a>';
+}
+
+// ---------------------------------------------------------------------------
+// Resaltado de sintaxis SQL (estilo editor de código)
+// ---------------------------------------------------------------------------
+const SQL_KW = new Set(('select from where insert into values update set delete create alter drop table view index ' +
+  'trigger procedure function database schema join inner left right full outer cross on and or not null is in like ilike ' +
+  'between exists distinct as order by group having limit offset union all case when then else end begin commit rollback ' +
+  'declare if while return returns primary key foreign references default constraint unique check add column modify rename ' +
+  'to with grant revoke truncate merge using asc desc over partition exec execute cascade identity varchar char int integer ' +
+  'bigint numeric decimal datetime timestamp boolean float money true false').split(' '));
+
+const TOKEN_RE = /--.*|\/\/.*|#.*|'(?:[^'\n]|'')*'|"(?:[^"\n]|"")*"|`[^`\n]*`|[@:$][A-Za-z0-9_]+|\d+(?:\.\d+)?|[A-Za-z_][\w$#@]*|\s+|./y;
+
+function tokenizarSqlLinea(linea, estado){
+  const tokens = [];
+  let i = 0;
+  if (estado.bloque) {
+    const fin = linea.indexOf('*/');
+    if (fin === -1) { return [{ t: linea, c: 'cm' }]; }
+    tokens.push({ t: linea.slice(0, fin + 2), c: 'cm' });
+    estado.bloque = false;
+    i = fin + 2;
+  }
+  while (i < linea.length) {
+    if (linea.startsWith('/*', i)) {
+      const fin = linea.indexOf('*/', i + 2);
+      if (fin === -1) { tokens.push({ t: linea.slice(i), c: 'cm' }); estado.bloque = true; break; }
+      tokens.push({ t: linea.slice(i, fin + 2), c: 'cm' });
+      i = fin + 2;
+      continue;
+    }
+    TOKEN_RE.lastIndex = i;
+    const m = TOKEN_RE.exec(linea);
+    if (!m) {
+      tokens.push({ t: linea.slice(i), c: null });
+      break;
+    }
+    const txt = m[0];
+    let c = null;
+    if (txt.startsWith('--') || txt.startsWith('//') || txt.startsWith('#')) c = 'cm';
+    else if (txt[0] === "'" || txt[0] === '`') c = 'st';
+    else if (txt[0] === '"') c = 'id';
+    else if (txt[0] === '@' || txt[0] === ':' || (txt[0] === '$' && txt.length > 1)) c = 'pa';
+    else if (/^\d/.test(txt)) c = 'nu';
+    else if (/^[A-Za-z_]/.test(txt)) {
+      if (SQL_KW.has(txt.toLowerCase())) c = 'kw';
+      else if (linea[i + txt.length] === '(') c = 'fn';
+      else c = 'id';
+    }
+    else if (!/^\s+$/.test(txt)) c = 'op';
+    tokens.push({ t: txt, c: c });
+    i += txt.length;
+  }
+  return tokens;
+}
+
+// ¿Esta línea (ya recortada) parece SQL o es texto/explicación?
+const SQL_INICIO_LINEA = /^(select|insert\s+into|update|delete\s+from|create\s+(or\s+replace\s+)?(table|view|procedure|function|index|trigger)|alter\s+table|drop\s+(table|view|index)|truncate\s+table|merge\s+into|with|values|set|from|where|and|or|on|into|order\s+by|group\s+by|left\s+join|right\s+join|inner\s+join|join)\b/i;
+const SQL_INICIO_SENTENCIA = /^(select|insert\s+into|update|delete\s+from|create\s|alter\s+table|drop\s|truncate\s|merge\s+into|with\s)/i;
+
+function lineaPareceSql(t){
+  if (/^--/.test(t) || /^\/\*/.test(t) || /\*\/$/.test(t)) return true;
+  if (SQL_INICIO_LINEA.test(t)) return true;
+  if (/;\s*$/.test(t)) return true;
+  if (/=\s*'/.test(t) && /[(),]/.test(t)) return true;
+  if (/\(.*\)/.test(t) && /,/.test(t)) return true;
+  return false;
+}
+
+// Marca cada línea como SQL (true) o texto (false). Las líneas que siguen
+// a una sentencia SQL sin terminar (sin ;) se consideran parte de ella.
+function clasificarLineas(lineas){
+  const res = new Array(lineas.length);
+  let enSentencia = false;
+  for (let i = 0; i < lineas.length; i++) {
+    const linea = lineas[i];
+    const t = (linea.length > 400 ? linea.slice(0, 400) : linea).replace(/^\s*[*•\-]\s+(?=\S)/, '').trim();
+    if (!t) { res[i] = true; enSentencia = false; continue; }
+    if (t.indexOf('[[IMG:') === 0 && RE_IMG.test(t)) { res[i] = true; continue; }
+    let esSql = lineaPareceSql(t);
+    if (SQL_INICIO_SENTENCIA.test(t)) enSentencia = true;
+    else if (!esSql && enSentencia) esSql = true;
+    if (/;\s*$/.test(linea.length > 400 ? linea.slice(-50) : t)) enSentencia = false;
+    res[i] = esSql;
+  }
+  return res;
+}
+
+// Convierte tokens + rangos de coincidencia de búsqueda en HTML
+function tokensAHtml(tokens, intervalos){
+  if (!tokens || !tokens.length) return '';
+  if (!intervalos || !intervalos.length) {
+    let out = '';
+    for (let j = 0; j < tokens.length; j++) {
+      const tk = tokens[j];
+      const esc = escapeHtml(tk.t);
+      out += tk.c ? '<span class="tk-' + tk.c + '">' + esc + '</span>' : esc;
+    }
+    return out;
+  }
+  let out = '';
+  let pos = 0;
+  let k = 0;
+  for (let j = 0; j < tokens.length; j++) {
+    const tk = tokens[j];
+    const ini = pos;
+    const fin = pos + tk.t.length;
+    let cursor = ini;
+    let html = '';
+    while (cursor < fin) {
+      while (k < intervalos.length && intervalos[k][1] <= cursor) k++;
+      const iv = intervalos[k];
+      if (!iv || iv[0] >= fin) { html += escapeHtml(tk.t.slice(cursor - ini)); cursor = fin; }
+      else if (iv[0] > cursor) { html += escapeHtml(tk.t.slice(cursor - ini, iv[0] - ini)); cursor = iv[0]; }
+      else {
+        const hasta = Math.min(iv[1], fin);
+        html += '<mark>' + escapeHtml(tk.t.slice(cursor - ini, hasta - ini)) + '</mark>';
+        cursor = hasta;
+      }
+    }
+    out += tk.c ? '<span class="tk-' + tk.c + '">' + html + '</span>' : html;
+    pos = fin;
+  }
+  return out;
+}
+
+function buscarIntervalos(linea, regex, qLow){
+  const res = [];
+  if (!regex || !linea) return res;
+  if (qLow && linea.toLowerCase().indexOf(qLow) === -1) return res;
+  regex.lastIndex = 0;
+  let m;
+  while ((m = regex.exec(linea)) !== null) {
+    if (m[0] === '') { regex.lastIndex++; continue; }
+    res.push([m.index, m.index + m[0].length]);
+  }
+  return res;
+}
+
+// ---------------------------------------------------------------------------
+// Carga del contenido (se pide al servidor cuando se abre la nota)
+// ---------------------------------------------------------------------------
+function cargarContenido(id){
+  const d = notasData[id];
+  if (d.texto !== null) return Promise.resolve(d);
+  if (d.cargando) return d.cargando;
+
+  d.cargando = fetch(RUTA_BASE + '/' + id + '/contenido', { credentials: 'same-origin' })
+    .then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); })
+    .then(function(t){
+      d.texto = t;
+      d.lineas = t.split('\n');
+      d.cargando = null;
+      const ta = document.querySelector('#edit-' + id + ' textarea');
+      if (ta) {
+        ta.value = t;
+        ta.readOnly = false;
+        ta.placeholder = '';
+      }
+      const bt = document.querySelector('#edit-' + id + ' button[type=submit]');
+      if (bt) bt.disabled = false;
+      return d;
+    })
+    .catch(function(e){ d.cargando = null; throw e; });
+
+  return d.cargando;
+}
+
+// ---------------------------------------------------------------------------
+// Dibujo del contenido por bloques (soporta archivos con cientos de miles de líneas)
+// ---------------------------------------------------------------------------
+function htmlLinea(id, d, i){
+  let linea = d.lineas[i];
+  let cuerpo;
+  const mi = (linea.indexOf('[[IMG:') !== -1) ? linea.match(RE_IMG) : null;
+
+  if (mi) {
+    cuerpo = htmlImagen(id, mi[1]);
+  } else {
+    const expandida = d.expandidas.has(i);
+    let resto = 0;
+    if (linea.length > MAX_LINEA && !expandida) {
+      resto = linea.length - MAX_LINEA;
+      linea = linea.slice(0, MAX_LINEA);
+    }
+    const intervalos = buscarIntervalos(linea, d.regex, d.queryLower);
+    let tokens;
+    if (d.usarCodigo) {
+      if (linea.length >= MAX_LINEA || expandida) tokens = linea ? [{ t: linea, c: null }] : [];
+      else tokens = d.clases[i] ? tokenizarSqlLinea(linea, d.estado) : (linea ? [{ t: linea, c: 'pl' }] : []);
+    } else {
+      tokens = linea ? [{ t: linea, c: null }] : [];
+    }
+    cuerpo = tokensAHtml(tokens, intervalos) || '&nbsp;';
+    if (resto) {
+      cuerpo += ' <a class="ver-mas" href="#" onclick="mostrarLineaCompleta(' + id + ',' + i + '); return false;">… +' + resto.toLocaleString('es-CO') + ' caracteres · mostrar línea completa</a>';
+    }
+  }
+
+  if (d.usarCodigo) {
+    return '<div class="code-line" data-i="' + i + '"><span class="ln">' + (i + 1) + '</span><span class="code-text">' + cuerpo + '</span></div>';
+  }
+  return '<div class="pl-line" data-i="' + i + '">' + cuerpo + '</div>';
+}
+
+function agregarLineas(id, n){
+  const d = notasData[id];
+  const cont = document.getElementById('texto-' + id);
+  if (!d || !cont || d.lineas === null || d.hasta >= d.lineas.length) return;
+
+  const viejo = cont.querySelector('.mas-lineas');
+  if (viejo) viejo.remove();
+
+  const fin = Math.min(d.lineas.length, d.hasta + n);
+  let html = '';
+  for (let i = d.hasta; i < fin; i++) html += htmlLinea(id, d, i);
+  d.hasta = fin;
+
+  if (fin < d.lineas.length) {
+    html += '<div class="mas-lineas">Mostrando ' + (d.desde > 0 ? 'las líneas ' + (d.desde + 1).toLocaleString('es-CO') + ' a ' : '') + fin.toLocaleString('es-CO') + ' de ' + d.lineas.length.toLocaleString('es-CO') +
+      ' líneas — sigue bajando para cargar más · <a href="#" onclick="cargarTodo(' + id + '); return false;">cargar todo</a></div>';
+  }
+  cont.insertAdjacentHTML('beforeend', html);
+}
+
+function cargarTodo(id){
+  const d = notasData[id];
+  const faltan = d.lineas.length - d.hasta;
+  if (faltan > AVISO_CARGAR_TODO && !confirm('Faltan ' + faltan.toLocaleString('es-CO') + ' líneas. Dibujarlas todas puede tardar y usar mucha memoria del navegador.\n\nPuedes usar el buscador para ir directo a lo que necesitas. ¿Cargar todo de todos modos?')) return;
+  agregarLineas(id, faltan);
+}
+
+// Dibuja un bloque de líneas empezando en "desde" (para saltar lejos sin dibujar todo lo del medio)
+function posicionarVentana(id, desde){
+  const d = notasData[id];
+  const cont = document.getElementById('texto-' + id);
+  if (!d || !cont || d.lineas === null) return;
+  d.desde = desde;
+  d.hasta = desde;
+  d.estado = { bloque: false };
+  cont.innerHTML = '';
+  if (desde > 0) {
+    cont.insertAdjacentHTML('beforeend', '<div class="mas-arriba">↑ No se muestran las primeras ' + desde.toLocaleString('es-CO') +
+      ' líneas · <a href="#" onclick="verDesdeInicio(' + id + '); return false;">mostrar desde el inicio</a></div>');
+  }
+  agregarLineas(id, LOTE);
+}
+
+function verDesdeInicio(id){
+  posicionarVentana(id, 0);
+  const cont = document.getElementById('texto-' + id);
+  if (cont) cont.scrollTop = 0;
+}
+
+function mostrarLineaCompleta(id, i){
+  const d = notasData[id];
+  d.expandidas.add(i);
+  const cont = document.getElementById('texto-' + id);
+  const el = cont.querySelector('[data-i="' + i + '"]');
+  if (el) el.outerHTML = htmlLinea(id, d, i);
+}
+
+function renderContenido(id, query){
+  const d = notasData[id];
+  if (d && d.esExcel) { renderExcel(id, query); return; }
+  if (!d || d.texto === null) return;
+  const cont = document.getElementById('texto-' + id);
+  if (!cont) return;
+
+  d.query = query || '';
+  d.queryLower = d.query ? d.query.toLowerCase() : '';
+  d.regex = d.query ? new RegExp(escapeRegExp(d.query), 'gi') : null;
+  d.usarCodigo = d.modo === 'codigo' || (d.modo === 'auto' && d.esSql);
+  if (d.usarCodigo && !d.clases) d.clases = clasificarLineas(d.lineas);
+  d.hasta = 0;
+  d.desde = 0;
+  d.estado = { bloque: false };
+
+  cont.classList.toggle('code-block', d.usarCodigo);
+  cont.classList.toggle('contenido', !d.usarCodigo);
+  const btnModo = document.getElementById('btnModo-' + id);
+  if (btnModo) btnModo.textContent = d.usarCodigo ? '📄 Ver como texto' : '🎨 Ver con colores';
+
+  if (!cont.dataset.scroll) {
+    cont.dataset.scroll = '1';
+    cont.addEventListener('scroll', function(){
+      if (cont.scrollTop + cont.clientHeight > cont.scrollHeight - 500) agregarLineas(id, LOTE);
+    });
+  }
+
+  calcularCoincidencias(id, false);
+
+  if (d.coinc && d.coinc.length > 0) {
+    const primera = d.coinc[0];
+    const inicio = primera > 20 ? Math.max(0, primera - 15) : 0;
+    posicionarVentana(id, inicio);
+    d.idx = 0;
+    actualizarContadorCoincidencias(id);
+    const el = cont.querySelector('[data-i="' + primera + '"]');
+    if (el) {
+      el.classList.add('cur-line');
+      el.scrollIntoView({ block: 'center' });
+    }
+  } else {
+    posicionarVentana(id, 0);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Hojas de cálculo: se dibujan como una hoja de Excel (letras, números, pestañas)
+// ---------------------------------------------------------------------------
+const XL_LOTE = 250; // filas que se dibujan por bloque (el resto al desplazarse)
+const RE_NUM = /^[-+(]?[$€]?\s?\d[\d.,:\/\-]*\s?%?\)?$/;
+
+function letraColumna(n){
+  let s = '';
+  n++;
+  while (n > 0) {
+    const m = (n - 1) % 26;
+    s = String.fromCharCode(65 + m) + s;
+    n = Math.floor((n - 1) / 26);
+  }
+  return s;
+}
+
+function tsvHoja(h){
+  return h.filas.map(function(f){
+    return f.map(function(t){ return t.replace(/[\t\r\n]+/g, ' '); }).join('\t');
+  }).join('\n');
+}
+
+function cargarHoja(id){
+  const d = notasData[id];
+  if (d.xl) return Promise.resolve(d);
+  if (d.cargandoHoja) return d.cargandoHoja;
+
+  d.cargandoHoja = fetch(RUTA_BASE + '/' + id + '/hoja', { credentials: 'same-origin' })
+    .then(function(r){
+      return r.json().then(function(j){
+        if (!r.ok) throw new Error(j.error || ('HTTP ' + r.status));
+        return j;
+      });
+    })
+    .then(function(j){
+      d.xl = { hojas: j.hojas, activa: 0, dibujadas: 0 };
+      d.cargandoHoja = null;
+      return d;
+    })
+    .catch(function(e){ d.cargandoHoja = null; throw e; });
+
+  return d.cargandoHoja;
+}
+
+// Celdas combinadas: la de arriba a la izquierda se estira, las demás no se dibujan
+function mapaCombinadas(h){
+  if (h._mm) return h._mm;
+  const origen = new Map();
+  const cubiertas = new Set();
+  (h.combinadas || []).forEach(function(m){
+    origen.set(m[0] * 128 + m[1], [m[2] - m[0] + 1, m[3] - m[1] + 1]);
+    for (let r = m[0]; r <= m[2]; r++) {
+      for (let c = m[1]; c <= m[3]; c++) {
+        if (r !== m[0] || c !== m[1]) cubiertas.add(r * 128 + c);
+      }
+    }
+  });
+  h._mm = { origen: origen, cubiertas: cubiertas };
+  return h._mm;
+}
+
+function construirExcel(id, cont){
+  cont.className = 'xl-box';
+  cont.innerHTML =
+    '<div class="xl-barra"><div class="xl-ref" id="xlref-' + id + '">A1</div><div class="xl-fx">fx</div><div class="xl-valor" id="xlval-' + id + '"></div></div>' +
+    '<div class="xl-aviso" id="xlaviso-' + id + '" style="display:none"></div>' +
+    '<div class="xl-scroll"></div>' +
+    '<div class="xl-hojas"></div>';
+
+  const sc = cont.querySelector('.xl-scroll');
+  sc.addEventListener('scroll', function(){
+    if (sc.scrollTop + sc.clientHeight > sc.scrollHeight - 600) agregarFilasExcel(id, XL_LOTE);
+  });
+  sc.addEventListener('click', function(e){
+    const td = e.target.closest ? e.target.closest('td[data-r]') : null;
+    if (td) seleccionarCelda(id, Number(td.dataset.r), Number(td.dataset.c), td);
+  });
+}
+
+function seleccionarCelda(id, r, c, td){
+  const d = notasData[id];
+  const cont = document.getElementById('texto-' + id);
+  cont.querySelectorAll('.xl-sel').forEach(function(e){ e.classList.remove('xl-sel'); });
+  if (td) td.classList.add('xl-sel');
+  const h = d.xl.hojas[d.xl.activa];
+  document.getElementById('xlref-' + id).textContent = letraColumna(c) + (r + 1);
+  document.getElementById('xlval-' + id).textContent = (h.filas[r] && h.filas[r][c]) || '';
+}
+
+function htmlFilaExcel(h, mm, hits, r){
+  const f = h.filas[r];
+  let s = '<tr><td class="xl-rh">' + (r + 1) + '</td>';
+  for (let c = 0; c < h.nCols; c++) {
+    const k = r * 128 + c;
+    if (mm.cubiertas.has(k)) continue;
+    const m = mm.origen.get(k);
+    const t = f[c] || '';
+    let cls = '';
+    if (t && RE_NUM.test(t)) cls = 'xl-n';
+    if (hits && hits.has(k)) cls += ' xl-hit';
+    s += '<td data-r="' + r + '" data-c="' + c + '"' + (cls ? ' class="' + cls.trim() + '"' : '') +
+      (m ? ' rowspan="' + m[0] + '" colspan="' + m[1] + '"' : '') + '>' + escapeHtml(t) + '</td>';
+  }
+  return s + '</tr>';
+}
+
+function agregarFilasExcel(id, n){
+  const d = notasData[id];
+  const x = d.xl;
+  const cont = document.getElementById('texto-' + id);
+  const tb = cont ? cont.querySelector('.xl-scroll tbody') : null;
+  if (!x || !tb) return;
+  const h = x.hojas[x.activa];
+  if (x.dibujadas >= h.filas.length) return;
+
+  const mm = mapaCombinadas(h);
+  const hits = d.xlHitSets[x.activa];
+  const fin = Math.min(h.filas.length, x.dibujadas + n);
+  let html = '';
+  for (let r = x.dibujadas; r < fin; r++) html += htmlFilaExcel(h, mm, hits, r);
+  tb.insertAdjacentHTML('beforeend', html);
+  x.dibujadas = fin;
+}
+
+function dibujarHoja(id){
+  const d = notasData[id];
+  const x = d.xl;
+  const cont = document.getElementById('texto-' + id);
+  const sc = cont.querySelector('.xl-scroll');
+  const h = x.hojas[x.activa];
+
+  const aviso = document.getElementById('xlaviso-' + id);
+  if (h.truncada) {
+    aviso.style.display = '';
+    aviso.textContent = 'La hoja es muy grande y se recortó para mostrarla (' + h.filas.length.toLocaleString('es-CO') +
+      ' filas × ' + h.nCols + ' columnas). Descarga el archivo original para verla completa.';
+  } else {
+    aviso.style.display = 'none';
+  }
+
+  document.getElementById('xlref-' + id).textContent = 'A1';
+  document.getElementById('xlval-' + id).textContent = '';
+  x.dibujadas = 0;
+
+  if (!h.filas.length) {
+    sc.innerHTML = '<div class="cargando" style="color:#666; padding:14px;">Esta hoja está vacía.</div>';
+    return;
+  }
+
+  let cols = '<col style="width:46px">';
+  let ancho = 46;
+  let cab = '<tr><th class="xl-esq"></th>';
+  for (let c = 0; c < h.nCols; c++) {
+    const w = Math.round(((h.anchos && h.anchos[c]) || 11) * 7 + 10);
+    cols += '<col style="width:' + w + 'px">';
+    ancho += w;
+    cab += '<th>' + letraColumna(c) + '</th>';
+  }
+  cab += '</tr>';
+
+  sc.innerHTML = '<table class="xl-table" style="width:' + ancho + 'px"><colgroup>' + cols + '</colgroup><thead>' + cab + '</thead><tbody></tbody></table>';
+  sc.scrollTop = 0;
+  sc.scrollLeft = 0;
+  agregarFilasExcel(id, XL_LOTE);
+}
+
+function dibujarPestanasExcel(id){
+  const d = notasData[id];
+  const x = d.xl;
+  const cont = document.getElementById('texto-' + id);
+  const barra = cont.querySelector('.xl-hojas');
+  barra.innerHTML = x.hojas.map(function(h, i){
+    const n = d.xlPorHoja[i] || 0;
+    return '<div class="xl-hoja' + (i === x.activa ? ' activa' : '') + '" onclick="event.stopPropagation(); cambiarHojaExcel(' + id + ',' + i + ')">' +
+      escapeHtml(h.nombre) + (n ? '<span class="xl-cuenta">' + n.toLocaleString('es-CO') + '</span>' : '') + '</div>';
+  }).join('');
+}
+
+function cambiarHojaExcel(id, i){
+  const x = notasData[id].xl;
+  if (!x || i === x.activa) return;
+  x.activa = i;
+  dibujarHoja(id);
+  dibujarPestanasExcel(id);
+}
+
+function calcularHitsExcel(d, q){
+  d.xlHits = [];
+  d.xlHitSets = [];
+  d.xlPorHoja = [];
+  d.xlIdx = -1;
+  d.xlTotal = 0;
+  if (!q) return;
+  const ql = q.toLowerCase();
+  d.xl.hojas.forEach(function(h, hi){
+    const set = new Set();
+    let cuenta = 0;
+    h.filas.forEach(function(f, r){
+      for (let c = 0; c < f.length; c++) {
+        const t = f[c];
+        if (t && t.length >= ql.length && t.toLowerCase().indexOf(ql) !== -1) {
+          set.add(r * 128 + c);
+          cuenta++;
+          if (d.xlHits.length < 20000) d.xlHits.push([hi, r, c]);
+        }
+      }
+    });
+    d.xlHitSets[hi] = set;
+    d.xlPorHoja[hi] = cuenta;
+    d.xlTotal += cuenta;
+  });
+}
+
+function actualizarContadorExcel(id){
+  const d = notasData[id];
+  const el = document.getElementById('matches-' + id);
+  if (!el) return;
+  if (!d.query) { el.textContent = ''; return; }
+  if (!d.xlHits.length) { el.textContent = 'Sin resultados'; return; }
+  el.textContent = (d.xlIdx + 1) + ' de ' + d.xlTotal.toLocaleString('es-CO') + (d.xlTotal === 1 ? ' celda' : ' celdas');
+}
+
+function renderExcel(id, query){
+  const d = notasData[id];
+  const cont = document.getElementById('texto-' + id);
+  if (!d || !d.xl || !cont) return;
+
+  if (!cont.querySelector('.xl-scroll')) construirExcel(id, cont);
+
+  d.query = query || '';
+  calcularHitsExcel(d, d.query);
+  if (d.xlHits.length) d.xl.activa = d.xlHits[0][0]; // abre en la primera hoja con coincidencias
+
+  dibujarHoja(id);
+  dibujarPestanasExcel(id);
+
+  if (d.xlHits.length) irACoincidenciaExcel(id, 0, true);
+  else actualizarContadorExcel(id);
+}
+
+function irACoincidenciaExcel(id, dir, inicial){
+  const d = notasData[id];
+  if (!d || !d.xl || !d.xlHits.length) return;
+  d.xlIdx = inicial ? 0 : (d.xlIdx + dir + d.xlHits.length) % d.xlHits.length;
+  const hit = d.xlHits[d.xlIdx];
+  const cont = document.getElementById('texto-' + id);
+
+  if (hit[0] !== d.xl.activa) {
+    d.xl.activa = hit[0];
+    dibujarHoja(id);
+    dibujarPestanasExcel(id);
+  }
+  if (hit[1] >= d.xl.dibujadas) agregarFilasExcel(id, hit[1] - d.xl.dibujadas + XL_LOTE);
+
+  cont.querySelectorAll('.xl-cur').forEach(function(e){ e.classList.remove('xl-cur'); });
+  const td = cont.querySelector('td[data-r="' + hit[1] + '"][data-c="' + hit[2] + '"]');
+  if (td) {
+    td.classList.add('xl-cur');
+    seleccionarCelda(id, hit[1], hit[2], td);
+    td.scrollIntoView({ block: 'center', inline: 'nearest' });
+  }
+  actualizarContadorExcel(id);
+}
+
+// ---------------------------------------------------------------------------
+// Búsqueda dentro de la nota
+// ---------------------------------------------------------------------------
+function actualizarContadorCoincidencias(id){
+  const d = notasData[id];
+  const el = document.getElementById('matches-' + id);
+  if (!el) return;
+  if (!d.coinc || !d.coinc.length) {
+    el.textContent = d.query ? 'Sin resultados' : '';
+    return;
+  }
+  if (d.idx >= 0 && d.coinc.length > 1) {
+    el.textContent = (d.idx + 1) + ' de ' + d.coinc.length + ' líneas' + (d.totalTexto ? ' (' + d.totalTexto + ')' : '');
+  } else {
+    el.textContent = d.totalTexto || '';
+  }
+}
+
+function calcularCoincidencias(id, autoNavegar){
+  const d = notasData[id];
+  d.coinc = [];
+  d.idx = -1;
+
+  if (!d.query) {
+    actualizarContadorCoincidencias(id);
+    return;
+  }
+
+  let total = 0;
+  const qLow = d.queryLower || d.query.toLowerCase();
+  const qLen = qLow.length;
+  const lineas = d.lineas;
+  const len = lineas.length;
+
+  for (let i = 0; i < len; i++) {
+    const l = lineas[i];
+    if (l.length < qLen) continue;
+    const lLow = l.toLowerCase();
+    let p = lLow.indexOf(qLow);
+    if (p === -1) continue;
+    d.coinc.push(i);
+    let c = 0;
+    while (p !== -1) {
+      c++;
+      p = lLow.indexOf(qLow, p + qLen);
+    }
+    total += c;
+  }
+
+  d.totalTexto = total
+    ? total.toLocaleString('es-CO') + (total === 1 ? ' resultado' : ' resultados')
+    : '';
+
+  actualizarContadorCoincidencias(id);
+
+  if (autoNavegar && d.coinc.length) irACoincidencia(id, 0, true);
+}
+
+function irACoincidencia(id, dir, inicial){
+  const d = notasData[id];
+  if (d && d.esExcel) { irACoincidenciaExcel(id, dir, inicial); return; }
+  if (!d || !d.coinc || !d.coinc.length) return;
+  d.idx = inicial ? 0 : (d.idx + dir + d.coinc.length) % d.coinc.length;
+  const linea = d.coinc[d.idx];
+  const cont = document.getElementById('texto-' + id);
+  if (!cont) return;
+
+  actualizarContadorCoincidencias(id);
+
+  if (d.lineas[linea].length > MAX_LINEA && !d.expandidas.has(linea)) {
+    d.expandidas.add(linea);
+    const previo = cont.querySelector('[data-i="' + linea + '"]');
+    if (previo) previo.outerHTML = htmlLinea(id, d, linea);
+  }
+
+  let el = cont.querySelector('[data-i="' + linea + '"]');
+  if (!el) {
+    if (linea < d.desde || linea >= d.hasta + SALTO) {
+      posicionarVentana(id, Math.max(0, linea - 15));
+    } else if (linea >= d.hasta) {
+      agregarLineas(id, Math.min(LOTE, linea - d.hasta + 25));
+    }
+    el = cont.querySelector('[data-i="' + linea + '"]');
+  }
+
+  cont.querySelectorAll('.cur-line').forEach(function(e){ e.classList.remove('cur-line'); });
+  if (el) {
+    el.classList.add('cur-line');
+    el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  }
+}
+
+const debounceEnNota = {};
+function buscarEnNota(id, query){
+  clearTimeout(debounceEnNota[id]);
+  debounceEnNota[id] = setTimeout(function(){
+    renderContenido(id, query.trim());
+  }, 120);
+}
+
+function teclaBusqueda(e, id){
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    e.stopPropagation();
+    irACoincidencia(id, e.shiftKey ? -1 : 1);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Abrir / cerrar / editar / copiar / pantalla completa
+// ---------------------------------------------------------------------------
+function toggleRow(id){
+  const fila = document.getElementById('row-' + id);
+  const seAbre = !fila.classList.contains('open');
+  fila.classList.toggle('open');
+  if (!seAbre) return;
+
+  if (notasData[id] && notasData[id].esPdf) {
+    const frame = document.getElementById('pdfFrame-' + id);
+    if (frame && (frame.src === 'about:blank' || !frame.src) && frame.dataset.src) {
+      frame.src = frame.dataset.src;
+    }
+  }
+
+  const consulta = textoBusqueda || '';
+  const buscador = fila.querySelector('.search-in-note input');
+  if (buscador) buscador.value = consulta;
+
+  const cont = document.getElementById('texto-' + id);
+  const cargas = notasData[id].esExcel
+    ? Promise.all([cargarContenido(id), cargarHoja(id)])
+    : cargarContenido(id);
+  cargas
+    .then(function(){ renderContenido(id, consulta); })
+    .catch(function(e){
+      cont.innerHTML = '<div class="cargando error">No se pudo cargar el contenido (' + escapeHtml(e.message) + '). Recarga la página.</div>';
+    });
+}
+
+// ---------------------------------------------------------------------------
+// Editor interactivo en vivo (resaltado SQL + números de línea sincronizados)
+// ---------------------------------------------------------------------------
+const LIMITE_RESALTADO_NOTA = 50000;
+
+function contarLineas(val){
+  if (!val) return 0;
+  let c = 1;
+  for (let i = 0; i < val.length; i++) {
+    if (val.charCodeAt(i) === 10) c++;
+  }
+  return c;
+}
+
+function resaltarTextoNota(texto){
+  if (!texto) return ' ';
+  const lineas = texto.split('\n');
+  const estado = { bloque: false };
+  const res = [];
+  for (let i = 0; i < lineas.length; i++) {
+    const l = lineas[i];
+    if (l === '') {
+      res.push('');
+    } else {
+      const tokens = tokenizarSqlLinea(l, estado);
+      res.push(tokensAHtml(tokens, []));
+    }
+  }
+  return res.join('\n') + ' ';
+}
+
+function obtenerPosCursor(ta){
+  const pos = (ta && typeof ta.selectionStart === 'number') ? ta.selectionStart : 0;
+  const val = ta ? ta.value || '' : '';
+  let linea = 1;
+  let ultimoSalto = -1;
+  for (let i = 0; i < pos; i++) {
+    if (val.charCodeAt(i) === 10) {
+      linea++;
+      ultimoSalto = i;
+    }
+  }
+  return { linea: linea, col: pos - ultimoSalto };
+}
+
+let timerEditorHighlight = null;
+
+function actualizarEditorNota(ta, diferido){
+  if (!ta) return;
+  const frame = ta.closest('.nt-ed-frame');
+  if (!frame) return;
+  const box = frame.querySelector('.nt-ed-box');
+  const capa = frame.querySelector('.nt-ed-capa');
+  const gut = frame.querySelector('.nt-ed-gut');
+  const gutIn = frame.querySelector('.nt-ed-gut-in');
+  const statusEl = frame.querySelector('.nt-ed-status');
+  const posEl = frame.querySelector('.nt-ed-pos');
+
+  const val = ta.value || '';
+  const nLineas = contarLineas(val);
+
+  if (statusEl) {
+    statusEl.textContent = nLineas.toLocaleString('es-CO') + (nLineas === 1 ? ' línea' : ' líneas');
+  }
+
+  if (posEl) {
+    const pos = obtenerPosCursor(ta);
+    posEl.textContent = 'Lín ' + pos.linea + ', Col ' + pos.col;
+  }
+
+  if (gutIn) {
+    if (gutIn._lastCount !== nLineas) {
+      gutIn._lastCount = nLineas;
+      let gutText = '';
+      for (let i = 1; i <= nLineas; i++) {
+        gutText += i + '\n';
+      }
+      gutIn.textContent = gutText;
+    }
+    if (gut) {
+      const digitos = Math.max(2, String(nLineas).length);
+      gut.style.width = (digitos * 8 + 26) + 'px';
+    }
+  }
+
+  if (box && capa) {
+    if (val.length > LIMITE_RESALTADO_NOTA) {
+      box.classList.add('plain');
+      capa.textContent = '';
+      if (statusEl && !statusEl.textContent.includes('modo rápido')) {
+        statusEl.textContent += ' · modo rápido';
+      }
+    } else {
+      box.classList.remove('plain');
+      if (diferido) {
+        clearTimeout(timerEditorHighlight);
+        timerEditorHighlight = setTimeout(function(){
+          if (ta && capa) capa.innerHTML = resaltarTextoNota(ta.value || '');
+        }, 120);
+      } else {
+        capa.innerHTML = resaltarTextoNota(val);
+      }
+    }
+  }
+
+  sincronizarScrollEditor(ta);
+}
+
+function sincronizarScrollEditor(ta){
+  if (!ta) return;
+  const frame = ta.closest('.nt-ed-frame');
+  if (!frame) return;
+  const capa = frame.querySelector('.nt-ed-capa');
+  const gutIn = frame.querySelector('.nt-ed-gut-in');
+  const searchLines = frame.querySelector('.nt-ed-search-lines');
+  const searchLayer = frame.querySelector('.nt-ed-search-layer');
+
+  if (capa) {
+    capa.scrollTop = ta.scrollTop;
+    capa.scrollLeft = ta.scrollLeft;
+  }
+  if (gutIn) {
+    gutIn.style.transform = 'translateY(' + (-ta.scrollTop) + 'px)';
+  }
+  if (searchLines) {
+    searchLines.style.transform = 'translateY(' + (-ta.scrollTop) + 'px)';
+  }
+  if (searchLayer) {
+    searchLayer.scrollTop = ta.scrollTop;
+    searchLayer.scrollLeft = ta.scrollLeft;
+  }
+}
+
+// =========================================================================
+// FILTRADO Y BÚSQUEDA INTERACTIVA CON RESALTADO EN EL EDITOR DE CÓDIGO
+// =========================================================================
+const editorSearchState = {};
+
+function getEditorSearchState(id) {
+  if (!editorSearchState[id]) {
+    editorSearchState[id] = { query: '', matches: [], idx: -1 };
+  }
+  return editorSearchState[id];
+}
+
+function abrirEditarConFiltro(id) {
+  const p = document.getElementById('edit-' + id);
+  if (!p || !p.classList.contains('open')) {
+    toggleEdit(id);
+  }
+  setTimeout(function() {
+    const inp = document.getElementById('filtroEd-' + id);
+    if (inp) {
+      inp.focus();
+      inp.select();
+    }
+  }, 120);
+}
+
+function buildHighlightedText(val, matches, activeIdx, maxLimit) {
+  if (!matches || matches.length === 0) return '';
+  const limit = maxLimit || 500;
+  let subMatches = matches;
+  if (matches.length > limit) {
+    if (activeIdx < limit) {
+      subMatches = matches.slice(0, limit);
+    } else {
+      subMatches = matches.slice(0, limit - 1).concat([matches[activeIdx]]);
+      subMatches.sort(function(a, b) { return a.start - b.start; });
+    }
+  }
+
+  let html = '';
+  let lastIdx = 0;
+  for (let i = 0; i < subMatches.length; i++) {
+    const m = subMatches[i];
+    if (m.start < lastIdx) continue;
+    html += escapeHtml(val.slice(lastIdx, m.start));
+    const isCurrent = (m.origIdx !== undefined ? m.origIdx === activeIdx : i === activeIdx);
+    html += '<mark class="nt-ed-hl-word' + (isCurrent ? ' active' : '') + '">' + escapeHtml(val.slice(m.start, m.end)) + '</mark>';
+    lastIdx = m.end;
+  }
+  html += escapeHtml(val.slice(lastIdx));
+  return html;
+}
+
+function filtrarEnEditor(id, query) {
+  const st = getEditorSearchState(id);
+  st.query = (query || '').trim();
+  st.matches = [];
+  st.idx = -1;
+
+  const panel = document.getElementById('edit-' + id);
+  if (!panel) return;
+  const ta = panel.querySelector('.nt-ed-input');
+  if (!ta) return;
+
+  const val = ta.value || '';
+  const countEl = document.getElementById('countEd-' + id);
+  const badgeEl = document.getElementById('badgeEd-' + id);
+  const resultsList = document.getElementById('resultsList-' + id);
+
+  if (!st.query) {
+    if (countEl) countEl.textContent = '';
+    if (badgeEl) { badgeEl.style.display = 'none'; badgeEl.textContent = '0'; }
+    if (resultsList) resultsList.innerHTML = '<div class="nt-ed-no-res">Escribe para filtrar líneas o buscar texto...</div>';
+    actualizarResaltadosEditor(id);
+    return;
+  }
+
+  const queryLower = st.query.toLowerCase();
+  const lines = val.split('\n');
+  let currentOffset = 0;
+
+  lines.forEach(function(lineText, lineIdx) {
+    const lineNum = lineIdx + 1;
+    const lineLower = lineText.toLowerCase();
+    let colIdx = 0;
+
+    if (lineLower.includes(queryLower)) {
+      let searchPos = 0;
+      while ((colIdx = lineLower.indexOf(queryLower, searchPos)) !== -1) {
+        st.matches.push({
+          origIdx: st.matches.length,
+          start: currentOffset + colIdx,
+          end: currentOffset + colIdx + queryLower.length,
+          lineNum: lineNum,
+          lineText: lineText.trim() || '(Línea vacía)'
+        });
+        searchPos = colIdx + Math.max(1, queryLower.length);
+      }
+    } else if (String(lineNum) === st.query) {
+      st.matches.push({
+        origIdx: st.matches.length,
+        start: currentOffset,
+        end: currentOffset + lineText.length,
+        lineNum: lineNum,
+        lineText: lineText.trim() || '(Línea vacía)'
+      });
+    }
+
+    currentOffset += lineText.length + 1;
+  });
+
+  const total = st.matches.length;
+  if (badgeEl) {
+    badgeEl.textContent = total;
+    badgeEl.style.display = total > 0 ? 'inline-flex' : 'none';
+  }
+
+  if (resultsList) {
+    if (total === 0) {
+      resultsList.innerHTML = '<div class="nt-ed-no-res">No se encontraron líneas con «' + escapeHtml(st.query) + '»</div>';
+    } else {
+      let html = '';
+      const linesMap = new Map();
+      st.matches.forEach(function(m) {
+        if (!linesMap.has(m.lineNum)) {
+          linesMap.set(m.lineNum, { mIdx: m.origIdx, lineNum: m.lineNum, lineText: m.lineText });
+        }
+      });
+
+      linesMap.forEach(function(item) {
+        html += '<div class="nt-ed-rp-item" onclick="saltarAMatchEditor(' + id + ', ' + item.mIdx + ', true)">' +
+          '<span class="nt-ed-item-ln">Lín ' + item.lineNum + '</span>' +
+          '<span class="nt-ed-item-txt">' + resaltarCoincidenciaItem(item.lineText, st.query) + '</span>' +
+        '</div>';
+      });
+      resultsList.innerHTML = html;
+    }
+  }
+
+  if (total > 0) {
+    st.idx = 0;
+    if (countEl) countEl.textContent = '1 / ' + total;
+  } else {
+    if (countEl) countEl.textContent = '0 encontrados';
+  }
+
+  // Renderizar resaltados visuales milimétricos en el editor
+  actualizarResaltadosEditor(id);
+}
+
+function actualizarResaltadosEditor(id) {
+  const st = getEditorSearchState(id);
+  const searchContent = document.getElementById('searchContent-' + id);
+  const searchLines = document.getElementById('searchLines-' + id);
+  const panel = document.getElementById('edit-' + id);
+  if (!panel) return;
+  const ta = panel.querySelector('.nt-ed-input');
+  if (!ta) return;
+
+  if (!st.query || !st.matches || st.matches.length === 0) {
+    if (searchContent) searchContent.innerHTML = '';
+    if (searchLines) searchLines.innerHTML = '';
+    return;
+  }
+
+  const val = ta.value || '';
+  const currentIdx = st.idx;
+
+  // 1. Renderizar líneas de coincidencia en capa searchLines
+  if (searchLines) {
+    let linesHtml = '';
+    const linesRendered = new Set();
+    const maxLines = 150;
+    let lineCount = 0;
+
+    for (let i = 0; i < st.matches.length && lineCount < maxLines; i++) {
+      const m = st.matches[i];
+      if (!linesRendered.has(m.lineNum)) {
+        linesRendered.add(m.lineNum);
+        lineCount++;
+        const isCurrent = (currentIdx >= 0 && st.matches[currentIdx] && st.matches[currentIdx].lineNum === m.lineNum);
+        const top = 12 + (m.lineNum - 1) * 20.8;
+        linesHtml += '<div class="nt-ed-hl-line' + (isCurrent ? ' active' : '') + '" style="top:' + top + 'px;"></div>';
+      }
+    }
+
+    if (currentIdx >= 0 && st.matches[currentIdx]) {
+      const curMatch = st.matches[currentIdx];
+      if (!linesRendered.has(curMatch.lineNum)) {
+        const top = 12 + (curMatch.lineNum - 1) * 20.8;
+        linesHtml += '<div class="nt-ed-hl-line active" style="top:' + top + 'px;"></div>';
+      }
+    }
+    searchLines.innerHTML = linesHtml;
+  }
+
+  // 2. Renderizar palabras resaltadas con precisión milimétrica en el <pre> espejo
+  if (searchContent) {
+    searchContent.innerHTML = buildHighlightedText(val, st.matches, currentIdx, 500);
+  }
+
+  sincronizarScrollEditor(ta);
+}
+
+function resaltarCoincidenciaItem(text, query) {
+  if (!text || !query) return escapeHtml(text || '');
+  const t = escapeHtml(text);
+  const q = escapeHtml(query);
+  const idx = t.toLowerCase().indexOf(q.toLowerCase());
+  if (idx === -1) return t;
+  return t.slice(0, idx) + '<mark>' + t.slice(idx, idx + q.length) + '</mark>' + t.slice(idx + q.length);
+}
+
+function irCoincidenciaEditor(id, dir, enfocar) {
+  const st = getEditorSearchState(id);
+  if (!st.matches || st.matches.length === 0) return;
+
+  st.idx = (st.idx + dir + st.matches.length) % st.matches.length;
+  saltarAMatchEditor(id, st.idx, enfocar);
+}
+
+function saltarAMatchEditor(id, matchIdx, enfocar) {
+  const st = getEditorSearchState(id);
+  if (!st.matches || !st.matches[matchIdx]) return;
+  st.idx = matchIdx;
+
+  const match = st.matches[matchIdx];
+  const panel = document.getElementById('edit-' + id);
+  if (!panel) return;
+  const ta = panel.querySelector('.nt-ed-input');
+  if (!ta) return;
+
+  const countEl = document.getElementById('countEd-' + id);
+  if (countEl) {
+    countEl.textContent = (st.idx + 1) + ' / ' + st.matches.length;
+  }
+
+  // Desplazar el textarea a la línea exacta
+  const lineHeight = 20.8;
+  const targetScroll = Math.max(0, (match.lineNum - 1) * lineHeight - (ta.clientHeight / 2) + 20);
+  ta.scrollTop = targetScroll;
+
+  // Actualizar resaltado activo
+  actualizarResaltadosEditor(id);
+
+  sincronizarScrollEditor(ta);
+  actualizarEditorNota(ta);
+
+  // Solo enfocar y seleccionar en el textarea si se solicita explícitamente (Enter, botón o clic)
+  if (enfocar) {
+    ta.focus();
+    ta.setSelectionRange(match.start, match.end);
+  }
+
+  const resultsList = document.getElementById('resultsList-' + id);
+  if (resultsList) {
+    resultsList.querySelectorAll('.nt-ed-rp-item').forEach(function(el) {
+      el.classList.toggle('active', el.textContent.includes('Lín ' + match.lineNum));
+    });
+  }
+}
+
+function saltarALineaEditor(id, numStr) {
+  const lineNum = parseInt(numStr, 10);
+  if (isNaN(lineNum) || lineNum < 1) return;
+
+  const panel = document.getElementById('edit-' + id);
+  if (!panel) return;
+  const ta = panel.querySelector('.nt-ed-input');
+  if (!ta) return;
+
+  const val = ta.value || '';
+  const lines = val.split('\n');
+  if (lineNum > lines.length) {
+    alert('El documento tiene ' + lines.length + ' líneas.');
+    return;
+  }
+
+  let offset = 0;
+  for (let i = 0; i < lineNum - 1; i++) {
+    offset += lines[i].length + 1;
+  }
+  const endOffset = offset + lines[lineNum - 1].length;
+
+  ta.focus();
+  ta.setSelectionRange(offset, endOffset);
+
+  const lineHeight = 20.8;
+  const targetScroll = Math.max(0, (lineNum - 1) * lineHeight - (ta.clientHeight / 2) + 20);
+  ta.scrollTop = targetScroll;
+  sincronizarScrollEditor(ta);
+  actualizarEditorNota(ta);
+}
+
+function alternarListaFiltradas(id, forzar) {
+  const panel = document.getElementById('resultsPanel-' + id);
+  if (!panel) return;
+  const nuevoEstado = (typeof forzar === 'boolean') ? forzar : (panel.style.display === 'none');
+  panel.style.display = nuevoEstado ? 'block' : 'none';
+  const btn = document.getElementById('btnListEd-' + id);
+  if (btn) btn.classList.toggle('active', nuevoEstado);
+}
+
+function alternarReemplazarEditor(id) {
+  const row = document.getElementById('repBar-' + id);
+  if (!row) return;
+  const abierto = row.style.display !== 'none';
+  row.style.display = abierto ? 'none' : 'flex';
+  const btn = document.getElementById('btnRepEd-' + id);
+  if (btn) btn.classList.toggle('active', !abierto);
+  if (!abierto) {
+    const inp = document.getElementById('repInput-' + id);
+    if (inp) inp.focus();
+  }
+}
+
+function reemplazarActualEditor(id) {
+  const st = getEditorSearchState(id);
+  if (!st.matches || st.idx < 0 || !st.matches[st.idx]) return;
+
+  const repInp = document.getElementById('repInput-' + id);
+  const nuevoTexto = repInp ? repInp.value : '';
+
+  const panel = document.getElementById('edit-' + id);
+  if (!panel) return;
+  const ta = panel.querySelector('.nt-ed-input');
+  if (!ta) return;
+
+  const match = st.matches[st.idx];
+  const s = match.start, e = match.end;
+
+  if (document.execCommand) {
+    ta.focus();
+    ta.setSelectionRange(s, e);
+    document.execCommand('insertText', false, nuevoTexto);
+  } else {
+    ta.setRangeText(nuevoTexto, s, e, 'end');
+  }
+
+  actualizarEditorNota(ta);
+  filtrarEnEditor(id, st.query);
+}
+
+function reemplazarTodoEditor(id) {
+  const st = getEditorSearchState(id);
+  if (!st.query) return;
+
+  const repInp = document.getElementById('repInput-' + id);
+  const nuevoTexto = repInp ? repInp.value : '';
+
+  const panel = document.getElementById('edit-' + id);
+  if (!panel) return;
+  const ta = panel.querySelector('.nt-ed-input');
+  if (!ta) return;
+
+  const val = ta.value || '';
+  const regex = new RegExp(st.query.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&'), 'gi');
+  const count = (val.match(regex) || []).length;
+  if (count === 0) {
+    alert('No se encontraron coincidencias para reemplazar.');
+    return;
+  }
+
+  if (!confirm('¿Reemplazar ' + count + ' coincidencia(s) en todo el texto?')) return;
+
+  ta.value = val.replace(regex, nuevoTexto);
+  actualizarEditorNota(ta);
+  filtrarEnEditor(id, st.query);
+  alert('Se reemplazaron ' + count + ' coincidencia(s).');
+}
+
+function teclaFiltroEditor(e, id) {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    irCoincidenciaEditor(id, e.shiftKey ? -1 : 1, true);
+  } else if (e.key === 'Escape') {
+    alternarListaFiltradas(id, false);
+    const panel = document.getElementById('edit-' + id);
+    if (panel) {
+      const ta = panel.querySelector('.nt-ed-input');
+      if (ta) ta.focus();
+    }
+  }
+}
+
+// Atajo Ctrl+F y Ctrl+G en los textareas del editor
+document.addEventListener('keydown', function(e) {
+  if ((e.ctrlKey || e.metaKey) && (e.key === 'f' || e.key === 'F')) {
+    const ta = e.target;
+    if (ta && ta.classList && ta.classList.contains('nt-ed-input')) {
+      const panel = ta.closest('.edit-panel');
+      if (panel) {
+        e.preventDefault();
+        const idMatch = panel.id.match(/^edit-(\d+)$/);
+        if (idMatch) {
+          const id = idMatch[1];
+          const filtroInp = document.getElementById('filtroEd-' + id);
+          if (filtroInp) {
+            const sel = ta.value.substring(ta.selectionStart, ta.selectionEnd).trim();
+            if (sel && sel.length < 60) {
+              filtroInp.value = sel;
+              filtrarEnEditor(id, sel);
+            }
+            filtroInp.focus();
+            filtroInp.select();
+          }
+        }
+      }
+    }
+  } else if ((e.ctrlKey || e.metaKey) && (e.key === 'g' || e.key === 'G')) {
+    const ta = e.target;
+    if (ta && ta.classList && ta.classList.contains('nt-ed-input')) {
+      const panel = ta.closest('.edit-panel');
+      if (panel) {
+        e.preventDefault();
+        const idMatch = panel.id.match(/^edit-(\d+)$/);
+        if (idMatch) {
+          const id = idMatch[1];
+          const gotoInp = document.getElementById('gotoEd-' + id);
+          if (gotoInp) {
+            gotoInp.focus();
+            gotoInp.select();
+          }
+        }
+      }
+    }
+  }
+});
+
+
+// Delegación global de eventos para los editores de notas
+document.addEventListener('input', function(e){
+  if (e.target && e.target.classList && e.target.classList.contains('nt-ed-input')) {
+    actualizarEditorNota(e.target, true);
+  }
+});
+
+document.addEventListener('scroll', function(e){
+  if (e.target && e.target.classList && e.target.classList.contains('nt-ed-input')) {
+    sincronizarScrollEditor(e.target);
+  }
+}, true); // useCapture para escuchar el scroll de textarea
+
+['click', 'keyup', 'focus'].forEach(function(evName){
+  document.addEventListener(evName, function(e){
+    if (e.target && e.target.classList && e.target.classList.contains('nt-ed-input')) {
+      const frame = e.target.closest('.nt-ed-frame');
+      if (frame) {
+        const posEl = frame.querySelector('.nt-ed-pos');
+        if (posEl) {
+          const pos = obtenerPosCursor(e.target);
+          posEl.textContent = 'Lín ' + pos.linea + ', Col ' + pos.col;
+        }
+      }
+    }
+  });
+});
+
+function toggleEdit(id){
+  const p = document.getElementById('edit-' + id);
+  if (!p) return;
+  const isOpen = p.classList.toggle('open');
+  if (isOpen) {
+    const d = notasData[id];
+    const ta = p.querySelector('textarea');
+    if (ta) {
+      const cargarYActualizar = function(texto){
+        if (!ta.value) ta.value = texto;
+        ta.readOnly = false;
+        const bt = p.querySelector('button[type=submit]');
+        if (bt) bt.disabled = false;
+        actualizarEditorNota(ta);
+        ta.scrollTop = 0;
+        ta.scrollLeft = 0;
+        sincronizarScrollEditor(ta);
+      };
+      if (d && d.texto !== null) {
+        cargarYActualizar(d.texto);
+      } else {
+        cargarContenido(id).then(function(res){
+          cargarYActualizar(res.texto);
+        });
+      }
+      setTimeout(function(){ ta.focus(); }, 50);
+    }
+  }
+}
+
+// Soporte de tecla Tab para indentar en los editores de notas
+document.addEventListener('keydown', function(e){
+  if (e.key === 'Tab' && e.target && e.target.tagName === 'TEXTAREA') {
+    if (e.target.closest('.edit-panel') || e.target.closest('.add-card')) {
+      e.preventDefault();
+      const ta = e.target;
+      const s = ta.selectionStart, end = ta.selectionEnd;
+      if (document.execCommand) {
+        document.execCommand('insertText', false, '    ');
+      } else {
+        ta.setRangeText('    ', s, end, 'end');
+      }
+      actualizarEditorNota(ta);
+    }
+  }
+});
+
+let nodoNotaOrig = {};
+function alternarVistaPdf(id, vista){
+  const boxPdf = document.getElementById('pdfWrapper-' + id);
+  const wrapTxt = document.getElementById('wrap-' + id);
+  const tabPdf = document.getElementById('tabPdf-' + id);
+  const tabTxt = document.getElementById('tabTxt-' + id);
+  if (vista === 'pdf') {
+    if (boxPdf) boxPdf.style.display = 'block';
+    if (wrapTxt) wrapTxt.style.display = 'none';
+    if (tabPdf) tabPdf.classList.add('active');
+    if (tabTxt) tabTxt.classList.remove('active');
+  } else {
+    if (boxPdf) boxPdf.style.display = 'none';
+    if (wrapTxt) wrapTxt.style.display = 'block';
+    if (tabPdf) tabPdf.classList.remove('active');
+    if (tabTxt) tabTxt.classList.add('active');
+    cargarContenido(id).then(function(){
+      renderContenido(id, '');
+    });
+  }
+}
+
+function pantallaCompletaPdf(id){
+  const el = document.getElementById('pdf-box-' + id) || document.getElementById('pdfWrapper-' + id);
+  if (!el) return;
+  if (!document.fullscreenElement) {
+    el.requestFullscreen().catch(function(){});
+  } else {
+    document.exitFullscreen().catch(function(){});
+  }
+}
+
+function pantallaCompleta(id){
+  const wrap = document.getElementById('wrap-' + id);
+  if (!wrap) return;
+  const activa = !wrap.classList.contains('fullscreen');
+  if (activa) {
+    nodoNotaOrig[id] = { padre: wrap.parentNode, hermano: wrap.nextSibling };
+    document.body.appendChild(wrap);
+    wrap.classList.add('fullscreen');
+    document.body.classList.add('has-fullscreen');
+    document.body.style.overflow = 'hidden';
+  } else {
+    wrap.classList.remove('fullscreen');
+    document.body.classList.remove('has-fullscreen');
+    if (nodoNotaOrig[id] && nodoNotaOrig[id].padre) {
+      nodoNotaOrig[id].padre.insertBefore(wrap, nodoNotaOrig[id].hermano);
+    }
+    document.body.style.overflow = '';
+  }
+}
+
+let toastTimer;
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg || 'Copiado';
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 1400);
+}
+
+async function copiarAlPortapapeles(texto){
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(texto);
+      return;
+    }
+  } catch (e) {}
+  const ta = document.createElement('textarea');
+  ta.value = texto;
+  ta.style.position = 'fixed';
+  ta.style.left = '-9999px';
+  ta.style.top = '0';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.focus();
+  ta.select();
+  try { document.execCommand('copy'); } catch(e){}
+  document.body.removeChild(ta);
+}
+
+async function copiarNota(id){
+  let texto;
+  const editPanel = document.getElementById('edit-' + id);
+  const isEditing = editPanel && editPanel.classList.contains('open');
+  const ta = isEditing ? editPanel.querySelector('textarea') : null;
+
+  if (isEditing && ta) {
+    const s = ta.selectionStart;
+    const e = ta.selectionEnd;
+    if (typeof s === 'number' && typeof e === 'number' && s !== e) {
+      texto = ta.value.substring(s, e);
+      const cantLineas = contarLineas(texto);
+      await copiarAlPortapapeles(texto);
+      showToast(cantLineas > 1 ? ('Selección copiada (' + cantLineas.toLocaleString('es-CO') + ' líneas)') : 'Selección copiada');
+      return;
+    }
+    texto = ta.value;
+    await copiarAlPortapapeles(texto);
+    showToast('Contenido del editor copiado');
+    return;
+  }
+
+  const sel = window.getSelection();
+  const selText = sel ? sel.toString().trim() : '';
+  const cont = document.getElementById('texto-' + id);
+
+  if (selText && cont && sel.anchorNode && cont.contains(sel.anchorNode)) {
+    texto = selText;
+    const cantLineas = contarLineas(texto);
+    await copiarAlPortapapeles(texto);
+    showToast(cantLineas > 1 ? ('Selección copiada (' + cantLineas.toLocaleString('es-CO') + ' líneas)') : 'Selección copiada');
+    return;
+  }
+
+  if (notasData[id].esExcel) {
+    try { await cargarHoja(id); } catch (e) { showToast('No se pudo cargar'); return; }
+    texto = tsvHoja(notasData[id].xl.hojas[notasData[id].xl.activa]);
+  } else {
+    try { await cargarContenido(id); } catch (e) { showToast('No se pudo cargar'); return; }
+    texto = notasData[id].texto.replace(/^[ \t]*\[\[IMG:\d+\]\][ \t]*\n?/gm, '');
+  }
+  await copiarAlPortapapeles(texto);
+  showToast('Toda la nota copiada');
+}
+
+// ---------------------------------------------------------------------------
+// Menú contextual (clic derecho) sobre el contenido de una nota
+// ---------------------------------------------------------------------------
+let ctxMenuNotaId = null;
+
+function mostrarMenuContextual(e, id){
+  if (notasData[id] && notasData[id].esExcel) return; // en Excel se deja el menú normal del navegador
+  e.preventDefault();
+  e.stopPropagation();
+  ctxMenuNotaId = id;
+  const menu = document.getElementById('ctxMenu');
+  const x = Math.min(e.clientX, window.innerWidth - 260);
+  const y = Math.min(e.clientY, window.innerHeight - 120);
+  menu.style.left = x + 'px';
+  menu.style.top = y + 'px';
+  menu.style.display = 'flex';
+}
+
+function ocultarMenuContextual(){
+  const menu = document.getElementById('ctxMenu');
+  if (menu) menu.style.display = 'none';
+}
+
+document.addEventListener('click', ocultarMenuContextual);
+document.addEventListener('scroll', ocultarMenuContextual, true);
+document.addEventListener('keydown', function(e){
+  if (e.key !== 'Escape') return;
+  ocultarMenuContextual();
+  const fs = document.querySelector('.content-wrap.fullscreen');
+  if (fs) {
+    const id = fs.id.replace('wrap-', '');
+    fs.classList.remove('fullscreen');
+    document.body.classList.remove('has-fullscreen');
+    if (nodoNotaOrig[id] && nodoNotaOrig[id].padre) {
+      nodoNotaOrig[id].padre.insertBefore(fs, nodoNotaOrig[id].hermano);
+    }
+    document.body.style.overflow = '';
+  }
+});
+
+function cambiarModoNota(id, modo){
+  ocultarMenuContextual();
+  const d = notasData[id];
+  if (!d) return;
+  d.modo = modo;
+  const fila = document.getElementById('row-' + id);
+  const buscador = fila ? fila.querySelector('.search-in-note input') : null;
+  const btnModo = document.getElementById('btnModo-' + id);
+  if (d.texto !== null) {
+    renderContenido(id, buscador ? buscador.value.trim() : '');
+  } else {
+    d.usarCodigo = (modo === 'codigo');
+    if (btnModo) btnModo.textContent = d.usarCodigo ? '📄 Ver como texto' : '🎨 Ver con colores';
+  }
+}
+
+function alternarModoCodigo(id){
+  const d = notasData[id];
+  if (!d) return;
+  const esCodigo = (d.texto !== null) ? d.usarCodigo : (d.modo === 'codigo' || (d.modo === 'auto' && d.esSql));
+  cambiarModoNota(id, esCodigo ? 'plano' : 'codigo');
+}
+
+function formatearNota(id){ cambiarModoNota(id, 'codigo'); }
+function deshacerFormato(id){ cambiarModoNota(id, 'plano'); }
+
+// ---------------------------------------------------------------------------
+// Filtros de la lista: apartados (pestañas) + búsqueda en el servidor
+// ---------------------------------------------------------------------------
+const filasCache = Array.from(document.querySelectorAll('#results .row')).map(function(row){
+  return {
+    el: row,
+    id: Number(row.dataset.id),
+    cat: row.dataset.cat || '',
+    tit: (row.dataset.tit || (row.querySelector('.titulo') ? row.querySelector('.titulo').textContent : '')).toLowerCase()
+  };
+});
+
+function aplicarFiltros(){
+  let visibles = 0;
+  const q = (textoBusqueda || '').toLowerCase().trim();
+  for (let i = 0; i < filasCache.length; i++) {
+    const row = filasCache[i];
+    const okCat = categoriaActiva === '__todas__' || row.cat === categoriaActiva;
+    const okLocal = !q || row.tit.indexOf(q) !== -1 || row.cat.indexOf(q) !== -1;
+    const okServer = idsCoinciden !== null && idsCoinciden.has(row.id);
+    const ver = okCat && (okLocal || okServer);
+    row.el.style.display = ver ? '' : 'none';
+    if (ver) visibles++;
+  }
+  document.getElementById('sinResultados').style.display = (filasCache.length && !visibles) ? 'block' : 'none';
+}
+
+function buscarEnServidor(q){
+  textoBusqueda = q;
+  const estado = document.getElementById('estadoBusqueda');
+
+  if (!q) {
+    seqBusqueda++;
+    idsCoinciden = null;
+    estado.textContent = '';
+    aplicarFiltros();
+    return;
+  }
+
+  // Filtrado instantáneo local de inmediato (0ms)
+  aplicarFiltros();
+
+  const mi = ++seqBusqueda;
+  estado.textContent = 'Buscando…';
+
+  fetch(RUTA_BASE + '/buscar?q=' + encodeURIComponent(q), { credentials: 'same-origin' })
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if (mi !== seqBusqueda) return;
+      idsCoinciden = d.ids ? new Set(d.ids) : null;
+      estado.textContent = '';
+      aplicarFiltros();
+    })
+    .catch(function(){ if (mi === seqBusqueda) estado.textContent = 'Error al buscar'; });
+}
+
+let debounceBusqueda;
+document.getElementById('searchInput').addEventListener('input', function(e){
+  const valor = e.target.value.trim();
+  textoBusqueda = valor;
+  // Filtrado local instantáneo mientras se escribe
+  aplicarFiltros();
+  clearTimeout(debounceBusqueda);
+  debounceBusqueda = setTimeout(function(){ buscarEnServidor(valor); }, 180);
+});
+
+document.querySelectorAll('#tabs .tab').forEach(function(tab){
+  tab.addEventListener('click', function(){
+    document.querySelectorAll('#tabs .tab').forEach(function(t){ t.classList.remove('active'); });
+    tab.classList.add('active');
+    categoriaActiva = tab.dataset.cat;
+    aplicarFiltros();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Paneles de agregar / subir, eliminar todo
+// ---------------------------------------------------------------------------
+document.getElementById('toggleAddBtn').addEventListener('click', function(){
+  document.getElementById('uploadCard').classList.remove('open');
+  const add = document.getElementById('addCard');
+  const isOpen = add.classList.toggle('open');
+  if (isOpen) {
+    const ta = add.querySelector('.nt-ed-input');
+    if (ta) {
+      actualizarEditorNota(ta);
+      setTimeout(function(){ ta.focus(); }, 50);
+    }
+  }
+});
+
+document.getElementById('toggleUploadBtn').addEventListener('click', function(){
+  document.getElementById('addCard').classList.remove('open');
+  document.getElementById('uploadCard').classList.toggle('open');
+});
+
+const btnEliminarTodo = document.getElementById('btnEliminarTodo');
+if (btnEliminarTodo) {
+  btnEliminarTodo.addEventListener('click', function(){
+    const ok = confirm(
+      'Vas a mover a la papelera ' + <%- JSON.stringify(C.todos) %> + ' ' + filasCache.length + ' ' + <%- JSON.stringify(C.plural) %> + ' de esta sección.\n\n' +
+      'No se borran de verdad: podrás restaurarlos desde 🗑 Papelera.\n\n¿Continuar?'
+    );
+    if (ok) document.getElementById('formEliminarTodo').submit();
+  });
+}
+
+const inputArchivos = document.getElementById('inputArchivos');
+inputArchivos.addEventListener('change', function(){
+  const lista = document.getElementById('listaArchivos');
+  lista.innerHTML = '';
+  Array.from(inputArchivos.files).forEach(function(f){
+    const mb = f.size / 1048576;
+    const excede = mb > MAX_MB;
+    lista.insertAdjacentHTML('beforeend',
+      '<div class="file-item' + (excede ? ' bad' : '') + '"><span>' + escapeHtml(f.name) + '</span><span>' +
+      (mb >= 1 ? mb.toFixed(1) + ' MB' : Math.max(1, Math.round(f.size / 1024)) + ' KB') +
+      (excede ? ' — supera el límite de ' + MAX_MB + ' MB' : '') + '</span></div>');
+  });
+});
+
+document.getElementById('formSubir').addEventListener('submit', function(e){
+  const files = Array.from(inputArchivos.files);
+  const grandes = files.filter(function(f){ return f.size > MAX_MB * 1048576; });
+  if (grandes.length) {
+    e.preventDefault();
+    alert('Estos archivos superan el límite de ' + MAX_MB + ' MB:\n' + grandes.map(function(f){ return f.name; }).join('\n'));
+    return;
+  }
+  if (files.length > 20) {
+    e.preventDefault();
+    alert('Máximo 20 archivos por vez.');
+    return;
+  }
+  const b = document.getElementById('btnSubir');
+  b.disabled = true;
+  b.textContent = 'Subiendo… (los archivos grandes pueden tardar; no cierres la página)';
+});
+</script>

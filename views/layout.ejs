@@ -224,15 +224,35 @@ html{ scrollbar-color:var(--scrollbar) transparent; scroll-behavior:smooth; max-
 body{
   margin:0; min-height:100vh; max-width:100vw; overflow-x:hidden; color:var(--text); font-family:var(--sans);
   display:flex; flex-direction:column; align-items:center; padding:0 20px 70px;
-  background:
-    radial-gradient(1000px 520px at 6% -10%, var(--bg-glow), transparent 62%),
-    radial-gradient(800px 460px at 104% 4%, rgba(var(--accent-rgb), .09), transparent 60%), var(--bg);
-  background-attachment:fixed; transition:background-color .25s ease, color .25s ease;
+  background-color: var(--bg);
+  background-image:
+    /* Aurora Cósmica: Velo etéreo magenta/violeta superior derecho */
+    radial-gradient(ellipse 700px 900px at 86% 16%, rgba(192, 38, 211, 0.25), transparent 65%),
+    /* Aurora Cósmica: Torrente cian y turquesa cósmico */
+    radial-gradient(ellipse 750px 850px at 78% 38%, rgba(6, 182, 212, 0.22), transparent 60%),
+    /* Aurora Cósmica: Destello esmeralda boreal suave */
+    radial-gradient(ellipse 600px 700px at 92% 58%, rgba(16, 185, 129, 0.14), transparent 65%),
+    /* Resplandor ambiental de acento en la esquina superior izquierda */
+    radial-gradient(1000px 520px at 6% -10%, var(--bg-glow), transparent 65%),
+    radial-gradient(circle at 50% 50%, var(--bg) 0%, #020408 100%);
+  background-attachment:fixed;
+  background-size:cover;
+  transition:background-color .25s ease, color .25s ease;
 }
-body::before{ content:''; position:fixed; left:-10%; right:-10%; top:-18%; height:70vh; z-index:-1; pointer-events:none; filter:blur(50px); opacity:.8;
-  background:radial-gradient(38% 58% at 18% 32%, rgba(var(--accent-rgb), .18), transparent 70%), radial-gradient(34% 54% at 78% 22%, rgba(var(--accent-rgb), .12), transparent 70%);
-  animation:aurora 24s ease-in-out infinite alternate; }
-@keyframes aurora{ from{ transform:translate3d(-2%,0,0) scale(1); } to{ transform:translate3d(3%,7%,0) scale(1.1); } }
+body::before{
+  content:''; position:fixed; right:-15%; top:-20%; width:75vw; height:110vh; z-index:-1; pointer-events:none;
+  filter:blur(85px); opacity:.95;
+  background:
+    radial-gradient(ellipse 45% 65% at 68% 28%, rgba(192, 38, 211, 0.28), transparent 70%),
+    radial-gradient(ellipse 50% 55% at 52% 48%, rgba(6, 182, 212, 0.24), transparent 68%),
+    radial-gradient(ellipse 40% 50% at 75% 65%, rgba(16, 185, 129, 0.16), transparent 70%);
+  animation:aurora 22s ease-in-out infinite alternate;
+}
+@keyframes aurora{
+  from{ transform:translate3d(-2%, 0, 0) scale(1) rotate(0deg); opacity: 0.88; }
+  50%{ transform:translate3d(3%, 4%, 0) scale(1.06) rotate(1deg); opacity: 1; }
+  to{ transform:translate3d(1%, 7%, 0) scale(1.02) rotate(-1deg); opacity: 0.92; }
+}
 a{ color:var(--accent); }
 .wrap{ position:relative; z-index:1; width:100%; max-width:1700px; animation:pageIn .45s var(--ease) backwards; }
 body.amp .wrap,
@@ -6205,10 +6225,10 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
     <div class="topbar-left">
       <div class="topbar-ver-update-group" style="display:inline-flex; align-items:center; gap:6px; flex-wrap:wrap;">
         <!-- Insignia Holográfica de Versión del Sistema (Visible en todo el programa) -->
-        <div class="cyber-version-pill" data-title="Suite Bóveda Jira · Versión activa: <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.10.3') %>" title="Suite Bóveda Jira · Versión <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.10.3') %>">
+        <div class="cyber-version-pill" data-title="Suite Bóveda Jira · Versión activa: <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.10.4') %>" title="Suite Bóveda Jira · Versión <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.10.4') %>">
           <span class="cvp-icon"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></span>
           <span class="cvp-lbl">BUILD</span>
-          <strong class="cvp-ver"><%= typeof appVersion !== 'undefined' ? appVersion : 'v2.10.3' %></strong>
+          <strong class="cvp-ver"><%= typeof appVersion !== 'undefined' ? appVersion : 'v2.10.4' %></strong>
           <% if (typeof gitCommit !== 'undefined' && gitCommit) { %><span class="cvp-commit" style="font-size:10px; opacity:0.75; font-family:var(--mono); margin-left:3px;">(<%= gitCommit %>)</span><% } %>
           <span class="cvp-pulse"></span>
         </div>
@@ -7897,7 +7917,7 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
             </div>
             <div class="gub-info">
               <div class="gub-branch" style="color:#10b981;">✅ Sistema Sincronizado y Estable</div>
-              <div class="gub-desc">Tu versión actual (<%= typeof appVersion !== "undefined" ? appVersion : "v2.10.3" %>) cuenta con todas las mejoras y parches más recientes publicados en GitHub. No hay versiones ni cambios nuevos pendientes de descargar.</div>
+              <div class="gub-desc">Tu versión actual (<%= typeof appVersion !== "undefined" ? appVersion : "v2.10.4" %>) cuenta con todas las mejoras y parches más recientes publicados en GitHub. No hay versiones ni cambios nuevos pendientes de descargar.</div>
             </div>
           </div>
           <div style="padding: 12px 14px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; font-size: 12.5px; color: var(--muted); line-height: 1.45;">
@@ -8084,7 +8104,7 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
                 // Estado: Al día (0 cambios)
                 if (bguBadge) bguBadge.style.display = 'none';
                 if (modalIcon) modalIcon.textContent = '✨';
-                if (modalTitle) modalTitle.textContent = 'Sistema al Día (' + (data.version ? 'v' + data.version : '<%= typeof appVersion !== "undefined" ? appVersion : "v2.10.3" %>') + (data.commit ? ' · ' + data.commit : '') + ')';
+                if (modalTitle) modalTitle.textContent = 'Sistema al Día (' + (data.version ? 'v' + data.version : '<%= typeof appVersion !== "undefined" ? appVersion : "v2.10.4" %>') + (data.commit ? ' · ' + data.commit : '') + ')';
                 if (modalSubtitle) modalSubtitle.textContent = 'No existen versiones o cambios nuevos disponibles';
                 if (viewPending) viewPending.style.display = 'none';
                 if (viewUpToDate) viewUpToDate.style.display = 'block';

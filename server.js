@@ -4,6 +4,7 @@ process.on("unhandledRejection", (reason, promise) => {
 });
 process.on("uncaughtException", (err) => {
   console.error("Uncaught Exception capturada:", err);
+  if (err.code === "EADDRINUSE") process.exit(1);
 });
 
 
