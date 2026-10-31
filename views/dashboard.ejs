@@ -996,7 +996,10 @@
 </div>
 
 <div class="card add-card" id="addCard" :class="{ open: panelActivo === 'agregar' }">
-  <div class="card-title"><span class="ico"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></span>Nueva empresa</div>
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+    <div class="card-title" style="margin:0;"><span class="ico"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></span>Nueva empresa</div>
+    <button type="button" class="secondary btn-sm" id="btnCerrarAdd" @click="cerrarPaneles()" title="Cerrar panel (Esc)" style="cursor:pointer; display:inline-flex; align-items:center; gap:5px; padding:4px 10px; border-radius:8px;">✕ Cerrar</button>
+  </div>
   <p class="sub" style="margin-bottom:14px">Escribe el nombre y la clave. La clave se guardará cifrada.</p>
   <form method="post" action="/empresa/agregar">
     <div class="fields">
@@ -1026,14 +1029,20 @@
         </div>
       </div>
     </div>
-    <button class="full" type="submit"><svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>Guardar empresa</button>
+    <div style="display:flex; gap:10px; margin-top:14px;">
+      <button class="full" type="submit" style="flex:1; margin-top:0;"><svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>Guardar empresa</button>
+      <button type="button" class="secondary" @click="cerrarPaneles()" style="padding:0 20px; font-weight:700; border-radius:10px; cursor:pointer;" title="Cancelar y cerrar">Cancelar</button>
+    </div>
   </form>
 </div>
 
 <div class="card add-card" id="importCard" :class="{ open: panelActivo === 'importar' }" style="padding:18px;">
   <div class="card-title" style="display:flex; justify-content:space-between; align-items:center;">
     <span style="display:inline-flex; align-items:center; gap:8px;"><span class="ico"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg></span>Importar claves desde un archivo</span>
-    <span class="db-orb db-orb-pg" title="PostgreSQL Import">🐘</span>
+    <div style="display:flex; align-items:center; gap:8px;">
+      <span class="db-orb db-orb-pg" title="PostgreSQL Import">🐘</span>
+      <button type="button" class="secondary btn-sm" id="btnCerrarImport" @click="cerrarPaneles()" title="Cerrar panel (Esc)" style="cursor:pointer; display:inline-flex; align-items:center; gap:5px; padding:4px 10px; border-radius:8px;">✕ Cerrar</button>
+    </div>
   </div>
   <div class="imp-head" style="margin-top:2px"><span>.txt · .csv · .xml · .xlsx · .xls</span></div>
   <p class="imp-help">
