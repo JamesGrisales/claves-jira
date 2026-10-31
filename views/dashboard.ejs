@@ -1347,9 +1347,6 @@
         <button type="button" class="iconbtn lbl btn-copiar" title="Copiar la clave al portapapeles" onclick="copyPassword(<%= c.id %>)">
           <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><span class="t">Copiar</span>
         </button>
-        <button type="button" class="iconbtn lbl btn-sql" title="Copiar condición SQL (nit_empresa = '...')" onclick="copyAsSql(<%= c.id %>)">
-          <svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg><span class="t">SQL</span>
-        </button>
         <button type="button" class="iconbtn lbl btn-editar" id="editbtn-<%= c.id %>" title="Editar nombre o clave" onclick="toggleEdit(<%= c.id %>)">
           <svg viewBox="0 0 24 24"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg><span class="t">Editar</span>
         </button>
