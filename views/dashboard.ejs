@@ -982,7 +982,7 @@
     <div class="card-title" style="margin:0;"><span class="ico"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>Auditoría y Diagnóstico de la Bóveda</div>
     <div style="display:flex; gap:8px;">
       <button type="button" class="btn-sm" id="btnRecargarAuditoria"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Re-escanear</button>
-      <button type="button" class="secondary btn-sm" id="btnCerrarAuditoria" @click="cerrarPaneles()">✕ Cerrar</button>
+      <button type="button" class="secondary btn-sm" id="btnCerrarAuditoria" onclick="cerrarPanel('auditCard')" @click="cerrarPaneles()">✕ Cerrar</button>
     </div>
   </div>
   <p class="sub" style="margin-bottom:14px;">Diagnóstico de salud de contraseñas: detecta claves débiles, contraseñas repetidas en varias empresas y credenciales sin actualizar.</p>
@@ -998,7 +998,7 @@
 <div class="card add-card" id="addCard" :class="{ open: panelActivo === 'agregar' }">
   <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
     <div class="card-title" style="margin:0;"><span class="ico"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></span>Nueva empresa</div>
-    <button type="button" class="secondary btn-sm" id="btnCerrarAdd" @click="cerrarPaneles()" title="Cerrar panel (Esc)" style="cursor:pointer; display:inline-flex; align-items:center; gap:5px; padding:4px 10px; border-radius:8px;">✕ Cerrar</button>
+    <button type="button" class="secondary btn-sm" id="btnCerrarAdd" onclick="cerrarPanel('addCard')" @click="cerrarPaneles()" title="Cerrar panel (Esc)" style="cursor:pointer; display:inline-flex; align-items:center; gap:5px; padding:4px 10px; border-radius:8px;">✕ Cerrar</button>
   </div>
   <p class="sub" style="margin-bottom:14px">Escribe el nombre y la clave. La clave se guardará cifrada.</p>
   <form method="post" action="/empresa/agregar">
@@ -1031,7 +1031,7 @@
     </div>
     <div style="display:flex; gap:10px; margin-top:14px;">
       <button class="full" type="submit" style="flex:1; margin-top:0;"><svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>Guardar empresa</button>
-      <button type="button" class="secondary" @click="cerrarPaneles()" style="padding:0 20px; font-weight:700; border-radius:10px; cursor:pointer;" title="Cancelar y cerrar">Cancelar</button>
+      <button type="button" class="secondary" onclick="cerrarPanel('addCard')" @click="cerrarPaneles()" style="padding:0 20px; font-weight:700; border-radius:10px; cursor:pointer;" title="Cancelar y cerrar">Cancelar</button>
     </div>
   </form>
 </div>
@@ -1041,7 +1041,7 @@
     <span style="display:inline-flex; align-items:center; gap:8px;"><span class="ico"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg></span>Importar claves desde un archivo</span>
     <div style="display:flex; align-items:center; gap:8px;">
       <span class="db-orb db-orb-pg" title="PostgreSQL Import">🐘</span>
-      <button type="button" class="secondary btn-sm" id="btnCerrarImport" @click="cerrarPaneles()" title="Cerrar panel (Esc)" style="cursor:pointer; display:inline-flex; align-items:center; gap:5px; padding:4px 10px; border-radius:8px;">✕ Cerrar</button>
+      <button type="button" class="secondary btn-sm" id="btnCerrarImport" onclick="cerrarPanel('importCard')" @click="cerrarPaneles()" title="Cerrar panel (Esc)" style="cursor:pointer; display:inline-flex; align-items:center; gap:5px; padding:4px 10px; border-radius:8px;">✕ Cerrar</button>
     </div>
   </div>
   <div class="imp-head" style="margin-top:2px"><span>.txt · .csv · .xml · .xlsx · .xls</span></div>
@@ -1443,6 +1443,37 @@
 <div class="toast" id="toast"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg><span id="toastTxt">Copiado</span></div>
 
 <script>
+/* ---------- Control Global de Paneles (Agregar, Importar, Auditoría) ---------- */
+window.cerrarPanel = function(nombre) {
+  if (!nombre || nombre === 'agregar' || nombre === 'addCard') {
+    var addCard = document.getElementById('addCard');
+    var addBtn = document.getElementById('toggleAddBtn');
+    if (addCard) addCard.classList.remove('open');
+    if (addBtn) { addBtn.classList.remove('active'); addBtn.setAttribute('aria-expanded', 'false'); }
+    var form = addCard ? addCard.querySelector('form') : null;
+    if (form) form.reset();
+  }
+  if (!nombre || nombre === 'importar' || nombre === 'importCard') {
+    var impCard = document.getElementById('importCard');
+    var impBtn = document.getElementById('toggleImportBtn');
+    if (impCard) impCard.classList.remove('open');
+    if (impBtn) { impBtn.classList.remove('active'); impBtn.setAttribute('aria-expanded', 'false'); }
+  }
+  if (!nombre || nombre === 'auditoria' || nombre === 'auditCard') {
+    var audCard = document.getElementById('auditCard');
+    var audBtn = document.getElementById('toggleAuditBtn');
+    if (audCard) audCard.classList.remove('open');
+    if (audBtn) { audBtn.classList.remove('active'); audBtn.setAttribute('aria-expanded', 'false'); }
+  }
+  try {
+    var alpineEl = document.querySelector('[x-data]');
+    if (alpineEl && window.Alpine && Alpine.$data) {
+      var d = Alpine.$data(alpineEl);
+      if (d && d.panelActivo) d.panelActivo = null;
+    }
+  } catch(e){}
+};
+
 /* ---------- Controlador Reactivo Alpine.js de la Bóveda ---------- */
 window.bovedaAlpineApp = function() {
   return {
@@ -1509,6 +1540,7 @@ window.bovedaAlpineApp = function() {
 
     cerrarPaneles() {
       this.panelActivo = null;
+      if (typeof window.cerrarPanel === 'function') window.cerrarPanel();
     },
 
     setFiltro(tipo) {
