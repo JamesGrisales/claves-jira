@@ -27,6 +27,31 @@ const os = require("os");
 const crypto = require("crypto");
 
 const { pool, initDb } = require("./db");
+// =========================================================================
+// CACHÉ DE ALTO RENDIMIENTO EN MEMORIA (TTL con invalidación inmediata)
+// =========================================================================
+const memCache = {
+  store: new Map(),
+  get(key) {
+    const item = this.store.get(key);
+    if (!item) return null;
+    if (Date.now() > item.exp) {
+      this.store.delete(key);
+      return null;
+    }
+    return item.val;
+  },
+  set(key, val, ttlSeconds = 25) {
+    this.store.set(key, { val, exp: Date.now() + (ttlSeconds * 1000) });
+  },
+  del(prefix) {
+    if (!prefix) { this.store.clear(); return; }
+    for (const k of this.store.keys()) {
+      if (k.startsWith(prefix)) this.store.delete(k);
+    }
+  }
+};
+
 const { encryptValue, decryptValue } = require("./crypto-vault");
 const multer = require("multer");
 const { procesarArchivo } = require("./procesar-archivo");
@@ -481,9 +506,14 @@ app.post("/cambiar-clave", requireLogin, async (req, res) => {
 // ---------------------------------------------------------------------------
 
 app.get("/", requireLogin, async (req, res) => {
-  const { rows } = await pool.query(
-    'SELECT id, empresa, updated_at FROM companies ORDER BY empresa COLLATE "C" ASC'
-  );
+  let rows = memCache.get("companies:list");
+  if (!rows) {
+    const qRes = await pool.query(
+      'SELECT id, empresa, updated_at FROM companies ORDER BY empresa COLLATE "C" ASC'
+    );
+    rows = qRes.rows;
+    memCache.set("companies:list", rows, 25);
+  }
 
   res.render("dashboard", {
     title: "Claves Jira por empresa",
@@ -1029,41 +1059,51 @@ app.post("/empresa/:id/eliminar", requireLogin, async (req, res) => {
 
 function crearRutasDeListado({ base, tabla, vista, titulo, cfg }) {
   app.get(base, requireLogin, async (req, res) => {
-    // Consultas en paralelo para reducir latencia a la mitad
-    const [notasRes, catRes] = await Promise.all([
-      pool.query(
-        `SELECT id, categoria, titulo, updated_at, archivo_nombre, archivo_tipo,
-                LEFT(contenido, 2500) AS muestra,
-                LENGTH(contenido) AS largo,
-                (LENGTH(contenido) - LENGTH(REPLACE(contenido, chr(10), '')) + 1) AS lineas
-         FROM ${tabla}
-         WHERE eliminado_en IS NULL
-         ORDER BY categoria COLLATE "C" ASC, titulo COLLATE "C" ASC`
-      ),
-      pool.query(
-        `SELECT DISTINCT categoria FROM ${tabla} WHERE eliminado_en IS NULL ORDER BY 1 ASC`
-      ),
-    ]);
+    const cacheKey = `${tabla}:list`;
+    let cached = memCache.get(cacheKey);
+    let rows, catRows;
+    if (cached) {
+      rows = cached.rows;
+      catRows = cached.catRows;
+    } else {
+      // Consultas en paralelo para reducir latencia a la mitad
+      const [notasRes, catRes] = await Promise.all([
+        pool.query(
+          `SELECT id, categoria, titulo, updated_at, archivo_nombre, archivo_tipo,
+                  LEFT(contenido, 2500) AS muestra,
+                  LENGTH(contenido) AS largo,
+                  (LENGTH(contenido) - LENGTH(REPLACE(contenido, chr(10), '')) + 1) AS lineas
+           FROM ${tabla}
+           WHERE eliminado_en IS NULL
+           ORDER BY categoria COLLATE "C" ASC, titulo COLLATE "C" ASC`
+        ),
+        pool.query(
+          `SELECT DISTINCT categoria FROM ${tabla} WHERE eliminado_en IS NULL ORDER BY 1 ASC`
+        ),
+      ]);
 
-    const rows = notasRes.rows;
-    const catRows = catRes.rows;
+      rows = notasRes.rows;
+      catRows = catRes.rows;
 
-    rows.forEach((r) => {
-      r.es_excel = esExcel(r.archivo_tipo);
-      r.es_pdf = (r.archivo_tipo || "").toLowerCase() === "pdf";
-      r.es_sql =
-        !r.es_excel &&
-        !r.es_pdf &&
-        pareceSql({
-          contenido: r.muestra,
-          archivo_tipo: r.archivo_tipo,
-          categoria: r.categoria,
-          titulo: r.titulo,
-        });
-      r.largo = Number(r.largo);
-      r.lineas = Number(r.lineas);
-      delete r.muestra;
-    });
+      rows.forEach((r) => {
+        r.es_excel = esExcel(r.archivo_tipo);
+        r.es_pdf = (r.archivo_tipo || "").toLowerCase() === "pdf";
+        r.es_sql =
+          !r.es_excel &&
+          !r.es_pdf &&
+          pareceSql({
+            contenido: r.muestra,
+            archivo_tipo: r.archivo_tipo,
+            categoria: r.categoria,
+            titulo: r.titulo,
+          });
+        r.largo = Number(r.largo);
+        r.lineas = Number(r.lineas);
+        delete r.muestra;
+      });
+
+      memCache.set(cacheKey, { rows, catRows }, 25);
+    }
 
     res.render(vista, {
       title: titulo,

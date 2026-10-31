@@ -5852,6 +5852,27 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
     box-shadow: 0 6px 22px rgba(245, 158, 11, 0.6) !important;
     filter: brightness(1.08);
   }
+
+  /* =========================================================================
+     VIEW TRANSITIONS NATIVAS: NAVEGACIÓN INSTANTÁNEA Y SUAVE ENTRE MÓDULOS
+     ========================================================================= */
+  @view-transition {
+    navigation: auto;
+  }
+  ::view-transition-old(root) {
+    animation: 90ms cubic-bezier(0.4, 0, 1, 1) both bovedaFadeOut;
+  }
+  ::view-transition-new(root) {
+    animation: 140ms cubic-bezier(0, 0, 0.2, 1) both bovedaFadeIn;
+  }
+  @keyframes bovedaFadeOut {
+    from { opacity: 1; transform: translateY(0); }
+    to { opacity: 0; transform: translateY(-2px); }
+  }
+  @keyframes bovedaFadeIn {
+    from { opacity: 0; transform: translateY(2px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
 </style>
 </head>
 <%
@@ -5887,6 +5908,10 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
   data-active-module-icon="<%= activeItem.badgeIcon || '⚡' %>"
   data-active-module-cls="<%= activeItem.badgeCls || 'db-orb-pg' %>"
   data-active-module-href="<%= activeItem.h %>">
+
+<!-- Barra de Progreso Láser Turbo (Respuesta Táctil Inmediata) -->
+<div id="turboLaserBar" style="position:fixed; top:0; left:0; height:2.5px; width:0%; background:linear-gradient(90deg, #00f5ff, #38bdf8, #00f5ff); box-shadow:0 0 10px #00f5ff, 0 0 4px #38bdf8; z-index:999999; pointer-events:none; transition:width 0.2s ease, opacity 0.2s ease; opacity:0;"></div>
+
   <%
     var clockBox = '<div class="clock" id="clock" role="timer" aria-label="Hora y fecha actual"><svg class="face" viewBox="0 0 44 44" aria-hidden="true"><circle class="ring" cx="22" cy="22" r="20"/><line class="tick" x1="22" y1="4.5" x2="22" y2="7.5"/><line class="tick" x1="39.5" y1="22" x2="36.5" y2="22"/><line class="tick" x1="22" y1="39.5" x2="22" y2="36.5"/><line class="tick" x1="4.5" y1="22" x2="7.5" y2="22"/><line class="hand h" id="ckHh" x1="22" y1="22" x2="22" y2="12" stroke-width="2.6"/><line class="hand m" id="ckHm" x1="22" y1="22" x2="22" y2="8" stroke-width="1.8"/><line class="hand s" id="ckHs" x1="22" y1="25" x2="22" y2="6.5"/><circle class="pin" cx="22" cy="22" r="1.9"/></svg><div class="clock-txt"><div class="clock-time"><span id="ckH">--</span><i>:</i><span id="ckM">--</span><i>:</i><span id="ckS">--</span><small id="ckA" style="display:none;"></small></div><div class="clock-date" id="ckD"></div></div></div>';
     var themeBtn = '<button type="button" class="theme-toggle" id="themeToggle" title="Alternar claro / oscuro" aria-label="Alternar tema claro/oscuro"><svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path></svg><svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"></path></svg></button>';
@@ -6180,10 +6205,10 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
     <div class="topbar-left">
       <div class="topbar-ver-update-group" style="display:inline-flex; align-items:center; gap:6px; flex-wrap:wrap;">
         <!-- Insignia Holográfica de Versión del Sistema (Visible en todo el programa) -->
-        <div class="cyber-version-pill" data-title="Suite Bóveda Jira · Versión activa: <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.10.2') %>" title="Suite Bóveda Jira · Versión <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.10.2') %>">
+        <div class="cyber-version-pill" data-title="Suite Bóveda Jira · Versión activa: <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.10.3') %>" title="Suite Bóveda Jira · Versión <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.10.3') %>">
           <span class="cvp-icon"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></span>
           <span class="cvp-lbl">BUILD</span>
-          <strong class="cvp-ver"><%= typeof appVersion !== 'undefined' ? appVersion : 'v2.10.2' %></strong>
+          <strong class="cvp-ver"><%= typeof appVersion !== 'undefined' ? appVersion : 'v2.10.3' %></strong>
           <% if (typeof gitCommit !== 'undefined' && gitCommit) { %><span class="cvp-commit" style="font-size:10px; opacity:0.75; font-family:var(--mono); margin-left:3px;">(<%= gitCommit %>)</span><% } %>
           <span class="cvp-pulse"></span>
         </div>
@@ -7872,7 +7897,7 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
             </div>
             <div class="gub-info">
               <div class="gub-branch" style="color:#10b981;">✅ Sistema Sincronizado y Estable</div>
-              <div class="gub-desc">Tu versión actual (<%= typeof appVersion !== "undefined" ? appVersion : "v2.10.2" %>) cuenta con todas las mejoras y parches más recientes publicados en GitHub. No hay versiones ni cambios nuevos pendientes de descargar.</div>
+              <div class="gub-desc">Tu versión actual (<%= typeof appVersion !== "undefined" ? appVersion : "v2.10.3" %>) cuenta con todas las mejoras y parches más recientes publicados en GitHub. No hay versiones ni cambios nuevos pendientes de descargar.</div>
             </div>
           </div>
           <div style="padding: 12px 14px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; font-size: 12.5px; color: var(--muted); line-height: 1.45;">
@@ -8059,7 +8084,7 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
                 // Estado: Al día (0 cambios)
                 if (bguBadge) bguBadge.style.display = 'none';
                 if (modalIcon) modalIcon.textContent = '✨';
-                if (modalTitle) modalTitle.textContent = 'Sistema al Día (' + (data.version ? 'v' + data.version : '<%= typeof appVersion !== "undefined" ? appVersion : "v2.10.2" %>') + (data.commit ? ' · ' + data.commit : '') + ')';
+                if (modalTitle) modalTitle.textContent = 'Sistema al Día (' + (data.version ? 'v' + data.version : '<%= typeof appVersion !== "undefined" ? appVersion : "v2.10.3" %>') + (data.commit ? ' · ' + data.commit : '') + ')';
                 if (modalSubtitle) modalSubtitle.textContent = 'No existen versiones o cambios nuevos disponibles';
                 if (viewPending) viewPending.style.display = 'none';
                 if (viewUpToDate) viewUpToDate.style.display = 'block';
@@ -8693,5 +8718,92 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
       }
     })();
   </script>
+
+<!-- MOTOR TURBO SPEED: PRE-FETCHING INTELIGENTE AL PASAR EL RATÓN (0ms lag) -->
+<script>
+(function(){
+  var preloaded = new Set();
+  var hoverTimer = null;
+
+  function prefetchUrl(url) {
+    if (!url || preloaded.has(url)) return;
+    try {
+      var u = new URL(url, window.location.origin);
+      if (u.origin !== window.location.origin) return;
+      var path = u.pathname;
+      if (path === window.location.pathname) return;
+      if (/(\/logout|\/archivo|\/pdf|\/hoja|\/descargar|\.sql$|\.xlsx$|\.zip$)/i.test(path)) return;
+      preloaded.add(url);
+
+      var l = document.createElement('link');
+      l.rel = 'prefetch';
+      l.href = url;
+      l.as = 'document';
+      document.head.appendChild(l);
+
+      if (window.fetch) {
+        fetch(url, { priority: 'low', credentials: 'same-origin' }).catch(function(){});
+      }
+    } catch(e){}
+  }
+
+  // Detectar intención de navegación al pasar el cursor (65ms para evitar falsos positivos)
+  document.addEventListener('pointerover', function(e){
+    var a = e.target.closest('a[href], .dock-item[href], .cyber-dock-item[href]');
+    if (!a) return;
+    var href = a.getAttribute('href');
+    if (!href || href.startsWith('#') || href.startsWith('javascript:')) return;
+    clearTimeout(hoverTimer);
+    hoverTimer = setTimeout(function(){
+      prefetchUrl(href);
+    }, 65);
+  }, { passive: true });
+
+  document.addEventListener('pointerout', function(){
+    clearTimeout(hoverTimer);
+  }, { passive: true });
+
+  // En pantallas táctiles: precargar en el instante que el dedo toca la pantalla
+  document.addEventListener('touchstart', function(e){
+    var a = e.target.closest('a[href], .dock-item[href], .cyber-dock-item[href]');
+    if (a) {
+      var href = a.getAttribute('href');
+      if (href && !href.startsWith('#')) prefetchUrl(href);
+    }
+  }, { passive: true });
+
+  // Respuesta visual instantánea al hacer clic (Láser de Progreso)
+  var laser = document.getElementById('turboLaserBar');
+  document.addEventListener('click', function(e){
+    var a = e.target.closest('a[href]');
+    if (!a) return;
+    var href = a.getAttribute('href');
+    if (!href || href.startsWith('#') || href.startsWith('javascript:') || a.target === '_blank' || a.hasAttribute('download')) return;
+    if (href.indexOf('/logout') >= 0) return;
+
+    if (laser) {
+      laser.style.transition = 'none';
+      laser.style.width = '0%';
+      laser.style.opacity = '1';
+      setTimeout(function(){
+        laser.style.transition = 'width 0.25s cubic-bezier(0.1, 0.9, 0.2, 1)';
+        laser.style.width = '75%';
+      }, 10);
+    }
+  });
+
+  window.addEventListener('pageshow', function(){
+    if (laser) {
+      laser.style.transition = 'width 0.15s ease, opacity 0.2s ease';
+      laser.style.width = '100%';
+      setTimeout(function(){
+        laser.style.opacity = '0';
+        setTimeout(function(){ laser.style.width = '0%'; }, 200);
+      }, 120);
+    }
+  });
+})();
+</script>
+
 </body>
 </html>

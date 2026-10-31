@@ -116,3 +116,11 @@ CREATE TABLE IF NOT EXISTS biometria_credenciales (
 CREATE INDEX IF NOT EXISTS idx_biometria_user_id ON biometria_credenciales(user_id);
 CREATE INDEX IF NOT EXISTS idx_biometria_credential_id ON biometria_credenciales(credential_id);
 
+
+
+-- Índices optimizados para aceleración de consultas (Turbo Speed)
+CREATE INDEX IF NOT EXISTS idx_companies_empresa_collate ON companies (empresa COLLATE "C" ASC);
+CREATE INDEX IF NOT EXISTS idx_notas_cat_tit ON notas (categoria COLLATE "C" ASC, titulo COLLATE "C" ASC);
+CREATE INDEX IF NOT EXISTS idx_jaivana_cat_tit ON jaivana_notas (categoria COLLATE "C" ASC, titulo COLLATE "C" ASC);
+CREATE INDEX IF NOT EXISTS idx_notas_no_del ON notas (eliminado_en) WHERE eliminado_en IS NULL;
+CREATE INDEX IF NOT EXISTS idx_jaivana_no_del ON jaivana_notas (eliminado_en) WHERE eliminado_en IS NULL;
