@@ -124,3 +124,8 @@ CREATE INDEX IF NOT EXISTS idx_notas_cat_tit ON notas (categoria COLLATE "C" ASC
 CREATE INDEX IF NOT EXISTS idx_jaivana_cat_tit ON jaivana_notas (categoria COLLATE "C" ASC, titulo COLLATE "C" ASC);
 CREATE INDEX IF NOT EXISTS idx_notas_no_del ON notas (eliminado_en) WHERE eliminado_en IS NULL;
 CREATE INDEX IF NOT EXISTS idx_jaivana_no_del ON jaivana_notas (eliminado_en) WHERE eliminado_en IS NULL;
+
+
+-- Contador de copias para medidor de frecuencia y empresas más usadas
+ALTER TABLE companies ADD COLUMN IF NOT EXISTS copias_count INTEGER NOT NULL DEFAULT 0;
+CREATE INDEX IF NOT EXISTS idx_companies_copias ON companies (copias_count DESC);

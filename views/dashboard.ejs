@@ -704,6 +704,231 @@
     transform: translateY(-1px);
   }
 
+
+  /* =========================================================================
+     CINTA BENTO: EMPRESAS MÁS FRECUENTES / TOP MÁS COPIADAS
+     ========================================================================= */
+  .top-frecuentes-ribbon {
+    margin-bottom: 16px;
+    padding: 16px 18px;
+    background: rgba(14, 18, 30, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    backdrop-filter: blur(14px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+  }
+  .tfr-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .tfr-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 0.01em;
+  }
+  .tfr-flame-icon {
+    font-size: 16px;
+    filter: drop-shadow(0 0 6px rgba(245, 158, 11, 0.7));
+    animation: flamePulse 2s ease-in-out infinite alternate;
+  }
+  @keyframes flamePulse {
+    from { transform: scale(1); filter: drop-shadow(0 0 4px rgba(245, 158, 11, 0.6)); }
+    to { transform: scale(1.15); filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.9)); }
+  }
+  .tfr-sub-badge {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: rgba(245, 158, 11, 0.15);
+    border: 1px solid rgba(245, 158, 11, 0.4);
+    color: #fbbf24;
+  }
+  .tfr-legend {
+    font-size: 11.5px;
+    color: var(--muted);
+  }
+  .tfr-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 12px;
+  }
+  .tfr-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    overflow: hidden;
+  }
+  .tfr-card:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(245, 158, 11, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 16px rgba(245, 158, 11, 0.2);
+  }
+  .tfr-card-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .tfr-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(245, 158, 11, 0.12);
+    border: 1.5px solid rgba(245, 158, 11, 0.7);
+    color: #fbbf24;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 800;
+    box-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
+    flex-shrink: 0;
+  }
+  .tfr-info {
+    min-width: 0;
+    flex: 1;
+  }
+  .tfr-name {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .tfr-stats {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11.5px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  .tfr-stats .tfr-copies {
+    color: #fbbf24;
+    font-weight: 600;
+  }
+  .tfr-rank {
+    font-size: 10px;
+    font-weight: 800;
+    padding: 1px 6px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--muted);
+  }
+  .tfr-heat-bar {
+    width: 100%;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .tfr-heat-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #f59e0b, #ef4444);
+    box-shadow: 0 0 8px rgba(245, 158, 11, 0.7);
+    transition: width 0.3s ease;
+  }
+  .tfr-btn-copy {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 8px;
+    background: rgba(14, 165, 233, 0.14);
+    border: 1px solid rgba(56, 189, 248, 0.45);
+    color: #38bdf8;
+    cursor: pointer;
+    transition: all 0.18s ease;
+  }
+  .tfr-btn-copy svg {
+    width: 13px;
+    height: 13px;
+    stroke: currentColor;
+    stroke-width: 2;
+    fill: none;
+  }
+  .tfr-btn-copy:hover {
+    background: rgba(14, 165, 233, 0.28);
+    border-color: #38bdf8;
+    box-shadow: 0 0 14px rgba(56, 189, 248, 0.5);
+    transform: translateY(-1px);
+  }
+  .tfr-btn-copy.btn-copied {
+    background: rgba(16, 185, 129, 0.25) !important;
+    border-color: #10b981 !important;
+    color: #34d399 !important;
+    box-shadow: 0 0 16px rgba(16, 185, 129, 0.6) !important;
+  }
+
+  /* INSIGNIA DE CALOR EN CADA FILA DE EMPRESA */
+  .row-heat-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 7px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    background: rgba(245, 158, 11, 0.12);
+    border: 1px solid rgba(245, 158, 11, 0.4);
+    color: #fbbf24;
+    margin-left: 6px;
+    vertical-align: middle;
+    transition: all 0.2s ease;
+  }
+  .row-heat-badge.bump {
+    animation: badgeBump 0.35s ease;
+  }
+  @keyframes badgeBump {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.3); filter: drop-shadow(0 0 10px #f59e0b); }
+    100% { transform: scale(1); }
+  }
+
+  /* PÍLDORA DE FILTRO MÁS USADAS */
+  .efb-btn.efb-top-usadas {
+    border: 1.5px solid rgba(245, 158, 11, 0.55) !important;
+    box-shadow: 0 0 14px rgba(245, 158, 11, 0.35) !important;
+    color: #fbbf24 !important;
+  }
+  .efb-btn.efb-top-usadas .efb-flame {
+    font-size: 13px;
+    filter: drop-shadow(0 0 4px rgba(245, 158, 11, 0.8));
+  }
+  .efb-btn.efb-top-usadas:hover,
+  .efb-btn.efb-top-usadas.active {
+    background: rgba(245, 158, 11, 0.22) !important;
+    border-color: #f59e0b !important;
+    color: #fde68a !important;
+    box-shadow: 0 0 24px rgba(245, 158, 11, 0.8), inset 0 0 10px rgba(245, 158, 11, 0.3) !important;
+  }
+  .efb-btn.efb-top-usadas.active .efb-count {
+    background: #f59e0b !important;
+    color: #040711 !important;
+    font-weight: 800;
+  }
+
 </style>
 
 <div x-data="bovedaAlpineApp()">
@@ -918,6 +1143,49 @@
   });
 %>
 
+
+<% if (typeof topFrecuentes !== 'undefined' && topFrecuentes && topFrecuentes.length > 0) { %>
+<!-- CINTA BENTO: EMPRESAS MÁS FRECUENTES (TOP COPIADAS) -->
+<div class="top-frecuentes-ribbon" id="topFrecuentesRibbon">
+  <div class="tfr-header">
+    <div class="tfr-title">
+      <span class="tfr-flame-icon">🔥</span>
+      <span>Empresas Más Frecuentes</span>
+      <span class="tfr-sub-badge">Acceso en 1 clic</span>
+    </div>
+    <span class="tfr-legend">Basado en tus claves más copiadas</span>
+  </div>
+  <div class="tfr-grid">
+    <% 
+      var maxCopias = Math.max.apply(null, topFrecuentes.map(function(t){ return t.copias_count || 1; })) || 1;
+      topFrecuentes.forEach(function(item, idx) { 
+        var pct = Math.min(Math.round(((item.copias_count || 0) / maxCopias) * 100), 100);
+    %>
+    <div class="tfr-card" data-id="<%= item.id %>" data-name="<%= item.empresa %>">
+      <div class="tfr-card-top">
+        <div class="tfr-avatar"><%= (item.empresa || '?').charAt(0).toUpperCase() %></div>
+        <div class="tfr-info">
+          <div class="tfr-name" title="<%= item.empresa %>"><%= item.empresa %></div>
+          <div class="tfr-stats">
+            <span class="tfr-flame">🔥</span>
+            <span class="tfr-copies" id="top-copies-<%= item.id %>"><%= item.copias_count %> copias</span>
+            <span class="tfr-rank">#<%= idx + 1 %></span>
+          </div>
+        </div>
+      </div>
+      <div class="tfr-heat-bar">
+        <div class="tfr-heat-fill" style="width: <%= pct %>%;"></div>
+      </div>
+      <button type="button" class="tfr-btn-copy" onclick="copiarClaveDirecta(<%= item.id %>, '<%= item.empresa.replace(/'/g, '\\\'') %>', this)" title="Copiar clave de <%= item.empresa %>">
+        <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+        <span>Copiar clave</span>
+      </button>
+    </div>
+    <% }); %>
+  </div>
+</div>
+<% } %>
+
 <!-- Barra de Filtros de Vencimiento Mensual y Ordenamiento -->
 <div class="expiration-filter-bar">
   <div class="efb-pills" id="efbPills">
@@ -945,6 +1213,7 @@
   <div class="efb-sort">
     <label for="sortEmpresas" class="efb-sort-lbl"><svg viewBox="0 0 24 24"><path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="m21 8-4-4-4 4"/><path d="M17 4v16"/></svg>Ordenar:</label>
     <select id="sortEmpresas" class="efb-select" style="display:none;">
+      <option value="copias-desc">🔥 Más copiadas (Mayor a menor)</option>
       <option value="nombre-asc">Nombre (A → Z)</option>
       <option value="nombre-desc">Nombre (Z → A)</option>
       <option value="vencimiento-asc">Vencidas y por vencer primero</option>
@@ -1027,7 +1296,7 @@
     var hue = (charCode * 15) % 360; 
     var empInfo = c._meta || parseEmpMeta(c);
   %>
-  <div class="row <%= empInfo.estado %>" data-name="<%= c.empresa.toLowerCase() %>" data-id="<%= c.id %>" data-estado="<%= empInfo.estado %>" data-dias="<%= empInfo.dias %>" data-fecha="<%= empInfo.timestamp %>" style="animation-delay:<%= Math.min(idx, 12) * 30 %>ms">
+  <div class="row <%= empInfo.estado %>" data-name="<%= c.empresa.toLowerCase() %>" data-id="<%= c.id %>" data-estado="<%= empInfo.estado %>" data-dias="<%= empInfo.dias %>" data-fecha="<%= empInfo.timestamp %>" data-copias="<%= c.copias_count || 0 %>" style="animation-delay:<%= Math.min(idx, 12) * 30 %>ms">
     <div class="main">
       <div class="name">
         <button type="button" class="iconbtn favbtn" id="fav-<%= c.id %>" onclick="toggleFav(<%= c.id %>)" title="Marcar como favorito (anclar arriba)" style="padding:0; width:28px; height:28px; background:none; border:none; box-shadow:none;">
@@ -1241,7 +1510,11 @@ window.bovedaAlpineApp = function() {
         const name = (row.getAttribute('data-name') || '').toLowerCase();
         const estado = row.getAttribute('data-estado') || 'vigente';
         const matchQ = !q || name.includes(q);
-        const matchFiltro = (this.filtroVencimiento === 'all') || (estado === this.filtroVencimiento);
+        const copias = parseInt(row.getAttribute('data-copias'), 10) || 0;
+        let matchFiltro = false;
+        if (this.filtroVencimiento === 'all') matchFiltro = true;
+        else if (this.filtroVencimiento === 'top') matchFiltro = (copias > 0);
+        else matchFiltro = (estado === this.filtroVencimiento);
 
         if (matchQ && matchFiltro) {
           row.style.display = '';
@@ -1290,7 +1563,11 @@ window.bovedaAlpineApp = function() {
       var name = (row.getAttribute('data-name') || '').toLowerCase();
       var estado = row.getAttribute('data-estado') || 'vigente';
       var matchQ = !q || name.includes(q);
-      var matchFilter = (currentFilter === 'all') || (estado === currentFilter);
+      var copias = parseInt(row.getAttribute('data-copias'), 10) || 0;
+      var matchFilter = false;
+      if (currentFilter === 'all') matchFilter = true;
+      else if (currentFilter === 'top') matchFilter = (copias > 0);
+      else matchFilter = (estado === currentFilter);
 
       if (matchQ && matchFilter) {
         row.style.display = '';
@@ -1367,6 +1644,9 @@ window.bovedaAlpineApp = function() {
         var fechaA = parseInt(a.getAttribute('data-fecha'), 10) || 0;
         var fechaB = parseInt(b.getAttribute('data-fecha'), 10) || 0;
 
+        var copiasA = parseInt(a.getAttribute('data-copias'), 10) || 0;
+        var copiasB = parseInt(b.getAttribute('data-copias'), 10) || 0;
+        if (mode === 'copias-desc') return copiasB - copiasA;
         if (mode === 'nombre-asc') return nameA.localeCompare(nameB, 'es');
         if (mode === 'nombre-desc') return nameB.localeCompare(nameA, 'es');
         if (mode === 'vencimiento-asc') return diasB - diasA; // Vencidas (>30 días) primero
@@ -2134,6 +2414,44 @@ if (btnCerrarAuditoria) btnCerrarAuditoria.addEventListener('click', function() 
 });
 
 
+
+async function copiarClaveDirecta(id, empresa, btn) {
+  if (btn) {
+    btn.classList.add('btn-copied');
+    var span = btn.querySelector('span');
+    if (span) span.textContent = '¡Copiada!';
+    setTimeout(function(){ 
+      btn.classList.remove('btn-copied'); 
+      if (span) span.textContent = 'Copiar clave';
+    }, 1500);
+  }
+  await copyPassword(id);
+}
+
+function registrarCopiaEmpresa(id) {
+  fetch('/empresa/' + id + '/registrar-copia', { method: 'POST' })
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      if (data && data.ok) {
+        var n = data.copias_count;
+        var row = document.querySelector('.row[data-id="' + id + '"]');
+        if (row) row.setAttribute('data-copias', n);
+        var badge = document.getElementById('heat-badge-' + id);
+        if (badge) {
+          badge.style.display = 'inline-flex';
+          var num = badge.querySelector('.rhb-num');
+          if (num) num.textContent = n;
+          badge.classList.remove('bump');
+          void badge.offsetWidth;
+          badge.classList.add('bump');
+        }
+        var topCopy = document.getElementById('top-copies-' + id);
+        if (topCopy) topCopy.textContent = n + ' copias';
+      }
+    })
+    .catch(function(){});
+}
+
 async function copyPassword(id){
   let clave = revealedState[id] && revealedState[id].value;
   if (!clave){
@@ -2153,6 +2471,7 @@ async function copyPassword(id){
     document.body.removeChild(ta);
   }
   showToast('Clave de «' + nombreDe(id) + '» copiada');
+  registrarCopiaEmpresa(id);
 }
 
 async function copyAsSql(id){

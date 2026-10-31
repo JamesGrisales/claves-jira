@@ -510,16 +510,38 @@ app.get("/", requireLogin, async (req, res) => {
   let rows = memCache.get("companies:list");
   if (!rows) {
     const qRes = await pool.query(
-      'SELECT id, empresa, updated_at FROM companies ORDER BY empresa COLLATE "C" ASC'
+      'SELECT id, empresa, updated_at, COALESCE(copias_count, 0)::int AS copias_count FROM companies ORDER BY empresa COLLATE "C" ASC'
     );
     rows = qRes.rows;
     memCache.set("companies:list", rows, 25);
   }
 
+  const topFrecuentes = [...rows]
+    .filter(r => (r.copias_count || 0) > 0)
+    .sort((a, b) => (b.copias_count || 0) - (a.copias_count || 0))
+    .slice(0, 4);
+
   res.render("dashboard", {
     title: "Claves Jira por empresa",
     companies: rows,
+    topFrecuentes,
   });
+});
+
+
+app.post("/empresa/:id/registrar-copia", requireLogin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { rows } = await pool.query(
+      "UPDATE companies SET copias_count = COALESCE(copias_count, 0) + 1 WHERE id = $1 RETURNING copias_count",
+      [id]
+    );
+    memCache.del("companies");
+    res.json({ ok: true, copias_count: rows[0] ? rows[0].copias_count : 1 });
+  } catch (e) {
+    console.error("Error registrando copia:", e.message);
+    res.status(500).json({ ok: false, error: e.message });
+  }
 });
 
 app.get("/empresa/:id/clave", requireLogin, async (req, res) => {
