@@ -303,6 +303,14 @@
   :root[data-theme="dark"] .a-b.p { color:#ffc46b; background:#3a2c12; }
   .ver { font-family:var(--mono); font-size:11.5px; color:var(--muted); }
 
+  /* ---------- Casillas con X para Si/No (Sección 2) ---------- */
+  .ticket-pill-group { display: flex; gap: 8px; align-items: center; margin-top: 3px; }
+  .btn-ticket-pill { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 9px; background: var(--panel-alt, #151d2a); border: 1px solid var(--panel-edge, #233247); color: var(--text, #e2e8f0); padding: 8px 14px; border-radius: 9px; font-size: 13.5px; font-weight: 700; cursor: pointer; transition: all 0.18s ease; user-select: none; height: 38px; }
+  .btn-ticket-pill:hover { border-color: var(--accent, #00d4ff); background: rgba(0, 212, 255, 0.08); }
+  .btn-ticket-pill.active { background: linear-gradient(135deg, rgba(0, 212, 255, 0.18), rgba(0, 168, 255, 0.08)); border-color: var(--accent, #00d4ff); color: #38bdf8; box-shadow: 0 0 14px rgba(0, 212, 255, 0.28); }
+  .ticket-box { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 5px; border: 1.5px solid var(--panel-edge, #334155); background: rgba(0, 0, 0, 0.25); font-weight: 900; font-size: 13px; line-height: 1; color: #38bdf8; transition: all 0.18s ease; }
+  .btn-ticket-pill.active .ticket-box { border-color: var(--accent, #00d4ff); background: rgba(0, 212, 255, 0.2); box-shadow: 0 0 8px rgba(0, 212, 255, 0.4); }
+
 </style>
 
 <div>
@@ -405,11 +413,25 @@
 
     <div class="card bloque">
       <h2><span class="n">2</span> ¿Se generó ticket en mesa de ayuda?</h2>
-      <div class="dos">
-        <label class="campo"><span>Respuesta</span>
-          <select id="ticket"><option value="Si">Si</option><option value="No">No</option></select>
+      <div class="dos" style="align-items:flex-end;">
+        <div class="campo">
+          <span>Respuesta (marca con X)</span>
+          <input type="hidden" id="ticket" value="Si">
+          <div class="ticket-pill-group" role="radiogroup" aria-label="¿Se generó ticket en mesa de ayuda?">
+            <button type="button" class="btn-ticket-pill active" id="btnTicketSi" onclick="elegirTicket('Si')">
+              <span class="ticket-box">X</span>
+              <span>Si</span>
+            </button>
+            <button type="button" class="btn-ticket-pill" id="btnTicketNo" onclick="elegirTicket('No')">
+              <span class="ticket-box">&nbsp;</span>
+              <span>No</span>
+            </button>
+          </div>
+        </div>
+        <label class="campo">
+          <span>Número del ticket</span>
+          <input type="text" id="numeroTicket" maxlength="60" placeholder="Ej: 2546">
         </label>
-        <label class="campo"><span>Número del ticket</span><input type="text" id="numeroTicket" maxlength="60"></label>
       </div>
     </div>
 
@@ -1247,7 +1269,9 @@ function pintar(d){
   $('fecha').value = d.fecha; $('hora').value = d.hora; $('horaFormato').value = d.horaFormato || 'word';
   pintarFilas(d.filas);
   $('observaciones').value = d.observaciones || ''; contarObs();
-  $('ticket').value = d.ticket === 'No' ? 'No' : 'Si'; $('numeroTicket').value = d.numeroTicket || '';
+  $('ticket').value = d.ticket === 'No' ? 'No' : 'Si';
+  actualizarBotonesTicket($('ticket').value);
+  $('numeroTicket').value = d.numeroTicket || '';
   var r = d.resumen || {};
   $('r_empresas').value = r.empresas || ''; $('r_aceptados').value = r.aceptados || '';
   $('r_pendientes').value = r.pendientes || ''; $('r_escalados').value = r.escalados || ''; $('r_tickets').value = r.tickets || '';
@@ -1256,6 +1280,35 @@ function pintar(d){
   aplicarAuto();
 }
 
+
+function actualizarBotonesTicket(val){
+  var esNo = String(val || '').toLowerCase().trim() === 'no';
+  var btnSi = $('btnTicketSi');
+  var btnNo = $('btnTicketNo');
+  if (btnSi && btnNo) {
+    if (esNo) {
+      btnSi.classList.remove('active');
+      var boxSi = btnSi.querySelector('.ticket-box');
+      if (boxSi) boxSi.innerHTML = '&nbsp;';
+      btnNo.classList.add('active');
+      var boxNo = btnNo.querySelector('.ticket-box');
+      if (boxNo) boxNo.textContent = 'X';
+    } else {
+      btnSi.classList.add('active');
+      var boxSi = btnSi.querySelector('.ticket-box');
+      if (boxSi) boxSi.textContent = 'X';
+      btnNo.classList.remove('active');
+      var boxNo = btnNo.querySelector('.ticket-box');
+      if (boxNo) boxNo.innerHTML = '&nbsp;';
+    }
+  }
+}
+function elegirTicket(val){
+  var input = $('ticket');
+  if (input) input.value = val === 'No' ? 'No' : 'Si';
+  actualizarBotonesTicket(input ? input.value : val);
+  cambio();
+}
 function contarObs(){ $('obsCnt').textContent = $('observaciones').value.length + ' / 3000'; }
 function guardar(){ try { localStorage.setItem(KEY, JSON.stringify(leer())); } catch (e) {} }
 

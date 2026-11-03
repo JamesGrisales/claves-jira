@@ -261,29 +261,53 @@ function generarInformePdf(datos) {
         referencia = ultima - 5; // el siguiente bloque conserva la separación normal
       }
 
-      // 2. ¿Se generó ticket en mesa de ayuda?
-      let base2 = referencia + 39.25;
-      if (base2 + 148.75 > LIMITE - 5) {
+      // 2. ¿Se generó ticket en mesa de ayuda? (Formato con X y número de ticket al lado)
+      let base2 = referencia + 26;
+      if (base2 + 55 > LIMITE - 5) {
         nuevaPagina();
         base2 = BASE_TITULO_PAG_NUEVA;
       }
       texto(doc, "2.", 103.2, base2, SANS_B, 12);
       texto(doc, "¿Se generó ticket en mesa de ayuda?", 121.2, base2, SANS_B, 12);
 
-      // Respuesta subrayada (Si / No)
-      const baseSi = base2 + 36.75;
-      texto(doc, d.ticket, 85.2, baseSi, SANS, 12);
-      const finSi = Math.max(135.3, 85.2 + ancho(doc, d.ticket, SANS, 12) + 6);
-      linea(doc, 85.2 + ancho(doc, d.ticket, SANS, 12), baseSi + 0.6, finSi, baseSi + 0.6, 0.6);
+      // Fila con opciones Si ( X )  No (   )  y número del ticket al lado
+      const baseFila = base2 + 22;
+      const esNo = String(d.ticket || "").toLowerCase().trim() === "no";
+      const marcaSi = esNo ? "" : "X";
+      const marcaNo = esNo ? "X" : "";
 
-      // Número del ticket
-      const baseNum = baseSi + 84;
-      texto(doc, "número del", 85.2, baseNum, SANS, 12);
-      texto(doc, "ticket", 85.2, baseNum + 28, SANS, 12);
-      const xNum = 85.2 + ancho(doc, "ticket", SANS, 12) + 6;
-      const wNum = ancho(doc, d.numeroTicket, SANS, 12);
-      if (d.numeroTicket) texto(doc, d.numeroTicket, xNum + 3, baseNum + 28, SANS, 12);
-      linea(doc, xNum, baseNum + 28.6, xNum + Math.max(60, wNum + 8), baseNum + 28.6, 0.6);
+      let curX = 103.2;
+
+      // Si ( X )
+      texto(doc, "Si", curX, baseFila, SANS, 12);
+      curX += ancho(doc, "Si", SANS, 12) + 6;
+      texto(doc, "(", curX, baseFila, SANS, 12);
+      if (marcaSi) {
+        texto(doc, marcaSi, curX + 4.5, baseFila, SANS_B, 12);
+      }
+      texto(doc, ")", curX + 16, baseFila, SANS, 12);
+      curX += 28;
+
+      // No (   )
+      texto(doc, "No", curX, baseFila, SANS, 12);
+      curX += ancho(doc, "No", SANS, 12) + 6;
+      texto(doc, "(", curX, baseFila, SANS, 12);
+      if (marcaNo) {
+        texto(doc, marcaNo, curX + 4.5, baseFila, SANS_B, 12);
+      }
+      texto(doc, ")", curX + 16, baseFila, SANS, 12);
+      curX += 34;
+
+      // Número del ticket al lado
+      texto(doc, "número del ticket", curX, baseFila, SANS, 12);
+      curX += ancho(doc, "número del ticket", SANS, 12) + 8;
+
+      const numVal = d.numeroTicket || "";
+      if (numVal) {
+        texto(doc, numVal, curX + 3, baseFila, SANS, 12);
+      }
+      const finLinea = Math.max(curX + 85, curX + ancho(doc, numVal, SANS, 12) + 14);
+      linea(doc, curX, baseFila + 0.6, finLinea, baseFila + 0.6, 0.6);
 
       // ============================ RESUMEN ================================
       nuevaPagina();
