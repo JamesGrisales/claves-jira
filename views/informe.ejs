@@ -310,6 +310,7 @@
   .btn-ticket-pill.active { background: linear-gradient(135deg, rgba(0, 212, 255, 0.18), rgba(0, 168, 255, 0.08)); border-color: var(--accent, #00d4ff); color: #38bdf8; box-shadow: 0 0 14px rgba(0, 212, 255, 0.28); }
   .ticket-box { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 5px; border: 1.5px solid var(--panel-edge, #334155); background: rgba(0, 0, 0, 0.25); font-weight: 900; font-size: 13px; line-height: 1; color: #38bdf8; transition: all 0.18s ease; }
   .btn-ticket-pill.active .ticket-box { border-color: var(--accent, #00d4ff); background: rgba(0, 212, 255, 0.2); box-shadow: 0 0 8px rgba(0, 212, 255, 0.4); }
+  .btn-ticket-pill * { pointer-events: none; }
 
 </style>
 
@@ -418,11 +419,11 @@
           <span>Respuesta (marca con X)</span>
           <input type="hidden" id="ticket" value="Si">
           <div class="ticket-pill-group" role="radiogroup" aria-label="¿Se generó ticket en mesa de ayuda?">
-            <button type="button" class="btn-ticket-pill active" id="btnTicketSi" onclick="elegirTicket('Si')">
+            <button type="button" class="btn-ticket-pill active" id="btnTicketSi" onclick="window.elegirTicket && window.elegirTicket('Si')">
               <span class="ticket-box">X</span>
               <span>Si</span>
             </button>
-            <button type="button" class="btn-ticket-pill" id="btnTicketNo" onclick="elegirTicket('No')">
+            <button type="button" class="btn-ticket-pill" id="btnTicketNo" onclick="window.elegirTicket && window.elegirTicket('No')">
               <span class="ticket-box">&nbsp;</span>
               <span>No</span>
             </button>
@@ -1305,10 +1306,13 @@ function actualizarBotonesTicket(val){
 }
 function elegirTicket(val){
   var input = $('ticket');
-  if (input) input.value = val === 'No' ? 'No' : 'Si';
-  actualizarBotonesTicket(input ? input.value : val);
+  var nuevo = (String(val || '').toLowerCase().trim() === 'no') ? 'No' : 'Si';
+  if (input) input.value = nuevo;
+  actualizarBotonesTicket(nuevo);
   cambio();
 }
+window.elegirTicket = elegirTicket;
+window.actualizarBotonesTicket = actualizarBotonesTicket;
 function contarObs(){ $('obsCnt').textContent = $('observaciones').value.length + ' / 3000'; }
 function guardar(){ try { localStorage.setItem(KEY, JSON.stringify(leer())); } catch (e) {} }
 
@@ -1376,6 +1380,10 @@ $('abrirNueva').addEventListener('click', function(ev){
 });
 
 $('btnTraer').addEventListener('click', traerAhora);
+var bTicketSi = $('btnTicketSi');
+var bTicketNo = $('btnTicketNo');
+if (bTicketSi) bTicketSi.addEventListener('click', function(e){ e.preventDefault(); elegirTicket('Si'); });
+if (bTicketNo) bTicketNo.addEventListener('click', function(e){ e.preventDefault(); elegirTicket('No'); });
 $('a_empresas').addEventListener('change', aplicarAuto);
 $('a_aceptados').addEventListener('change', aplicarAuto);
 window.addEventListener('storage', function(e){ if (e.key === KEY_ACEPT) refrescarAuto(); });
