@@ -162,7 +162,7 @@ app.use(
     parameterLimit: 10000,
   })
 );
-app.use(express.json());
+app.use(express.json({ limit: "50mb" }));
 
 // Archivos estáticos con cache HTTP en el navegador
 app.use(express.static(path.join(__dirname, "public"), {
@@ -255,6 +255,9 @@ function flash(req, category, message) {
 
 function requireLogin(req, res, next) {
   if (!req.session.user) {
+    if (req.xhr || (req.headers.accept && req.headers.accept.includes("json")) || req.path.startsWith("/api/") || req.path.includes("/actualizar-")) {
+      return res.status(401).json({ error: "Sesión expirada. Por favor recarga la página e inicia sesión." });
+    }
     return res.redirect("/login");
   }
 
@@ -2359,7 +2362,7 @@ app.post("/informe/abrir-outlook", requireLogin, express.json({ limit: "1mb" }),
   }
 });
 
-app.post("/informe/actualizar-banner", requireLogin, express.json({ limit: "15mb" }), async (req, res) => {
+app.post("/informe/actualizar-banner", requireLogin, express.json({ limit: "50mb" }), async (req, res) => {
   try {
     const { imagenBase64, restaurar } = req.body || {};
     const fs = require("fs");
@@ -2461,6 +2464,9 @@ app.use((err, req, res, next) => {
   if (!err) return next();
 
   if (err.type === "entity.too.large") {
+    if (req.xhr || (req.headers.accept && req.headers.accept.includes("json")) || req.path.startsWith("/api/") || req.path.startsWith("/informe/")) {
+      return res.status(413).json({ error: "El archivo o imagen supera el tamaño máximo permitido." });
+    }
     flash(req, "error", "El contenido es demasiado grande para enviarlo. Sube el texto como archivo (.txt/.sql) en vez de pegarlo.");
     const vuelta = req.originalUrl.startsWith("/jaivana") ? "/jaivana" : "/notas";
     return res.redirect(vuelta);

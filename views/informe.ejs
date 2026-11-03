@@ -613,7 +613,7 @@
               <span>Banner Oficial Jaivaná</span>
               <div style="display:flex; gap:8px; align-items:center;">
                 <label for="inputSubirBanner" style="cursor:pointer; color:var(--accent); font-weight:700; text-decoration:underline; margin:0;" title="Subir una nueva imagen para el banner de la firma">📷 Cambiar Banner</label>
-                <input type="file" id="inputSubirBanner" accept="image/png,image/jpeg,image/jpg,image/webp" style="display:none;">
+                <input type="file" id="inputSubirBanner" accept="image/*" style="display:none;">
                 <button type="button" id="btnRestaurarBanner" style="background:transparent; border:none; color:var(--muted); font-size:10.5px; cursor:pointer; padding:1px 4px; text-decoration:underline;" title="Volver al banner oficial predeterminado de Jaivaná">↺ Restaurar</button>
               </div>
             </div>
@@ -1649,37 +1649,94 @@ setInterval(sincronizarServidor, 15000);
     });
   }
 
-  // Actualizar Banner de Firma
-  if (inputSubirBanner) {
-    inputSubirBanner.addEventListener('change', function(e){
-      var file = e.target.files && e.target.files[0];
-      if (!file) return;
-      if (!file.type.startsWith('image/')) {
-        alert('Por favor selecciona un archivo de imagen válido (PNG, JPG, WEBP).');
-        return;
-      }
+  // Función para convertir cualquier formato de imagen a PNG optimizado
+  function convertirImagenAPng(file, maxDimension) {
+    return new Promise(function(resolve, reject) {
       var reader = new FileReader();
-      reader.onload = async function(evt){
-        var base64 = evt.target.result;
-        try {
-          toast('Subiendo nuevo banner…');
-          var r = await fetch('/informe/actualizar-banner', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ imagenBase64: base64 })
-          });
-          var d = await r.json();
-          if (!r.ok) throw new Error(d.error || 'Error al actualizar el banner');
-          if (imgBannerFirma) {
-            imgBannerFirma.src = '/img/jaivana-signature.png?t=' + Date.now();
-            imgBannerFirma.style.display = 'block';
+      reader.onerror = function() { reject(new Error('No se pudo leer el archivo de imagen.')); };
+      reader.onload = function(evt) {
+        var src = evt.target.result;
+        var img = new Image();
+        img.onerror = function() {
+          // Si el navegador no puede cargarlo vía Image, devolvemos el base64 original
+          resolve(src);
+        };
+        img.onload = function() {
+          try {
+            var width = img.naturalWidth || img.width;
+            var height = img.naturalHeight || img.height;
+            var maxD = maxDimension || 2000;
+            if (width > maxD || height > maxD) {
+              var ratio = Math.min(maxD / width, maxD / height);
+              width = Math.round(width * ratio);
+              height = Math.round(height * ratio);
+            }
+            var canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            var ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            var pngBase64 = canvas.toDataURL('image/png');
+            resolve(pngBase64);
+          } catch (e) {
+            resolve(src);
           }
-          toast('🚀 Banner de firma actualizado con éxito');
-        } catch(err) {
-          alert('Error al guardar el banner: ' + err.message);
-        }
+        };
+        img.src = src;
       };
       reader.readAsDataURL(file);
+    });
+  }
+
+  // Actualizar Banner de Firma (admite cualquier formato de imagen)
+  if (inputSubirBanner) {
+    inputSubirBanner.addEventListener('change', async function(e){
+      var file = e.target.files && e.target.files[0];
+      if (!file) return;
+
+      var esImagen = (file.type && file.type.startsWith('image/')) ||
+                     /\.(png|jpe?g|webp|gif|bmp|svg|tiff?|ico|avif|heic|jfif)$/i.test(file.name || '');
+      if (!esImagen) {
+        alert('Por favor selecciona un archivo de imagen válido (PNG, JPG, JPEG, WEBP, GIF, SVG, BMP, etc.).');
+        inputSubirBanner.value = '';
+        return;
+      }
+
+      try {
+        toast('Procesando imagen del banner…');
+        var base64 = await convertirImagenAPng(file, 1800);
+
+        toast('Subiendo nuevo banner…');
+        var r = await fetch('/informe/actualizar-banner', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({ imagenBase64: base64 })
+        });
+
+        var textoRes = await r.text();
+        var d = null;
+        try {
+          d = JSON.parse(textoRes);
+        } catch(parseErr) {
+          throw new Error('El servidor respondió (' + r.status + '): ' + (textoRes.substring(0, 100) || 'Error'));
+        }
+
+        if (!r.ok) throw new Error(d.error || 'Error al actualizar el banner');
+
+        if (imgBannerFirma) {
+          imgBannerFirma.src = '/img/jaivana-signature.png?t=' + Date.now();
+          imgBannerFirma.style.display = 'block';
+        }
+        toast('🚀 Banner de firma actualizado con éxito');
+      } catch(err) {
+        alert('Error al guardar el banner: ' + err.message);
+      } finally {
+        inputSubirBanner.value = '';
+      }
     });
   }
 
@@ -1690,10 +1747,20 @@ setInterval(sincronizarServidor, 15000);
       try {
         var r = await fetch('/informe/actualizar-banner', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
           body: JSON.stringify({ restaurar: true })
         });
-        var d = await r.json();
+        var textoRes = await r.text();
+        var d = null;
+        try {
+          d = JSON.parse(textoRes);
+        } catch(parseErr) {
+          throw new Error('El servidor respondió (' + r.status + '): ' + (textoRes.substring(0, 100) || 'Error'));
+        }
         if (!r.ok) throw new Error(d.error || 'Error al restaurar el banner');
         if (imgBannerFirma) {
           imgBannerFirma.src = '/img/jaivana-signature.png?t=' + Date.now();
