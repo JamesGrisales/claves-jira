@@ -227,9 +227,9 @@
     margin:0;
     padding:12px 14px 24px 14px;
     background:transparent !important;
-    color:transparent !important;
-    -webkit-text-fill-color:transparent !important;
-    caret-color:#569cd6;
+    color:#e2e8f0 !important;
+    -webkit-text-fill-color:#e2e8f0 !important;
+    caret-color:#38bdf8;
     border:0 !important;
     border-radius:0 !important;
     box-shadow:none !important;
@@ -246,23 +246,24 @@
     resize:none !important;
   }
   .nt-ed-input::placeholder{
-    color:#5a5a5a;
+    color:#64748b;
   }
   .nt-ed-input::selection{
-    background:rgba(38, 79, 120, 0.65) !important;
-    color:transparent !important;
-  }
-  .nt-ed-box.plain .nt-ed-input{
-    color:#d4d4d4 !important;
-    -webkit-text-fill-color:#d4d4d4 !important;
-  }
-  .nt-ed-box.plain .nt-ed-input::selection{
-    background:rgba(38, 79, 120, 0.65) !important;
+    background:rgba(56, 189, 248, 0.35) !important;
     color:#ffffff !important;
     -webkit-text-fill-color:#ffffff !important;
   }
-  .nt-ed-box.plain .nt-ed-capa{
-    display:none;
+  .nt-ed-box.plain .nt-ed-input{
+    color:#e2e8f0 !important;
+    -webkit-text-fill-color:#e2e8f0 !important;
+  }
+  .nt-ed-box.plain .nt-ed-input::selection{
+    background:rgba(56, 189, 248, 0.35) !important;
+    color:#ffffff !important;
+    -webkit-text-fill-color:#ffffff !important;
+  }
+  .nt-ed-capa{
+    display:none !important;
   }
   .nt-ed-input::-webkit-scrollbar, .nt-ed-gut::-webkit-scrollbar, .code-block::-webkit-scrollbar{
     width:10px; height:10px;
@@ -1997,27 +1998,36 @@ function resaltarTextoNota(texto){
 }
 
 function obtenerPosCursor(ta){
-  const pos = (ta && typeof ta.selectionStart === 'number') ? ta.selectionStart : 0;
-  const val = ta ? ta.value || '' : '';
+  if (!ta) return { linea: 1, col: 1 };
+  const pos = (typeof ta.selectionStart === 'number') ? ta.selectionStart : 0;
+  const val = ta.value || '';
+  const lastNewline = val.lastIndexOf('\n', pos - 1);
+  const col = (lastNewline === -1) ? pos + 1 : pos - lastNewline;
   let linea = 1;
-  let ultimoSalto = -1;
   for (let i = 0; i < pos; i++) {
-    if (val.charCodeAt(i) === 10) {
-      linea++;
-      ultimoSalto = i;
-    }
+    if (val.charCodeAt(i) === 10) linea++;
   }
-  return { linea: linea, col: pos - ultimoSalto };
+  return { linea: linea, col: col };
 }
 
-let timerEditorHighlight = null;
+let rafEditorUpdate = null;
 
 function actualizarEditorNota(ta, diferido){
   if (!ta) return;
+  if (diferido) {
+    if (rafEditorUpdate) cancelAnimationFrame(rafEditorUpdate);
+    rafEditorUpdate = requestAnimationFrame(function(){
+      ejecutarActualizacionEditor(ta);
+    });
+  } else {
+    ejecutarActualizacionEditor(ta);
+  }
+}
+
+function ejecutarActualizacionEditor(ta){
+  if (!ta) return;
   const frame = ta.closest('.nt-ed-frame');
   if (!frame) return;
-  const box = frame.querySelector('.nt-ed-box');
-  const capa = frame.querySelector('.nt-ed-capa');
   const gut = frame.querySelector('.nt-ed-gut');
   const gutIn = frame.querySelector('.nt-ed-gut-in');
   const statusEl = frame.querySelector('.nt-ed-status');
@@ -2035,38 +2045,16 @@ function actualizarEditorNota(ta, diferido){
     posEl.textContent = 'Lín ' + pos.linea + ', Col ' + pos.col;
   }
 
-  if (gutIn) {
-    if (gutIn._lastCount !== nLineas) {
-      gutIn._lastCount = nLineas;
-      let gutText = '';
-      for (let i = 1; i <= nLineas; i++) {
-        gutText += i + '\n';
-      }
-      gutIn.textContent = gutText;
+  if (gutIn && gutIn._lastCount !== nLineas) {
+    gutIn._lastCount = nLineas;
+    let gutText = '';
+    for (let i = 1; i <= nLineas; i++) {
+      gutText += i + '\n';
     }
+    gutIn.textContent = gutText;
     if (gut) {
       const digitos = Math.max(2, String(nLineas).length);
       gut.style.width = (digitos * 8 + 26) + 'px';
-    }
-  }
-
-  if (box && capa) {
-    if (val.length > LIMITE_RESALTADO_NOTA) {
-      box.classList.add('plain');
-      capa.textContent = '';
-      if (statusEl && !statusEl.textContent.includes('modo rápido')) {
-        statusEl.textContent += ' · modo rápido';
-      }
-    } else {
-      box.classList.remove('plain');
-      if (diferido) {
-        clearTimeout(timerEditorHighlight);
-        timerEditorHighlight = setTimeout(function(){
-          if (ta && capa) capa.innerHTML = resaltarTextoNota(ta.value || '');
-        }, 120);
-      } else {
-        capa.innerHTML = resaltarTextoNota(val);
-      }
     }
   }
 
@@ -2852,13 +2840,19 @@ function buscarEnServidor(q){
 }
 
 let debounceBusqueda;
+let rafFiltros = null;
+
+function aplicarFiltrosRapido(){
+  if (rafFiltros) cancelAnimationFrame(rafFiltros);
+  rafFiltros = requestAnimationFrame(aplicarFiltros);
+}
+
 document.getElementById('searchInput').addEventListener('input', function(e){
   const valor = e.target.value.trim();
   textoBusqueda = valor;
-  // Filtrado local instantáneo mientras se escribe
-  aplicarFiltros();
+  aplicarFiltrosRapido();
   clearTimeout(debounceBusqueda);
-  debounceBusqueda = setTimeout(function(){ buscarEnServidor(valor); }, 180);
+  debounceBusqueda = setTimeout(function(){ buscarEnServidor(valor); }, 200);
 });
 
 document.querySelectorAll('#tabs .tab').forEach(function(tab){
