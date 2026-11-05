@@ -59,11 +59,11 @@
   .code-line:hover{ background:rgba(255,255,255,.04); }
   .code-line .ln{ flex-shrink:0; width:52px; text-align:right; padding-right:12px; margin-right:12px; color:#6e7681; border-right:1px solid #333; user-select:none; }
   .code-line .code-text{ flex:1; min-width:0; white-space:pre-wrap; word-break:break-word; padding-right:14px; }
-  .tk-tg{ color:#569cd6; } .tk-an{ color:#9cdcfe; } .tk-av{ color:#ce9178; } .tk-pn{ color:#808080; } .tk-tx{ color:#d4d4d4; }
-  .tk-cd{ color:#dcdcaa; } .tk-pi{ color:#c586c0; } .tk-cm{ color:#6a9955; font-style:italic; }
-  .tk-jk{ color:#9cdcfe; } .tk-js{ color:#ce9178; } .tk-jn{ color:#b5cea8; } .tk-jb{ color:#569cd6; } .tk-jl{ color:#569cd6; font-style:italic; }
-  :root[data-theme="oled"] .tk-tg{ color:#a3e635; } :root[data-theme="oled"] .tk-an{ color:#38bdf8; } :root[data-theme="oled"] .tk-jk{ color:#38bdf8; }
-  :root[data-theme="oled"] .tk-js{ color:#fb923c; } :root[data-theme="oled"] .tk-jn{ color:#4ade80; } :root[data-theme="oled"] .tk-jb{ color:#a3e635; }
+  .tk-tg{ color:#38bdf8; font-weight:600; } .tk-an{ color:#7dd3fc; } .tk-av{ color:#fb923c; } .tk-pn{ color:#94a3b8; } .tk-tx{ color:#f8fafc; }
+  .tk-cd{ color:#fde047; } .tk-pi{ color:#c084fc; } .tk-cm{ color:#4ade80; font-style:italic; }
+  .tk-jk{ color:#38bdf8; font-weight:600; } .tk-js{ color:#fb923c; } .tk-jn{ color:#4ade80; } .tk-jb{ color:#a855f7; } .tk-jl{ color:#ec4899; font-style:italic; }
+  :root[data-theme="oled"] .tk-tg{ color:#38bdf8; font-weight:600; } :root[data-theme="oled"] .tk-an{ color:#22d3ee; } :root[data-theme="oled"] .tk-jk{ color:#38bdf8; font-weight:600; }
+  :root[data-theme="oled"] .tk-js{ color:#fb923c; } :root[data-theme="oled"] .tk-jn{ color:#4ade80; } :root[data-theme="oled"] .tk-jb{ color:#a855f7; }
   .code-block mark{ background:#ffd54a; color:#1e1e1e; border-radius:2px; padding:0 1px; }
   .cur-line{ outline:1px solid #ffd54a; outline-offset:-1px; background:rgba(255,213,74,.09); }
   .mas-lineas{ text-align:center; font-family:var(--sans); font-size:12px; color:#8b949e; padding:10px 8px 4px; }
@@ -1006,21 +1006,77 @@ function formatearDocumentoUniversal(txt, modo) {
   return { ok: false, texto: t, tipo: 'texto' };
 }
 
-function autoFormatearSiMinificado(txtArea, lado) {
+function autoFormatearDocumento(txtArea, lado, forzar) {
+  if (!txtArea) return false;
   var val = (txtArea.value || '').trim();
-  if (!val || val.length < 30) return;
-  var lineas = val.split(/\r?\n/);
-  // Si tiene 1 o 2 líneas pero es largo (más de 60 caracteres), es código minificado
-  if (lineas.length <= 2 && val.length > 60) {
-    var m = lado ? (lado === 'A' ? diffState.modoA : diffState.modoB) : 'auto';
-    var res = formatearDocumentoUniversal(val, m);
-    if (res && res.ok && res.texto && res.texto !== val) {
-      txtArea.value = res.texto;
-      if (lado && res.tipo && m === 'auto' && typeof fijarModoDiff === 'function') {
-        fijarModoDiff(lado, res.tipo);
+  if (!val || val.length < 10) return false;
+
+  var m = lado ? (lado === 'A' ? diffState.modoA : diffState.modoB) : (typeof modoSel !== 'undefined' ? modoSel : 'auto');
+  var res = formatearDocumentoUniversal(val, m);
+  if (res && res.ok && res.texto && (forzar || res.texto !== val)) {
+    txtArea.value = res.texto;
+    if (lado && res.tipo && m === 'auto' && typeof fijarModoDiff === 'function') {
+      fijarModoDiff(lado, res.tipo);
+    } else if (!lado && res.tipo && typeof fijarModo === 'function') {
+      if (typeof modoSel !== 'undefined' && modoSel === 'auto') fijarModo(res.tipo);
+    }
+    if (txtArea._actualizarSintaxis) txtArea._actualizarSintaxis();
+    if (lado && typeof actualizarStatsPanel === 'function') actualizarStatsPanel(lado);
+    return true;
+  }
+  return false;
+}
+
+function autoFormatearSiMinificado(txtArea, lado) {
+  return autoFormatearDocumento(txtArea, lado, false);
+}
+
+function enlazarAutoFormateoAlPegar(txtArea, lado) {
+  if (!txtArea) return;
+  txtArea.addEventListener('paste', function(e) {
+    var clipboardText = '';
+    if (e.clipboardData && e.clipboardData.getData) {
+      clipboardText = e.clipboardData.getData('text/plain');
+    }
+    if (clipboardText && clipboardText.trim().length > 10) {
+      var m = lado ? (lado === 'A' ? diffState.modoA : diffState.modoB) : (typeof modoSel !== 'undefined' ? modoSel : 'auto');
+      var res = formatearDocumentoUniversal(clipboardText, m);
+      if (res && res.ok && res.texto) {
+        e.preventDefault();
+        // Si el textarea estaba vacío o todo seleccionado, reemplaza todo
+        if (!txtArea.value.trim() || (txtArea.selectionStart === 0 && txtArea.selectionEnd === txtArea.value.length)) {
+          txtArea.value = res.texto;
+        } else {
+          var s = txtArea.selectionStart, end = txtArea.selectionEnd;
+          txtArea.value = txtArea.value.substring(0, s) + res.texto + txtArea.value.substring(end);
+          txtArea.selectionStart = txtArea.selectionEnd = s + res.texto.length;
+        }
+        if (lado && res.tipo && m === 'auto' && typeof fijarModoDiff === 'function') {
+          fijarModoDiff(lado, res.tipo);
+        } else if (!lado && res.tipo && typeof fijarModo === 'function') {
+          if (typeof modoSel !== 'undefined' && modoSel === 'auto') fijarModo(res.tipo);
+        }
+        if (txtArea._actualizarSintaxis) txtArea._actualizarSintaxis();
+        if (lado && typeof actualizarStatsPanel === 'function') actualizarStatsPanel(lado);
+        else if (!lado && typeof procesar === 'function') {
+          clearTimeout(temporizador);
+          temporizador = setTimeout(procesar, 40);
+        }
+        toast('Estructurado e indentado como ' + (res.tipo || 'código').toUpperCase());
+        return;
       }
     }
-  }
+    // Fallback tras pegado nativo
+    setTimeout(function(){
+      autoFormatearDocumento(txtArea, lado, false);
+      if (txtArea._actualizarSintaxis) txtArea._actualizarSintaxis();
+      if (lado && typeof actualizarStatsPanel === 'function') actualizarStatsPanel(lado);
+      else if (!lado && typeof procesar === 'function') {
+        clearTimeout(temporizador);
+        temporizador = setTimeout(procesar, 40);
+      }
+    }, 40);
+  });
 }
 
 function bindToggleColor(btnId, wrapId) {
@@ -1031,15 +1087,15 @@ function bindToggleColor(btnId, wrapId) {
     if (wrap.classList.contains('force-plain')) {
       wrap.classList.remove('force-plain');
       wrap.classList.add('has-syntax');
-      btn.textContent = '🎨 Colores';
-      btn.title = 'Colores de sintaxis activos (clic para modo plano)';
-      toast('Sintaxis a color activa');
+      btn.textContent = '🌈 Colores';
+      btn.title = 'Colores de sintaxis activos';
+      toast('Colores de sintaxis activados');
     } else {
       wrap.classList.add('force-plain');
       wrap.classList.remove('has-syntax');
-      btn.textContent = '✏️ Plano';
-      btn.title = 'Modo texto plano activo (clic para ver colores)';
-      toast('Modo texto plano activo');
+      btn.textContent = '⚪ Plano';
+      btn.title = 'Modo plano (sin colores)';
+      toast('Modo blanco y negro activado');
     }
   });
 }
@@ -1069,11 +1125,8 @@ function vincularEditorConSintaxis(textareaId, codeId, obtenerModo) {
     var html = highlightCodeTokens(val, modo);
     c.innerHTML = html + (val.endsWith('\n') ? ' ' : '');
     if (wrap && html) {
-      if (!wrap.classList.contains('force-plain')) {
-        wrap.classList.add('has-syntax');
-      }
-    } else if (wrap) {
-      wrap.classList.remove('has-syntax');
+      wrap.classList.add('has-syntax');
+      wrap.classList.remove('force-plain');
     }
     sincronizarScroll();
   }
@@ -1082,7 +1135,7 @@ function vincularEditorConSintaxis(textareaId, codeId, obtenerModo) {
   t.addEventListener('input', actualizar);
   t.addEventListener('paste', function(){
     requestAnimationFrame(actualizar);
-    setTimeout(actualizar, 35);
+    setTimeout(actualizar, 30);
   });
   t.addEventListener('change', actualizar);
   t.addEventListener('scroll', sincronizarScroll);
@@ -2165,19 +2218,12 @@ function fijarModo(m){
 
 /* ---------------------------- Eventos ---------------------------- */
 vincularEditorConSintaxis('entrada', 'codeEntrada', function(){ return (estado && estado.tipo) || modoSel; });
+enlazarAutoFormateoAlPegar(entrada, null);
 bindToggleColor('btnToggleColorEntrada', 'wrapEntrada');
 
 entrada.addEventListener('input', function(){
   clearTimeout(temporizador);
   temporizador = setTimeout(procesar, 300);
-});
-entrada.addEventListener('paste', function(){
-  setTimeout(function(){
-    autoFormatearSiMinificado(entrada, null);
-    if (entrada._actualizarSintaxis) entrada._actualizarSintaxis();
-    clearTimeout(temporizador);
-    temporizador = setTimeout(procesar, 50);
-  }, 40);
 });
 ['dragenter', 'dragover'].forEach(function(ev){
   entrada.addEventListener(ev, function(e){ e.preventDefault(); entrada.classList.add('drag'); });
@@ -2695,9 +2741,11 @@ if (btnEnviarAComparar) {
     var edA = $('diffEntradaA');
     if (edA) {
       edA.value = txt;
+      autoFormatearDocumento(edA, 'A', true);
+      if (edA._actualizarSintaxis) edA._actualizarSintaxis();
       actualizarStatsPanel('A');
       activarSeccion('comparador');
-      toast('Contenido cargado en Documento A');
+      toast('Contenido cargado y estructurado en Documento A');
     }
   });
 }
@@ -2775,6 +2823,8 @@ bindDragDrop('diffEntradaB', 'B');
 // Vincular editores de Diff con resaltado de sintaxis a color
 vincularEditorConSintaxis('diffEntradaA', 'codeDiffA', function(){ return diffState.modoA; });
 vincularEditorConSintaxis('diffEntradaB', 'codeDiffB', function(){ return diffState.modoB; });
+enlazarAutoFormateoAlPegar($('diffEntradaA'), 'A');
+enlazarAutoFormateoAlPegar($('diffEntradaB'), 'B');
 bindToggleColor('btnToggleColorA', 'wrapDiffA');
 bindToggleColor('btnToggleColorB', 'wrapDiffB');
 
@@ -2791,10 +2841,10 @@ function bindQuickButtons(lado) {
         var clip = await navigator.clipboard.readText();
         if (clip) {
           txtArea.value = clip;
-          autoFormatearSiMinificado(txtArea, lado);
+          autoFormatearDocumento(txtArea, lado, true);
           if (txtArea._actualizarSintaxis) txtArea._actualizarSintaxis();
           actualizarStatsPanel(lado);
-          toast('Pegado en Documento ' + lado);
+          toast('Pegado y estructurado en Documento ' + lado);
         }
       } catch(err) {
         toast('Usa Ctrl+V directamente en la caja');
@@ -2815,29 +2865,14 @@ function bindQuickButtons(lado) {
     btnFmt.addEventListener('click', function(){
       var raw = txtArea.value;
       if (!raw.trim()) { toast('Documento ' + lado + ' está vacío'); return; }
-      var modoForzado = (lado === 'A') ? diffState.modoA : diffState.modoB;
-      var res = formatearDocumentoUniversal(raw, modoForzado);
-      if (res && res.texto) {
-        txtArea.value = res.texto;
-        if (res.tipo && modoForzado === 'auto') {
-          fijarModoDiff(lado, res.tipo);
-        }
-        if (txtArea._actualizarSintaxis) txtArea._actualizarSintaxis();
-        actualizarStatsPanel(lado);
-        toast('Documento ' + lado + ' formateado como ' + (res.tipo || 'código').toUpperCase());
+      var ok = autoFormatearDocumento(txtArea, lado, true);
+      if (ok) {
+        toast('Documento ' + lado + ' estructurado e indentado');
       } else {
         toast('No se pudo formatear el contenido');
       }
     });
   }
-
-  txtArea.addEventListener('paste', function(){
-    setTimeout(function(){
-      autoFormatearSiMinificado(txtArea, lado);
-      if (txtArea._actualizarSintaxis) txtArea._actualizarSintaxis();
-      actualizarStatsPanel(lado);
-    }, 40);
-  });
 }
 bindQuickButtons('A');
 bindQuickButtons('B');
