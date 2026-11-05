@@ -254,35 +254,37 @@
      ====================================================================== */
   .syntax-editor-container {
     position:relative; width:100%; min-height:200px;
-    background:var(--panel-alt) !important; border:1px solid var(--panel-edge) !important;
+    background:#080d1a !important; border:1px solid rgba(56, 189, 248, 0.22) !important;
     border-radius:10px; overflow:hidden;
     transition:border-color .15s ease, box-shadow .15s ease;
   }
   .syntax-editor-container:focus-within {
-    border-color:var(--accent) !important;
-    box-shadow:0 0 0 3px var(--accent-soft) !important;
+    border-color:var(--accent, #38bdf8) !important;
+    box-shadow:0 0 0 3px rgba(56, 189, 248, 0.25) !important;
   }
   :root[data-theme="oled"] .syntax-editor-container {
-    background:#050608 !important; border-color:rgba(255,255,255,0.08) !important;
+    background:#000000 !important; border-color:rgba(255,255,255,0.12) !important;
   }
   .syntax-backdrop {
     position:absolute; top:0; left:0; right:0; bottom:0; width:100%; height:100%;
     margin:0; padding:12px 14px;
     font-family:var(--mono) !important; font-size:13px !important;
-    line-height:1.5 !important; tab-size:4; -moz-tab-size:4;
-    white-space:pre !important; overflow:hidden !important;
-    pointer-events:none !important; z-index:1; color:#d4d4d4 !important;
+    line-height:1.55 !important; tab-size:2; -moz-tab-size:2;
+    white-space:pre !important; overflow:auto !important;
+    pointer-events:none !important; z-index:1; color:#e2e8f0 !important;
     box-sizing:border-box !important; border:none !important;
-    background:transparent !important; background-color:transparent !important;
+    background:transparent !important;
     letter-spacing:normal !important; word-spacing:normal !important;
+    scrollbar-width:none; -ms-overflow-style:none;
   }
+  .syntax-backdrop::-webkit-scrollbar { display:none; }
   .syntax-backdrop code {
     font-family:inherit !important; font-size:inherit !important;
     line-height:inherit !important; tab-size:inherit !important;
     -moz-tab-size:inherit !important; letter-spacing:inherit !important;
     white-space:pre !important; display:block !important;
     margin:0 !important; padding:0 !important; border:none !important;
-    background:transparent !important; background-color:transparent !important;
+    background:transparent !important;
     color:#e2e8f0 !important;
   }
   :root[data-theme="oled"] .syntax-backdrop code {
@@ -292,28 +294,35 @@
     position:relative; z-index:2; width:100% !important; min-height:200px; max-height:60vh;
     resize:vertical; margin:0; padding:12px 14px !important;
     font-family:var(--mono) !important; font-size:13px !important;
-    line-height:1.5 !important; tab-size:4; -moz-tab-size:4;
+    line-height:1.55 !important; tab-size:2; -moz-tab-size:2;
     white-space:pre !important; overflow:auto !important;
     border:none !important; outline:none !important; box-sizing:border-box !important;
-    background:transparent !important; background-color:transparent !important;
-    color:transparent !important;
-    -webkit-text-fill-color:transparent !important;
+    background:transparent !important;
+    color:#f1f5f9 !important;
+    -webkit-text-fill-color:#f1f5f9 !important;
     caret-color:#38bdf8 !important; border-radius:0 !important;
     letter-spacing:normal !important; word-spacing:normal !important;
   }
-  :root .syntax-textarea,
-  :root[data-theme="oled"] .syntax-textarea,
-  :root[data-theme="dark"] .syntax-textarea,
-  #entrada.syntax-textarea,
-  .diff-textarea.syntax-textarea,
-  :root[data-theme="oled"] #entrada.syntax-textarea,
-  :root[data-theme="oled"] .diff-textarea.syntax-textarea {
-    background:transparent !important;
-    background-color:transparent !important;
+  /* Cuando tiene sintaxis activa y no está en modo plano forzado, el texto se transparenta para mostrar los colores */
+  .syntax-editor-container.has-syntax:not(.force-plain) .syntax-textarea {
     color:transparent !important;
     -webkit-text-fill-color:transparent !important;
-    border:none !important;
-    box-shadow:none !important;
+  }
+  .syntax-editor-container.has-syntax:not(.force-plain) .syntax-textarea::selection {
+    background:rgba(56, 189, 248, 0.4) !important;
+    color:transparent !important;
+    -webkit-text-fill-color:transparent !important;
+  }
+  .syntax-editor-container.has-syntax:not(.force-plain) .syntax-textarea::-moz-selection {
+    background:rgba(56, 189, 248, 0.4) !important;
+    color:transparent !important;
+  }
+  .syntax-editor-container.force-plain .syntax-backdrop {
+    display:none !important;
+  }
+  .syntax-editor-container.force-plain .syntax-textarea {
+    color:#f1f5f9 !important;
+    -webkit-text-fill-color:#f1f5f9 !important;
   }
   .syntax-textarea::placeholder,
   #entrada.syntax-textarea::placeholder,
@@ -323,13 +332,13 @@
     opacity:0.85 !important;
   }
   .syntax-textarea::selection {
-    background:rgba(56, 189, 248, 0.35) !important;
-    color:transparent !important;
-    -webkit-text-fill-color:transparent !important;
+    background:rgba(56, 189, 248, 0.45) !important;
+    color:#ffffff !important;
+    -webkit-text-fill-color:#ffffff !important;
   }
   .syntax-textarea::-moz-selection {
-    background:rgba(56, 189, 248, 0.35) !important;
-    color:transparent !important;
+    background:rgba(56, 189, 248, 0.45) !important;
+    color:#ffffff !important;
   }
   .diff-textarea.syntax-textarea {
     font-size:12.5px !important; line-height:1.55 !important;
@@ -457,7 +466,9 @@
     <span class="sp"></span>
     <label class="btn secondary" for="archivo">⬆ Abrir archivo</label>
     <input type="file" id="archivo" accept=".log,.xml,.json,.txt,.xsd,.xsl,.xslt,.svg,.config,.csproj,.wsdl,.html" style="display:none;">
+    <button type="button" class="secondary" id="btnFormatearEntrada" title="Formatear y organizar XML o JSON con sangría de 2 espacios">🪄 Formatear</button>
     <button type="button" class="secondary" id="btnMinificar" title="Quita todos los espacios (Minificar) para un curl o db">Minificar</button>
+    <button type="button" class="secondary" id="btnToggleColorEntrada" title="Alternar colores de sintaxis en el editor">🎨 Colores</button>
     <button type="button" class="secondary" id="btnAmpliarEntrada" title="Pantalla completa (Esc para salir)">⤢ Ampliar</button>
     <button type="button" class="secondary" id="btnLimpiar">Limpiar</button>
     <button type="button" class="secondary" id="btnEnviarAComparar" title="Enviar este contenido al Comparador para cotejarlo con otro archivo">⚖️ Llevar a Comparar</button>
@@ -589,7 +600,8 @@
             </label>
             <input type="file" id="inputDiffFileA" accept=".log,.xml,.json,.txt,.xsd,.xsl,.xslt,.svg,.config,.csproj,.wsdl,.soap,.html,.ndjson" style="display:none;">
             <button type="button" class="secondary" id="btnPegarA" title="Pegar desde el portapapeles">📋 Pegar</button>
-            <button type="button" class="secondary" id="btnFmtA" title="Formatear este documento">🪄 Formatear</button>
+            <button type="button" class="secondary" id="btnFmtA" title="Formatear este documento (XML o JSON)">🪄 Formatear</button>
+            <button type="button" class="secondary" id="btnToggleColorA" title="Alternar colores de sintaxis en el editor">🎨 Colores</button>
             <button type="button" class="secondary" id="btnLimpiarA" title="Borrar contenido de A">Limpiar</button>
           </div>
         </div>
@@ -620,7 +632,8 @@
             </label>
             <input type="file" id="inputDiffFileB" accept=".log,.xml,.json,.txt,.xsd,.xsl,.xslt,.svg,.config,.csproj,.wsdl,.soap,.html,.ndjson" style="display:none;">
             <button type="button" class="secondary" id="btnPegarB" title="Pegar desde el portapapeles">📋 Pegar</button>
-            <button type="button" class="secondary" id="btnFmtB" title="Formatear este documento">🪄 Formatear</button>
+            <button type="button" class="secondary" id="btnFmtB" title="Formatear este documento (XML o JSON)">🪄 Formatear</button>
+            <button type="button" class="secondary" id="btnToggleColorB" title="Alternar colores de sintaxis en el editor">🎨 Colores</button>
             <button type="button" class="secondary" id="btnLimpiarB" title="Borrar contenido de B">Limpiar</button>
           </div>
         </div>
@@ -790,7 +803,7 @@ function esc(t){ return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/
 function escAttr(t){ return esc(t).replace(/"/g,'&quot;'); }
 
 /* ======================================================================
-   RESALTADOR DE SINTAXIS UNIVERSAL EN TIEMPO REAL (XML & JSON)
+   RESALTADOR DE SINTAXIS Y FORMATEADOR UNIVERSAL EN VIVO (XML & JSON)
    ====================================================================== */
 function detectarTipoDocumento(str) {
   if (!str) return 'json';
@@ -806,34 +819,33 @@ function highlightCodeTokens(code, modo) {
   var isXml = modo === 'xml' || (modo !== 'json' && detectarTipoDocumento(code) === 'xml');
 
   if (isXml) {
-    var xmlRegex = /(<!--[\s\S]*?-->)|(<!\[CDATA\[[\s\S]*?\]\]>)|(<!DOCTYPE[\s\S]*?>)|(<\?[\s\S]*?\?>)|(<\/?[a-zA-Z0-9_:\.\-]+)((?:\s+[a-zA-Z0-9_:\.\-]+(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+))?)*\s*)(\/?>)|([^<]+)/g;
-    return code.replace(xmlRegex, function(m, comment, cdata, doctype, pi, tagAbre, attrs, tagCierra, text) {
+    var xmlRegex = /(<!--[\s\S]*?-->)|(<!\[CDATA\[[\s\S]*?\]\]>)|(<\?[\s\S]*?\?>)|(<!DOCTYPE[\s\S]*?>)|(<\/?)([a-zA-Z0-9_:\.\-]+)((?:\s+[a-zA-Z0-9_:\.\-]+(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+))?)*\s*)(\/?>)|([^<]+)/g;
+    return code.replace(xmlRegex, function(m, comment, cdata, pi, doctype, tagBracket, tagName, attrs, tagClose, text) {
       if (comment) return '<span class="tk-cm">' + escapeHtml(comment) + '</span>';
       if (cdata) {
         var inner = cdata.slice(9, -3);
         return '<span class="tk-pn">&lt;![CDATA[</span><span class="tk-cd">' + escapeHtml(inner) + '</span><span class="tk-pn">]]&gt;</span>';
       }
-      if (doctype) return '<span class="tk-pi">' + escapeHtml(doctype) + '</span>';
-      if (pi) return '<span class="tk-pi">' + escapeHtml(pi) + '</span>';
-      if (tagAbre) {
-        var p = tagAbre.startsWith('</') ? 2 : 1;
-        var hTag = '<span class="tk-pn">' + escapeHtml(tagAbre.slice(0, p)) + '</span><span class="tk-tg">' + escapeHtml(tagAbre.slice(p)) + '</span>';
+      if (pi || doctype) return '<span class="tk-pi">' + escapeHtml(m) + '</span>';
+      if (tagBracket) {
+        var hTag = '<span class="tk-pn">' + escapeHtml(tagBracket) + '</span><span class="tk-tg">' + escapeHtml(tagName) + '</span>';
         var hAttrs = '';
         if (attrs) {
           hAttrs = attrs.replace(/([a-zA-Z0-9_:\.\-]+)(\s*=\s*)("[^"]*"|'[^']*'|[^\s>]+)/g, function(ma, aName, eq, aVal) {
             return '<span class="tk-an">' + escapeHtml(aName) + '</span><span class="tk-pn">' + escapeHtml(eq) + '</span><span class="tk-av">' + escapeHtml(aVal) + '</span>';
           });
         }
-        var hCierra = tagCierra ? '<span class="tk-pn">' + escapeHtml(tagCierra) + '</span>' : '';
-        return hTag + hAttrs + hCierra;
+        var hClose = tagClose ? '<span class="tk-pn">' + escapeHtml(tagClose) + '</span>' : '';
+        return hTag + hAttrs + hClose;
       }
-      if (text) return escapeHtml(text);
+      if (text) return '<span class="tk-tx">' + escapeHtml(text) + '</span>';
       return escapeHtml(m);
     });
   } else {
-    var jsonRegex = /(\/\/.*$)|(\/\*[\s\S]*?\*\/)|("([^"\\]*(\\.[^"\\]*)*)"s*:)|("([^"\\]*(\.[^"\\]*)*)")|(-?\b\d+(?:\.\d+)?(?:[eE][+-]?\d+)?\b)|(\b(?:true|false)\b)|(\bnull\b)|([{}[],:])|([^"'/{}[],:\s]+|\s+)/gm;
-    return code.replace(jsonRegex, function(m, lineCm, blockCm, keyFull, k1, k2, strFull, s1, s2, num, bool, nill, punct, other) {
-      if (lineCm || blockCm) return '<span class="tk-cm">' + escapeHtml(m) + '</span>';
+    // JSON Highlighting
+    var jsonRegex = /(\/\/.*$|\/\*[\s\S]*?\*\/)|("([^"\\]*(\\.[^"\\]*)*)"\s*:)|("([^"\\]*(\\.[^"\\]*)*)")|(-?\b\d+(?:\.\d+)?(?:[eE][+-]?\d+)?\b)|(\b(?:true|false)\b)|(\bnull\b)|([{}[],:])|([^"'/{}[],:\s]+|\s+)/gm;
+    return code.replace(jsonRegex, function(m, comment, keyFull, k1, k2, strFull, s1, s2, num, bool, nill, punct, other) {
+      if (comment) return '<span class="tk-cm">' + escapeHtml(m) + '</span>';
       if (keyFull) {
         var colonIdx = m.lastIndexOf(':');
         var kStr = m.slice(0, colonIdx);
@@ -850,11 +862,194 @@ function highlightCodeTokens(code, modo) {
   }
 }
 
+/* Fallback de formateo XML basado en tokens puro (indestructible ante XML minificados o fragmentos) */
+function formatXmlTokensFallback(xml, indent) {
+  indent = indent || '  ';
+  xml = (xml || '').replace(/^\uFEFF/, '').trim();
+  if (!xml) return '';
+
+  var regex = /(<!--[\s\S]*?-->)|(<!\[CDATA\[[\s\S]*?\]\]>)|(<\?[\s\S]*?\?>)|(<!DOCTYPE[\s\S]*?>)|(<\/?[a-zA-Z0-9_:\.\-]+(?:\s+[^>]*?)?\/?>)|([^<]+)/g;
+  
+  var tokens = [];
+  var match;
+  while ((match = regex.exec(xml)) !== null) {
+    if (match[6]) {
+      var trimmed = match[6].trim();
+      if (trimmed) tokens.push({ type: 'text', value: trimmed });
+    } else if (match[1]) {
+      tokens.push({ type: 'comment', value: match[1].trim() });
+    } else if (match[2]) {
+      tokens.push({ type: 'cdata', value: match[2].trim() });
+    } else if (match[3] || match[4]) {
+      tokens.push({ type: 'declaration', value: (match[3] || match[4]).trim() });
+    } else if (match[5]) {
+      var tag = match[5].trim();
+      if (tag.startsWith('</')) {
+        tokens.push({ type: 'close', value: tag });
+      } else if (tag.endsWith('/>')) {
+        tokens.push({ type: 'selfclose', value: tag });
+      } else {
+        tokens.push({ type: 'open', value: tag });
+      }
+    }
+  }
+
+  var lines = [];
+  var pad = 0;
+  for (var i = 0; i < tokens.length; i++) {
+    var tk = tokens[i];
+    if (tk.type === 'close') {
+      pad = Math.max(0, pad - 1);
+    }
+    
+    var currentIndent = pad;
+    
+    // Si abre un tag y lo siguiente es texto y luego cierra el mismo tag: <tag>texto</tag> en una sola línea
+    if (tk.type === 'open' && i + 2 < tokens.length && tokens[i+1].type === 'text' && tokens[i+2].type === 'close') {
+      var openName = (tk.value.match(/^<([a-zA-Z0-9_:\.\-]+)/) || [])[1];
+      var closeName = (tokens[i+2].value.match(/^<\/([a-zA-Z0-9_:\.\-]+)/) || [])[1];
+      if (openName && openName === closeName && tokens[i+1].value.length < 120 && tokens[i+1].value.indexOf('\n') === -1) {
+        lines.push({ indent: currentIndent, text: tk.value + tokens[i+1].value + tokens[i+2].value });
+        i += 2;
+        continue;
+      }
+    }
+
+    lines.push({ indent: currentIndent, text: tk.value });
+    
+    if (tk.type === 'open') {
+      pad++;
+    }
+  }
+
+  return lines.map(function(l) {
+    var indStr = '';
+    for (var k = 0; k < l.indent; k++) indStr += indent;
+    return indStr + l.text;
+  }).join('\n');
+}
+
+function prettyPrintXml(str, indent) {
+  indent = indent || '  ';
+  var t = (str || '').replace(/^\uFEFF/, '').trim();
+  if (!t) return '';
+
+  if (typeof DOMParser !== 'undefined') {
+    try {
+      var doc = new DOMParser().parseFromString(t, 'application/xml');
+      if (!doc.getElementsByTagName('parsererror').length && typeof formatearXmlCanonico === 'function') {
+        var fmtC = formatearXmlCanonico(doc);
+        if (fmtC && fmtC.trim()) return fmtC;
+      }
+    } catch(e) {}
+
+    // Intentar envolver fragmentos XML sin raíz única (ej: <item>1</item><item>2</item>)
+    try {
+      var wrapped = '<__root_wrapper__>' + t + '</__root_wrapper__>';
+      var docWrap = new DOMParser().parseFromString(wrapped, 'application/xml');
+      if (!docWrap.getElementsByTagName('parsererror').length && typeof formatearXmlCanonico === 'function') {
+        var fmtW = formatearXmlCanonico(docWrap);
+        var subLines = fmtW.split(/\r?\n/).filter(function(l){ return !/<(\/)?__root_wrapper__>/.test(l); });
+        var cleanW = subLines.map(function(l){ return l.replace(/^ {2}/, ''); }).join('\n').trim();
+        if (cleanW) return cleanW;
+      }
+    } catch(e2) {}
+  }
+
+  return formatXmlTokensFallback(t, indent);
+}
+
+function formatearDocumentoUniversal(txt, modo) {
+  var t = (txt || '').replace(/^\uFEFF/, '').trim();
+  if (!t) return { ok: false, texto: '', tipo: 'vacio' };
+
+  var esXml = (modo === 'xml') || (modo !== 'json' && (/^\s*<|^\s*<\?xml|<\/?[a-zA-Z0-9_:\.\-]+(\s|>|\/)/i.test(t)));
+
+  if (esXml) {
+    var fmtX = prettyPrintXml(t, '  ');
+    if (fmtX) return { ok: true, texto: fmtX, tipo: 'xml' };
+  }
+
+  // Intentar JSON estándar
+  try {
+    var objJ = JSON.parse(t);
+    return { ok: true, texto: JSON.stringify(objJ, null, 2), tipo: 'json' };
+  } catch(eJ) {}
+
+  // Intentar NDJSON (múltiples objetos por línea)
+  if (t.indexOf('\n') !== -1 && !/^\s*\[/.test(t)) {
+    var lns = t.split(/\r?\n/).map(function(l){ return l.trim(); }).filter(Boolean);
+    var arrNd = [];
+    var okNd = true;
+    for (var ni = 0; ni < lns.length; ni++) {
+      try { arrNd.push(JSON.parse(lns[ni])); } catch(e){ okNd = false; break; }
+    }
+    if (okNd && arrNd.length) return { ok: true, texto: JSON.stringify(arrNd, null, 2), tipo: 'json' };
+  }
+
+  // Intentar Loose JSON
+  try {
+    var saneado = t
+      .replace(/\/\/.*$/gm, '')
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/([{,]\s*)([a-zA-Z0-9_$]+)\s*:/g, '$1"$2":')
+      .replace(/:\s*'([^']*)'/g, ':"$1"')
+      .replace(/,\s*([}\]])/g, '$1');
+    var objL = JSON.parse(saneado);
+    return { ok: true, texto: JSON.stringify(objL, null, 2), tipo: 'json' };
+  } catch(eL) {}
+
+  // Fallback XML si tenía etiquetas
+  var fbX = formatXmlTokensFallback(t, '  ');
+  if (fbX && fbX !== t) return { ok: true, texto: fbX, tipo: 'xml' };
+
+  return { ok: false, texto: t, tipo: 'texto' };
+}
+
+function autoFormatearSiMinificado(txtArea, lado) {
+  var val = (txtArea.value || '').trim();
+  if (!val || val.length < 30) return;
+  var lineas = val.split(/\r?\n/);
+  // Si tiene 1 o 2 líneas pero es largo (más de 60 caracteres), es código minificado
+  if (lineas.length <= 2 && val.length > 60) {
+    var m = lado ? (lado === 'A' ? diffState.modoA : diffState.modoB) : 'auto';
+    var res = formatearDocumentoUniversal(val, m);
+    if (res && res.ok && res.texto && res.texto !== val) {
+      txtArea.value = res.texto;
+      if (lado && res.tipo && m === 'auto' && typeof fijarModoDiff === 'function') {
+        fijarModoDiff(lado, res.tipo);
+      }
+    }
+  }
+}
+
+function bindToggleColor(btnId, wrapId) {
+  var btn = $(btnId);
+  var wrap = $(wrapId);
+  if (!btn || !wrap) return;
+  btn.addEventListener('click', function(){
+    if (wrap.classList.contains('force-plain')) {
+      wrap.classList.remove('force-plain');
+      wrap.classList.add('has-syntax');
+      btn.textContent = '🎨 Colores';
+      btn.title = 'Colores de sintaxis activos (clic para modo plano)';
+      toast('Sintaxis a color activa');
+    } else {
+      wrap.classList.add('force-plain');
+      wrap.classList.remove('has-syntax');
+      btn.textContent = '✏️ Plano';
+      btn.title = 'Modo texto plano activo (clic para ver colores)';
+      toast('Modo texto plano activo');
+    }
+  });
+}
+
 function vincularEditorConSintaxis(textareaId, codeId, obtenerModo) {
   var t = $(textareaId);
   var c = $(codeId);
   if (!t || !c) return;
   var p = c.parentElement;
+  var wrap = t.closest('.syntax-editor-container');
 
   function sincronizarScroll() {
     if (p) {
@@ -865,15 +1060,33 @@ function vincularEditorConSintaxis(textareaId, codeId, obtenerModo) {
 
   function actualizar() {
     var val = t.value || '';
+    if (!val.trim()) {
+      c.innerHTML = '';
+      if (wrap) wrap.classList.remove('has-syntax');
+      return;
+    }
     var modo = typeof obtenerModo === 'function' ? obtenerModo() : obtenerModo;
-    c.innerHTML = highlightCodeTokens(val, modo) + (val.endsWith('\n') ? ' ' : '');
+    var html = highlightCodeTokens(val, modo);
+    c.innerHTML = html + (val.endsWith('\n') ? ' ' : '');
+    if (wrap && html) {
+      if (!wrap.classList.contains('force-plain')) {
+        wrap.classList.add('has-syntax');
+      }
+    } else if (wrap) {
+      wrap.classList.remove('has-syntax');
+    }
     sincronizarScroll();
   }
 
+  t._actualizarSintaxis = actualizar;
   t.addEventListener('input', actualizar);
-  t.addEventListener('paste', function(){ setTimeout(actualizar, 20); });
+  t.addEventListener('paste', function(){
+    requestAnimationFrame(actualizar);
+    setTimeout(actualizar, 35);
+  });
   t.addEventListener('change', actualizar);
   t.addEventListener('scroll', sincronizarScroll);
+  t.addEventListener('keyup', sincronizarScroll);
   t.addEventListener('keydown', function(e) {
     if (e.key === 'Tab' && !e.ctrlKey && !e.altKey) {
       e.preventDefault();
@@ -886,8 +1099,7 @@ function vincularEditorConSintaxis(textareaId, codeId, obtenerModo) {
     }
   });
 
-  t._actualizarSintaxis = actualizar;
-  actualizar();
+  if (t.value) actualizar();
 }
 
 var toastT;
@@ -1953,14 +2165,19 @@ function fijarModo(m){
 
 /* ---------------------------- Eventos ---------------------------- */
 vincularEditorConSintaxis('entrada', 'codeEntrada', function(){ return (estado && estado.tipo) || modoSel; });
+bindToggleColor('btnToggleColorEntrada', 'wrapEntrada');
 
 entrada.addEventListener('input', function(){
   clearTimeout(temporizador);
   temporizador = setTimeout(procesar, 300);
 });
 entrada.addEventListener('paste', function(){
-  clearTimeout(temporizador);
-  temporizador = setTimeout(procesar, 60);
+  setTimeout(function(){
+    autoFormatearSiMinificado(entrada, null);
+    if (entrada._actualizarSintaxis) entrada._actualizarSintaxis();
+    clearTimeout(temporizador);
+    temporizador = setTimeout(procesar, 50);
+  }, 40);
 });
 ['dragenter', 'dragover'].forEach(function(ev){
   entrada.addEventListener(ev, function(e){ e.preventDefault(); entrada.classList.add('drag'); });
@@ -1973,7 +2190,27 @@ entrada.addEventListener('drop', function(e){
   if (f) abrirArchivo(f);
 });
 $('archivo').addEventListener('change', function(e){ abrirArchivo(e.target.files[0]); e.target.value = ''; });
-$('btnLimpiar').addEventListener('click', function(){ entrada.value = ''; procesar(); entrada.focus(); });
+$('btnLimpiar').addEventListener('click', function(){ entrada.value = ''; procesar(); if (entrada._actualizarSintaxis) entrada._actualizarSintaxis(); entrada.focus(); });
+
+var btnFmtEntrada = $('btnFormatearEntrada');
+if (btnFmtEntrada) {
+  btnFmtEntrada.addEventListener('click', function(){
+    var val = entrada.value.trim();
+    if(!val) { toast('El visor está vacío'); return; }
+    var res = formatearDocumentoUniversal(val, (estado && estado.tipo) || modoSel);
+    if (res && res.texto) {
+      entrada.value = res.texto;
+      if (res.tipo && modoSel === 'auto') {
+        fijarModo(res.tipo);
+      }
+      if (entrada._actualizarSintaxis) entrada._actualizarSintaxis();
+      procesar();
+      toast('Formateado con éxito como ' + (res.tipo || 'código').toUpperCase());
+    } else {
+      toast('No se pudo formatear el contenido');
+    }
+  });
+}
 
 $('btnMinificar').addEventListener('click', function(){
   var val = entrada.value.trim();
@@ -1984,7 +2221,9 @@ $('btnMinificar').addEventListener('click', function(){
     } else if (val.startsWith('<')) {
       entrada.value = val.replace(/>\s+</g, '><').trim();
     }
+    if (entrada._actualizarSintaxis) entrada._actualizarSintaxis();
     procesar();
+    toast('Código minificado');
   } catch(e) {
     alert('El código debe ser válido para minificarlo.');
   }
@@ -2492,6 +2731,8 @@ function bindFileInput(inputId, textareaId, lado) {
     var fr = new FileReader();
     fr.onload = function(){
       txt.value = decodificar(fr.result);
+      autoFormatearSiMinificado(txt, lado);
+      if (txt._actualizarSintaxis) txt._actualizarSintaxis();
       actualizarStatsPanel(lado);
       toast('Archivo cargado en Documento ' + lado + ': ' + file.name);
     };
@@ -2516,6 +2757,8 @@ function bindDragDrop(textareaId, lado) {
       var fr = new FileReader();
       fr.onload = function(){
         t.value = decodificar(fr.result);
+        autoFormatearSiMinificado(t, lado);
+        if (t._actualizarSintaxis) t._actualizarSintaxis();
         actualizarStatsPanel(lado);
         toast('Archivo cargado en Documento ' + lado + ': ' + file.name);
       };
@@ -2532,6 +2775,8 @@ bindDragDrop('diffEntradaB', 'B');
 // Vincular editores de Diff con resaltado de sintaxis a color
 vincularEditorConSintaxis('diffEntradaA', 'codeDiffA', function(){ return diffState.modoA; });
 vincularEditorConSintaxis('diffEntradaB', 'codeDiffB', function(){ return diffState.modoB; });
+bindToggleColor('btnToggleColorA', 'wrapDiffA');
+bindToggleColor('btnToggleColorB', 'wrapDiffB');
 
 // Pegar y Limpiar
 function bindQuickButtons(lado) {
@@ -2546,6 +2791,8 @@ function bindQuickButtons(lado) {
         var clip = await navigator.clipboard.readText();
         if (clip) {
           txtArea.value = clip;
+          autoFormatearSiMinificado(txtArea, lado);
+          if (txtArea._actualizarSintaxis) txtArea._actualizarSintaxis();
           actualizarStatsPanel(lado);
           toast('Pegado en Documento ' + lado);
         }
@@ -2558,6 +2805,7 @@ function bindQuickButtons(lado) {
   if (btnLimpiar) {
     btnLimpiar.addEventListener('click', function(){
       txtArea.value = '';
+      if (txtArea._actualizarSintaxis) txtArea._actualizarSintaxis();
       actualizarStatsPanel(lado);
       toast('Documento ' + lado + ' limpiado');
     });
@@ -2566,18 +2814,30 @@ function bindQuickButtons(lado) {
   if (btnFmt) {
     btnFmt.addEventListener('click', function(){
       var raw = txtArea.value;
-      if (!raw.trim()) return;
-      var modo = lado === 'A' ? diffState.modoA : diffState.modoB;
-      var res = prepararParaDiff(raw, modo);
-      if (res.ok && res.textoFormateado) {
-        txtArea.value = res.textoFormateado;
+      if (!raw.trim()) { toast('Documento ' + lado + ' está vacío'); return; }
+      var modoForzado = (lado === 'A') ? diffState.modoA : diffState.modoB;
+      var res = formatearDocumentoUniversal(raw, modoForzado);
+      if (res && res.texto) {
+        txtArea.value = res.texto;
+        if (res.tipo && modoForzado === 'auto') {
+          fijarModoDiff(lado, res.tipo);
+        }
+        if (txtArea._actualizarSintaxis) txtArea._actualizarSintaxis();
         actualizarStatsPanel(lado);
-        toast('Documento ' + lado + ' formateado');
+        toast('Documento ' + lado + ' formateado como ' + (res.tipo || 'código').toUpperCase());
       } else {
-        toast('No se pudo formatear: ' + (res.error || 'formato inválido'));
+        toast('No se pudo formatear el contenido');
       }
     });
   }
+
+  txtArea.addEventListener('paste', function(){
+    setTimeout(function(){
+      autoFormatearSiMinificado(txtArea, lado);
+      if (txtArea._actualizarSintaxis) txtArea._actualizarSintaxis();
+      actualizarStatsPanel(lado);
+    }, 40);
+  });
 }
 bindQuickButtons('A');
 bindQuickButtons('B');
@@ -2591,6 +2851,8 @@ if (btnSwapDiff) {
     var temp = edA.value;
     edA.value = edB.value;
     edB.value = temp;
+    if (edA._actualizarSintaxis) edA._actualizarSintaxis();
+    if (edB._actualizarSintaxis) edB._actualizarSintaxis();
     actualizarStatsPanel('A');
     actualizarStatsPanel('B');
     toast('Documentos A y B intercambiados');
@@ -2604,8 +2866,12 @@ if (btnSwapDiff) {
 var btnLimpiarDiff = $('btnLimpiarDiff');
 if (btnLimpiarDiff) {
   btnLimpiarDiff.addEventListener('click', function(){
-    $('diffEntradaA').value = '';
-    $('diffEntradaB').value = '';
+    var edA = $('diffEntradaA');
+    var edB = $('diffEntradaB');
+    edA.value = '';
+    edB.value = '';
+    if (edA._actualizarSintaxis) edA._actualizarSintaxis();
+    if (edB._actualizarSintaxis) edB._actualizarSintaxis();
     $('diffSalidaBox').style.display = 'none';
     actualizarStatsPanel('A');
     actualizarStatsPanel('B');
@@ -2713,8 +2979,16 @@ function prepararParaDiff(rawTxt, modoForzado) {
         textoFormateado: fmtXml,
         lineas: fmtXml.split(/\r?\n/)
       };
-    } else if (modoForzado === 'xml') {
-      return { ok: false, error: analXml.error ? analXml.error.mensaje : 'XML inválido', tipo: 'xml', lineas: t.split(/\r?\n/), textoFormateado: t, objeto: null };
+    } else {
+      var fmtFallback = prettyPrintXml(t, '  ');
+      return {
+        ok: true,
+        tipo: 'xml',
+        doc: null,
+        objeto: null,
+        textoFormateado: fmtFallback,
+        lineas: fmtFallback.split(/\r?\n/)
+      };
     }
   }
 
