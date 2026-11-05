@@ -16,9 +16,12 @@
   .v-toolbar button, .v-toolbar label.btn{ padding:8px 13px; font-size:13px; }
   label.btn{ display:inline-flex; align-items:center; gap:6px; cursor:pointer; margin:0; text-transform:none; letter-spacing:0; }
   #entrada{
-    width:100%; min-height:190px; max-height:60vh; resize:vertical; background:var(--panel-alt); border:1px solid var(--panel-edge);
-    color:var(--text); font-family:var(--mono); font-size:13px; line-height:1.5; padding:12px 14px; border-radius:10px; outline:none;
-    white-space:pre; overflow:auto; tab-size:4; transition:border-color .15s ease, box-shadow .15s ease;
+    width:100%; min-height:190px; max-height:60vh; resize:vertical;
+    background:transparent !important; background-color:transparent !important;
+    border:none !important; outline:none !important; box-shadow:none !important;
+    color:transparent !important; -webkit-text-fill-color:transparent !important; caret-color:#38bdf8 !important;
+    font-family:var(--mono); font-size:13px; line-height:1.5; padding:12px 14px; border-radius:0;
+    white-space:pre; overflow:auto; tab-size:4; box-sizing:border-box !important;
   }
   #entrada:focus{ border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft); }
   #entrada.drag{ border-color:var(--accent); background:var(--accent-soft); }
@@ -51,7 +54,7 @@
   .code-block{ background:#1e1e1e; color:#d4d4d4; border:1px solid #2d2d2d; border-radius:9px; padding:10px 0; font-family:var(--mono); font-size:13px; line-height:1.6; margin:0; max-height:70vh; min-height:120px; overflow:auto; resize:vertical; tab-size:4; }
   :root[data-theme="oled"] .code-block{ background:#050608; border-color:rgba(255,255,255,0.08); color:#f1f5f9; }
   :root[data-theme="oled"] .code-line .ln{ border-right-color:rgba(255,255,255,0.08); color:#475569; }
-  :root[data-theme="oled"] #entrada{ background:#050608; border-color:rgba(255,255,255,0.08); color:#f8fafc; }
+  :root[data-theme="oled"] #entrada{ background:transparent !important; border:none !important; color:transparent !important; -webkit-text-fill-color:transparent !important; }
   .code-line{ display:flex; contain:layout style; }
   .code-line:hover{ background:rgba(255,255,255,.04); }
   .code-line .ln{ flex-shrink:0; width:52px; text-align:right; padding-right:12px; margin-right:12px; color:#6e7681; border-right:1px solid #333; user-select:none; }
@@ -152,12 +155,14 @@
   
   .diff-textarea {
     width:100%; min-height:260px; max-height:55vh; resize:vertical;
-    background:var(--panel-alt); border:1px solid var(--panel-edge);
-    color:var(--text); font-family:var(--mono); font-size:12.5px; line-height:1.55;
-    padding:10px 12px; border-radius:8px; outline:none; white-space:pre; overflow:auto;
-    tab-size:2; transition:border-color .15s ease, box-shadow .15s ease;
+    background:transparent !important; background-color:transparent !important;
+    border:none !important; outline:none !important; box-shadow:none !important;
+    color:transparent !important; -webkit-text-fill-color:transparent !important; caret-color:#38bdf8 !important;
+    font-family:var(--mono); font-size:12.5px; line-height:1.55;
+    padding:10px 12px; border-radius:0; white-space:pre; overflow:auto;
+    tab-size:2; box-sizing:border-box !important;
   }
-  :root[data-theme="oled"] .diff-textarea { background:#050608; border-color:rgba(255,255,255,0.08); color:#f8fafc; }
+  :root[data-theme="oled"] .diff-textarea { background:transparent !important; border:none !important; color:transparent !important; -webkit-text-fill-color:transparent !important; }
   .diff-textarea:focus { border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft); }
   .diff-textarea.drag { border-color:var(--accent); background:var(--accent-soft); }
   .diff-footer-stats { display:flex; align-items:center; justify-content:space-between; margin-top:6px; font-size:11.5px; color:var(--muted); }
@@ -249,7 +254,7 @@
      ====================================================================== */
   .syntax-editor-container {
     position:relative; width:100%; min-height:200px;
-    background:var(--panel-alt); border:1px solid var(--panel-edge);
+    background:var(--panel-alt) !important; border:1px solid var(--panel-edge) !important;
     border-radius:10px; overflow:hidden;
     transition:border-color .15s ease, box-shadow .15s ease;
   }
@@ -258,15 +263,17 @@
     box-shadow:0 0 0 3px var(--accent-soft) !important;
   }
   :root[data-theme="oled"] .syntax-editor-container {
-    background:#050608; border-color:rgba(255,255,255,0.08);
+    background:#050608 !important; border-color:rgba(255,255,255,0.08) !important;
   }
   .syntax-backdrop {
-    position:absolute; inset:0; margin:0; padding:12px 14px;
+    position:absolute; top:0; left:0; right:0; bottom:0; width:100%; height:100%;
+    margin:0; padding:12px 14px;
     font-family:var(--mono) !important; font-size:13px !important;
     line-height:1.5 !important; tab-size:4; -moz-tab-size:4;
     white-space:pre !important; overflow:hidden !important;
-    pointer-events:none !important; z-index:1; color:#d4d4d4;
+    pointer-events:none !important; z-index:1; color:#d4d4d4 !important;
     box-sizing:border-box !important; border:none !important;
+    background:transparent !important; background-color:transparent !important;
     letter-spacing:normal !important; word-spacing:normal !important;
   }
   .syntax-backdrop code {
@@ -275,7 +282,11 @@
     -moz-tab-size:inherit !important; letter-spacing:inherit !important;
     white-space:pre !important; display:block !important;
     margin:0 !important; padding:0 !important; border:none !important;
-    background:transparent !important; color:inherit;
+    background:transparent !important; background-color:transparent !important;
+    color:#e2e8f0 !important;
+  }
+  :root[data-theme="oled"] .syntax-backdrop code {
+    color:#f8fafc !important;
   }
   .syntax-textarea {
     position:relative; z-index:2; width:100% !important; min-height:200px; max-height:60vh;
@@ -284,7 +295,8 @@
     line-height:1.5 !important; tab-size:4; -moz-tab-size:4;
     white-space:pre !important; overflow:auto !important;
     border:none !important; outline:none !important; box-sizing:border-box !important;
-    background:transparent !important; color:transparent !important;
+    background:transparent !important; background-color:transparent !important;
+    color:transparent !important;
     -webkit-text-fill-color:transparent !important;
     caret-color:#38bdf8 !important; border-radius:0 !important;
     letter-spacing:normal !important; word-spacing:normal !important;
@@ -293,17 +305,22 @@
   :root[data-theme="oled"] .syntax-textarea,
   :root[data-theme="dark"] .syntax-textarea,
   #entrada.syntax-textarea,
-  .diff-textarea.syntax-textarea {
+  .diff-textarea.syntax-textarea,
+  :root[data-theme="oled"] #entrada.syntax-textarea,
+  :root[data-theme="oled"] .diff-textarea.syntax-textarea {
     background:transparent !important;
+    background-color:transparent !important;
     color:transparent !important;
     -webkit-text-fill-color:transparent !important;
     border:none !important;
     box-shadow:none !important;
   }
-  .syntax-textarea::placeholder {
-    color:var(--txt-dim, #64748b) !important;
-    -webkit-text-fill-color:var(--txt-dim, #64748b) !important;
-    opacity:0.75 !important;
+  .syntax-textarea::placeholder,
+  #entrada.syntax-textarea::placeholder,
+  .diff-textarea.syntax-textarea::placeholder {
+    color:var(--muted, #64748b) !important;
+    -webkit-text-fill-color:var(--muted, #64748b) !important;
+    opacity:0.85 !important;
   }
   .syntax-textarea::selection {
     background:rgba(56, 189, 248, 0.35) !important;
@@ -323,6 +340,7 @@
     padding:10px 12px !important;
     font-size:12.5px !important; line-height:1.55 !important;
     tab-size:2 !important; -moz-tab-size:2 !important;
+    top:0; left:0; right:0; bottom:0; width:100%; height:100%;
   }
   .ed-wrap.fullscreen .syntax-editor-container { flex:1 1 0; max-height:none; min-height:0; resize:none; }
   .ed-wrap.fullscreen .syntax-textarea { height:100% !important; max-height:none !important; min-height:0 !important; resize:none; }
@@ -844,6 +862,8 @@ function vincularEditorConSintaxis(textareaId, codeId, obtenerModo) {
   }
 
   t.addEventListener('input', actualizar);
+  t.addEventListener('paste', function(){ setTimeout(actualizar, 20); });
+  t.addEventListener('change', actualizar);
   t.addEventListener('scroll', sincronizarScroll);
   t.addEventListener('keydown', function(e) {
     if (e.key === 'Tab' && !e.ctrlKey && !e.altKey) {
@@ -2400,12 +2420,17 @@ function activarSeccion(seccion) {
     if (seccionVisor) seccionVisor.style.display = 'none';
     if (seccionComparador) seccionComparador.style.display = 'block';
     if (txtSeccionInfo) txtSeccionInfo.textContent = 'Comparador inteligente de diferencias (Diff)';
+    var edA = $('diffEntradaA'), edB = $('diffEntradaB');
+    if (edA && edA._actualizarSintaxis) edA._actualizarSintaxis();
+    if (edB && edB._actualizarSintaxis) edB._actualizarSintaxis();
   } else {
     if (tabModoVisor) tabModoVisor.classList.add('active');
     if (tabModoComparador) tabModoComparador.classList.remove('active');
     if (seccionComparador) seccionComparador.style.display = 'none';
     if (seccionVisor) seccionVisor.style.display = 'block';
     if (txtSeccionInfo) txtSeccionInfo.textContent = 'Analizador y visor en vivo';
+    var ed = $('entrada');
+    if (ed && ed._actualizarSintaxis) ed._actualizarSintaxis();
   }
 }
 
