@@ -135,6 +135,114 @@
   .wms-btn-extract:hover { transform:translateY(-1px); box-shadow:0 4px 14px rgba(2,132,199,0.5); }
   .wms-tag { font-size:11px; padding:2px 8px; border-radius:999px; background:rgba(56,189,248,0.15); color:#38bdf8; font-weight:700; }
   
+  /* ======================================================================
+     ESTILOS DEL COMPARADOR UNIVERSAL XML / JSON (DIFF)
+     ====================================================================== */
+  .diff-badge-new { background:linear-gradient(135deg, #10b981, #059669); color:#fff; font-size:10px; font-weight:800; padding:2px 7px; border-radius:999px; letter-spacing:0.3px; box-shadow:0 0 8px rgba(16,185,129,0.35); }
+  .diff-main-card { background:linear-gradient(180deg, var(--panel) 0%, var(--panel-alt) 100%); border:1px solid var(--panel-edge); border-radius:14px; padding:16px 20px; margin-bottom:16px; box-shadow:0 8px 25px rgba(0,0,0,0.22); }
+  .diff-options-bar { display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-top:12px; padding:10px 14px; border-radius:10px; background:rgba(0,0,0,0.2); border:1px solid var(--panel-edge); font-size:12px; }
+  .diff-grid-inputs { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:14px; }
+  @media (max-width: 900px) { .diff-grid-inputs { grid-template-columns:1fr; } }
+  .diff-panel-box { background:var(--panel); border:1px solid var(--panel-edge); border-radius:10px; padding:12px; display:flex; flex-direction:column; min-width:0; }
+  .diff-panel-topbar { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px; flex-wrap:wrap; }
+  .diff-panel-topbar .btn, .diff-panel-topbar button { padding:6px 11px; font-size:12px; }
+  .diff-badge-doc { font-weight:800; font-size:11px; padding:3px 9px; border-radius:6px; letter-spacing:0.5px; }
+  .diff-badge-doc.doc-a { background:rgba(56,189,248,0.18); color:#38bdf8; border:1px solid rgba(56,189,248,0.35); }
+  .diff-badge-doc.doc-b { background:rgba(168,85,247,0.18); color:#c084fc; border:1px solid rgba(168,85,247,0.35); }
+  
+  .diff-textarea {
+    width:100%; min-height:260px; max-height:55vh; resize:vertical;
+    background:var(--panel-alt); border:1px solid var(--panel-edge);
+    color:var(--text); font-family:var(--mono); font-size:12.5px; line-height:1.55;
+    padding:10px 12px; border-radius:8px; outline:none; white-space:pre; overflow:auto;
+    tab-size:2; transition:border-color .15s ease, box-shadow .15s ease;
+  }
+  :root[data-theme="oled"] .diff-textarea { background:#050608; border-color:rgba(255,255,255,0.08); color:#f8fafc; }
+  .diff-textarea:focus { border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft); }
+  .diff-textarea.drag { border-color:var(--accent); background:var(--accent-soft); }
+  .diff-footer-stats { display:flex; align-items:center; justify-content:space-between; margin-top:6px; font-size:11.5px; color:var(--muted); }
+  
+  .diff-btn-compare {
+    font-weight:700; background:linear-gradient(135deg, var(--accent), var(--accent-dark)); color:#fff;
+    border:none; padding:9px 22px; border-radius:9px; cursor:pointer; font-size:13.5px;
+    display:inline-flex; align-items:center; gap:8px; box-shadow:0 3px 12px rgba(var(--accent-rgb),0.35);
+    transition:all .15s ease;
+  }
+  .diff-btn-compare:hover { transform:translateY(-1px); box-shadow:0 5px 16px rgba(var(--accent-rgb),0.5); }
+  .diff-btn-compare:disabled { opacity:0.6; cursor:not-allowed; transform:none; }
+
+  /* Alertas de resultado */
+  .diff-alert-identical {
+    background:linear-gradient(90deg, rgba(16,185,129,0.18) 0%, rgba(16,185,129,0.05) 100%);
+    border:1px solid #10b981; border-left:5px solid #10b981; border-radius:10px;
+    padding:14px 18px; display:flex; align-items:center; gap:14px; margin-bottom:14px;
+    animation: fadeIn 0.3s ease;
+  }
+  .diff-alert-diffs {
+    background:linear-gradient(90deg, rgba(245,158,11,0.18) 0%, rgba(245,158,11,0.05) 100%);
+    border:1px solid #f59e0b; border-left:5px solid #f59e0b; border-radius:10px;
+    padding:14px 18px; display:flex; align-items:center; gap:14px; margin-bottom:14px;
+    animation: fadeIn 0.3s ease;
+  }
+  .diff-cross-banner {
+    background:linear-gradient(90deg, rgba(56,189,248,0.18) 0%, rgba(56,189,248,0.04) 100%);
+    border:1px solid rgba(56,189,248,0.35); border-left:4px solid #38bdf8; border-radius:8px;
+    padding:8px 14px; margin-bottom:14px; font-size:12.5px; color:#e0f2fe; display:flex; align-items:center; gap:8px;
+  }
+
+  .diff-stat-chip { display:inline-flex; align-items:center; gap:5px; font-size:12px; font-weight:700; padding:4px 10px; border-radius:999px; }
+  .diff-chip-add { background:rgba(16,185,129,0.18); color:#10b981; border:1px solid rgba(16,185,129,0.3); }
+  .diff-chip-del { background:rgba(239,68,68,0.18); color:#ef4444; border:1px solid rgba(239,68,68,0.3); }
+  .diff-chip-mod { background:rgba(245,158,11,0.18); color:#f59e0b; border:1px solid rgba(245,158,11,0.3); }
+  .diff-chip-eq  { background:rgba(148,163,184,0.15); color:var(--muted); border:1px solid var(--panel-edge); }
+
+  /* Tabla de resumen de diferencias */
+  .diff-table-wrap { max-height:360px; overflow-y:auto; border:1px solid var(--panel-edge); border-radius:9px; margin-bottom:16px; background:var(--panel-alt); }
+  .diff-table { width:100%; border-collapse:collapse; font-size:12px; font-family:var(--sans); }
+  .diff-table th { background:var(--panel); color:var(--muted); text-align:left; padding:9px 12px; font-weight:700; border-bottom:1px solid var(--panel-edge); position:sticky; top:0; z-index:2; }
+  .diff-table td { padding:8px 12px; border-bottom:1px solid var(--panel-edge); vertical-align:middle; font-family:var(--mono); }
+  .diff-table tr:hover { background:var(--accent-soft); cursor:pointer; }
+  .diff-table .tag-del { display:inline-block; padding:2px 7px; border-radius:4px; background:rgba(239,68,68,0.18); color:#ef4444; font-weight:800; font-size:10.5px; }
+  .diff-table .tag-add { display:inline-block; padding:2px 7px; border-radius:4px; background:rgba(16,185,129,0.18); color:#10b981; font-weight:800; font-size:10.5px; }
+  .diff-table .tag-mod { display:inline-block; padding:2px 7px; border-radius:4px; background:rgba(245,158,11,0.18); color:#f59e0b; font-weight:800; font-size:10.5px; }
+  .diff-val-preview { max-width:260px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; display:inline-block; vertical-align:middle; }
+
+  /* Visor visual de código Diff */
+  .diff-viewer-wrap {
+    border:1px solid #2d2d2d; border-radius:9px; background:#1e1e1e; color:#d4d4d4;
+    font-family:var(--mono); font-size:12.5px; line-height:1.6; max-height:70vh; min-height:180px;
+    overflow:auto; tab-size:2; position:relative;
+  }
+  :root[data-theme="oled"] .diff-viewer-wrap { background:#050608; border-color:rgba(255,255,255,0.08); color:#f1f5f9; }
+  
+  .diff-side-by-side { display:grid; grid-template-columns:1fr 1fr; width:100%; min-width:820px; }
+  .diff-col { overflow-x:auto; }
+  .diff-col:first-child { border-right:1px solid #333; }
+  :root[data-theme="oled"] .diff-col:first-child { border-right-color:rgba(255,255,255,0.08); }
+  
+  .diff-col-header { background:rgba(0,0,0,0.35); padding:6px 12px; font-weight:700; font-size:11.5px; color:var(--muted); border-bottom:1px solid #333; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:5; }
+  :root[data-theme="oled"] .diff-col-header { border-bottom-color:rgba(255,255,255,0.08); background:rgba(5,6,8,0.9); }
+
+  .diff-line-row { display:flex; align-items:stretch; contain:layout style; min-height:22px; }
+  .diff-line-row:hover { filter:brightness(1.15); }
+  .diff-ln { width:48px; text-align:right; padding-right:8px; color:#6e7681; border-right:1px solid #333; user-select:none; flex-shrink:0; background:rgba(0,0,0,0.18); font-size:11.5px; }
+  :root[data-theme="oled"] .diff-ln { border-right-color:rgba(255,255,255,0.08); }
+  .diff-content { flex:1; padding-left:8px; padding-right:8px; white-space:pre-wrap; word-break:break-all; min-width:0; }
+
+  .diff-row-del { background:rgba(239, 68, 68, 0.16) !important; border-left:3px solid #ef4444 !important; }
+  .diff-row-add { background:rgba(16, 185, 129, 0.16) !important; border-left:3px solid #10b981 !important; }
+  .diff-row-mod { background:rgba(245, 158, 11, 0.16) !important; border-left:3px solid #f59e0b !important; }
+  .diff-row-empty { background:rgba(0,0,0,0.2) !important; opacity:0.35; user-select:none; }
+
+  .diff-token-del { background:rgba(239, 68, 68, 0.45); color:#fff; border-radius:3px; padding:0 3px; font-weight:700; }
+  .diff-token-add { background:rgba(16, 185, 129, 0.45); color:#fff; border-radius:3px; padding:0 3px; font-weight:700; }
+  .diff-token-mod { background:rgba(245, 158, 11, 0.45); color:#fff; border-radius:3px; padding:0 3px; font-weight:700; }
+  .diff-cur-focus { outline:2px solid #ffd54a !important; outline-offset:-2px; background:rgba(255,213,74,0.28) !important; }
+
+  @keyframes fadeIn {
+    from { opacity:0; transform:translateY(-4px); }
+    to { opacity:1; transform:translateY(0); }
+  }
 </style>
 
 <div x-data="visorAlpineApp()">
@@ -146,6 +254,25 @@
   </div>
 </div>
 <p class="sub">Pega aquí un XML o un JSON (o abre / arrastra un archivo) y se muestra formateado, validado y con colores. Todo se procesa en tu navegador: no se guarda ni se envía nada.</p>
+
+<!-- SELECTOR DE SECCIÓN PRINCIPAL: VISOR VS COMPARADOR -->
+<div class="v-main-tabs" style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin:14px 0 16px; flex-wrap:wrap;">
+  <div class="seg" id="segPrincipal">
+    <button type="button" class="active" id="tabModoVisor" data-seccion="visor" style="font-weight:700; display:inline-flex; align-items:center; gap:6px;">
+      <span>👁️</span> Visor e Inspección
+    </button>
+    <button type="button" id="tabModoComparador" data-seccion="comparador" style="font-weight:700; display:inline-flex; align-items:center; gap:6px;">
+      <span>⚖️</span> Comparar XML / JSON
+      <span class="diff-badge-new">DIFF</span>
+    </button>
+  </div>
+  <div style="font-size:12.5px; color:var(--muted); display:flex; align-items:center; gap:6px;">
+    <span id="txtSeccionInfo">Analizador y visor en vivo</span>
+  </div>
+</div>
+
+<!-- SECCIÓN 1: VISOR ORIGINAL (Extractor + Entrada + Salida) -->
+<div id="seccionVisor">
 
 
 <!-- Extractor de Pedidos WMS en Logs / JSON -->
@@ -232,6 +359,7 @@
     <button type="button" class="secondary" id="btnMinificar" title="Quita todos los espacios (Minificar) para un curl o db">Minificar</button>
     <button type="button" class="secondary" id="btnAmpliarEntrada" title="Pantalla completa (Esc para salir)">⤢ Ampliar</button>
     <button type="button" class="secondary" id="btnLimpiar">Limpiar</button>
+    <button type="button" class="secondary" id="btnEnviarAComparar" title="Enviar este contenido al Comparador para cotejarlo con otro archivo">⚖️ Llevar a Comparar</button>
   </div>
   <textarea id="entrada" spellcheck="false" wrap="off" placeholder="Pega aquí tu XML o JSON…"></textarea>
   <div class="hint">También puedes arrastrar un archivo sobre esta caja. Los números grandes (NIT, IDs) se respetan tal cual, sin redondear.</div>
@@ -284,6 +412,221 @@
   </div>
 </div>
 </div>
+
+<!-- SECCIÓN 2: COMPARADOR UNIVERSAL XML / JSON (DIFF) -->
+<div id="seccionComparador" style="display:none;">
+  <!-- Card Principal de Controles y Opciones -->
+  <div class="card diff-main-card">
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <span style="font-size:26px;">⚖️</span>
+        <div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <strong style="font-size:16px; color:var(--text); letter-spacing:-0.01em;">Comparador Universal de XML y JSON</strong>
+            <span class="chip info" style="font-size:11px;">Diff Inteligente</span>
+          </div>
+          <span style="font-size:12.5px; color:var(--muted); display:block; margin-top:2px;">
+            Compara XML vs XML, JSON vs JSON, o XML vs JSON. Detecta automáticamente adiciones, eliminaciones y modificaciones.
+          </span>
+        </div>
+      </div>
+      <!-- Botones de Acción Principal -->
+      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+        <button type="button" class="diff-btn-compare" id="btnEjecutarDiff" title="Comparar los dos documentos ahora">
+          <span>⚖️</span> Comparar Ahora
+        </button>
+        <button type="button" class="secondary" id="btnSwapDiff" title="Intercambiar Documento A con Documento B">
+          ⇄ Intercambiar (A ⇄ B)
+        </button>
+        <button type="button" class="secondary" id="btnCargarEjemploDiff" title="Cargar un ejemplo con diferencias reales">
+          ✨ Cargar Ejemplo
+        </button>
+        <button type="button" class="secondary" id="btnLimpiarDiff" title="Limpiar ambos paneles">
+          🧹 Limpiar Todo
+        </button>
+      </div>
+    </div>
+
+    <!-- Barra de Opciones Avanzadas -->
+    <div class="diff-options-bar">
+      <span style="font-weight:700; color:var(--text); font-size:12px; display:inline-flex; align-items:center; gap:4px;">
+        <span>⚙️</span> Opciones:
+      </span>
+      <label class="chk chk-highlight" title="Descarta diferencias de espacios o tabulaciones antes y después de cada línea">
+        <input type="checkbox" id="chkDiffTrim" checked> Ignorar espacios en extremos
+      </label>
+      <label class="chk chk-highlight" title="Ordena alfabéticamente las claves del JSON antes de comparar para evitar falsos positivos por orden diferente">
+        <input type="checkbox" id="chkDiffSortKeys" checked> Normalizar orden de claves (JSON)
+      </label>
+      <label class="chk" title="Si un documento es XML y el otro JSON, convierte y normaliza para comparar semánticamente sus campos y valores">
+        <input type="checkbox" id="chkDiffCross" checked> Modo cruzado (XML ⇄ JSON)
+      </label>
+      <label class="chk" title="Ignorar diferencias entre mayúsculas y minúsculas">
+        <input type="checkbox" id="chkDiffCase"> Ignorar mayúsculas
+      </label>
+    </div>
+
+    <!-- Grilla de Entradas Duales (Lado A y Lado B) -->
+    <div class="diff-grid-inputs">
+      <!-- PANEL A -->
+      <div class="diff-panel-box">
+        <div class="diff-panel-topbar">
+          <div style="display:inline-flex; align-items:center; gap:6px;">
+            <span class="diff-badge-doc doc-a">DOCUMENTO A (BASE)</span>
+            <div class="seg" id="segModoA" style="padding:2px;">
+              <button type="button" class="active" data-mododiff="auto" style="padding:4px 9px; font-size:11.5px;">Auto</button>
+              <button type="button" data-mododiff="json" style="padding:4px 9px; font-size:11.5px;">JSON</button>
+              <button type="button" data-mododiff="xml" style="padding:4px 9px; font-size:11.5px;">XML</button>
+            </div>
+          </div>
+          <div style="display:inline-flex; align-items:center; gap:5px;">
+            <label class="btn secondary" for="inputDiffFileA" title="Abrir archivo XML, JSON, TXT, LOG, SOAP, WSDL">
+              <span>📁</span> Abrir
+            </label>
+            <input type="file" id="inputDiffFileA" accept=".log,.xml,.json,.txt,.xsd,.xsl,.xslt,.svg,.config,.csproj,.wsdl,.soap,.html,.ndjson" style="display:none;">
+            <button type="button" class="secondary" id="btnPegarA" title="Pegar desde el portapapeles">📋 Pegar</button>
+            <button type="button" class="secondary" id="btnFmtA" title="Formatear este documento">🪄 Formatear</button>
+            <button type="button" class="secondary" id="btnLimpiarA" title="Borrar contenido de A">Limpiar</button>
+          </div>
+        </div>
+        <textarea id="diffEntradaA" class="diff-textarea" spellcheck="false" wrap="off" placeholder="Pega aquí el XML o JSON base (Documento A) o arrastra un archivo…"></textarea>
+        <div class="diff-footer-stats">
+          <span id="diffStatsA">Vacío · Pega o abre un archivo</span>
+          <span>Arrastra archivo aquí</span>
+        </div>
+      </div>
+
+      <!-- PANEL B -->
+      <div class="diff-panel-box">
+        <div class="diff-panel-topbar">
+          <div style="display:inline-flex; align-items:center; gap:6px;">
+            <span class="diff-badge-doc doc-b">DOCUMENTO B (A COMPARAR)</span>
+            <div class="seg" id="segModoB" style="padding:2px;">
+              <button type="button" class="active" data-mododiff="auto" style="padding:4px 9px; font-size:11.5px;">Auto</button>
+              <button type="button" data-mododiff="json" style="padding:4px 9px; font-size:11.5px;">JSON</button>
+              <button type="button" data-mododiff="xml" style="padding:4px 9px; font-size:11.5px;">XML</button>
+            </div>
+          </div>
+          <div style="display:inline-flex; align-items:center; gap:5px;">
+            <label class="btn secondary" for="inputDiffFileB" title="Abrir archivo XML, JSON, TXT, LOG, SOAP, WSDL">
+              <span>📁</span> Abrir
+            </label>
+            <input type="file" id="inputDiffFileB" accept=".log,.xml,.json,.txt,.xsd,.xsl,.xslt,.svg,.config,.csproj,.wsdl,.soap,.html,.ndjson" style="display:none;">
+            <button type="button" class="secondary" id="btnPegarB" title="Pegar desde el portapapeles">📋 Pegar</button>
+            <button type="button" class="secondary" id="btnFmtB" title="Formatear este documento">🪄 Formatear</button>
+            <button type="button" class="secondary" id="btnLimpiarB" title="Borrar contenido de B">Limpiar</button>
+          </div>
+        </div>
+        <textarea id="diffEntradaB" class="diff-textarea" spellcheck="false" wrap="off" placeholder="Pega aquí el XML o JSON a comparar (Documento B) o arrastra un archivo…"></textarea>
+        <div class="diff-footer-stats">
+          <span id="diffStatsB">Vacío · Pega o abre un archivo</span>
+          <span>Arrastra archivo aquí</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECCIÓN DE RESULTADOS DE LA COMPARACIÓN -->
+  <div id="diffSalidaBox" style="display:none;">
+    <!-- Alerta de Identicidad (Cuando NO hay diferencias) -->
+    <div id="diffAlertIdentical" class="diff-alert-identical" style="display:none;">
+      <span style="font-size:32px;">🎉</span>
+      <div style="flex:1;">
+        <strong style="font-size:16px; color:#10b981; display:block;">¡Los dos archivos son 100% idénticos!</strong>
+        <span style="font-size:13px; color:var(--text); display:block; margin-top:2px;">
+          No se encontró ninguna diferencia en la estructura, claves, valores ni etiquetas. Todo coincide a la perfección.
+        </span>
+      </div>
+      <span class="diff-stat-chip diff-chip-add" style="font-size:13px;">✔ 0 diferencias</span>
+    </div>
+
+    <!-- Alerta de Diferencias Encontradas -->
+    <div id="diffAlertDiffs" class="diff-alert-diffs" style="display:none;">
+      <span style="font-size:32px;">⚠️</span>
+      <div style="flex:1;">
+        <strong style="font-size:16px; color:#f59e0b; display:block;" id="diffResumenTitulo">Se encontraron diferencias</strong>
+        <span style="font-size:13px; color:var(--text); display:block; margin-top:2px;" id="diffResumenSub">
+          Revisa el desglose detallado a continuación y la vista interactiva con cambios resaltados.
+        </span>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+        <span class="diff-stat-chip diff-chip-del" id="chipDelCount">🔴 0 eliminadas</span>
+        <span class="diff-stat-chip diff-chip-add" id="chipAddCount">🟢 0 agregadas</span>
+        <span class="diff-stat-chip diff-chip-mod" id="chipModCount">🟡 0 modificadas</span>
+        <span class="diff-stat-chip diff-chip-eq"  id="chipEqCount">⚪ 0 iguales</span>
+      </div>
+    </div>
+
+    <!-- Banner Informativo de Modo Cruzado (XML vs JSON) -->
+    <div id="diffCrossBanner" class="diff-cross-banner" style="display:none;">
+      <span style="font-size:16px;">💡</span>
+      <span id="diffCrossBannerTxt" style="flex:1;">
+        <b>Modo Cruzado Activo:</b> Se comparó un documento XML con un JSON. Se normalizó la estructura de datos para que puedas verificar los valores y atributos directamente.
+      </span>
+    </div>
+
+    <!-- Desglose Específico de Diferencias (Tabla / Lista Interactiva) -->
+    <div class="card" id="cardDesgloseDiffs" style="padding:16px; margin-bottom:16px;">
+      <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <strong style="font-size:14px; color:var(--text);">📋 Desglose Detallado de Diferencias</strong>
+          <span style="font-size:12px; color:var(--muted);">(Haz clic en cualquier fila para ir directamente a la línea)</span>
+        </div>
+        <div class="seg" id="segFiltroDiffs" style="padding:2px;">
+          <button type="button" class="active" data-filtro="todos" style="padding:4px 9px; font-size:11.5px;">Todos (<span id="cntFiltroTodos">0</span>)</button>
+          <button type="button" data-filtro="del" style="padding:4px 9px; font-size:11.5px;">🔴 Eliminados (<span id="cntFiltroDel">0</span>)</button>
+          <button type="button" data-filtro="add" style="padding:4px 9px; font-size:11.5px;">🟢 Agregados (<span id="cntFiltroAdd">0</span>)</button>
+          <button type="button" data-filtro="mod" style="padding:4px 9px; font-size:11.5px;">🟡 Modificados (<span id="cntFiltroMod">0</span>)</button>
+        </div>
+      </div>
+
+      <div class="diff-table-wrap">
+        <table class="diff-table" id="tablaDiffs">
+          <thead>
+            <tr>
+              <th style="width:40px;">#</th>
+              <th style="width:110px;">Tipo</th>
+              <th style="width:220px;">Ubicación / Clave / Nodo</th>
+              <th>Valor en Documento A</th>
+              <th>Valor en Documento B</th>
+              <th style="width:100px; text-align:center;">Acción</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyDiffs">
+            <!-- Filas dinámicas -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Visor Visual de Código Diff -->
+    <div class="card" style="padding:16px;">
+      <div class="v-tabs" style="margin-bottom:10px;">
+        <div class="seg" id="segVistaDiff">
+          <button type="button" class="active" data-vistadiff="side">◫ Lado a Lado</button>
+          <button type="button" data-vistadiff="unified">☰ Líneas Unificadas</button>
+        </div>
+        <span class="sp"></span>
+        <div style="display:inline-flex; align-items:center; gap:6px;">
+          <button type="button" class="mini" id="bDiffFirst" title="Primera diferencia">⏮</button>
+          <button type="button" class="mini" id="bDiffPrev" title="Diferencia anterior">▲</button>
+          <span style="font-size:12px; font-family:var(--mono); color:var(--text); min-width:85px; text-align:center;" id="diffNavCounter">0 de 0</span>
+          <button type="button" class="mini" id="bDiffNext" title="Diferencia siguiente">▼</button>
+          <button type="button" class="mini" id="bDiffLast" title="Última diferencia">⏭</button>
+        </div>
+        <span class="sp"></span>
+        <button type="button" class="secondary" id="btnCopiarReporteDiff" style="font-size:12px; padding:6px 12px;">📋 Copiar Reporte</button>
+        <button type="button" class="secondary" id="btnDescargarReporteDiff" style="font-size:12px; padding:6px 12px;">⬇ Descargar Reporte</button>
+      </div>
+
+      <!-- Contenedor del Visor Visual de Diferencias -->
+      <div class="diff-viewer-wrap" id="diffViewerWrap">
+        <!-- Render dinámico aquí -->
+      </div>
+    </div>
+  </div>
+</div>
+</div> <!-- Fin de visorAlpineApp -->
 
 <div class="toast" id="toast">Copiado</div>
 
@@ -1839,6 +2182,1208 @@ if (btnWmsDescargarJson) {
 
 
 // Para pruebas / uso avanzado
+/* ======================================================================
+   CONTROLADOR DEL COMPARADOR UNIVERSAL XML / JSON (DIFF)
+   ====================================================================== */
+
+var diffState = {
+  modoA: 'auto',
+  modoB: 'auto',
+  vista: 'side', // 'side' o 'unified'
+  filtro: 'todos', // 'todos', 'del', 'add', 'mod'
+  resParsedA: null,
+  resParsedB: null,
+  diffRows: [],
+  semanticDiffs: [],
+  curDiffIdx: -1,
+  diffLineIndices: []
+};
+
+// 1. Conmutador de secciones principales (Visor vs Comparador)
+var tabModoVisor = $('tabModoVisor');
+var tabModoComparador = $('tabModoComparador');
+var seccionVisor = $('seccionVisor');
+var seccionComparador = $('seccionComparador');
+var txtSeccionInfo = $('txtSeccionInfo');
+var btnEnviarAComparar = $('btnEnviarAComparar');
+
+function activarSeccion(seccion) {
+  if (seccion === 'comparador') {
+    if (tabModoComparador) tabModoComparador.classList.add('active');
+    if (tabModoVisor) tabModoVisor.classList.remove('active');
+    if (seccionVisor) seccionVisor.style.display = 'none';
+    if (seccionComparador) seccionComparador.style.display = 'block';
+    if (txtSeccionInfo) txtSeccionInfo.textContent = 'Comparador inteligente de diferencias (Diff)';
+  } else {
+    if (tabModoVisor) tabModoVisor.classList.add('active');
+    if (tabModoComparador) tabModoComparador.classList.remove('active');
+    if (seccionComparador) seccionComparador.style.display = 'none';
+    if (seccionVisor) seccionVisor.style.display = 'block';
+    if (txtSeccionInfo) txtSeccionInfo.textContent = 'Analizador y visor en vivo';
+  }
+}
+
+if (tabModoVisor) tabModoVisor.addEventListener('click', function(){ activarSeccion('visor'); });
+if (tabModoComparador) tabModoComparador.addEventListener('click', function(){ activarSeccion('comparador'); });
+
+if (btnEnviarAComparar) {
+  btnEnviarAComparar.addEventListener('click', function(){
+    var txt = entrada.value;
+    if (!txt.trim()) {
+      toast('El editor del visor está vacío');
+      return;
+    }
+    var edA = $('diffEntradaA');
+    if (edA) {
+      edA.value = txt;
+      actualizarStatsPanel('A');
+      activarSeccion('comparador');
+      toast('Contenido cargado en Documento A');
+    }
+  });
+}
+
+// 2. Selectores de modo individual (Auto / JSON / XML)
+function setupModoSeg(segId, lado) {
+  var seg = $(segId);
+  if (!seg) return;
+  seg.querySelectorAll('button').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      seg.querySelectorAll('button').forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      var m = btn.dataset.mododiff;
+      if (lado === 'A') diffState.modoA = m;
+      else diffState.modoB = m;
+      actualizarStatsPanel(lado);
+    });
+  });
+}
+setupModoSeg('segModoA', 'A');
+setupModoSeg('segModoB', 'B');
+
+// 3. Apertura de archivos para A y B
+function bindFileInput(inputId, textareaId, lado) {
+  var inp = $(inputId);
+  var txt = $(textareaId);
+  if (!inp || !txt) return;
+  inp.addEventListener('change', function(e){
+    var file = e.target.files && e.target.files[0];
+    if (!file) return;
+    var fr = new FileReader();
+    fr.onload = function(){
+      txt.value = decodificar(fr.result);
+      actualizarStatsPanel(lado);
+      toast('Archivo cargado en Documento ' + lado + ': ' + file.name);
+    };
+    fr.readAsArrayBuffer(file);
+    inp.value = '';
+  });
+}
+bindFileInput('inputDiffFileA', 'diffEntradaA', 'A');
+bindFileInput('inputDiffFileB', 'diffEntradaB', 'B');
+
+// Drag & drop en textareas de Diff
+function bindDragDrop(textareaId, lado) {
+  var t = $(textareaId);
+  if (!t) return;
+  t.addEventListener('dragover', function(e){ e.preventDefault(); t.classList.add('drag'); });
+  t.addEventListener('dragleave', function(){ t.classList.remove('drag'); });
+  t.addEventListener('drop', function(e){
+    e.preventDefault();
+    t.classList.remove('drag');
+    var file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+    if (file) {
+      var fr = new FileReader();
+      fr.onload = function(){
+        t.value = decodificar(fr.result);
+        actualizarStatsPanel(lado);
+        toast('Archivo cargado en Documento ' + lado + ': ' + file.name);
+      };
+      fr.readAsArrayBuffer(file);
+    }
+  });
+  t.addEventListener('input', function(){
+    actualizarStatsPanel(lado);
+  });
+}
+bindDragDrop('diffEntradaA', 'A');
+bindDragDrop('diffEntradaB', 'B');
+
+// Pegar y Limpiar
+function bindQuickButtons(lado) {
+  var btnPegar = $('btnPegar' + lado);
+  var btnLimpiar = $('btnLimpiar' + lado);
+  var btnFmt = $('btnFmt' + lado);
+  var txtArea = $('diffEntrada' + lado);
+
+  if (btnPegar) {
+    btnPegar.addEventListener('click', async function(){
+      try {
+        var clip = await navigator.clipboard.readText();
+        if (clip) {
+          txtArea.value = clip;
+          actualizarStatsPanel(lado);
+          toast('Pegado en Documento ' + lado);
+        }
+      } catch(err) {
+        toast('Usa Ctrl+V directamente en la caja');
+      }
+    });
+  }
+
+  if (btnLimpiar) {
+    btnLimpiar.addEventListener('click', function(){
+      txtArea.value = '';
+      actualizarStatsPanel(lado);
+      toast('Documento ' + lado + ' limpiado');
+    });
+  }
+
+  if (btnFmt) {
+    btnFmt.addEventListener('click', function(){
+      var raw = txtArea.value;
+      if (!raw.trim()) return;
+      var modo = lado === 'A' ? diffState.modoA : diffState.modoB;
+      var res = prepararParaDiff(raw, modo);
+      if (res.ok && res.textoFormateado) {
+        txtArea.value = res.textoFormateado;
+        actualizarStatsPanel(lado);
+        toast('Documento ' + lado + ' formateado');
+      } else {
+        toast('No se pudo formatear: ' + (res.error || 'formato inválido'));
+      }
+    });
+  }
+}
+bindQuickButtons('A');
+bindQuickButtons('B');
+
+// Intercambiar A y B
+var btnSwapDiff = $('btnSwapDiff');
+if (btnSwapDiff) {
+  btnSwapDiff.addEventListener('click', function(){
+    var edA = $('diffEntradaA');
+    var edB = $('diffEntradaB');
+    var temp = edA.value;
+    edA.value = edB.value;
+    edB.value = temp;
+    actualizarStatsPanel('A');
+    actualizarStatsPanel('B');
+    toast('Documentos A y B intercambiados');
+    if ($('diffSalidaBox').style.display !== 'none') {
+      ejecutarComparacion();
+    }
+  });
+}
+
+// Limpiar ambos
+var btnLimpiarDiff = $('btnLimpiarDiff');
+if (btnLimpiarDiff) {
+  btnLimpiarDiff.addEventListener('click', function(){
+    $('diffEntradaA').value = '';
+    $('diffEntradaB').value = '';
+    $('diffSalidaBox').style.display = 'none';
+    actualizarStatsPanel('A');
+    actualizarStatsPanel('B');
+    toast('Ambos documentos limpiados');
+  });
+}
+
+// Estadísticas de paneles individuales
+function actualizarStatsPanel(lado) {
+  var txt = $('diffEntrada' + lado).value;
+  var spanStats = $('diffStats' + lado);
+  if (!spanStats) return;
+  if (!txt.trim()) {
+    spanStats.textContent = 'Vacío · Pega o abre un archivo';
+    return;
+  }
+  var lineas = txt.split(/\r?\n/).length;
+  var tamStr = fmtTam(txt.length);
+  var modo = lado === 'A' ? diffState.modoA : diffState.modoB;
+  var tDetect = (modo === 'auto') ? (txt.trim().charAt(0) === '<' ? 'XML detectado' : 'JSON detectado') : (modo.toUpperCase());
+  spanStats.textContent = tDetect + ' · ' + fmtNum(lineas) + ' líneas · ' + tamStr;
+}
+
+// 4. PARSER UNIVERSAL ROBUSTO PARA XML & JSON
+function xmlNodeToCleanObj(node) {
+  if (node.nodeType === 3) return node.nodeValue.trim();
+  if (node.nodeType === 4) return node.nodeValue;
+  var obj = {};
+  if (node.attributes && node.attributes.length > 0) {
+    for (var i = 0; i < node.attributes.length; i++) {
+      var attr = node.attributes[i];
+      obj['@' + attr.name] = attr.value;
+    }
+  }
+  var textAccum = '';
+  var hasElementChildren = false;
+  if (node.childNodes && node.childNodes.length > 0) {
+    for (var j = 0; j < node.childNodes.length; j++) {
+      var child = node.childNodes[j];
+      if (child.nodeType === 1) {
+        hasElementChildren = true;
+        var name = child.nodeName;
+        var childVal = xmlNodeToCleanObj(child);
+        if (obj[name] !== undefined) {
+          if (!Array.isArray(obj[name])) obj[name] = [obj[name]];
+          obj[name].push(childVal);
+        } else {
+          obj[name] = childVal;
+        }
+      } else if (child.nodeType === 3 || child.nodeType === 4) {
+        textAccum += child.nodeValue;
+      }
+    }
+  }
+  if (!hasElementChildren) {
+    var tr = textAccum.trim();
+    if (Object.keys(obj).length === 0) return tr;
+    if (tr) obj['#text'] = tr;
+  }
+  return obj;
+}
+
+function formatearXmlCanonico(doc) {
+  var lineas = [];
+  emitXmlDoc(doc, '', 0, lineas);
+  return lineas.map(function(l){
+    return new Array(l.ind + 1).join('  ') + l.toks.map(function(tk){ return tk.t; }).join('');
+  }).join('\n');
+}
+
+function sortKeysRecursivo(item) {
+  if (Array.isArray(item)) return item.map(sortKeysRecursivo);
+  if (item !== null && typeof item === 'object') {
+    var sorted = {};
+    Object.keys(item).sort().forEach(function(k) {
+      sorted[k] = sortKeysRecursivo(item[k]);
+    });
+    return sorted;
+  }
+  return item;
+}
+
+function prepararParaDiff(rawTxt, modoForzado) {
+  var t = (rawTxt || '').replace(/^\uFEFF/, '').trim();
+  if (!t) return { ok: false, error: 'Documento vacío', tipo: 'vacio', lineas: [], textoFormateado: '', objeto: null };
+
+  var esXml = (modoForzado === 'xml') || (modoForzado !== 'json' && (t.charAt(0) === '<' || /^\s*<\?xml/i.test(t) || /<\/?[a-z_0-9]+(\s|:[a-z_0-9]+|>)/i.test(t)));
+
+  if (esXml) {
+    var analXml = analizarXml(t);
+    if (analXml.ok) {
+      var doc = analXml.doc;
+      var objXml = doc.documentElement ? xmlNodeToCleanObj(doc.documentElement) : {};
+      var rootTag = doc.documentElement ? doc.documentElement.nodeName : 'root';
+      var wrappedObj = {};
+      wrappedObj[rootTag] = objXml;
+      var fmtXml = formatearXmlCanonico(doc);
+      return {
+        ok: true,
+        tipo: 'xml',
+        doc: doc,
+        objeto: wrappedObj,
+        textoFormateado: fmtXml,
+        lineas: fmtXml.split(/\r?\n/)
+      };
+    } else if (modoForzado === 'xml') {
+      return { ok: false, error: analXml.error ? analXml.error.mensaje : 'XML inválido', tipo: 'xml', lineas: t.split(/\r?\n/), textoFormateado: t, objeto: null };
+    }
+  }
+
+  // Intento 1: JSON Estándar
+  try {
+    var objStd = JSON.parse(t);
+    var fmtStd = JSON.stringify(objStd, null, 2);
+    return {
+      ok: true,
+      tipo: 'json',
+      objeto: objStd,
+      textoFormateado: fmtStd,
+      lineas: fmtStd.split(/\r?\n/)
+    };
+  } catch(eStd) {
+    // Intento 2: NDJSON / Múltiples JSON por línea
+    if (t.indexOf('\n') !== -1 && !/^\s*\[/.test(t)) {
+      var lineasCrudas = t.split(/\r?\n/).map(function(l){ return l.trim(); }).filter(Boolean);
+      var arrayNd = [];
+      var esNdjson = true;
+      for (var i = 0; i < lineasCrudas.length; i++) {
+        var row = lineasCrudas[i];
+        var sIdx = row.indexOf('{');
+        var eIdx = row.lastIndexOf('}');
+        if (sIdx !== -1 && eIdx > sIdx) {
+          try { arrayNd.push(JSON.parse(row.slice(sIdx, eIdx + 1))); }
+          catch(e){ esNdjson = false; break; }
+        } else { esNdjson = false; break; }
+      }
+      if (esNdjson && arrayNd.length > 0) {
+        var fmtNd = JSON.stringify(arrayNd, null, 2);
+        return {
+          ok: true,
+          tipo: 'json',
+          subtipo: 'ndjson',
+          objeto: arrayNd,
+          textoFormateado: fmtNd,
+          lineas: fmtNd.split(/\r?\n/)
+        };
+      }
+    }
+
+    // Intento 3: Loose JSON / JSON con claves sin comillas o comillas simples
+    try {
+      var saneado = t
+        .replace(/\/\/.*$/gm, '')
+        .replace(/\/\*[\s\S]*?\*\//g, '')
+        .replace(/([{,]\s*)([a-zA-Z0-9_$]+)\s*:/g, '$1"$2":')
+        .replace(/'([^'\\]*(?:\\.[^'\\]*)*)'/g, '"$1"')
+        .replace(/,\s*([}\]])/g, '$1');
+      var objLoose = JSON.parse(saneado);
+      var fmtLoose = JSON.stringify(objLoose, null, 2);
+      return {
+        ok: true,
+        tipo: 'json',
+        subtipo: 'loose',
+        objeto: objLoose,
+        textoFormateado: fmtLoose,
+        lineas: fmtLoose.split(/\r?\n/)
+      };
+    } catch(eLoose) {
+      // Intento 4: Si no se intentó XML antes, probar XML
+      if (!esXml) {
+        var altXml = analizarXml(t);
+        if (altXml.ok) {
+          var docAlt = altXml.doc;
+          var objAltXml = docAlt.documentElement ? xmlNodeToCleanObj(docAlt.documentElement) : {};
+          var rTag = docAlt.documentElement ? docAlt.documentElement.nodeName : 'root';
+          var wrapAlt = {}; wrapAlt[rTag] = objAltXml;
+          var fmtAlt = formatearXmlCanonico(docAlt);
+          return {
+            ok: true,
+            tipo: 'xml',
+            doc: docAlt,
+            objeto: wrapAlt,
+            textoFormateado: fmtAlt,
+            lineas: fmtAlt.split(/\r?\n/)
+          };
+        }
+      }
+
+      // Si todo falla, texto plano
+      return {
+        ok: true,
+        tipo: 'texto',
+        objeto: null,
+        textoFormateado: t,
+        lineas: t.split(/\r?\n/)
+      };
+    }
+  }
+}
+
+// 5. ANALIZADOR DE DIFERENCIAS SEMÁNTICAS (Claves, Propiedades, Valores)
+function deepAnalyzeDiff(valA, valB, path, diffs) {
+  if (valA === valB) return;
+
+  var typeA = Array.isArray(valA) ? 'array' : (valA !== null && typeof valA === 'object' ? 'object' : typeof valA);
+  var typeB = Array.isArray(valB) ? 'array' : (valB !== null && typeof valB === 'object' ? 'object' : typeof valB);
+
+  if (typeA !== typeB) {
+    diffs.push({
+      type: 'mod',
+      path: path || 'raíz',
+      valA: formatValSimple(valA),
+      valB: formatValSimple(valB),
+      desc: 'Cambio de tipo o estructura (' + typeA + ' → ' + typeB + ')'
+    });
+    return;
+  }
+
+  if (typeA === 'object') {
+    var keysA = Object.keys(valA);
+    var keysB = Object.keys(valB);
+    var allKeys = Array.from(new Set(keysA.concat(keysB))).sort();
+
+    allKeys.forEach(function(k) {
+      var subPath = path ? path + '.' + k : k;
+      if (!(k in valA)) {
+        diffs.push({
+          type: 'add',
+          path: subPath,
+          valA: '— (No presente en A)',
+          valB: formatValSimple(valB[k]),
+          desc: 'Propiedad agregada en B'
+        });
+      } else if (!(k in valB)) {
+        diffs.push({
+          type: 'del',
+          path: subPath,
+          valA: formatValSimple(valA[k]),
+          valB: '— (Eliminado en B)',
+          desc: 'Propiedad eliminada en B'
+        });
+      } else {
+        deepAnalyzeDiff(valA[k], valB[k], subPath, diffs);
+      }
+    });
+    return;
+  }
+
+  if (typeA === 'array') {
+    var maxLen = Math.max(valA.length, valB.length);
+    for (var i = 0; i < maxLen; i++) {
+      var arrPath = (path || 'lista') + '[' + i + ']';
+      if (i >= valA.length) {
+        diffs.push({
+          type: 'add',
+          path: arrPath,
+          valA: '— (No presente en A)',
+          valB: formatValSimple(valB[i]),
+          desc: 'Elemento agregado en la lista'
+        });
+      } else if (i >= valB.length) {
+        diffs.push({
+          type: 'del',
+          path: arrPath,
+          valA: formatValSimple(valA[i]),
+          valB: '— (Eliminado en B)',
+          desc: 'Elemento eliminado de la lista'
+        });
+      } else {
+        deepAnalyzeDiff(valA[i], valB[i], arrPath, diffs);
+      }
+    }
+    return;
+  }
+
+  // Primitivos distintos
+  diffs.push({
+    type: 'mod',
+    path: path || 'valor',
+    valA: formatValSimple(valA),
+    valB: formatValSimple(valB),
+    desc: 'Valor modificado'
+  });
+}
+
+function formatValSimple(v) {
+  if (v === undefined) return 'undefined';
+  if (v === null) return 'null';
+  if (typeof v === 'object') {
+    try {
+      var s = JSON.stringify(v);
+      return s.length > 100 ? s.slice(0, 100) + '…' : s;
+    } catch(e) { return String(v); }
+  }
+  return String(v);
+}
+
+// 6. MOTOR DE DIFERENCIAS LÍNEA POR LÍNEA (MYERS DIFF / LCS)
+function computeMyersDiff(linesA, linesB, opt) {
+  function norm(str) {
+    var s = str || '';
+    if (opt.trim) s = s.trim();
+    if (opt.case) s = s.toLowerCase();
+    return s;
+  }
+
+  var n = linesA.length;
+  var m = linesB.length;
+  if (n === 0 && m === 0) return [];
+  if (n === 0) {
+    return linesB.map(function(l, i) { return { type: 'add', lineA: null, lineB: i + 1, textA: '', textB: l }; });
+  }
+  if (m === 0) {
+    return linesA.map(function(l, i) { return { type: 'del', lineA: i + 1, lineB: null, textA: l, textB: '' }; });
+  }
+
+  var max = n + m;
+  var v = new Int32Array(2 * max + 1);
+  var trace = [];
+  var found = false;
+
+  for (var d = 0; d <= max; d++) {
+    var vCopy = new Int32Array(v);
+    trace.push(vCopy);
+    for (var k = -d; k <= d; k += 2) {
+      var x;
+      if (k === -d || (k !== d && v[k - 1 + max] < v[k + 1 + max])) {
+        x = v[k + 1 + max];
+      } else {
+        x = v[k - 1 + max] + 1;
+      }
+      var y = x - k;
+      while (x < n && y < m && norm(linesA[x]) === norm(linesB[y])) {
+        x++;
+        y++;
+      }
+      v[k + max] = x;
+      if (x >= n && y >= m) {
+        found = true;
+        break;
+      }
+    }
+    if (found) break;
+  }
+
+  var script = [];
+  var currX = n;
+  var currY = m;
+
+  for (var step = trace.length - 1; step > 0; step--) {
+    var k = currX - currY;
+    var prevV = trace[step - 1];
+    var prevK = (k === -step || (k !== step && prevV[k - 1 + max] < prevV[k + 1 + max])) ? k + 1 : k - 1;
+    var prevX = prevV[prevK + max];
+    var prevY = prevX - prevK;
+
+    while (currX > prevX && currY > prevY) {
+      script.unshift({ type: 'equal', lineA: currX, lineB: currY, textA: linesA[currX - 1], textB: linesB[currY - 1] });
+      currX--;
+      currY--;
+    }
+    if (step > 0) {
+      if (currX === prevX) {
+        script.unshift({ type: 'add', lineA: null, lineB: currY, textA: '', textB: linesB[currY - 1] });
+        currY--;
+      } else {
+        script.unshift({ type: 'del', lineA: currX, lineB: null, textA: linesA[currX - 1], textB: '' });
+        currX--;
+      }
+    }
+  }
+  while (currX > 0 && currY > 0) {
+    script.unshift({ type: 'equal', lineA: currX, lineB: currY, textA: linesA[currX - 1], textB: linesB[currY - 1] });
+    currX--;
+    currY--;
+  }
+  while (currX > 0) {
+    script.unshift({ type: 'del', lineA: currX, lineB: null, textA: linesA[currX - 1], textB: '' });
+    currX--;
+  }
+  while (currY > 0) {
+    script.unshift({ type: 'add', lineA: null, lineB: currY, textA: '', textB: linesB[currY - 1] });
+    currY--;
+  }
+
+  // Emparejar eliminaciones y adiciones contiguas como modificaciones (mod)
+  var paired = [];
+  var p = 0;
+  while (p < script.length) {
+    if (script[p].type === 'del') {
+      var dels = [];
+      while (p < script.length && script[p].type === 'del') { dels.push(script[p]); p++; }
+      var adds = [];
+      while (p < script.length && script[p].type === 'add') { adds.push(script[p]); p++; }
+
+      var minL = Math.min(dels.length, adds.length);
+      for (var i = 0; i < minL; i++) {
+        paired.push({
+          type: 'mod',
+          lineA: dels[i].lineA,
+          lineB: adds[i].lineB,
+          textA: dels[i].textA,
+          textB: adds[i].textB
+        });
+      }
+      for (var i = minL; i < dels.length; i++) paired.push(dels[i]);
+      for (var i = minL; i < adds.length; i++) paired.push(adds[i]);
+    } else {
+      paired.push(script[p]);
+      p++;
+    }
+  }
+
+  return paired;
+}
+
+// Resaltador de diferencias de palabras / tokens dentro de una línea modificada
+function highlightWordDiff(strA, strB) {
+  var tokA = strA.match(/([A-Za-z0-9_]+|[^\sA-Za-z0-9_]|\s+)/g) || [strA];
+  var tokB = strB.match(/([A-Za-z0-9_]+|[^\sA-Za-z0-9_]|\s+)/g) || [strB];
+
+  // Si son muy diferentes o largos, escape directo
+  if (tokA.length > 150 || tokB.length > 150) {
+    return {
+      htmlA: '<mark class="diff-token-del">' + escapeHtml(strA) + '</mark>',
+      htmlB: '<mark class="diff-token-add">' + escapeHtml(strB) + '</mark>'
+    };
+  }
+
+  // LCS de tokens
+  var n = tokA.length, m = tokB.length;
+  var dp = [];
+  for (var i = 0; i <= n; i++) {
+    dp[i] = new Int16Array(m + 1);
+  }
+  for (var i = 1; i <= n; i++) {
+    for (var j = 1; j <= m; j++) {
+      if (tokA[i - 1] === tokB[j - 1]) dp[i][j] = dp[i - 1][j - 1] + 1;
+      else dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+    }
+  }
+
+  var htmlA = '', htmlB = '';
+  var ci = n, cj = m;
+  var revA = [], revB = [];
+
+  while (ci > 0 || cj > 0) {
+    if (ci > 0 && cj > 0 && tokA[ci - 1] === tokB[cj - 1]) {
+      revA.unshift(escapeHtml(tokA[ci - 1]));
+      revB.unshift(escapeHtml(tokB[cj - 1]));
+      ci--; cj--;
+    } else if (cj > 0 && (ci === 0 || dp[ci][cj - 1] >= dp[ci - 1][cj])) {
+      revB.unshift('<mark class="diff-token-add">' + escapeHtml(tokB[cj - 1]) + '</mark>');
+      cj--;
+    } else if (ci > 0) {
+      revA.unshift('<mark class="diff-token-del">' + escapeHtml(tokA[ci - 1]) + '</mark>');
+      ci--;
+    }
+  }
+
+  return { htmlA: revA.join(''), htmlB: revB.join('') };
+}
+
+// 7. EJECUCIÓN PRINCIPAL DE LA COMPARACIÓN
+function ejecutarComparacion() {
+  var rawA = $('diffEntradaA').value;
+  var rawB = $('diffEntradaB').value;
+
+  if (!rawA.trim() && !rawB.trim()) {
+    alert('Por favor ingresa o carga al menos un archivo en el Documento A o Documento B para comparar.');
+    return;
+  }
+
+  var chkTrim = $('chkDiffTrim').checked;
+  var chkSortKeys = $('chkDiffSortKeys').checked;
+  var chkCross = $('chkDiffCross').checked;
+  var chkCase = $('chkDiffCase').checked;
+
+  var prepA = prepararParaDiff(rawA, diffState.modoA);
+  var prepB = prepararParaDiff(rawB, diffState.modoB);
+
+  diffState.resParsedA = prepA;
+  diffState.resParsedB = prepB;
+
+  // Detección de Modo Cruzado (XML vs JSON)
+  var esCruzado = chkCross && ((prepA.tipo === 'xml' && prepB.tipo === 'json') || (prepA.tipo === 'json' && prepB.tipo === 'xml'));
+  var crossBanner = $('diffCrossBanner');
+  var crossBannerTxt = $('diffCrossBannerTxt');
+
+  if (esCruzado) {
+    crossBanner.style.display = 'flex';
+    crossBannerTxt.innerHTML = '<b>💡 Modo Cruzado Inteligente Activo:</b> Se detectó un <b>' + prepA.tipo.toUpperCase() + '</b> en el Documento A y un <b>' + prepB.tipo.toUpperCase() + '</b> en el Documento B. Se normalizaron sus estructuras y datos a formato canónico para comparar los valores y propiedades directamente sin falsos positivos de sintaxis.';
+  } else {
+    crossBanner.style.display = 'none';
+  }
+
+  // Si ambos tienen objetos parseados y se seleccionó ordenar claves
+  var objA = prepA.objeto;
+  var objB = prepB.objeto;
+
+  var lineasParaDiffA = prepA.lineas;
+  var lineasParaDiffB = prepB.lineas;
+
+  if (esCruzado && objA && objB) {
+    var aNorm = chkSortKeys ? sortKeysRecursivo(objA) : objA;
+    var bNorm = chkSortKeys ? sortKeysRecursivo(objB) : objB;
+    lineasParaDiffA = JSON.stringify(aNorm, null, 2).split(/\r?\n/);
+    lineasParaDiffB = JSON.stringify(bNorm, null, 2).split(/\r?\n/);
+  } else if (chkSortKeys) {
+    if (prepA.tipo === 'json' && objA) {
+      lineasParaDiffA = JSON.stringify(sortKeysRecursivo(objA), null, 2).split(/\r?\n/);
+    }
+    if (prepB.tipo === 'json' && objB) {
+      lineasParaDiffB = JSON.stringify(sortKeysRecursivo(objB), null, 2).split(/\r?\n/);
+    }
+  }
+
+  // 1. Análisis de Diferencias Semánticas
+  var semanticDiffs = [];
+  if (objA && objB) {
+    deepAnalyzeDiff(objA, objB, '', semanticDiffs);
+  }
+  diffState.semanticDiffs = semanticDiffs;
+
+  // 2. Myers Diff línea por línea
+  var diffRows = computeMyersDiff(lineasParaDiffA, lineasParaDiffB, {
+    trim: chkTrim,
+    case: chkCase
+  });
+  diffState.diffRows = diffRows;
+
+  // 3. Contabilización de métricas
+  var delCount = 0, addCount = 0, modCount = 0, eqCount = 0;
+  diffState.diffLineIndices = [];
+
+  diffRows.forEach(function(row, idx){
+    if (row.type === 'del') { delCount++; diffState.diffLineIndices.push(idx); }
+    else if (row.type === 'add') { addCount++; diffState.diffLineIndices.push(idx); }
+    else if (row.type === 'mod') { modCount++; diffState.diffLineIndices.push(idx); }
+    else { eqCount++; }
+  });
+
+  var totalDiffs = delCount + addCount + modCount;
+
+  // 4. Actualización de Alertas y Veredicto
+  var salidaBox = $('diffSalidaBox');
+  var alertIdentical = $('diffAlertIdentical');
+  var alertDiffs = $('diffAlertDiffs');
+  var cardDesglose = $('cardDesgloseDiffs');
+
+  salidaBox.style.display = 'block';
+
+  if (totalDiffs === 0) {
+    alertIdentical.style.display = 'flex';
+    alertDiffs.style.display = 'none';
+    cardDesglose.style.display = 'none';
+  } else {
+    alertIdentical.style.display = 'none';
+    alertDiffs.style.display = 'flex';
+    cardDesglose.style.display = 'block';
+
+    $('chipDelCount').textContent = '🔴 ' + fmtNum(delCount) + ' eliminadas';
+    $('chipAddCount').textContent = '🟢 ' + fmtNum(addCount) + ' agregadas';
+    $('chipModCount').textContent = '🟡 ' + fmtNum(modCount) + ' modificadas';
+    $('chipEqCount').textContent  = '⚪ ' + fmtNum(eqCount)  + ' coincidentes';
+
+    $('diffResumenTitulo').textContent = 'Se ' + (totalDiffs === 1 ? 'encontró 1 diferencia' : 'encontraron ' + fmtNum(totalDiffs) + ' diferencias') + ' entre ambos documentos';
+    $('diffResumenSub').textContent = 'Revisa la tabla de diferencias específicas y el visor comparativo a continuación.';
+  }
+
+  // 5. Renderizado de Tabla de Diferencias
+  renderTablaDiferencias();
+
+  // 6. Renderizado del Visor Visual de Código
+  diffState.curDiffIdx = -1;
+  renderVisualDiff();
+
+  // Scroll suave al resultado
+  salidaBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+var btnEjecutarDiff = $('btnEjecutarDiff');
+if (btnEjecutarDiff) btnEjecutarDiff.addEventListener('click', ejecutarComparacion);
+
+// 8. RENDERIZADO DE TABLA DE DIFERENCIAS
+function renderTablaDiferencias() {
+  var tbody = $('tbodyDiffs');
+  tbody.innerHTML = '';
+
+  var list = [];
+  if (diffState.semanticDiffs && diffState.semanticDiffs.length > 0) {
+    list = diffState.semanticDiffs;
+  } else {
+    diffState.diffRows.forEach(function(row){
+      if (row.type !== 'equal') {
+        var path = (row.lineA ? 'Línea ' + row.lineA : '') + (row.lineA && row.lineB ? ' ⇄ ' : '') + (row.lineB ? 'Línea ' + row.lineB : '');
+        list.push({
+          type: row.type,
+          path: path,
+          valA: row.textA || '—',
+          valB: row.textB || '—',
+          desc: row.type === 'del' ? 'Línea eliminada en B' : (row.type === 'add' ? 'Línea agregada en B' : 'Línea modificada')
+        });
+      }
+    });
+  }
+
+  var cntTodos = list.length;
+  var cntDel = list.filter(function(x){ return x.type === 'del'; }).length;
+  var cntAdd = list.filter(function(x){ return x.type === 'add'; }).length;
+  var cntMod = list.filter(function(x){ return x.type === 'mod'; }).length;
+
+  $('cntFiltroTodos').textContent = cntTodos;
+  $('cntFiltroDel').textContent = cntDel;
+  $('cntFiltroAdd').textContent = cntAdd;
+  $('cntFiltroMod').textContent = cntMod;
+
+  var filtradas = list.filter(function(item){
+    if (diffState.filtro === 'todos') return true;
+    return item.type === diffState.filtro;
+  });
+
+  if (filtradas.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:18px; color:var(--muted); font-family:var(--sans); font-size:13px;">No hay diferencias en esta categoría.</td></tr>';
+    return;
+  }
+
+  filtradas.forEach(function(item, idx){
+    var tr = document.createElement('tr');
+    var badgeClass = item.type === 'del' ? 'tag-del' : (item.type === 'add' ? 'tag-add' : 'tag-mod');
+    var badgeTxt = item.type === 'del' ? '🔴 ELIMINADO' : (item.type === 'add' ? '🟢 AGREGADO' : '🟡 MODIFICADO');
+
+    tr.innerHTML = '<td>' + (idx + 1) + '</td>' +
+      '<td><span class="' + badgeClass + '">' + badgeTxt + '</span></td>' +
+      '<td><b style="color:var(--text);">' + escapeHtml(item.path) + '</b><br><small style="color:var(--muted); font-family:var(--sans);">' + escapeHtml(item.desc || '') + '</small></td>' +
+      '<td><span class="diff-val-preview" title="' + escapeAttr(item.valA) + '">' + escapeHtml(item.valA) + '</span></td>' +
+      '<td><span class="diff-val-preview" title="' + escapeAttr(item.valB) + '">' + escapeHtml(item.valB) + '</span></td>' +
+      '<td style="text-align:center;"><button type="button" class="secondary" style="padding:4px 9px; font-size:11px;">🔍 Ver</button></td>';
+
+    tr.addEventListener('click', function(){
+      saltarADiferenciaRelativa(item);
+    });
+
+    tbody.appendChild(tr);
+  });
+}
+
+// Filtros de la tabla
+var segFiltroDiffs = $('segFiltroDiffs');
+if (segFiltroDiffs) {
+  segFiltroDiffs.querySelectorAll('button').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      segFiltroDiffs.querySelectorAll('button').forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      diffState.filtro = btn.dataset.filtro;
+      renderTablaDiferencias();
+    });
+  });
+}
+
+// 9. RENDERIZADO VISUAL DEL DIFF (SIDE BY SIDE & UNIFIED)
+function renderVisualDiff() {
+  var wrap = $('diffViewerWrap');
+  wrap.innerHTML = '';
+  var rows = diffState.diffRows;
+
+  if (diffState.vista === 'side') {
+    renderSideBySide(wrap, rows);
+  } else {
+    renderUnified(wrap, rows);
+  }
+
+  actualizarContadorDiffNav();
+}
+
+function renderSideBySide(container, rows) {
+  var sideWrap = document.createElement('div');
+  sideWrap.className = 'diff-side-by-side';
+
+  var colA = document.createElement('div');
+  colA.className = 'diff-col';
+  colA.id = 'diffColA';
+  colA.innerHTML = '<div class="diff-col-header"><span>DOCUMENTO A (BASE)</span><span style="font-size:10.5px;">Rojo = Eliminado / Modificado</span></div>';
+
+  var colB = document.createElement('div');
+  colB.className = 'diff-col';
+  colB.id = 'diffColB';
+  colB.innerHTML = '<div class="diff-col-header"><span>DOCUMENTO B (COMPARADO)</span><span style="font-size:10.5px;">Verde = Agregado / Modificado</span></div>';
+
+  rows.forEach(function(row, rIdx){
+    var rowClsA = '', rowClsB = '';
+    var textHtmlA = '', textHtmlB = '';
+
+    if (row.type === 'equal') {
+      textHtmlA = escapeHtml(row.textA) || '&nbsp;';
+      textHtmlB = escapeHtml(row.textB) || '&nbsp;';
+    } else if (row.type === 'del') {
+      rowClsA = ' diff-row-del';
+      rowClsB = ' diff-row-empty';
+      textHtmlA = '<mark class="diff-token-del">- ' + escapeHtml(row.textA) + '</mark>';
+      textHtmlB = '&nbsp;';
+    } else if (row.type === 'add') {
+      rowClsA = ' diff-row-empty';
+      rowClsB = ' diff-row-add';
+      textHtmlA = '&nbsp;';
+      textHtmlB = '<mark class="diff-token-add">+ ' + escapeHtml(row.textB) + '</mark>';
+    } else if (row.type === 'mod') {
+      rowClsA = ' diff-row-mod';
+      rowClsB = ' diff-row-mod';
+      var highlighted = highlightWordDiff(row.textA, row.textB);
+      textHtmlA = '~ ' + highlighted.htmlA;
+      textHtmlB = '~ ' + highlighted.htmlB;
+    }
+
+    var divA = document.createElement('div');
+    divA.className = 'diff-line-row' + rowClsA;
+    divA.dataset.diffrow = rIdx;
+    divA.innerHTML = '<span class="diff-ln">' + (row.lineA !== null ? row.lineA : '') + '</span><span class="diff-content">' + textHtmlA + '</span>';
+
+    var divB = document.createElement('div');
+    divB.className = 'diff-line-row' + rowClsB;
+    divB.dataset.diffrow = rIdx;
+    divB.innerHTML = '<span class="diff-ln">' + (row.lineB !== null ? row.lineB : '') + '</span><span class="diff-content">' + textHtmlB + '</span>';
+
+    colA.appendChild(divA);
+    colB.appendChild(divB);
+  });
+
+  sideWrap.appendChild(colA);
+  sideWrap.appendChild(colB);
+  container.appendChild(sideWrap);
+
+  // Scroll sincronizado entre columnas A y B
+  var syncing = false;
+  colA.addEventListener('scroll', function() {
+    if (syncing) return;
+    syncing = true;
+    colB.scrollTop = colA.scrollTop;
+    colB.scrollLeft = colA.scrollLeft;
+    syncing = false;
+  });
+  colB.addEventListener('scroll', function() {
+    if (syncing) return;
+    syncing = true;
+    colA.scrollTop = colB.scrollTop;
+    colA.scrollLeft = colB.scrollLeft;
+    syncing = false;
+  });
+}
+
+function renderUnified(container, rows) {
+  var unifWrap = document.createElement('div');
+  unifWrap.style.minWidth = '100%';
+
+  rows.forEach(function(row, rIdx){
+    if (row.type === 'equal') {
+      var d = document.createElement('div');
+      d.className = 'diff-line-row';
+      d.dataset.diffrow = rIdx;
+      d.innerHTML = '<span class="diff-ln">' + row.lineA + '</span><span class="diff-ln" style="border-left:1px solid #333;">' + row.lineB + '</span><span class="diff-content" style="color:var(--text);">' + (escapeHtml(row.textA) || '&nbsp;') + '</span>';
+      unifWrap.appendChild(d);
+    } else if (row.type === 'del') {
+      var d = document.createElement('div');
+      d.className = 'diff-line-row diff-row-del';
+      d.dataset.diffrow = rIdx;
+      d.innerHTML = '<span class="diff-ln">' + row.lineA + '</span><span class="diff-ln" style="border-left:1px solid #333;"></span><span class="diff-content"><mark class="diff-token-del">- ' + escapeHtml(row.textA) + '</mark></span>';
+      unifWrap.appendChild(d);
+    } else if (row.type === 'add') {
+      var d = document.createElement('div');
+      d.className = 'diff-line-row diff-row-add';
+      d.dataset.diffrow = rIdx;
+      d.innerHTML = '<span class="diff-ln"></span><span class="diff-ln" style="border-left:1px solid #333;">' + row.lineB + '</span><span class="diff-content"><mark class="diff-token-add">+ ' + escapeHtml(row.textB) + '</mark></span>';
+      unifWrap.appendChild(d);
+    } else if (row.type === 'mod') {
+      var highlighted = highlightWordDiff(row.textA, row.textB);
+      var d1 = document.createElement('div');
+      d1.className = 'diff-line-row diff-row-del';
+      d1.dataset.diffrow = rIdx;
+      d1.innerHTML = '<span class="diff-ln">' + row.lineA + '</span><span class="diff-ln" style="border-left:1px solid #333;"></span><span class="diff-content">- ' + highlighted.htmlA + '</span>';
+      var d2 = document.createElement('div');
+      d2.className = 'diff-line-row diff-row-add';
+      d2.dataset.diffrow = rIdx;
+      d2.innerHTML = '<span class="diff-ln"></span><span class="diff-ln" style="border-left:1px solid #333;">' + row.lineB + '</span><span class="diff-content">+ ' + highlighted.htmlB + '</span>';
+      unifWrap.appendChild(d1);
+      unifWrap.appendChild(d2);
+    }
+  });
+
+  container.appendChild(unifWrap);
+}
+
+// Selector de vista Lado a Lado vs Unificada
+var segVistaDiff = $('segVistaDiff');
+if (segVistaDiff) {
+  segVistaDiff.querySelectorAll('button').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      segVistaDiff.querySelectorAll('button').forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      diffState.vista = btn.dataset.vistadiff;
+      renderVisualDiff();
+    });
+  });
+}
+
+// 10. NAVEGACIÓN ENTRE DIFERENCIAS
+function saltarADiferencia(idx) {
+  var lines = diffState.diffLineIndices;
+  if (!lines || !lines.length) return;
+  diffState.curDiffIdx = (idx + lines.length) % lines.length;
+  var targetRowIdx = lines[diffState.curDiffIdx];
+
+  var wrap = $('diffViewerWrap');
+  wrap.querySelectorAll('.diff-cur-focus').forEach(function(el){ el.classList.remove('diff-cur-focus'); });
+
+  var matching = wrap.querySelectorAll('[data-diffrow="' + targetRowIdx + '"]');
+  if (matching.length > 0) {
+    matching.forEach(function(el){ el.classList.add('diff-cur-focus'); });
+    matching[0].scrollIntoView({ block: 'center', behavior: 'smooth' });
+  }
+
+  actualizarContadorDiffNav();
+}
+
+function saltarADiferenciaRelativa(item) {
+  var rows = diffState.diffRows;
+  for (var i = 0; i < rows.length; i++) {
+    var r = rows[i];
+    if (r.type === item.type) {
+      if ((item.valA && r.textA && r.textA.indexOf(item.valA) !== -1) ||
+          (item.valB && r.textB && r.textB.indexOf(item.valB) !== -1) ||
+          (item.path && String(r.lineA).indexOf(item.path) !== -1)) {
+        var dIdx = diffState.diffLineIndices.indexOf(i);
+        if (dIdx !== -1) { saltarADiferencia(dIdx); return; }
+      }
+    }
+  }
+  for (var j = 0; j < diffState.diffLineIndices.length; j++) {
+    var rIdx = diffState.diffLineIndices[j];
+    if (rows[rIdx].type === item.type) {
+      saltarADiferencia(j);
+      return;
+    }
+  }
+  if (diffState.diffLineIndices.length > 0) saltarADiferencia(0);
+}
+
+function actualizarContadorDiffNav() {
+  var cnt = $('diffNavCounter');
+  if (!cnt) return;
+  var total = diffState.diffLineIndices.length;
+  if (!total) {
+    cnt.textContent = '0 de 0';
+    return;
+  }
+  var cur = diffState.curDiffIdx === -1 ? 0 : diffState.curDiffIdx + 1;
+  cnt.textContent = cur + ' de ' + fmtNum(total);
+}
+
+var bDiffFirst = $('bDiffFirst');
+var bDiffPrev  = $('bDiffPrev');
+var bDiffNext  = $('bDiffNext');
+var bDiffLast  = $('bDiffLast');
+
+if (bDiffFirst) bDiffFirst.addEventListener('click', function(){ saltarADiferencia(0); });
+if (bDiffPrev)  bDiffPrev.addEventListener('click', function(){ saltarADiferencia(diffState.curDiffIdx - 1); });
+if (bDiffNext)  bDiffNext.addEventListener('click', function(){ saltarADiferencia(diffState.curDiffIdx + 1); });
+if (bDiffLast)  bDiffLast.addEventListener('click', function(){ saltarADiferencia(diffState.diffLineIndices.length - 1); });
+
+// 11. COPIAR Y DESCARGAR REPORTE
+function generarReporteTexto() {
+  var ahora = new Date().toLocaleString('es-CO');
+  var lineasRep = [];
+  lineasRep.push('=====================================================');
+  lineasRep.push('  REPORTE DE DIFERENCIAS — COMPARADOR XML / JSON');
+  lineasRep.push('  Fecha: ' + ahora);
+  lineasRep.push('=====================================================');
+  lineasRep.push('');
+
+  var tA = diffState.resParsedA ? diffState.resParsedA.tipo.toUpperCase() : 'DESCONOCIDO';
+  var tB = diffState.resParsedB ? diffState.resParsedB.tipo.toUpperCase() : 'DESCONOCIDO';
+
+  lineasRep.push('Documento A: ' + tA + ' (' + $('diffEntradaA').value.split('\n').length + ' líneas)');
+  lineasRep.push('Documento B: ' + tB + ' (' + $('diffEntradaB').value.split('\n').length + ' líneas)');
+  lineasRep.push('');
+
+  var total = diffState.diffLineIndices.length;
+  if (total === 0) {
+    lineasRep.push('RESULTADO: LOS ARCHIVOS SON 100% IDÉNTICOS.');
+    lineasRep.push('No se encontraron diferencias en la estructura ni en los datos.');
+    return lineasRep.join('\n');
+  }
+
+  lineasRep.push('RESULTADO: ' + total + ' diferencias detectadas.');
+  lineasRep.push('');
+  lineasRep.push('--- DETALLE DE DIFERENCIAS ---');
+
+  if (diffState.semanticDiffs && diffState.semanticDiffs.length > 0) {
+    diffState.semanticDiffs.forEach(function(d, i){
+      var tNom = d.type === 'del' ? '[ELIMINADO]' : (d.type === 'add' ? '[AGREGADO]' : '[MODIFICADO]');
+      lineasRep.push((i + 1) + '. ' + tNom + ' ' + d.path);
+      if (d.type === 'mod') {
+        lineasRep.push('   - En A: ' + d.valA);
+        lineasRep.push('   + En B: ' + d.valB);
+      } else if (d.type === 'del') {
+        lineasRep.push('   - Valor en A: ' + d.valA);
+      } else if (d.type === 'add') {
+        lineasRep.push('   + Valor en B: ' + d.valB);
+      }
+    });
+  } else {
+    diffState.diffRows.forEach(function(r, i){
+      if (r.type !== 'equal') {
+        lineasRep.push((i + 1) + '. [' + r.type.toUpperCase() + '] Línea A: ' + (r.lineA || '—') + ' | Línea B: ' + (r.lineB || '—'));
+        if (r.textA) lineasRep.push('   - ' + r.textA);
+        if (r.textB) lineasRep.push('   + ' + r.textB);
+      }
+    });
+  }
+
+  lineasRep.push('');
+  lineasRep.push('=====================================================');
+  return lineasRep.join('\n');
+}
+
+var btnCopiarReporteDiff = $('btnCopiarReporteDiff');
+if (btnCopiarReporteDiff) {
+  btnCopiarReporteDiff.addEventListener('click', function(){
+    var rep = generarReporteTexto();
+    copiar(rep, 'Reporte de diferencias copiado al portapapeles');
+  });
+}
+
+var btnDescargarReporteDiff = $('btnDescargarReporteDiff');
+if (btnDescargarReporteDiff) {
+  btnDescargarReporteDiff.addEventListener('click', function(){
+    var rep = generarReporteTexto();
+    var blob = new Blob([rep], { type: 'text/plain;charset=utf-8' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'reporte_diferencias_' + Date.now() + '.txt';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(a.href); }, 2000);
+  });
+}
+
+// 12. CARGADOR DE EJEMPLO DE PRUEBA REAL
+var btnCargarEjemploDiff = $('btnCargarEjemploDiff');
+if (btnCargarEjemploDiff) {
+  btnCargarEjemploDiff.addEventListener('click', function(){
+    var ejemploA = '{\n' +
+      '  "pedido": "90396",\n' +
+      '  "cliente": {\n' +
+      '    "nombre": "DISTRIBUCIONES FERRETERAS S.A.S",\n' +
+      '    "nit": "860002130",\n' +
+      '    "ciudad": "Bogotá",\n' +
+      '    "estado_cuenta": "al_dia"\n' +
+      '  },\n' +
+      '  "detalles": [\n' +
+      '    { "item": 1, "sku": "HERR-001", "descripcion": "Martillo Tubular 16oz", "cantidad": 20, "precio_unitario": 28500 },\n' +
+      '    { "item": 2, "sku": "HERR-045", "descripcion": "Cinta Métrica 5m Antichoque", "cantidad": 15, "precio_unitario": 14200 }\n' +
+      '  ],\n' +
+      '  "totales": {\n' +
+      '    "subtotal": 783000,\n' +
+      '    "iva": 148770,\n' +
+      '    "total": 931770\n' +
+      '  },\n' +
+      '  "estado": "pendiente_aprobacion",\n' +
+      '  "nota_auditoria": "Verificar cupo de crédito"\n' +
+      '}';
+
+    var ejemploB = '{\n' +
+      '  "pedido": "90396",\n' +
+      '  "cliente": {\n' +
+      '    "nombre": "DISTRIBUCIONES FERRETERAS S.A.S",\n' +
+      '    "nit": "860002130",\n' +
+      '    "ciudad": "Bogotá D.C."\n' +
+      '  },\n' +
+      '  "detalles": [\n' +
+      '    { "item": 1, "sku": "HERR-001", "descripcion": "Martillo Tubular 16oz", "cantidad": 25, "precio_unitario": 28500 },\n' +
+      '    { "item": 2, "sku": "HERR-045", "descripcion": "Cinta Métrica 5m Antichoque", "cantidad": 15, "precio_unitario": 14200 },\n' +
+      '    { "item": 3, "sku": "ELEC-102", "descripcion": "Multímetro Digital Pro", "cantidad": 5, "precio_unitario": 68000 }\n' +
+      '  ],\n' +
+      '  "totales": {\n' +
+      '    "subtotal": 1265500,\n' +
+      '    "iva": 240445,\n' +
+      '    "total": 1505945\n' +
+      '  },\n' +
+      '  "estado": "aprobado_despacho",\n' +
+      '  "metodo_pago": "transferencia_bancaria"\n' +
+      '}';
+
+    $('diffEntradaA').value = ejemploA;
+    $('diffEntradaB').value = ejemploB;
+    actualizarStatsPanel('A');
+    actualizarStatsPanel('B');
+    toast('Ejemplo cargado: comparando ahora...');
+    ejecutarComparacion();
+  });
+}
+
+// Para pruebas / uso avanzado
+window.__diff = { ejecutar: ejecutarComparacion, state: diffState, preparar: prepararParaDiff };
 window.__visor = { analizar: analizar, procesar: procesar, fijarModo: fijarModo, mostrarVista: mostrarVista, get estado(){ return estado; } };
 })();
 </script>
