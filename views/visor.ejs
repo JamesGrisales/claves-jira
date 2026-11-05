@@ -144,26 +144,31 @@
   .diff-badge-new { background:linear-gradient(135deg, #10b981, #059669); color:#fff; font-size:10px; font-weight:800; padding:2px 7px; border-radius:999px; letter-spacing:0.3px; box-shadow:0 0 8px rgba(16,185,129,0.35); }
   .diff-main-card { background:linear-gradient(180deg, var(--panel) 0%, var(--panel-alt) 100%); border:1px solid var(--panel-edge); border-radius:14px; padding:16px 20px; margin-bottom:16px; box-shadow:0 8px 25px rgba(0,0,0,0.22); }
   .diff-options-bar { display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-top:12px; padding:10px 14px; border-radius:10px; background:rgba(0,0,0,0.2); border:1px solid var(--panel-edge); font-size:12px; }
-  .diff-grid-inputs { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:14px; }
+  .diff-grid-inputs { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:14px; align-items:stretch; }
   @media (max-width: 900px) { .diff-grid-inputs { grid-template-columns:1fr; } }
-  .diff-panel-box { background:var(--panel); border:1px solid var(--panel-edge); border-radius:10px; padding:12px; display:flex; flex-direction:column; min-width:0; }
-  .diff-panel-topbar { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px; flex-wrap:wrap; }
-  .diff-panel-topbar .btn, .diff-panel-topbar button { padding:6px 11px; font-size:12px; }
-  .diff-badge-doc { font-weight:800; font-size:11px; padding:3px 9px; border-radius:6px; letter-spacing:0.5px; }
+  .diff-panel-box { background:var(--panel); border:1px solid var(--panel-edge); border-radius:10px; padding:12px; display:flex; flex-direction:column; min-width:0; height:100%; box-sizing:border-box; }
+  .diff-panel-topbar { display:flex; align-items:center; justify-content:space-between; gap:6px; margin-bottom:8px; flex-wrap:nowrap; min-height:38px; }
+  .diff-panel-topbar .btn, .diff-panel-topbar button { padding:5px 9px; font-size:11.5px; white-space:nowrap; }
+  .diff-badge-doc { font-weight:800; font-size:11px; padding:3px 9px; border-radius:6px; letter-spacing:0.5px; white-space:nowrap; flex-shrink:0; }
   .diff-badge-doc.doc-a { background:rgba(56,189,248,0.18); color:#38bdf8; border:1px solid rgba(56,189,248,0.35); }
   .diff-badge-doc.doc-b { background:rgba(168,85,247,0.18); color:#c084fc; border:1px solid rgba(168,85,247,0.35); }
   
+  #wrapDiffA, #wrapDiffB {
+    height:320px; min-height:280px; flex:1 1 auto; resize:vertical;
+  }
+  #diffEntradaA, #diffEntradaB {
+    height:100% !important; min-height:100% !important; max-height:none !important; resize:none !important;
+  }
   .diff-textarea {
-    width:100%; min-height:260px; max-height:55vh; resize:vertical;
+    width:100%; height:100% !important; min-height:260px; resize:none !important;
     background:transparent !important; background-color:transparent !important;
     border:none !important; outline:none !important; box-shadow:none !important;
-    color:transparent !important; -webkit-text-fill-color:transparent !important; caret-color:#38bdf8 !important;
+    caret-color:#38bdf8 !important;
     font-family:var(--mono); font-size:12.5px; line-height:1.55;
     padding:10px 12px; border-radius:0; white-space:pre; overflow:auto;
     tab-size:2; box-sizing:border-box !important;
   }
-  :root[data-theme="oled"] .diff-textarea { background:transparent !important; border:none !important; color:transparent !important; -webkit-text-fill-color:transparent !important; }
-  .diff-textarea:focus { border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft); }
+  :root[data-theme="oled"] .diff-textarea { background:transparent !important; border:none !important; }
   .diff-textarea.drag { border-color:var(--accent); background:var(--accent-soft); }
   .diff-footer-stats { display:flex; align-items:center; justify-content:space-between; margin-top:6px; font-size:11.5px; color:var(--muted); }
   
@@ -607,23 +612,23 @@
       <!-- PANEL A -->
       <div class="diff-panel-box">
         <div class="diff-panel-topbar">
-          <div style="display:inline-flex; align-items:center; gap:6px;">
-            <span class="diff-badge-doc doc-a">DOCUMENTO A (BASE)</span>
+          <div style="display:inline-flex; align-items:center; gap:5px; flex-shrink:0;">
+            <span class="diff-badge-doc doc-a">DOC A (BASE)</span>
             <div class="seg" id="segModoA" style="padding:2px;">
-              <button type="button" class="active" data-mododiff="auto" style="padding:4px 9px; font-size:11.5px;">Auto</button>
-              <button type="button" data-mododiff="json" style="padding:4px 9px; font-size:11.5px;">JSON</button>
-              <button type="button" data-mododiff="xml" style="padding:4px 9px; font-size:11.5px;">XML</button>
+              <button type="button" class="active" data-mododiff="auto" style="padding:3px 7px; font-size:11px;">Auto</button>
+              <button type="button" data-mododiff="json" style="padding:3px 7px; font-size:11px;">JSON</button>
+              <button type="button" data-mododiff="xml" style="padding:3px 7px; font-size:11px;">XML</button>
             </div>
           </div>
-          <div style="display:inline-flex; align-items:center; gap:5px;">
-            <label class="btn secondary" for="inputDiffFileA" title="Abrir archivo XML, JSON, TXT, LOG, SOAP, WSDL">
+          <div style="display:inline-flex; align-items:center; gap:4px; flex-shrink:0;">
+            <label class="btn secondary" for="inputDiffFileA" title="Abrir archivo XML, JSON, TXT, LOG, SOAP, WSDL" style="padding:4px 8px; font-size:11.5px;">
               <span>📁</span> Abrir
             </label>
             <input type="file" id="inputDiffFileA" accept=".log,.xml,.json,.txt,.xsd,.xsl,.xslt,.svg,.config,.csproj,.wsdl,.soap,.html,.ndjson" style="display:none;">
-            <button type="button" class="secondary" id="btnPegarA" title="Pegar desde el portapapeles">📋 Pegar</button>
-            <button type="button" class="secondary" id="btnFmtA" title="Formatear este documento (XML o JSON)">🪄 Formatear</button>
-            <button type="button" class="secondary" id="btnToggleColorA" title="Alternar colores de sintaxis en el editor">🎨 Colores</button>
-            <button type="button" class="secondary" id="btnLimpiarA" title="Borrar contenido de A">Limpiar</button>
+            <button type="button" class="secondary" id="btnPegarA" title="Pegar desde el portapapeles" style="padding:4px 8px; font-size:11.5px;">📋 Pegar</button>
+            <button type="button" class="secondary" id="btnFmtA" title="Formatear este documento (XML o JSON)" style="padding:4px 8px; font-size:11.5px;">🪄 Formatear</button>
+            <button type="button" class="secondary" id="btnToggleColorA" title="Alternar colores de sintaxis en el editor" style="padding:4px 8px; font-size:11.5px;">🌈 Colores</button>
+            <button type="button" class="secondary" id="btnLimpiarA" title="Borrar contenido de A" style="padding:4px 8px; font-size:11.5px;">Limpiar</button>
           </div>
         </div>
         <div class="syntax-editor-container" id="wrapDiffA">
@@ -639,23 +644,23 @@
       <!-- PANEL B -->
       <div class="diff-panel-box">
         <div class="diff-panel-topbar">
-          <div style="display:inline-flex; align-items:center; gap:6px;">
-            <span class="diff-badge-doc doc-b">DOCUMENTO B (A COMPARAR)</span>
+          <div style="display:inline-flex; align-items:center; gap:5px; flex-shrink:0;">
+            <span class="diff-badge-doc doc-b">DOC B (COMPARAR)</span>
             <div class="seg" id="segModoB" style="padding:2px;">
-              <button type="button" class="active" data-mododiff="auto" style="padding:4px 9px; font-size:11.5px;">Auto</button>
-              <button type="button" data-mododiff="json" style="padding:4px 9px; font-size:11.5px;">JSON</button>
-              <button type="button" data-mododiff="xml" style="padding:4px 9px; font-size:11.5px;">XML</button>
+              <button type="button" class="active" data-mododiff="auto" style="padding:3px 7px; font-size:11px;">Auto</button>
+              <button type="button" data-mododiff="json" style="padding:3px 7px; font-size:11px;">JSON</button>
+              <button type="button" data-mododiff="xml" style="padding:3px 7px; font-size:11px;">XML</button>
             </div>
           </div>
-          <div style="display:inline-flex; align-items:center; gap:5px;">
-            <label class="btn secondary" for="inputDiffFileB" title="Abrir archivo XML, JSON, TXT, LOG, SOAP, WSDL">
+          <div style="display:inline-flex; align-items:center; gap:4px; flex-shrink:0;">
+            <label class="btn secondary" for="inputDiffFileB" title="Abrir archivo XML, JSON, TXT, LOG, SOAP, WSDL" style="padding:4px 8px; font-size:11.5px;">
               <span>📁</span> Abrir
             </label>
             <input type="file" id="inputDiffFileB" accept=".log,.xml,.json,.txt,.xsd,.xsl,.xslt,.svg,.config,.csproj,.wsdl,.soap,.html,.ndjson" style="display:none;">
-            <button type="button" class="secondary" id="btnPegarB" title="Pegar desde el portapapeles">📋 Pegar</button>
-            <button type="button" class="secondary" id="btnFmtB" title="Formatear este documento (XML o JSON)">🪄 Formatear</button>
-            <button type="button" class="secondary" id="btnToggleColorB" title="Alternar colores de sintaxis en el editor">🎨 Colores</button>
-            <button type="button" class="secondary" id="btnLimpiarB" title="Borrar contenido de B">Limpiar</button>
+            <button type="button" class="secondary" id="btnPegarB" title="Pegar desde el portapapeles" style="padding:4px 8px; font-size:11.5px;">📋 Pegar</button>
+            <button type="button" class="secondary" id="btnFmtB" title="Formatear este documento (XML o JSON)" style="padding:4px 8px; font-size:11.5px;">🪄 Formatear</button>
+            <button type="button" class="secondary" id="btnToggleColorB" title="Alternar colores de sintaxis en el editor" style="padding:4px 8px; font-size:11.5px;">🌈 Colores</button>
+            <button type="button" class="secondary" id="btnLimpiarB" title="Borrar contenido de B" style="padding:4px 8px; font-size:11.5px;">Limpiar</button>
           </div>
         </div>
         <div class="syntax-editor-container" id="wrapDiffB">
@@ -2871,6 +2876,28 @@ enlazarAutoFormateoAlPegar($('diffEntradaA'), 'A');
 enlazarAutoFormateoAlPegar($('diffEntradaB'), 'B');
 bindToggleColor('btnToggleColorA', 'wrapDiffA');
 bindToggleColor('btnToggleColorB', 'wrapDiffB');
+
+// Sincronizar altura idéntica entre Documento A y Documento B
+(function() {
+  var wA = $('wrapDiffA'), wB = $('wrapDiffB');
+  if (!wA || !wB || !window.ResizeObserver) return;
+  var sincronizando = false;
+  var ro = new ResizeObserver(function(entries) {
+    if (sincronizando) return;
+    for (var entry of entries) {
+      var target = entry.target;
+      var other = target === wA ? wB : wA;
+      var h = entry.contentRect.height;
+      if (h > 50 && Math.abs(other.clientHeight - target.clientHeight) > 2) {
+        sincronizando = true;
+        other.style.height = target.clientHeight + 'px';
+        setTimeout(function(){ sincronizando = false; }, 30);
+      }
+    }
+  });
+  ro.observe(wA);
+  ro.observe(wB);
+})();
 
 // Pegar y Limpiar
 function bindQuickButtons(lado) {
