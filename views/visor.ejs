@@ -243,6 +243,89 @@
     from { opacity:0; transform:translateY(-4px); }
     to { opacity:1; transform:translateY(0); }
   }
+
+  /* ======================================================================
+     EDITOR CON RESALTADO DE SINTAXIS EN VIVO (ESTILO IDE / VS CODE)
+     ====================================================================== */
+  .syntax-editor-container {
+    position:relative; width:100%; min-height:200px;
+    background:var(--panel-alt); border:1px solid var(--panel-edge);
+    border-radius:10px; overflow:hidden;
+    transition:border-color .15s ease, box-shadow .15s ease;
+  }
+  .syntax-editor-container:focus-within {
+    border-color:var(--accent) !important;
+    box-shadow:0 0 0 3px var(--accent-soft) !important;
+  }
+  :root[data-theme="oled"] .syntax-editor-container {
+    background:#050608; border-color:rgba(255,255,255,0.08);
+  }
+  .syntax-backdrop {
+    position:absolute; inset:0; margin:0; padding:12px 14px;
+    font-family:var(--mono) !important; font-size:13px !important;
+    line-height:1.5 !important; tab-size:4; -moz-tab-size:4;
+    white-space:pre !important; overflow:hidden !important;
+    pointer-events:none !important; z-index:1; color:#d4d4d4;
+    box-sizing:border-box !important; border:none !important;
+    letter-spacing:normal !important; word-spacing:normal !important;
+  }
+  .syntax-backdrop code {
+    font-family:inherit !important; font-size:inherit !important;
+    line-height:inherit !important; tab-size:inherit !important;
+    -moz-tab-size:inherit !important; letter-spacing:inherit !important;
+    white-space:pre !important; display:block !important;
+    margin:0 !important; padding:0 !important; border:none !important;
+    background:transparent !important; color:inherit;
+  }
+  .syntax-textarea {
+    position:relative; z-index:2; width:100% !important; min-height:200px; max-height:60vh;
+    resize:vertical; margin:0; padding:12px 14px !important;
+    font-family:var(--mono) !important; font-size:13px !important;
+    line-height:1.5 !important; tab-size:4; -moz-tab-size:4;
+    white-space:pre !important; overflow:auto !important;
+    border:none !important; outline:none !important; box-sizing:border-box !important;
+    background:transparent !important; color:transparent !important;
+    -webkit-text-fill-color:transparent !important;
+    caret-color:#38bdf8 !important; border-radius:0 !important;
+    letter-spacing:normal !important; word-spacing:normal !important;
+  }
+  :root .syntax-textarea,
+  :root[data-theme="oled"] .syntax-textarea,
+  :root[data-theme="dark"] .syntax-textarea,
+  #entrada.syntax-textarea,
+  .diff-textarea.syntax-textarea {
+    background:transparent !important;
+    color:transparent !important;
+    -webkit-text-fill-color:transparent !important;
+    border:none !important;
+    box-shadow:none !important;
+  }
+  .syntax-textarea::placeholder {
+    color:var(--txt-dim, #64748b) !important;
+    -webkit-text-fill-color:var(--txt-dim, #64748b) !important;
+    opacity:0.75 !important;
+  }
+  .syntax-textarea::selection {
+    background:rgba(56, 189, 248, 0.35) !important;
+    color:transparent !important;
+    -webkit-text-fill-color:transparent !important;
+  }
+  .syntax-textarea::-moz-selection {
+    background:rgba(56, 189, 248, 0.35) !important;
+    color:transparent !important;
+  }
+  .diff-textarea.syntax-textarea {
+    font-size:12.5px !important; line-height:1.55 !important;
+    tab-size:2 !important; -moz-tab-size:2 !important;
+    padding:10px 12px !important; min-height:260px;
+  }
+  .diff-syntax-backdrop {
+    padding:10px 12px !important;
+    font-size:12.5px !important; line-height:1.55 !important;
+    tab-size:2 !important; -moz-tab-size:2 !important;
+  }
+  .ed-wrap.fullscreen .syntax-editor-container { flex:1 1 0; max-height:none; min-height:0; resize:none; }
+  .ed-wrap.fullscreen .syntax-textarea { height:100% !important; max-height:none !important; min-height:0 !important; resize:none; }
 </style>
 
 <div x-data="visorAlpineApp()">
@@ -361,7 +444,10 @@
     <button type="button" class="secondary" id="btnLimpiar">Limpiar</button>
     <button type="button" class="secondary" id="btnEnviarAComparar" title="Enviar este contenido al Comparador para cotejarlo con otro archivo">⚖️ Llevar a Comparar</button>
   </div>
-  <textarea id="entrada" spellcheck="false" wrap="off" placeholder="Pega aquí tu XML o JSON…"></textarea>
+  <div class="syntax-editor-container" id="wrapEntrada">
+    <pre class="syntax-backdrop"><code id="codeEntrada"></code></pre>
+    <textarea id="entrada" class="syntax-textarea" spellcheck="false" wrap="off" placeholder="Pega aquí tu XML o JSON…"></textarea>
+  </div>
   <div class="hint">También puedes arrastrar un archivo sobre esta caja. Los números grandes (NIT, IDs) se respetan tal cual, sin redondear.</div>
  </div>
 </div>
@@ -489,7 +575,10 @@
             <button type="button" class="secondary" id="btnLimpiarA" title="Borrar contenido de A">Limpiar</button>
           </div>
         </div>
-        <textarea id="diffEntradaA" class="diff-textarea" spellcheck="false" wrap="off" placeholder="Pega aquí el XML o JSON base (Documento A) o arrastra un archivo…"></textarea>
+        <div class="syntax-editor-container" id="wrapDiffA">
+          <pre class="syntax-backdrop diff-syntax-backdrop"><code id="codeDiffA"></code></pre>
+          <textarea id="diffEntradaA" class="syntax-textarea diff-textarea" spellcheck="false" wrap="off" placeholder="Pega aquí el XML o JSON base (Documento A) o arrastra un archivo…"></textarea>
+        </div>
         <div class="diff-footer-stats">
           <span id="diffStatsA">Vacío · Pega o abre un archivo</span>
           <span>Arrastra archivo aquí</span>
@@ -517,7 +606,10 @@
             <button type="button" class="secondary" id="btnLimpiarB" title="Borrar contenido de B">Limpiar</button>
           </div>
         </div>
-        <textarea id="diffEntradaB" class="diff-textarea" spellcheck="false" wrap="off" placeholder="Pega aquí el XML o JSON a comparar (Documento B) o arrastra un archivo…"></textarea>
+        <div class="syntax-editor-container" id="wrapDiffB">
+          <pre class="syntax-backdrop diff-syntax-backdrop"><code id="codeDiffB"></code></pre>
+          <textarea id="diffEntradaB" class="syntax-textarea diff-textarea" spellcheck="false" wrap="off" placeholder="Pega aquí el XML o JSON a comparar (Documento B) o arrastra un archivo…"></textarea>
+        </div>
         <div class="diff-footer-stats">
           <span id="diffStatsB">Vacío · Pega o abre un archivo</span>
           <span>Arrastra archivo aquí</span>
@@ -678,6 +770,96 @@ function fmtNum(n){ return Number(n).toLocaleString('es-CO'); }
 function fmtTam(n){ return n >= 1048576 ? (n/1048576).toFixed(1) + ' MB' : (n >= 1024 ? (n/1024).toFixed(1) + ' KB' : n + ' caracteres'); }
 function esc(t){ return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function escAttr(t){ return esc(t).replace(/"/g,'&quot;'); }
+
+/* ======================================================================
+   RESALTADOR DE SINTAXIS UNIVERSAL EN TIEMPO REAL (XML & JSON)
+   ====================================================================== */
+function highlightCodeTokens(code, modo) {
+  if (!code) return '';
+  var trimmed = code.trim();
+  var isXml = modo === 'xml' || (modo !== 'json' && (trimmed.charAt(0) === '<' || /^\s*<\?xml/i.test(trimmed)));
+
+  if (isXml) {
+    var xmlRegex = /(<!--[\s\S]*?-->)|(<!\[CDATA\[[\s\S]*?\]\]>)|(<\?[\s\S]*?\?>)|(<\/?[a-zA-Z0-9_:\-]+)((?:\s+[a-zA-Z0-9_:\-]+(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+))?)*\s*)(\/?>)|([^<]+)/g;
+    return code.replace(xmlRegex, function(m, comment, cdata, pi, tagAbre, attrs, tagCierra, text) {
+      if (comment) return '<span class="tk-cm">' + escapeHtml(comment) + '</span>';
+      if (cdata) {
+        var inner = cdata.slice(9, -3);
+        return '<span class="tk-pn">&lt;![CDATA[</span><span class="tk-cd">' + escapeHtml(inner) + '</span><span class="tk-pn">]]&gt;</span>';
+      }
+      if (pi) return '<span class="tk-pi">' + escapeHtml(pi) + '</span>';
+      if (tagAbre) {
+        var p = tagAbre.startsWith('</') ? 2 : 1;
+        var hTag = '<span class="tk-pn">' + escapeHtml(tagAbre.slice(0, p)) + '</span><span class="tk-tg">' + escapeHtml(tagAbre.slice(p)) + '</span>';
+        var hAttrs = '';
+        if (attrs) {
+          hAttrs = attrs.replace(/([a-zA-Z0-9_:\-]+)(\s*=\s*)("[^"]*"|'[^']*'|[^\s>]+)/g, function(ma, aName, eq, aVal) {
+            return '<span class="tk-an">' + escapeHtml(aName) + '</span><span class="tk-pn">' + escapeHtml(eq) + '</span><span class="tk-av">' + escapeHtml(aVal) + '</span>';
+          });
+        }
+        var hCierra = tagCierra ? '<span class="tk-pn">' + escapeHtml(tagCierra) + '</span>' : '';
+        return hTag + hAttrs + hCierra;
+      }
+      if (text) return escapeHtml(text);
+      return escapeHtml(m);
+    });
+  } else {
+    var jsonRegex = /(\/\/.*$)|(\/\*[\s\S]*?\*\/)|("([^"\\]*(\\.[^"\\]*)*)"\s*:)|("([^"\\]*(\\.[^"\\]*)*)")|(-?\b\d+(?:\.\d+)?(?:[eE][+-]?\d+)?\b)|(\b(?:true|false)\b)|(\bnull\b)|([{}[\],:])|([^"'/{}[\],:\s]+|\s+)/gm;
+    return code.replace(jsonRegex, function(m, lineCm, blockCm, keyFull, k1, k2, strFull, s1, s2, num, bool, nill, punct, other) {
+      if (lineCm || blockCm) return '<span class="tk-cm">' + escapeHtml(m) + '</span>';
+      if (keyFull) {
+        var colonIdx = m.lastIndexOf(':');
+        var kStr = m.slice(0, colonIdx);
+        var colon = m.slice(colonIdx);
+        return '<span class="tk-jk">' + escapeHtml(kStr) + '</span><span class="tk-pn">' + escapeHtml(colon) + '</span>';
+      }
+      if (strFull) return '<span class="tk-js">' + escapeHtml(strFull) + '</span>';
+      if (num) return '<span class="tk-jn">' + escapeHtml(num) + '</span>';
+      if (bool) return '<span class="tk-jb">' + escapeHtml(bool) + '</span>';
+      if (nill) return '<span class="tk-jl">' + escapeHtml(nill) + '</span>';
+      if (punct) return '<span class="tk-pn">' + escapeHtml(punct) + '</span>';
+      return escapeHtml(m);
+    });
+  }
+}
+
+function vincularEditorConSintaxis(textareaId, codeId, obtenerModo) {
+  var t = $(textareaId);
+  var c = $(codeId);
+  if (!t || !c) return;
+  var p = c.parentElement;
+
+  function sincronizarScroll() {
+    if (p) {
+      p.scrollTop = t.scrollTop;
+      p.scrollLeft = t.scrollLeft;
+    }
+  }
+
+  function actualizar() {
+    var val = t.value || '';
+    var modo = typeof obtenerModo === 'function' ? obtenerModo() : obtenerModo;
+    c.innerHTML = highlightCodeTokens(val, modo) + (val.endsWith('\n') ? ' ' : '');
+    sincronizarScroll();
+  }
+
+  t.addEventListener('input', actualizar);
+  t.addEventListener('scroll', sincronizarScroll);
+  t.addEventListener('keydown', function(e) {
+    if (e.key === 'Tab' && !e.ctrlKey && !e.altKey) {
+      e.preventDefault();
+      var sStart = t.selectionStart, sEnd = t.selectionEnd;
+      var val = t.value;
+      t.value = val.substring(0, sStart) + '  ' + val.substring(sEnd);
+      t.selectionStart = t.selectionEnd = sStart + 2;
+      actualizar();
+      t.dispatchEvent(new Event('input'));
+    }
+  });
+
+  t._actualizarSintaxis = actualizar;
+  actualizar();
+}
 
 var toastT;
 function toast(msg){
@@ -1649,6 +1831,7 @@ function contextoError(txt, linea){
 
 function procesar(){
   var txt = entrada.value;
+  if (entrada && entrada._actualizarSintaxis) entrada._actualizarSintaxis();
   estado = null;
   var r = analizar(txt, modoSel);
   $('chipVacio').style.display = r ? 'none' : '';
@@ -1736,9 +1919,12 @@ function abrirArchivo(file){
 function fijarModo(m){
   modoSel = m;
   Array.prototype.forEach.call($('seg').querySelectorAll('button'), function(b){ b.classList.toggle('active', b.dataset.modo === m); });
+  if (entrada && entrada._actualizarSintaxis) entrada._actualizarSintaxis();
 }
 
 /* ---------------------------- Eventos ---------------------------- */
+vincularEditorConSintaxis('entrada', 'codeEntrada', function(){ return (estado && estado.tipo) || modoSel; });
+
 entrada.addEventListener('input', function(){
   clearTimeout(temporizador);
   temporizador = setTimeout(procesar, 300);
@@ -2309,6 +2495,10 @@ function bindDragDrop(textareaId, lado) {
 bindDragDrop('diffEntradaA', 'A');
 bindDragDrop('diffEntradaB', 'B');
 
+// Vincular editores de Diff con resaltado de sintaxis a color
+vincularEditorConSintaxis('diffEntradaA', 'codeDiffA', function(){ return diffState.modoA; });
+vincularEditorConSintaxis('diffEntradaB', 'codeDiffB', function(){ return diffState.modoB; });
+
 // Pegar y Limpiar
 function bindQuickButtons(lado) {
   var btnPegar = $('btnPegar' + lado);
@@ -2391,7 +2581,9 @@ if (btnLimpiarDiff) {
 
 // Estadísticas de paneles individuales
 function actualizarStatsPanel(lado) {
-  var txt = $('diffEntrada' + lado).value;
+  var ed = $('diffEntrada' + lado);
+  if (ed && ed._actualizarSintaxis) ed._actualizarSintaxis();
+  var txt = ed ? ed.value : '';
   var spanStats = $('diffStats' + lado);
   if (!spanStats) return;
   if (!txt.trim()) {
@@ -3076,18 +3268,18 @@ function renderSideBySide(container, rows) {
     var textHtmlA = '', textHtmlB = '';
 
     if (row.type === 'equal') {
-      textHtmlA = escapeHtml(row.textA) || '&nbsp;';
-      textHtmlB = escapeHtml(row.textB) || '&nbsp;';
+      textHtmlA = highlightCodeTokens(row.textA, diffState.modoA) || '&nbsp;';
+      textHtmlB = highlightCodeTokens(row.textB, diffState.modoB) || '&nbsp;';
     } else if (row.type === 'del') {
       rowClsA = ' diff-row-del';
       rowClsB = ' diff-row-empty';
-      textHtmlA = '<mark class="diff-token-del">- ' + escapeHtml(row.textA) + '</mark>';
+      textHtmlA = '<mark class="diff-token-del">- ' + (highlightCodeTokens(row.textA, diffState.modoA) || '&nbsp;') + '</mark>';
       textHtmlB = '&nbsp;';
     } else if (row.type === 'add') {
       rowClsA = ' diff-row-empty';
       rowClsB = ' diff-row-add';
       textHtmlA = '&nbsp;';
-      textHtmlB = '<mark class="diff-token-add">+ ' + escapeHtml(row.textB) + '</mark>';
+      textHtmlB = '<mark class="diff-token-add">+ ' + (highlightCodeTokens(row.textB, diffState.modoB) || '&nbsp;') + '</mark>';
     } else if (row.type === 'mod') {
       rowClsA = ' diff-row-mod';
       rowClsB = ' diff-row-mod';
@@ -3141,19 +3333,19 @@ function renderUnified(container, rows) {
       var d = document.createElement('div');
       d.className = 'diff-line-row';
       d.dataset.diffrow = rIdx;
-      d.innerHTML = '<span class="diff-ln">' + row.lineA + '</span><span class="diff-ln" style="border-left:1px solid #333;">' + row.lineB + '</span><span class="diff-content" style="color:var(--text);">' + (escapeHtml(row.textA) || '&nbsp;') + '</span>';
+      d.innerHTML = '<span class="diff-ln">' + row.lineA + '</span><span class="diff-ln" style="border-left:1px solid #333;">' + row.lineB + '</span><span class="diff-content" style="color:var(--text);">' + (highlightCodeTokens(row.textA, diffState.modoA) || '&nbsp;') + '</span>';
       unifWrap.appendChild(d);
     } else if (row.type === 'del') {
       var d = document.createElement('div');
       d.className = 'diff-line-row diff-row-del';
       d.dataset.diffrow = rIdx;
-      d.innerHTML = '<span class="diff-ln">' + row.lineA + '</span><span class="diff-ln" style="border-left:1px solid #333;"></span><span class="diff-content"><mark class="diff-token-del">- ' + escapeHtml(row.textA) + '</mark></span>';
+      d.innerHTML = '<span class="diff-ln">' + row.lineA + '</span><span class="diff-ln" style="border-left:1px solid #333;"></span><span class="diff-content"><mark class="diff-token-del">- ' + (highlightCodeTokens(row.textA, diffState.modoA) || '&nbsp;') + '</mark></span>';
       unifWrap.appendChild(d);
     } else if (row.type === 'add') {
       var d = document.createElement('div');
       d.className = 'diff-line-row diff-row-add';
       d.dataset.diffrow = rIdx;
-      d.innerHTML = '<span class="diff-ln"></span><span class="diff-ln" style="border-left:1px solid #333;">' + row.lineB + '</span><span class="diff-content"><mark class="diff-token-add">+ ' + escapeHtml(row.textB) + '</mark></span>';
+      d.innerHTML = '<span class="diff-ln"></span><span class="diff-ln" style="border-left:1px solid #333;">' + row.lineB + '</span><span class="diff-content"><mark class="diff-token-add">+ ' + (highlightCodeTokens(row.textB, diffState.modoB) || '&nbsp;') + '</mark></span>';
       unifWrap.appendChild(d);
     } else if (row.type === 'mod') {
       var highlighted = highlightWordDiff(row.textA, row.textB);
