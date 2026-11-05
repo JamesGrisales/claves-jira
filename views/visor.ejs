@@ -792,26 +792,35 @@ function escAttr(t){ return esc(t).replace(/"/g,'&quot;'); }
 /* ======================================================================
    RESALTADOR DE SINTAXIS UNIVERSAL EN TIEMPO REAL (XML & JSON)
    ====================================================================== */
+function detectarTipoDocumento(str) {
+  if (!str) return 'json';
+  var s = str.replace(/^\uFEFF/, '').trim();
+  if (s.startsWith('<') || /^\s*<\?xml/i.test(s) || /^\s*<!--/i.test(s) || /^\s*<!DOCTYPE/i.test(s)) return 'xml';
+  if (s.startsWith('{') || s.startsWith('[')) return 'json';
+  if (/<[a-zA-Z0-9_:\.\-]+[^>]*>/.test(s)) return 'xml';
+  return 'json';
+}
+
 function highlightCodeTokens(code, modo) {
   if (!code) return '';
-  var trimmed = code.trim();
-  var isXml = modo === 'xml' || (modo !== 'json' && (trimmed.charAt(0) === '<' || /^\s*<\?xml/i.test(trimmed)));
+  var isXml = modo === 'xml' || (modo !== 'json' && detectarTipoDocumento(code) === 'xml');
 
   if (isXml) {
-    var xmlRegex = /(<!--[\s\S]*?-->)|(<!\[CDATA\[[\s\S]*?\]\]>)|(<\?[\s\S]*?\?>)|(<\/?[a-zA-Z0-9_:\-]+)((?:\s+[a-zA-Z0-9_:\-]+(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+))?)*\s*)(\/?>)|([^<]+)/g;
-    return code.replace(xmlRegex, function(m, comment, cdata, pi, tagAbre, attrs, tagCierra, text) {
+    var xmlRegex = /(<!--[\s\S]*?-->)|(<!\[CDATA\[[\s\S]*?\]\]>)|(<!DOCTYPE[\s\S]*?>)|(<\?[\s\S]*?\?>)|(<\/?[a-zA-Z0-9_:\.\-]+)((?:\s+[a-zA-Z0-9_:\.\-]+(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+))?)*\s*)(\/?>)|([^<]+)/g;
+    return code.replace(xmlRegex, function(m, comment, cdata, doctype, pi, tagAbre, attrs, tagCierra, text) {
       if (comment) return '<span class="tk-cm">' + escapeHtml(comment) + '</span>';
       if (cdata) {
         var inner = cdata.slice(9, -3);
         return '<span class="tk-pn">&lt;![CDATA[</span><span class="tk-cd">' + escapeHtml(inner) + '</span><span class="tk-pn">]]&gt;</span>';
       }
+      if (doctype) return '<span class="tk-pi">' + escapeHtml(doctype) + '</span>';
       if (pi) return '<span class="tk-pi">' + escapeHtml(pi) + '</span>';
       if (tagAbre) {
         var p = tagAbre.startsWith('</') ? 2 : 1;
         var hTag = '<span class="tk-pn">' + escapeHtml(tagAbre.slice(0, p)) + '</span><span class="tk-tg">' + escapeHtml(tagAbre.slice(p)) + '</span>';
         var hAttrs = '';
         if (attrs) {
-          hAttrs = attrs.replace(/([a-zA-Z0-9_:\-]+)(\s*=\s*)("[^"]*"|'[^']*'|[^\s>]+)/g, function(ma, aName, eq, aVal) {
+          hAttrs = attrs.replace(/([a-zA-Z0-9_:\.\-]+)(\s*=\s*)("[^"]*"|'[^']*'|[^\s>]+)/g, function(ma, aName, eq, aVal) {
             return '<span class="tk-an">' + escapeHtml(aName) + '</span><span class="tk-pn">' + escapeHtml(eq) + '</span><span class="tk-av">' + escapeHtml(aVal) + '</span>';
           });
         }
@@ -822,7 +831,7 @@ function highlightCodeTokens(code, modo) {
       return escapeHtml(m);
     });
   } else {
-    var jsonRegex = /(\/\/.*$)|(\/\*[\s\S]*?\*\/)|("([^"\\]*(\\.[^"\\]*)*)"\s*:)|("([^"\\]*(\\.[^"\\]*)*)")|(-?\b\d+(?:\.\d+)?(?:[eE][+-]?\d+)?\b)|(\b(?:true|false)\b)|(\bnull\b)|([{}[\],:])|([^"'/{}[\],:\s]+|\s+)/gm;
+    var jsonRegex = /(\/\/.*$)|(\/\*[\s\S]*?\*\/)|("([^"\\]*(\\.[^"\\]*)*)"s*:)|("([^"\\]*(\.[^"\\]*)*)")|(-?\b\d+(?:\.\d+)?(?:[eE][+-]?\d+)?\b)|(\b(?:true|false)\b)|(\bnull\b)|([{}[],:])|([^"'/{}[],:\s]+|\s+)/gm;
     return code.replace(jsonRegex, function(m, lineCm, blockCm, keyFull, k1, k2, strFull, s1, s2, num, bool, nill, punct, other) {
       if (lineCm || blockCm) return '<span class="tk-cm">' + escapeHtml(m) + '</span>';
       if (keyFull) {
@@ -2618,7 +2627,7 @@ function actualizarStatsPanel(lado) {
   var lineas = txt.split(/\r?\n/).length;
   var tamStr = fmtTam(txt.length);
   var modo = lado === 'A' ? diffState.modoA : diffState.modoB;
-  var tDetect = (modo === 'auto') ? (txt.trim().charAt(0) === '<' ? 'XML detectado' : 'JSON detectado') : (modo.toUpperCase());
+  var tDetect = (modo === 'auto') ? (detectarTipoDocumento(txt) === 'xml' ? 'XML detectado' : 'JSON detectado') : (modo.toUpperCase());
   spanStats.textContent = tDetect + ' · ' + fmtNum(lineas) + ' líneas · ' + tamStr;
 }
 
