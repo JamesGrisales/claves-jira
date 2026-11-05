@@ -271,7 +271,7 @@
     font-family:var(--mono) !important; font-size:13px !important;
     line-height:1.55 !important; tab-size:2; -moz-tab-size:2;
     white-space:pre !important; overflow:auto !important;
-    pointer-events:none !important; z-index:1; color:#e2e8f0 !important;
+    pointer-events:none !important; z-index:3 !important; color:#e2e8f0 !important;
     box-sizing:border-box !important; border:none !important;
     background:transparent !important;
     letter-spacing:normal !important; word-spacing:normal !important;
@@ -291,19 +291,40 @@
     color:#f8fafc !important;
   }
   .syntax-textarea {
-    position:relative; z-index:2; width:100% !important; min-height:200px; max-height:60vh;
+    position:relative; z-index:1 !important; width:100% !important; min-height:200px; max-height:60vh;
     resize:vertical; margin:0; padding:12px 14px !important;
     font-family:var(--mono) !important; font-size:13px !important;
     line-height:1.55 !important; tab-size:2; -moz-tab-size:2;
     white-space:pre !important; overflow:auto !important;
     border:none !important; outline:none !important; box-sizing:border-box !important;
-    background:transparent !important;
+    background:transparent !important; background-color:transparent !important;
     color:#f1f5f9 !important;
     -webkit-text-fill-color:#f1f5f9 !important;
     caret-color:#38bdf8 !important; border-radius:0 !important;
     letter-spacing:normal !important; word-spacing:normal !important;
   }
-  /* Cuando tiene sintaxis activa y no está en modo plano forzado, el texto se transparenta para mostrar los colores */
+  /* Anular cualquier fondo opaco forzado por temas u otros estilos para que la sintaxis siempre sea visible */
+  :root .syntax-textarea,
+  :root[data-theme="oled"] .syntax-textarea,
+  :root[data-theme="dark"] .syntax-textarea,
+  :root .diff-textarea,
+  :root[data-theme="oled"] .diff-textarea,
+  :root[data-theme="dark"] .diff-textarea,
+  #entrada.syntax-textarea,
+  #diffEntradaA.syntax-textarea,
+  #diffEntradaB.syntax-textarea,
+  :root[data-theme="oled"] #entrada,
+  :root[data-theme="oled"] #diffEntradaA,
+  :root[data-theme="oled"] #diffEntradaB,
+  :root #entrada:focus,
+  :root #diffEntradaA:focus,
+  :root #diffEntradaB:focus {
+    background: transparent !important;
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+  /* Cuando tiene sintaxis activa y no está en modo plano forzado, el texto se transparenta para mostrar los colores del backdrop frontal */
   .syntax-editor-container.has-syntax:not(.force-plain) .syntax-textarea {
     color:transparent !important;
     -webkit-text-fill-color:transparent !important;
@@ -1006,13 +1027,36 @@ function formatearDocumentoUniversal(txt, modo) {
   return { ok: false, texto: t, tipo: 'texto' };
 }
 
+function formatearCualquierDocumento(txt, modo) {
+  var t = (txt || '').replace(/^\uFEFF/, '').trim();
+  if (!t) return { ok: false, texto: '', tipo: 'vacio' };
+
+  // 1. Intentar con analizar() del visor (soporta XML, SOAP, JSON, NDJSON)
+  try {
+    if (typeof analizar === 'function') {
+      var r = analizar(t, modo || 'auto');
+      if (r && r.ok && r.lineas && r.lineas.length > 0) {
+        var fmtLines = r.lineas.map(function(l){
+          return new Array(l.ind + 1).join('  ') + (l.toks || []).map(function(x){ return x.t; }).join('');
+        }).join('\n');
+        if (fmtLines && fmtLines.trim()) {
+          return { ok: true, texto: fmtLines, tipo: r.tipo };
+        }
+      }
+    }
+  } catch(e) {}
+
+  // 2. Intentar formatearDocumentoUniversal (prettyPrintXml + JSON.stringify)
+  return formatearDocumentoUniversal(t, modo || 'auto');
+}
+
 function autoFormatearDocumento(txtArea, lado, forzar) {
   if (!txtArea) return false;
   var val = (txtArea.value || '').trim();
   if (!val || val.length < 10) return false;
 
   var m = lado ? (lado === 'A' ? diffState.modoA : diffState.modoB) : (typeof modoSel !== 'undefined' ? modoSel : 'auto');
-  var res = formatearDocumentoUniversal(val, m);
+  var res = formatearCualquierDocumento(val, m);
   if (res && res.ok && res.texto && (forzar || res.texto !== val)) {
     txtArea.value = res.texto;
     if (lado && res.tipo && m === 'auto' && typeof fijarModoDiff === 'function') {
@@ -1040,7 +1084,7 @@ function enlazarAutoFormateoAlPegar(txtArea, lado) {
     }
     if (clipboardText && clipboardText.trim().length > 10) {
       var m = lado ? (lado === 'A' ? diffState.modoA : diffState.modoB) : (typeof modoSel !== 'undefined' ? modoSel : 'auto');
-      var res = formatearDocumentoUniversal(clipboardText, m);
+      var res = formatearCualquierDocumento(clipboardText, m);
       if (res && res.ok && res.texto) {
         e.preventDefault();
         // Si el textarea estaba vacío o todo seleccionado, reemplaza todo
