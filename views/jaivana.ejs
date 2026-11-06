@@ -376,12 +376,18 @@
     border-radius: 16px !important;
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85), 0 0 30px rgba(var(--accent-rgb, 0, 245, 255), 0.2) !important;
     padding: 10px !important;
-    display: flex !important;
+    display: flex;
     flex-direction: column !important;
     gap: 8px !important;
     backdrop-filter: blur(20px) saturate(1.8) !important;
     -webkit-backdrop-filter: blur(20px) saturate(1.8) !important;
     animation: catDropIn 0.18s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  }
+
+  .cat-dropdown-menu[style*="display: none"],
+  .cat-dropdown-menu[style*="display:none"],
+  .cat-dropdown-menu[x-cloak] {
+    display: none !important;
   }
 
   :root[data-theme="light"] .cat-dropdown-menu {
@@ -1084,19 +1090,19 @@
     <% }); %>
 
     <% if (pillsExtras.length > 0) { %>
-      <div class="cat-dropdown-wrap" x-data="{ dropAbierto: false, filtroDrop: '' }" @click.outside="dropAbierto = false">
-        <button type="button" class="tab cat-more-btn" @click="dropAbierto = !dropAbierto" :class="{ active: esCatExtra(catActiva) }" title="Ver más categorías">
+      <div class="cat-dropdown-wrap" x-data="{ dropAbierto: false, filtroDrop: '' }" @click.outside="dropAbierto = false" @keydown.escape.window="dropAbierto = false">
+        <button type="button" class="tab cat-more-btn" @click.stop="dropAbierto = !dropAbierto" :class="{ active: esCatExtra(catActiva) }" title="Ver más categorías">
           <span x-text="nombreCatExtra(catActiva) || ('📂 Más categorías (<%= pillsExtras.length %>) ▾')">📂 Más categorías (<%= pillsExtras.length %>) ▾</span>
         </button>
-        <div class="cat-dropdown-menu" x-show="dropAbierto" x-cloak style="display:none;">
+        <div class="cat-dropdown-menu" x-show="dropAbierto" x-cloak @click.outside="dropAbierto = false" style="display:none;">
           <div class="cat-dropdown-header">
             <span class="cdh-title">Más categorías (<%= pillsExtras.length %>)</span>
-            <button type="button" class="cdh-close" @click="dropAbierto = false" title="Cerrar">✕</button>
+            <button type="button" class="cdh-close" @click.stop="dropAbierto = false" title="Cerrar">✕</button>
           </div>
           <div class="cat-dropdown-search">
             <svg class="cd-search-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-            <input type="text" x-model="filtroDrop" placeholder="Buscar categoría..." @keydown.escape="dropAbierto = false">
-            <button type="button" class="cat-dropdown-clear" x-show="filtroDrop" @click="filtroDrop = ''" title="Limpiar búsqueda">×</button>
+            <input type="text" x-model="filtroDrop" placeholder="Buscar categoría..." @keydown.escape.stop="dropAbierto = false">
+            <button type="button" class="cat-dropdown-clear" x-show="filtroDrop" @click.stop="filtroDrop = ''" title="Limpiar búsqueda">×</button>
           </div>
           <div class="cat-dropdown-list">
             <% pillsExtras.forEach(function(cat) { 
@@ -3130,6 +3136,7 @@ document.getElementById('searchInput').addEventListener('input', function(e){
 });
 
 document.querySelectorAll('#tabs .tab').forEach(function(tab){
+  if (!tab.dataset.cat) return; // Ignorar botones auxiliares como el desplegable de más categorías
   tab.addEventListener('click', function(){
     document.querySelectorAll('#tabs .tab').forEach(function(t){ t.classList.remove('active'); });
     tab.classList.add('active');
