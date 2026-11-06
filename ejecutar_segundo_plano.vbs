@@ -12,7 +12,7 @@ If WScript.Arguments.Count > 0 Then
     strCommand = ""
     For i = 0 To WScript.Arguments.Count - 1
         arg = WScript.Arguments(i)
-        If (InStr(arg, " ") > 0 And InStr(arg, """") = 0) And (fso.FileExists(arg) Or fso.FolderExists(arg)) Then
+        If InStr(arg, " ") > 0 And Left(arg, 1) <> """" Then
             arg = """" & arg & """"
         End If
         If i > 0 Then strCommand = strCommand & " "

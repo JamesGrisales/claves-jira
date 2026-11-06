@@ -20,11 +20,16 @@ set "SERVER_LOG=%~dp0servidor.log"
 
 echo [%date% %time%] === INICIO DE ACTUALIZACION EN SEGUNDO PLANO === > "%LOGFILE%"
 
+:: Asegurar directorio seguro en Git para evitar errores de permisos entre usuarios
+git config --global --add safe.directory "%CD%" >> "%LOGFILE%" 2>&1
+
 :: 4. Esperar 2 segundos a que el proceso anterior de Node.js libere el puerto
 ping 127.0.0.1 -n 3 >nul 2>&1
 
-:: 5. Matar cualquier proceso residual en el puerto 5050
-for /f "tokens=5" %%a in ('netstat -aon ^| findstr :5050') do taskkill /F /PID %%a >> "%LOGFILE%" 2>&1
+:: 5. Matar cualquier proceso residual en el puerto 5050 (solo conexiones TCP en estado LISTENING)
+for /f "tokens=5" %%a in ('netstat -ano -p tcp ^| findstr /R /C:":5050  .*LISTENING"') do (
+    if not "%%a"=="0" taskkill /F /PID %%a >> "%LOGFILE%" 2>&1
+)
 ping 127.0.0.1 -n 2 >nul 2>&1
 
 :: 6. Guardar cambios locales si existen (git stash)
@@ -34,6 +39,7 @@ git stash >> "%LOGFILE%" 2>&1
 :: 7. Descargar ultimas mejoras de GitHub
 echo [%date% %time%] Descargando mejoras de GitHub (git fetch y git pull)... >> "%LOGFILE%"
 git fetch origin main >> "%LOGFILE%" 2>&1
+git checkout main >> "%LOGFILE%" 2>&1 || git checkout -B main origin/main >> "%LOGFILE%" 2>&1
 git pull origin main >> "%LOGFILE%" 2>&1
 if %errorlevel% neq 0 (
     echo [%date% %time%] Conflicto local detectado. Sincronizando limpiamente con origin/main... >> "%LOGFILE%"

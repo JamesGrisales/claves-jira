@@ -2537,45 +2537,41 @@ app.get("/api/sistema/verificar-actualizacion", requireLogin, (req, res) => {
       });
     }
 
-    exec("git branch --show-current", { cwd: gitDir, timeout: 8000 }, (errBranch, branchOut) => {
-      const branch = (branchOut || "").trim() || "main";
+    exec("git rev-list HEAD..origin/main --count", { cwd: gitDir, timeout: 8000 }, (errCount, countOut) => {
+      if (errCount) {
+        return res.json({
+          ok: false,
+          error: "Error al comparar versiones con GitHub: " + errCount.message
+        });
+      }
 
-      exec(`git rev-list HEAD..origin/${branch} --count`, { cwd: gitDir, timeout: 8000 }, (errCount, countOut) => {
-        if (errCount) {
-          return res.json({
-            ok: false,
-            error: "Error al comparar versiones con GitHub: " + errCount.message
-          });
-        }
+      const count = parseInt((countOut || "").trim(), 10) || 0;
+      if (count === 0) {
+        return res.json({
+          ok: true,
+          hayCambios: false,
+          numCambios: 0,
+          branch: "main",
+          mensaje: "El sistema ya está actualizado con la última versión de GitHub (v" + APP_VERSION + (GIT_COMMIT ? " · " + GIT_COMMIT : "") + ").",
+          version: APP_VERSION,
+          commit: GIT_COMMIT
+        });
+      }
 
-        const count = parseInt((countOut || "").trim(), 10) || 0;
-        if (count === 0) {
-          return res.json({
-            ok: true,
-            hayCambios: false,
-            numCambios: 0,
-            branch: branch,
-            mensaje: "El sistema ya está actualizado con la última versión de GitHub (v" + APP_VERSION + (GIT_COMMIT ? " · " + GIT_COMMIT : "") + ").",
-            version: APP_VERSION,
-            commit: GIT_COMMIT
-          });
-        }
+      exec('git log -n 12 --pretty=format:"%s (%cr)" HEAD..origin/main', { cwd: gitDir, timeout: 8000 }, (errLog, logOut) => {
+        const commits = (logOut || "")
+          .split("\n")
+          .map(l => l.trim())
+          .filter(Boolean);
 
-        exec(`git log -n 12 --pretty=format:"%s (%cr)" HEAD..origin/${branch}`, { cwd: gitDir, timeout: 8000 }, (errLog, logOut) => {
-          const commits = (logOut || "")
-            .split("\n")
-            .map(l => l.trim())
-            .filter(Boolean);
-
-          return res.json({
-            ok: true,
-            hayCambios: true,
-            numCambios: count,
-            branch: branch,
-            commits: commits,
-            version: APP_VERSION,
-            commit: GIT_COMMIT
-          });
+        return res.json({
+          ok: true,
+          hayCambios: true,
+          numCambios: count,
+          branch: "main",
+          commits: commits,
+          version: APP_VERSION,
+          commit: GIT_COMMIT
         });
       });
     });
