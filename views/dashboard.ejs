@@ -298,10 +298,16 @@
   .card-title .ico{ width:30px; height:30px; border-radius:9px; background:var(--accent-soft); color:var(--accent-dark); display:flex; align-items:center; justify-content:center; }
   .card-title svg{ width:16px; height:16px; fill:none; stroke:currentColor; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
 
-  /* ---- Importar ---- */
+  /* ---- Importar y Cambio Masivo ---- */
   .imp-head{ display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:4px; }
   .imp-head span{ color:var(--muted); font-size:12.5px; }
   .imp-help{ color:var(--muted); font-size:12.5px; margin:0 0 12px; line-height:1.55; }
+  .imp-mode-switcher{ display:inline-flex; gap:6px; background:var(--panel-alt); border:1px solid var(--panel-edge); padding:4px; border-radius:12px; margin:8px 0 14px; }
+  .imp-mode-btn{ border:none; background:transparent; color:var(--muted); font-family:var(--sans); font-size:12.5px; font-weight:600; padding:7px 16px; border-radius:9px; cursor:pointer; display:inline-flex; align-items:center; gap:7px; transition:all .18s ease; }
+  .imp-mode-btn:hover{ color:var(--text); }
+  .imp-mode-btn.active{ background:var(--accent); color:#030712; font-weight:700; box-shadow:0 2px 10px rgba(var(--accent-rgb, 0, 245, 255), 0.35); }
+  .imp-textarea{ width:100%; box-sizing:border-box; font-family:var(--mono); font-size:12.5px; line-height:1.55; padding:12px 14px; border-radius:12px; background:var(--panel-alt); border:1.5px solid var(--panel-edge); color:var(--text); resize:vertical; min-height:140px; transition:border-color .18s ease, box-shadow .18s ease; }
+  .imp-textarea:focus{ outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft); }
   .imp-drop{ border:2px dashed color-mix(in srgb, var(--accent) 30%, var(--panel-edge)); border-radius:14px; padding:22px; text-align:center; font-size:13.5px; color:var(--muted); background:var(--panel-alt); transition:border-color .15s ease, background .15s ease, transform .2s var(--ease); }
   .imp-drop:hover{ border-color:var(--accent); }
   .imp-drop.drag{ border-color:var(--accent); background:var(--accent-soft); transform:scale(1.01); }
@@ -965,7 +971,7 @@
     </div>
     <button type="button" class="secondary toolbar-ico-btn" id="toggleAuditBtn" @click="togglePanel('auditoria')" :class="{ active: panelActivo === 'auditoria' }" :aria-expanded="panelActivo === 'auditoria'"><svg viewBox="0 0 24 24" style="stroke:var(--accent);"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Auditar Bóveda</button>
     <button type="button" class="secondary toolbar-ico-btn" id="toggleAddBtn" @click="togglePanel('agregar')" :class="{ active: panelActivo === 'agregar' }" :aria-expanded="panelActivo === 'agregar'"><svg viewBox="0 0 24 24" style="stroke:#34d399; filter:drop-shadow(0 0 4px rgba(52,211,153,0.5));"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>Agregar empresa</button>
-    <button type="button" class="secondary toolbar-ico-btn" id="toggleImportBtn" @click="togglePanel('importar')" :class="{ active: panelActivo === 'importar' }" :aria-expanded="panelActivo === 'importar'"><svg viewBox="0 0 24 24" style="stroke:#38bdf8; filter:drop-shadow(0 0 4px rgba(56,189,248,0.5));"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>Importar claves</button>
+    <button type="button" class="secondary toolbar-ico-btn" id="toggleImportBtn" @click="togglePanel('importar')" :class="{ active: panelActivo === 'importar' }" :aria-expanded="panelActivo === 'importar'"><svg viewBox="0 0 24 24" style="stroke:#38bdf8; filter:drop-shadow(0 0 4px rgba(56,189,248,0.5));"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>Importar / Cambio masivo</button>
   </div>
 
   <div class="legend">
@@ -1038,21 +1044,66 @@
 
 <div class="card add-card" id="importCard" :class="{ open: panelActivo === 'importar' }" style="padding:18px;">
   <div class="card-title" style="display:flex; justify-content:space-between; align-items:center;">
-    <span style="display:inline-flex; align-items:center; gap:8px;"><span class="ico"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg></span>Importar claves desde un archivo</span>
+    <span style="display:inline-flex; align-items:center; gap:8px;"><span class="ico"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg></span>Importar Claves y Cambio Masivo</span>
     <div style="display:flex; align-items:center; gap:8px;">
       <span class="db-orb db-orb-pg" title="PostgreSQL Import">🐘</span>
       <button type="button" class="secondary btn-sm" id="btnCerrarImport" onclick="cerrarPanel('importCard')" @click="cerrarPaneles()" title="Cerrar panel (Esc)" style="cursor:pointer; display:inline-flex; align-items:center; gap:5px; padding:4px 10px; border-radius:8px;">✕ Cerrar</button>
     </div>
   </div>
-  <div class="imp-head" style="margin-top:2px"><span>.txt · .csv · .xml · .xlsx · .xls</span></div>
-  <p class="imp-help">
-    Sube un archivo donde cada empresa va seguida de su clave (una debajo de la otra, o en dos columnas).
-    Primero verás una <strong>vista previa</strong>: no se cambia nada hasta que pulses «Aplicar».
-  </p>
-  <div class="imp-drop" id="impDrop">
-    <strong style="color:var(--text)">Arrastra el archivo aquí</strong> o elígelo desde tu equipo<br>
-    <input type="file" id="impFile" accept=".txt,.csv,.xml,.xlsx,.xls">
+
+  <!-- Switcher de modo: Archivo vs Texto Pegado -->
+  <div class="imp-mode-switcher" id="impModeSwitcher">
+    <button type="button" class="imp-mode-btn active" id="btnModoArchivo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="15" height="15"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+      <span>Subir o arrastrar archivo</span>
+    </button>
+    <button type="button" class="imp-mode-btn" id="btnModoTexto">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="15" height="15"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+      <span>Pegar información directamente</span>
+    </button>
   </div>
+
+  <!-- SECCIÓN 1: SUBIR ARCHIVO -->
+  <div id="impSecArchivo">
+    <div class="imp-head" style="margin-top:2px"><span>Formatos compatibles: .xlsx · .xls · .csv · .txt · .xml</span></div>
+    <p class="imp-help">
+      Sube un archivo donde cada empresa va seguida de su clave (una debajo de la otra, o en dos columnas).
+      Primero verás una <strong>vista previa</strong>: no se cambia nada hasta que pulses «Aplicar cambios».
+    </p>
+    <div class="imp-drop" id="impDrop">
+      <strong style="color:var(--text)">Arrastra el archivo aquí</strong> o elígelo desde tu equipo<br>
+      <input type="file" id="impFile" accept=".txt,.csv,.xml,.xlsx,.xls">
+    </div>
+  </div>
+
+  <!-- SECCIÓN 2: PEGAR TEXTO DIRECTAMENTE -->
+  <div id="impSecTexto" style="display:none;">
+    <p class="imp-help">
+      Pega directamente las filas copiadas desde <strong>Excel</strong>, <strong>Google Sheets</strong>, correos, CSV, JSON o XML.
+      El sistema detectará automáticamente los nombres de empresa y las claves (formato <code>JVN-XXXX-XXXX-XXXX</code> o por columnas).
+    </p>
+    <div style="position:relative; margin-bottom:10px;">
+      <textarea id="impTextArea" class="imp-textarea" rows="7" placeholder="Pega aquí los datos copiados de Excel, texto o XML...&#10;&#10;Ejemplo copiado desde Excel (separado por tabulación):&#10;DISTRIBUIDORA ANDINA&#9;JVN-A1B2-C3D4-E5F6&#10;SUPERMERCADOS DEL VALLE&#9;JVN-7890-WXYZ-1234&#10;&#10;O formato CSV / dos columnas:&#10;EMPRESA UNO, JVN-9988-7766-5544&#10;&#10;O XML con etiquetas:&#10;&lt;empresa nombre=&quot;EMPRESA UNO&quot; clave=&quot;JVN-9988-7766-5544&quot;/&gt;"></textarea>
+    </div>
+    <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:12px;">
+      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+        <button type="button" class="btn-update-confirm" id="btnProcesarTexto" style="padding:7px 18px; font-size:12.5px; height:auto;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="15" height="15"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <span>Analizar y Ver Vista Previa</span>
+        </button>
+        <button type="button" class="secondary btn-sm" id="btnPegarClipboard" style="cursor:pointer; display:inline-flex; align-items:center; gap:5px; padding:6px 12px; border-radius:8px;">
+          <span>📋 Pegar del portapapeles</span>
+        </button>
+        <button type="button" class="secondary btn-sm" id="btnLimpiarTexto" style="cursor:pointer; display:inline-flex; align-items:center; gap:5px; padding:6px 12px; border-radius:8px;">
+          <span>🧹 Limpiar</span>
+        </button>
+      </div>
+      <button type="button" class="secondary btn-sm" id="btnCargarEjemploTexto" style="border-color:var(--accent); color:var(--accent); font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:5px; padding:6px 12px; border-radius:8px;">
+        <span>✨ Cargar datos de ejemplo</span>
+      </button>
+    </div>
+  </div>
+
   <div class="imp-msg" id="impMsg"></div>
   <div id="impResult" style="display:none;">
     <div class="imp-chips" id="impChips"></div>
@@ -1062,7 +1113,7 @@
     </div>
     <div class="imp-wrap">
       <table class="imp-t">
-        <thead><tr><th></th><th>Empresa en el archivo</th><th>Clave nueva</th><th>Se aplica a (en la bóveda)</th><th>Estado</th></tr></thead>
+        <thead><tr><th></th><th>Empresa detectada</th><th>Clave nueva</th><th>Se aplica a (en la bóveda)</th><th>Estado</th></tr></thead>
         <tbody id="impBody"></tbody>
       </table>
     </div>
@@ -1737,59 +1788,178 @@ window.bovedaAlpineApp = function() {
   }
 })();
 
-/* ---------- Importar claves desde archivo ---------- */
+/* ---------- Importar claves (desde archivo o texto pegado) ---------- */
 (function(){
   var $ = function(id){ return document.getElementById(id); };
   var items = [], libres = [];
+  var origenTexto = false;
 
   function esc(t){ return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
   function mask(c){ return c.length > 8 ? c.slice(0,4) + '••••' + c.slice(-4) : '••••'; }
-  function msg(t, err){ var m = $('impMsg'); m.textContent = t || ''; m.className = 'imp-msg' + (err ? ' err' : ''); }
+  function msg(t, err){ var m = $('impMsg'); if (m) { m.textContent = t || ''; m.className = 'imp-msg' + (err ? ' err' : ''); } }
+
+  // Alternador de pestañas de modo: Archivo vs Texto
+  var btnModoArchivo = $('btnModoArchivo');
+  var btnModoTexto = $('btnModoTexto');
+  var secArchivo = $('impSecArchivo');
+  var secTexto = $('impSecTexto');
+
+  function cambiarModo(modo) {
+    var esArchivo = modo === 'archivo';
+    if (btnModoArchivo) btnModoArchivo.classList.toggle('active', esArchivo);
+    if (btnModoTexto) btnModoTexto.classList.toggle('active', !esArchivo);
+    if (secArchivo) secArchivo.style.display = esArchivo ? 'block' : 'none';
+    if (secTexto) secTexto.style.display = esArchivo ? 'none' : 'block';
+    if (!esArchivo && $('impTextArea')) {
+      setTimeout(function(){ $('impTextArea').focus(); }, 60);
+    }
+  }
+  if (btnModoArchivo) btnModoArchivo.addEventListener('click', function(){ cambiarModo('archivo'); });
+  if (btnModoTexto) btnModoTexto.addEventListener('click', function(){ cambiarModo('texto'); });
 
   $('toggleImportBtn').addEventListener('click', function(){ $('importCard').classList.toggle('open'); });
 
-  function reset(conservarArchivo){
-    items = []; libres = []; $('impResult').style.display = 'none'; msg('');
-    if (conservarArchivo !== true) $('impFile').value = '';
+  function reset(conservarInputs){
+    items = []; libres = [];
+    if ($('impResult')) $('impResult').style.display = 'none';
+    msg('');
+    if (conservarInputs !== true) {
+      if ($('impFile')) $('impFile').value = '';
+      if ($('impTextArea')) $('impTextArea').value = '';
+    }
   }
   $('impCancelar').addEventListener('click', function(){ reset(); });
 
-  async function subir(file){
-    if (!file) return;
-    reset(true); msg('Leyendo «' + file.name + '»…');
-    var fd = new FormData(); fd.append('archivo', file);
-    try {
-      var res = await fetch('/empresas/importar-claves/vista-previa', { method:'POST', body: fd });
-      var data = await res.json();
-      if (!res.ok) {
-        msg(data.error || 'No se pudo leer el archivo.', true);
-        if (data.avisos && data.avisos.length) { $('impAvisos').style.display = 'block'; $('impAvisos').innerHTML = '<ul>' + data.avisos.slice(0,10).map(function(a){ return '<li>' + esc(a) + '</li>'; }).join('') + '</ul>'; $('impResult').style.display = 'block'; $('impBody').innerHTML = ''; $('impChips').innerHTML = ''; $('impAplicar').style.display = 'none'; }
+  async function procesarEntrada(opciones) {
+    var esTexto = Boolean(opciones && opciones.texto !== undefined);
+    origenTexto = esTexto;
+    reset(true);
+
+    var fetchOpts = { method: 'POST' };
+
+    if (esTexto) {
+      var txt = (opciones.texto || '').trim();
+      if (!txt) {
+        msg('Por favor ingresa o pega el texto con las empresas y claves antes de analizar.', true);
         return;
       }
+      var lineCount = txt.split(/\r?\n/).filter(function(l){ return l.trim().length > 0; }).length;
+      msg('Analizando ' + lineCount + ' líneas de datos pegados…');
+      fetchOpts.headers = { 'Content-Type': 'application/json' };
+      fetchOpts.body = JSON.stringify({ texto: txt });
+    } else {
+      var file = opciones && opciones.file;
+      if (!file) return;
+      msg('Leyendo «' + file.name + '»…');
+      var fd = new FormData();
+      fd.append('archivo', file);
+      fetchOpts.body = fd;
+    }
+
+    try {
+      var res = await fetch('/empresas/importar-claves/vista-previa', fetchOpts);
+      var data = await res.json();
+      if (!res.ok) {
+        msg(data.error || 'No se pudo interpretar la información.', true);
+        if (data.avisos && data.avisos.length) {
+          $('impAvisos').style.display = 'block';
+          $('impAvisos').innerHTML = '<ul>' + data.avisos.slice(0,10).map(function(a){ return '<li>' + esc(a) + '</li>'; }).join('') + '</ul>';
+          $('impResult').style.display = 'block';
+          $('impBody').innerHTML = '';
+          $('impChips').innerHTML = '';
+          $('impAplicar').style.display = 'none';
+        }
+        return;
+      }
+
       $('impAplicar').style.display = '';
       libres = data.libres || [];
       items = data.items.map(function(it){
         it.original = it.id;
-        it.destino = it.estado === 'ambiguo' ? 'nada' : it.id;   // null = crear, número = actualizar, 'nada' = sin elegir
+        it.destino = it.estado === 'ambiguo' ? 'nada' : it.id;
         it.marcada = (it.estado === 'cambia') && (it.nivel === 'exacta' || it.nivel === 'parecida');
         return it;
       });
+
       msg('');
       var av = data.avisos || [];
       var box = $('impAvisos');
-      if (av.length) { box.style.display = 'block'; box.innerHTML = '<strong>Avisos al leer el archivo:</strong><ul>' + av.slice(0,10).map(function(a){ return '<li>' + esc(a) + '</li>'; }).join('') + '</ul>'; }
-      else box.style.display = 'none';
+      if (av.length) {
+        box.style.display = 'block';
+        box.innerHTML = '<strong>Avisos al procesar ' + (esTexto ? 'el texto:' : 'el archivo:') + '</strong><ul>' + av.slice(0,10).map(function(a){ return '<li>' + esc(a) + '</li>'; }).join('') + '</ul>';
+      } else {
+        box.style.display = 'none';
+      }
+
       $('impResult').style.display = 'block';
       pintar();
     } catch (e) {
-      msg('No se pudo leer el archivo: ' + e.message, true);
+      msg('Error al procesar: ' + e.message, true);
     }
   }
-  $('impFile').addEventListener('change', function(){ subir(this.files[0]); });
+
+  // Eventos de archivo
+  if ($('impFile')) {
+    $('impFile').addEventListener('change', function(){ procesarEntrada({ file: this.files[0] }); });
+  }
   var drop = $('impDrop');
-  ['dragenter','dragover'].forEach(function(ev){ drop.addEventListener(ev, function(e){ e.preventDefault(); drop.classList.add('drag'); }); });
-  ['dragleave','drop'].forEach(function(ev){ drop.addEventListener(ev, function(e){ e.preventDefault(); drop.classList.remove('drag'); }); });
-  drop.addEventListener('drop', function(e){ subir(e.dataTransfer.files && e.dataTransfer.files[0]); });
+  if (drop) {
+    ['dragenter','dragover'].forEach(function(ev){ drop.addEventListener(ev, function(e){ e.preventDefault(); drop.classList.add('drag'); }); });
+    ['dragleave','drop'].forEach(function(ev){ drop.addEventListener(ev, function(e){ e.preventDefault(); drop.classList.remove('drag'); }); });
+    drop.addEventListener('drop', function(e){ procesarEntrada({ file: e.dataTransfer.files && e.dataTransfer.files[0] }); });
+  }
+
+  // Eventos de texto pegado
+  var btnProcesar = $('btnProcesarTexto');
+  var txtArea = $('impTextArea');
+  if (btnProcesar && txtArea) {
+    btnProcesar.addEventListener('click', function(){ procesarEntrada({ texto: txtArea.value }); });
+    txtArea.addEventListener('keydown', function(e){
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        e.preventDefault();
+        procesarEntrada({ texto: txtArea.value });
+      }
+    });
+  }
+
+  var btnClip = $('btnPegarClipboard');
+  if (btnClip && txtArea) {
+    btnClip.addEventListener('click', async function(){
+      try {
+        if (navigator.clipboard && navigator.clipboard.readText) {
+          var clipText = await navigator.clipboard.readText();
+          if (clipText) {
+            txtArea.value = clipText;
+            txtArea.focus();
+            msg('Texto pegado desde el portapapeles. Haz clic en "Analizar y Ver Vista Previa".');
+          }
+        } else {
+          txtArea.focus();
+          msg('Presiona Ctrl+V para pegar en el cuadro.');
+        }
+      } catch (err) {
+        txtArea.focus();
+      }
+    });
+  }
+
+  var btnClear = $('btnLimpiarTexto');
+  if (btnClear && txtArea) {
+    btnClear.addEventListener('click', function(){
+      txtArea.value = '';
+      reset();
+      txtArea.focus();
+    });
+  }
+
+  var btnEjemplo = $('btnCargarEjemploTexto');
+  if (btnEjemplo && txtArea) {
+    btnEjemplo.addEventListener('click', function(){
+      txtArea.value = "DISTRIBUIDORA ANDINA\tJVN-A1B2-C3D4-E5F6\nSUPERMERCADOS DEL VALLE\tJVN-7890-WXYZ-1234\nFERRETERIA LA UNION\tJVN-9988-7766-5544";
+      txtArea.focus();
+      msg('Ejemplo cargado. Pulsa «Analizar y Ver Vista Previa» para probar.');
+    });
+  }
 
   function estadoDe(it){
     if (it.destino === 'nada') return { cls:'warn', txt:'Elige la empresa' };
@@ -1839,7 +2009,7 @@ window.bovedaAlpineApp = function() {
       if (it.marcada && puedeMarcar(it)) { marcadas++; if (it.destino === null) mNew++; else mUpd++; }
     });
     $('impChips').innerHTML =
-      '<span class="imp-chip mute">' + items.length + ' en el archivo</span>' +
+      '<span class="imp-chip mute">' + items.length + ' ' + (origenTexto ? 'en el texto pegado' : 'en el archivo') + '</span>' +
       '<span class="imp-chip">' + upd + ' por actualizar</span>' +
       (revisar ? '<span class="imp-chip warn">' + revisar + ' para revisar</span>' : '') +
       (nuevas ? '<span class="imp-chip">' + nuevas + ' nuevas</span>' : '') +

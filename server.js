@@ -56,7 +56,7 @@ const memCache = {
 const { encryptValue, decryptValue } = require("./crypto-vault");
 const multer = require("multer");
 const { procesarArchivo } = require("./procesar-archivo");
-const { leerArchivoClaves, compararConBd, normalizar } = require("./importar-claves");
+const { leerArchivoClaves, leerTextoClaves, compararConBd, normalizar } = require("./importar-claves");
 const { esExcel, leerLibro, hojasATexto } = require("./excel-hoja");
 const biometria = require("./biometria-service");
 
@@ -739,6 +739,61 @@ const uploadClaves = multer({
 });
 
 app.post("/empresas/importar-claves/vista-previa", requireLogin, (req, res) => {
+  const cType = (req.headers["content-type"] || "").toLowerCase();
+
+  // Función común para comparar pares con la BD y devolver la vista previa
+  async function responderVistaPrevia(nombreOrigen, pares, avisos) {
+    if (!pares.length) {
+      return res.status(422).json({
+        error:
+          "No se encontraron pares «empresa / clave» válidos. " +
+          "Asegúrate de que cada empresa vaya con su clave (ej: columnas de Excel, CSV, XML o una debajo de la otra).",
+        avisos,
+      });
+    }
+
+    const { rows } = await pool.query(
+      "SELECT id, empresa, clave_cifrada FROM companies"
+    );
+
+    const bd = rows.map((r) => {
+      let clave = null;
+      try {
+        clave = decryptValue(r.clave_cifrada);
+      } catch (e) {
+        // si no se puede descifrar se tratará como "cambia"
+      }
+      return { id: r.id, empresa: r.empresa, clave };
+    });
+
+    const cmp = compararConBd(pares, bd);
+
+    res.json({
+      archivo: nombreOrigen,
+      items: cmp.items,
+      libres: cmp.libres,
+      avisos: avisos.concat(cmp.avisos),
+    });
+  }
+
+  // 1. Si el cliente envía JSON con texto directo
+  if (cType.includes("application/json")) {
+    return express.json({ limit: "5mb" })(req, res, async () => {
+      try {
+        const textoPegado = (req.body && typeof req.body.texto === "string" ? req.body.texto : "").trim();
+        if (!textoPegado) {
+          return res.status(400).json({ error: "Ingresa o pega el texto con las claves para continuar." });
+        }
+        const { pares, avisos } = leerTextoClaves(textoPegado);
+        await responderVistaPrevia("Texto pegado directamente", pares, avisos);
+      } catch (error) {
+        console.error("Error interpretando texto pegado de claves:", error.message);
+        res.status(500).json({ error: "Error al interpretar el texto: " + error.message });
+      }
+    });
+  }
+
+  // 2. Si el cliente sube un archivo o envía FormData
   uploadClaves.single("archivo")(req, res, async (err) => {
     if (err) {
       return res.status(400).json({
@@ -750,50 +805,26 @@ app.post("/empresas/importar-claves/vista-previa", requireLogin, (req, res) => {
     }
 
     try {
-      if (!req.file) {
-        return res.status(400).json({ error: "Selecciona un archivo." });
-      }
-
-      const ext = path.extname(req.file.originalname).toLowerCase();
-      if (!EXT_CLAVES.includes(ext)) {
-        return res.status(400).json({
-          error: "Formato no permitido. Usa .txt, .csv, .xml, .xlsx o .xls.",
-        });
-      }
-
-      const { pares, avisos } = leerArchivoClaves(req.file.buffer, ext);
-
-      if (!pares.length) {
-        return res.status(422).json({
-          error:
-            "No encontré pares «empresa / clave» en el archivo. " +
-            "Cada empresa debe ir seguida de su clave (o en dos columnas).",
-          avisos,
-        });
-      }
-
-      const { rows } = await pool.query(
-        "SELECT id, empresa, clave_cifrada FROM companies"
-      );
-
-      const bd = rows.map((r) => {
-        let clave = null;
-        try {
-          clave = decryptValue(r.clave_cifrada);
-        } catch (e) {
-          // si no se puede descifrar se tratará como "cambia"
+      // Caso 2a: Archivo adjunto
+      if (req.file) {
+        const ext = path.extname(req.file.originalname).toLowerCase();
+        if (!EXT_CLAVES.includes(ext)) {
+          return res.status(400).json({
+            error: "Formato no permitido. Usa .txt, .csv, .xml, .xlsx o .xls.",
+          });
         }
-        return { id: r.id, empresa: r.empresa, clave };
-      });
+        const { pares, avisos } = leerArchivoClaves(req.file.buffer, ext);
+        return await responderVistaPrevia(req.file.originalname, pares, avisos);
+      }
 
-      const cmp = compararConBd(pares, bd);
+      // Caso 2b: Texto enviado en FormData (campo 'texto')
+      const textoForm = (req.body && typeof req.body.texto === "string" ? req.body.texto : "").trim();
+      if (textoForm) {
+        const { pares, avisos } = leerTextoClaves(textoForm);
+        return await responderVistaPrevia("Texto pegado directamente", pares, avisos);
+      }
 
-      res.json({
-        archivo: req.file.originalname,
-        items: cmp.items,
-        libres: cmp.libres,
-        avisos: avisos.concat(cmp.avisos),
-      });
+      return res.status(400).json({ error: "Selecciona un archivo o pega el texto con las claves." });
     } catch (error) {
       console.error("Error leyendo archivo de claves:", error.message);
       res.status(500).json({

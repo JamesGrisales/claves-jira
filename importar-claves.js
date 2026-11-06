@@ -183,6 +183,63 @@ function leerArchivoClaves(buffer, ext) {
   return { pares, avisos };
 }
 
+// Interpreta texto pegado directamente (copiado de Excel, CSV, XML, JSON o texto plano)
+function leerTextoClaves(texto) {
+  let resultado;
+  const t = String(texto || "").trim();
+
+  // 1. Detección de formato JSON (arrays de objetos o diccionarios clave-valor)
+  if ((t.startsWith("[") && t.endsWith("]")) || (t.startsWith("{") && t.endsWith("}"))) {
+    try {
+      const parsed = JSON.parse(t);
+      const paresJson = [];
+      if (Array.isArray(parsed)) {
+        parsed.forEach((obj) => {
+          if (typeof obj === "object" && obj !== null) {
+            const empresa = obj.empresa || obj.nombre || obj.name || obj.company || Object.keys(obj)[0];
+            const clave = obj.clave || obj.key || obj.password || obj.contrasena || Object.values(obj)[1];
+            if (empresa && clave) {
+              paresJson.push({ empresa: String(empresa).trim(), clave: String(clave).trim() });
+            }
+          }
+        });
+      } else if (typeof parsed === "object" && parsed !== null) {
+        Object.entries(parsed).forEach(([k, v]) => {
+          if (typeof v === "string") {
+            paresJson.push({ empresa: k.trim(), clave: v.trim() });
+          } else if (typeof v === "object" && v !== null) {
+            const clave = v.clave || v.key || v.password;
+            if (clave) paresJson.push({ empresa: k.trim(), clave: String(clave).trim() });
+          }
+        });
+      }
+      if (paresJson.length) {
+        const avisos = [];
+        const pares = quitarRepetidas(paresJson, avisos);
+        return { pares, avisos };
+      }
+    } catch (e) {
+      // Si no es JSON válido, continuar con análisis de líneas
+    }
+  }
+
+  // 2. Detección de formato XML
+  if (t.startsWith("<") && t.includes(">")) {
+    resultado = emparejar(valoresDeXml(t, false));
+    if (!resultado.pares.length) resultado = emparejar(valoresDeXml(t, true));
+  } else {
+    // 3. Texto plano / Columnas copiadas de Excel (separadas por tabulaciones) / CSV
+    resultado = emparejar(valoresDeLineas(t.split(/\r?\n/)));
+  }
+
+  const avisos = resultado.avisos.slice();
+  const pares = quitarRepetidas(
+    resultado.pares.map((p) => ({ empresa: p.empresa.trim(), clave: p.clave.trim() })),
+    avisos
+  );
+  return { pares, avisos };
+}
+
 // ---------------------------------------------------------------------------
 // Comparación con las empresas de la bóveda
 // ---------------------------------------------------------------------------
@@ -328,4 +385,4 @@ function compararConBd(pares, bd) {
   };
 }
 
-module.exports = { leerArchivoClaves, compararConBd, normalizar, compacto, RE_CLAVE };
+module.exports = { leerArchivoClaves, leerTextoClaves, compararConBd, normalizar, compacto, RE_CLAVE };
