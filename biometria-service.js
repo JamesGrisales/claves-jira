@@ -160,7 +160,7 @@ async function loginVerificar(req, res) {
     res.json({
       ok: true,
       mensaje: `¡Acceso biométrico concedido! Bienvenido, ${user.username}`,
-      redirect: "/"
+      redirect: "/?login_sync=1"
     });
   } catch (err) {
     console.error("Error autenticando con huella:", err);

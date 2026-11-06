@@ -355,7 +355,7 @@ app.post("/registro", async (req, res) => {
         `¡Bienvenido, ${nuevoUsuario.username}! Tu cuenta ha sido creada exitosamente.`
       );
 
-      return res.redirect("/");
+      return res.redirect("/?login_sync=1");
     }
   }
 
@@ -399,9 +399,9 @@ app.post("/login", async (req, res) => {
     flash(req, "ok", `¡Bienvenido de nuevo, ${user.username}!`);
 
     if (isAjax) {
-      return res.json({ ok: true, redirect: "/" });
+      return res.json({ ok: true, redirect: "/?login_sync=1" });
     }
-    return res.redirect("/");
+    return res.redirect("/?login_sync=1");
   }
 
   if (isAjax) {

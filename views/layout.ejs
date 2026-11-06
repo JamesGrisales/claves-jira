@@ -6304,10 +6304,10 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
     <div class="topbar-left">
       <div class="topbar-ver-update-group" style="display:inline-flex; align-items:center; gap:6px; flex-wrap:wrap;">
         <!-- Insignia Holográfica de Versión del Sistema (Visible en todo el programa) -->
-        <div class="cyber-version-pill" data-title="Suite Bóveda Jira · Versión activa: <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.10.26') %>" title="Suite Bóveda Jira · Versión <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.10.26') %>">
+        <div class="cyber-version-pill" data-title="Suite Bóveda Jira · Versión activa: <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.10.27') %>" title="Suite Bóveda Jira · Versión <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.10.27') %>">
           <span class="cvp-icon"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></span>
           <span class="cvp-lbl">BUILD</span>
-          <strong class="cvp-ver"><%= typeof appVersion !== 'undefined' ? appVersion : 'v2.10.26' %></strong>
+          <strong class="cvp-ver"><%= typeof appVersion !== 'undefined' ? appVersion : 'v2.10.27' %></strong>
           <% if (typeof gitCommit !== 'undefined' && gitCommit) { %><span class="cvp-commit" style="font-size:10px; opacity:0.75; font-family:var(--mono); margin-left:3px;">(<%= gitCommit %>)</span><% } %>
           <span class="cvp-pulse"></span>
         </div>
@@ -7564,7 +7564,7 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
           h1.insertAdjacentElement('afterend', badge);
         }
 
-        // 3. Comprobación automática y silenciosa al iniciar y periódicamente
+        // 3. Comprobación automática al iniciar sesión y periódicamente
         function autoVerificarGitHubEnSegundoPlano() {
           if (!window.fetch) return;
           fetch('/api/sistema/verificar-actualizacion')
@@ -7573,6 +7573,7 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
               var btnEl = document.getElementById('btnGitUpdate');
               var bguBadgeEl = document.getElementById('bguBadge');
               var bguTxtEl = document.getElementById('bguTxt');
+
               if (data && data.ok && data.hayCambios && data.numCambios > 0) {
                 if (bguBadgeEl) {
                   bguBadgeEl.textContent = data.numCambios;
@@ -7585,6 +7586,31 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
                 if (bguTxtEl) {
                   bguTxtEl.textContent = 'Nueva Versión (' + data.numCambios + ')';
                 }
+
+                // DETECCIÓN DE INICIO DE SESIÓN / REINICIO DE NAVEGADOR
+                var urlParams = new URLSearchParams(window.location.search);
+                var esLoginSync = urlParams.get('login_sync') === '1';
+                var sesionPrevia = sessionStorage.getItem('boveda_session_checked');
+                var esInicioSesion = esLoginSync || !sesionPrevia;
+
+                var ultimoForzado = parseInt(sessionStorage.getItem('boveda_last_forced_update_ts') || '0', 10);
+                var esIntentoMuyReciente = (Date.now() - ultimoForzado) < 60000;
+
+                if (esInicioSesion && !esIntentoMuyReciente) {
+                  sessionStorage.setItem('boveda_session_checked', '1');
+                  sessionStorage.setItem('boveda_last_forced_update_ts', String(Date.now()));
+                  if (window.history && window.history.replaceState) {
+                    urlParams.delete('login_sync');
+                    var cleanUrl = window.location.pathname + (urlParams.toString() ? '?' + urlParams.toString() : '') + window.location.hash;
+                    window.history.replaceState({}, document.title, cleanUrl);
+                  }
+                  if (typeof window.lanzarActualizacionObligatoria === 'function') {
+                    window.lanzarActualizacionObligatoria(data);
+                    return;
+                  }
+                }
+
+                // Si no es inicio de sesión (es sondeo regular durante la jornada), mostrar notificación flotante sin interrumpir
                 if (!document.getElementById('bguFloatingAlert')) {
                   var fl = document.createElement('div');
                   fl.id = 'bguFloatingAlert';
@@ -7601,6 +7627,7 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
                   document.body.appendChild(fl);
                 }
               } else {
+                sessionStorage.setItem('boveda_session_checked', '1');
                 if (bguBadgeEl) bguBadgeEl.style.display = 'none';
                 if (btnEl) {
                   btnEl.classList.remove('bgu-has-updates');
@@ -7648,8 +7675,9 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
           document.body.appendChild(fl);
         };
 
-        // Ejecutar silenciosamente a los 2.5 segundos de cargar la página
-        setTimeout(autoVerificarGitHubEnSegundoPlano, 2500);
+        // Ejecutar de inmediato al iniciar sesión (400ms) o a los 2.5s en recarga
+        var delayInicial = (new URLSearchParams(window.location.search).get('login_sync') === '1' || !sessionStorage.getItem('boveda_session_checked')) ? 400 : 2500;
+        setTimeout(autoVerificarGitHubEnSegundoPlano, delayInicial);
         // Y revisar cada 3 minutos en segundo plano
         setInterval(autoVerificarGitHubEnSegundoPlano, 180000);
       }
@@ -7996,7 +8024,7 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
             </div>
             <div class="gub-info">
               <div class="gub-branch" style="color:#10b981;">✅ Sistema Sincronizado y Estable</div>
-              <div class="gub-desc">Tu versión actual (<%= typeof appVersion !== "undefined" ? appVersion : "v2.10.26" %>) cuenta con todas las mejoras y parches más recientes publicados en GitHub. No hay versiones ni cambios nuevos pendientes de descargar.</div>
+              <div class="gub-desc">Tu versión actual (<%= typeof appVersion !== "undefined" ? appVersion : "v2.10.27" %>) cuenta con todas las mejoras y parches más recientes publicados en GitHub. No hay versiones ni cambios nuevos pendientes de descargar.</div>
             </div>
           </div>
           <div style="padding: 12px 14px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; font-size: 12.5px; color: var(--muted); line-height: 1.45;">
@@ -8021,9 +8049,12 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
             <span>Descargar e Instalar Ahora</span>
           </button>
         </div>
-        <div id="gitFootUpToDate" style="display:none; align-items:center; gap:10px;">
+        <div id="gitFootUpToDate" style="display:none; align-items:center; gap:10px; flex-wrap:wrap;">
           <button type="button" class="secondary btn-sm" id="btnTestSimularAlerta" title="Simula cómo se verá la alerta visual cuando haya una nueva versión en GitHub" style="border-color:var(--accent); color:var(--accent); font-weight:700;">
             <span>🧪 Probar alerta de nueva versión</span>
+          </button>
+          <button type="button" class="secondary btn-sm" id="btnTestForzado" title="Simula cómo se ve la sincronización obligatoria que se ejecuta al iniciar sesión" style="border-color:var(--accent); color:var(--accent); font-weight:700;">
+            <span>⚡ Probar forzado al login</span>
           </button>
           <button type="button" class="btn-update-confirm" id="btnOkGitUpdate">
             <span>Entendido</span>
@@ -8031,6 +8062,60 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
         </div>
         <div id="gitFootError" style="display:none;">
           <button type="button" class="secondary btn-sm" id="btnErrorClose">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =====================================================================
+       MODAL: ACTUALIZACIÓN OBLIGATORIA AL INICIAR SESIÓN
+       ===================================================================== -->
+  <div class="git-modal-overlay" id="modalGitForzado" style="display:none; z-index: 999995;" role="dialog" aria-modal="true" aria-labelledby="modalForzadoTitle">
+    <div class="cyber-modal-box" style="border: 1.5px solid var(--accent); box-shadow: 0 25px 80px rgba(0,0,0,0.9), 0 0 50px rgba(var(--accent-rgb, 0, 245, 255), 0.35);">
+      <div class="git-modal-head" style="border-bottom: 1px solid rgba(var(--accent-rgb, 0, 245, 255), 0.25);">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <span style="font-size:28px; filter:drop-shadow(0 0 12px var(--accent));">🚀</span>
+          <div>
+            <h3 id="modalForzadoTitle" style="margin:0; font-size:16.5px; font-weight:800; color:var(--text); letter-spacing:-0.01em;">Sincronización Obligatoria de Inicio de Sesión</h3>
+            <small style="color:var(--accent); font-size:12px; font-weight:600;">Se detectaron mejoras pendientes en GitHub</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="git-modal-body">
+        <div class="git-update-banner" style="border-color: rgba(var(--accent-rgb, 0, 245, 255), 0.35); background: rgba(var(--accent-rgb, 0, 245, 255), 0.06);">
+          <div class="gub-stat">
+            <span class="gub-num" id="gitForzadoCount">0</span>
+            <span class="gub-lbl" style="color:var(--accent);">Cambios</span>
+          </div>
+          <div class="gub-info">
+            <div class="gub-branch">Rama: <strong id="gitForzadoBranch" style="color:var(--accent);">main</strong></div>
+            <div class="gub-desc">Para garantizar que tu sesión cuente con todas las correcciones, funciones y estabilidad más recientes, estos cambios se descargarán e instalarán automáticamente ahora.</div>
+          </div>
+        </div>
+
+        <div style="margin: 14px 0 8px; font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent);">
+          📋 Lista de mejoras por instalar:
+        </div>
+        <div class="git-commits-list" id="gitForzadoCommitsList" style="max-height: 180px; overflow-y: auto;">
+          <!-- Commits pendientes -->
+        </div>
+
+        <div style="margin-top: 14px; padding: 12px 16px; border-radius: 12px; background: rgba(var(--accent-rgb, 0, 245, 255), 0.08); border: 1px solid rgba(var(--accent-rgb, 0, 245, 255), 0.25); display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+          <div style="font-size: 13px; color: var(--text); font-weight: 600; display:flex; align-items:center; gap:8px;">
+            <span class="dot-live" style="width:10px; height:10px; border-radius:50%; background:var(--accent); box-shadow:0 0 10px var(--accent); display:inline-block;"></span>
+            <span>Instalando automáticamente en: <strong id="gitForzadoSegundos" style="color: var(--accent); font-size: 16px; min-width: 18px; display: inline-block; text-align: center;">4</strong> seg</span>
+          </div>
+          <button type="button" class="btn-update-confirm" id="btnForzarActualizarYa" style="padding: 7px 18px; font-size: 12.5px; height: auto;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="15" height="15"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+            <span>Bajar e Instalar Ahora</span>
+          </button>
+        </div>
+
+        <div style="text-align: right; margin-top: 10px;">
+          <button type="button" id="btnOmitirForzadoEmergencia" style="background:transparent; border:none; color:var(--muted); font-size:11px; cursor:pointer; text-decoration:underline;">
+            Omitir por esta vez (solo emergencias)
+          </button>
         </div>
       </div>
     </div>
@@ -8141,6 +8226,15 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
             }
           });
         }
+        var btnTestF = document.getElementById('btnTestForzado');
+        if (btnTestF) {
+          btnTestF.addEventListener('click', function(){
+            cerrarModal();
+            if (typeof window.probarActualizacionForzada === 'function') {
+              window.probarActualizacionForzada(3);
+            }
+          });
+        }
         if (btnErrClose) btnErrClose.addEventListener('click', cerrarModal);
 
         if (modal) {
@@ -8183,7 +8277,7 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
                 // Estado: Al día (0 cambios)
                 if (bguBadge) bguBadge.style.display = 'none';
                 if (modalIcon) modalIcon.textContent = '✨';
-                if (modalTitle) modalTitle.textContent = 'Sistema al Día (' + (data.version ? 'v' + data.version : '<%= typeof appVersion !== "undefined" ? appVersion : "v2.10.26" %>') + (data.commit ? ' · ' + data.commit : '') + ')';
+                if (modalTitle) modalTitle.textContent = 'Sistema al Día (' + (data.version ? 'v' + data.version : '<%= typeof appVersion !== "undefined" ? appVersion : "v2.10.27" %>') + (data.commit ? ' · ' + data.commit : '') + ')';
                 if (modalSubtitle) modalSubtitle.textContent = 'No existen versiones o cambios nuevos disponibles';
                 if (viewPending) viewPending.style.display = 'none';
                 if (viewUpToDate) viewUpToDate.style.display = 'block';
@@ -8242,31 +8336,133 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
             });
         });
 
-        // 2. Confirmar e instalar: activa el HUD y llama al endpoint de reinicio
+        // 2. Ejecutar actualización del sistema (HUD + batch en servidor)
+        function ejecutarActualizacionSistema(titulo, subtitulo) {
+          cerrarModal();
+          var modalF = document.getElementById('modalGitForzado');
+          if (modalF) {
+            modalF.style.display = 'none';
+            modalF.classList.remove('open', 'show');
+          }
+
+          var hTitle = document.getElementById('hudActTitle');
+          var hSub = document.getElementById('hudActSubtitle');
+          if (hTitle && titulo) hTitle.textContent = titulo;
+          if (hSub && subtitulo) hSub.textContent = subtitulo;
+
+          // Mostrar HUD de instalación en pantalla completa
+          if (hud) {
+            hud.style.display = 'flex';
+            hud.classList.add('show');
+            hud.classList.add('open');
+          }
+          document.body.style.overflow = 'hidden';
+
+          // Disparar proceso en el servidor
+          fetch('/api/sistema/ejecutar-actualizacion', { method: 'POST' })
+            .then(function(res){ return res.json(); })
+            .then(function(resData){
+              setTimeout(iniciarMonitoreoReconexion, 2000);
+            })
+            .catch(function(err){
+              setTimeout(iniciarMonitoreoReconexion, 2000);
+            });
+        }
+        window.ejecutarActualizacionSistema = ejecutarActualizacionSistema;
+
         var btnConfirm = document.getElementById('btnConfirmGitUpdate');
         if (btnConfirm) {
           btnConfirm.addEventListener('click', function(){
-            cerrarModal();
-
-            // Mostrar HUD de instalación en pantalla completa
-            if (hud) {
-              hud.style.display = 'flex';
-              hud.classList.add('show');
-              hud.classList.add('open');
-            }
-            document.body.style.overflow = 'hidden';
-
-            // Disparar proceso en el servidor
-            fetch('/api/sistema/ejecutar-actualizacion', { method: 'POST' })
-              .then(function(res){ return res.json(); })
-              .then(function(resData){
-                setTimeout(iniciarMonitoreoReconexion, 2000);
-              })
-              .catch(function(err){
-                setTimeout(iniciarMonitoreoReconexion, 2000);
-              });
+            ejecutarActualizacionSistema(
+              'INSTALANDO NUEVA VERSIÓN',
+              'Sincronizando cambios de GitHub y reiniciando el servicio...'
+            );
           });
         }
+
+        // 3. Controlador de Actualización Obligatoria al Iniciar Sesión
+        var modalForzado = document.getElementById('modalGitForzado');
+        var countdownTimer = null;
+
+        function lanzarActualizacionObligatoria(data) {
+          if (!modalForzado) return;
+          cerrarModal();
+
+          var countEl = document.getElementById('gitForzadoCount');
+          var branchEl = document.getElementById('gitForzadoBranch');
+          var commitsList = document.getElementById('gitForzadoCommitsList');
+          var segEl = document.getElementById('gitForzadoSegundos');
+          var btnYa = document.getElementById('btnForzarActualizarYa');
+          var btnOmitir = document.getElementById('btnOmitirForzadoEmergencia');
+
+          if (countEl) countEl.textContent = data.numCambios || '1';
+          if (branchEl) branchEl.textContent = data.branch || 'main';
+
+          var listHtml = '';
+          (data.commits || []).forEach(function(c){
+            listHtml += '<div class="git-commit-item"><span class="gci-dot"></span><span class="gci-txt">' + (c || '').replace(/[&<>"']/g, '') + '</span></div>';
+          });
+          if (commitsList) {
+            commitsList.innerHTML = listHtml || '<div style="color:var(--muted); font-size:12px;">Mejoras críticas listas para aplicar en el sistema.</div>';
+          }
+
+          modalForzado.style.display = 'flex';
+          modalForzado.classList.add('open', 'show');
+          document.body.style.overflow = 'hidden';
+
+          var segRestantes = 4;
+          if (segEl) segEl.textContent = segRestantes;
+
+          if (countdownTimer) clearInterval(countdownTimer);
+          countdownTimer = setInterval(function(){
+            segRestantes--;
+            if (segEl) segEl.textContent = segRestantes;
+            if (segRestantes <= 0) {
+              clearInterval(countdownTimer);
+              ejecutarActualizacionSistema(
+                'SINCRONIZANDO ÚLTIMA VERSIÓN',
+                'Instalando automáticamente ' + (data.numCambios || '') + ' mejoras pendientes de GitHub...'
+              );
+            }
+          }, 1000);
+
+          if (btnYa) {
+            btnYa.onclick = function(){
+              if (countdownTimer) clearInterval(countdownTimer);
+              ejecutarActualizacionSistema(
+                'SINCRONIZANDO ÚLTIMA VERSIÓN',
+                'Instalando automáticamente ' + (data.numCambios || '') + ' mejoras pendientes de GitHub...'
+              );
+            };
+          }
+
+          if (btnOmitir) {
+            btnOmitir.onclick = function(){
+              if (countdownTimer) clearInterval(countdownTimer);
+              modalForzado.style.display = 'none';
+              modalForzado.classList.remove('open', 'show');
+              document.body.style.overflow = '';
+              console.warn('[AutoUpdate] Actualización obligatoria omitida manualmente.');
+            };
+          }
+        }
+        window.lanzarActualizacionObligatoria = lanzarActualizacionObligatoria;
+
+        // Función para simular/probar la actualización obligatoria cuando se desee
+        window.probarActualizacionForzada = function(num) {
+          var dummy = {
+            ok: true,
+            hayCambios: true,
+            numCambios: num || 3,
+            branch: 'main',
+            commits: [
+              'feat: Sincronización obligatoria al iniciar sesión (bajar cambios automático)',
+              'fix: Verificación de reconexión y persistencia de sesión post-reinicio',
+              'style: Diseño de alta fidelidad adaptado a modo oscuro y modo claro'
+            ]
+          };
+          lanzarActualizacionObligatoria(dummy);
+        };
 
         function iniciarMonitoreoReconexion(){
           var intentos = 0;
@@ -8304,9 +8500,9 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
                     step3.classList.remove('active');
                     step3.classList.add('done');
                   }
-                  if (msg) msg.textContent = '¡Actualización completada! Redirigiendo al login...';
+                  if (msg) msg.textContent = '¡Actualización completada! Cargando nueva versión...';
                   setTimeout(function(){
-                    window.location.href = '/login?actualizado=1';
+                    window.location.href = '/?actualizado=1';
                   }, 1200);
                 }
               })
@@ -8314,7 +8510,7 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
                 // Servidor aún en proceso de reinicio o git pull, continuar esperando
                 if (intentos >= maxIntentos) {
                   clearInterval(pollTimer);
-                  if (msg) msg.innerHTML = 'El servidor está tardando más de lo habitual. Puedes intentar recargar la página manualmente haciendo <a href="/login" style="color:var(--accent); text-decoration:underline;">clic aquí</a>.';
+                  if (msg) msg.innerHTML = 'El servidor está tardando más de lo habitual. Puedes intentar recargar la página manualmente haciendo <a href="/" style="color:var(--accent); text-decoration:underline;">clic aquí</a>.';
                 }
               });
           }, 1500);
@@ -8325,6 +8521,31 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
         document.addEventListener('DOMContentLoaded', initGitUpdater);
       } else {
         initGitUpdater();
+      }
+    })();
+
+    // Notificación toast al recargar tras actualización exitosa (?actualizado=1)
+    (function(){
+      var params = new URLSearchParams(window.location.search);
+      if (params.get('actualizado') === '1') {
+        if (window.history && window.history.replaceState) {
+          params.delete('actualizado');
+          var newSearch = params.toString();
+          window.history.replaceState({}, document.title, window.location.pathname + (newSearch ? '?' + newSearch : '') + window.location.hash);
+        }
+        setTimeout(function(){
+          var toast = document.createElement('div');
+          toast.id = 'bguSuccessToast';
+          toast.style.cssText = 'position:fixed; top:24px; left:50%; transform:translateX(-50%); z-index:999999; background:linear-gradient(135deg, #059669, #10b981); color:#fff; padding:12px 24px; border-radius:14px; box-shadow:0 12px 35px rgba(0,0,0,0.45), 0 0 20px rgba(16,185,129,0.35); display:flex; align-items:center; gap:12px; font-weight:700; font-size:13.5px; border:1px solid rgba(255,255,255,0.3); font-family:var(--sans);';
+          toast.innerHTML = '<span style="font-size:22px; line-height:1;">🚀</span><span>¡Sistema actualizado con éxito a la última versión! Todas las novedades están listas.</span>';
+          document.body.appendChild(toast);
+          setTimeout(function(){
+            toast.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateX(-50%) translateY(-12px)';
+            setTimeout(function(){ toast.remove(); }, 600);
+          }, 5500);
+        }, 350);
       }
     })();
 
