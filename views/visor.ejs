@@ -379,6 +379,160 @@
   }
   .ed-wrap.fullscreen .syntax-editor-container { flex:1 1 0; max-height:none; min-height:0; resize:none; }
   .ed-wrap.fullscreen .syntax-textarea { height:100% !important; max-height:none !important; min-height:0 !important; resize:none; }
+
+  /* ======================================================================
+     ADAPTACIÓN Y ALTO CONTRASTE PARA MODO CLARO (LIGHT THEME) EN VISOR
+     ====================================================================== */
+  :root[data-theme="light"] .wms-extractor-card,
+  :root:not([data-theme="dark"]):not([data-theme="oled"]) .wms-extractor-card {
+    background: var(--panel) !important;
+    border-color: var(--panel-edge) !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.06) !important;
+  }
+  :root[data-theme="light"] .wms-grid,
+  :root:not([data-theme="dark"]):not([data-theme="oled"]) .wms-grid {
+    background: var(--panel-alt) !important;
+    border-color: var(--panel-edge) !important;
+  }
+  :root[data-theme="light"] .wms-input-num,
+  :root:not([data-theme="dark"]):not([data-theme="oled"]) .wms-input-num {
+    background: #ffffff !important;
+    border-color: var(--panel-edge) !important;
+    color: #0284c7 !important;
+  }
+  :root[data-theme="light"] .wms-input-field,
+  :root:not([data-theme="dark"]):not([data-theme="oled"]) .wms-input-field {
+    background: #ffffff !important;
+    border-color: var(--panel-edge) !important;
+    color: var(--text) !important;
+  }
+  :root[data-theme="light"] .wms-tag,
+  :root:not([data-theme="dark"]):not([data-theme="oled"]) .wms-tag {
+    background: rgba(2, 132, 199, 0.12) !important;
+    color: #0284c7 !important;
+  }
+  :root[data-theme="light"] .diff-main-card,
+  :root:not([data-theme="dark"]):not([data-theme="oled"]) .diff-main-card {
+    background: var(--panel) !important;
+    border-color: var(--panel-edge) !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.06) !important;
+  }
+  :root[data-theme="light"] .diff-options-bar,
+  :root:not([data-theme="dark"]):not([data-theme="oled"]) .diff-options-bar {
+    background: var(--panel-alt) !important;
+    border-color: var(--panel-edge) !important;
+  }
+  :root[data-theme="light"] .diff-panel-box,
+  :root:not([data-theme="dark"]):not([data-theme="oled"]) .diff-panel-box {
+    background: #ffffff !important;
+    border-color: var(--panel-edge) !important;
+  }
+  :root[data-theme="light"] .diff-badge-doc.doc-a,
+  :root:not([data-theme="dark"]):not([data-theme="oled"]) .diff-badge-doc.doc-a {
+    background: rgba(2, 132, 199, 0.12) !important;
+    color: #0284c7 !important;
+    border-color: rgba(2, 132, 199, 0.35) !important;
+  }
+  :root[data-theme="light"] .diff-badge-doc.doc-b,
+  :root:not([data-theme="dark"]):not([data-theme="oled"]) .diff-badge-doc.doc-b {
+    background: rgba(126, 34, 206, 0.12) !important;
+    color: #7e22ce !important;
+    border-color: rgba(126, 34, 206, 0.35) !important;
+  }
+  :root[data-theme="light"] .diff-cross-banner,
+  :root:not([data-theme="dark"]):not([data-theme="oled"]) .diff-cross-banner {
+    background: linear-gradient(90deg, rgba(2, 132, 199, 0.12) 0%, rgba(2, 132, 199, 0.02) 100%) !important;
+    border-color: rgba(2, 132, 199, 0.35) !important;
+    border-left-color: #0284c7 !important;
+    color: #0369a1 !important;
+  }
+  :root[data-theme="light"] .json-block-banner,
+  :root:not([data-theme="dark"]):not([data-theme="oled"]) .json-block-banner {
+    background: linear-gradient(90deg, rgba(2, 132, 199, 0.14) 0%, rgba(2, 132, 199, 0.02) 100%) !important;
+    border-top-color: rgba(2, 132, 199, 0.3) !important;
+    border-bottom-color: rgba(2, 132, 199, 0.2) !important;
+    border-left-color: #0284c7 !important;
+    color: #0f172a !important;
+  }
+  :root[data-theme="light"] .json-block-banner .jbb-title,
+  :root:not([data-theme="dark"]):not([data-theme="oled"]) .json-block-banner .jbb-title {
+    color: #0284c7 !important;
+  }
+  :root[data-theme="light"] .json-block-banner .jbb-count,
+  :root:not([data-theme="dark"]):not([data-theme="oled"]) .json-block-banner .jbb-count {
+    color: #475569 !important;
+  }
+  :root[data-theme="light"] .diff-alert-identical,
+  :root:not([data-theme="dark"]):not([data-theme="oled"]) .diff-alert-identical {
+    background: linear-gradient(90deg, rgba(16, 185, 129, 0.14) 0%, rgba(16, 185, 129, 0.03) 100%) !important;
+    border-color: #10b981 !important;
+    border-left-color: #059669 !important;
+  }
+  :root[data-theme="light"] .diff-alert-diffs,
+  :root:not([data-theme="dark"]):not([data-theme="oled"]) .diff-alert-diffs {
+    background: linear-gradient(90deg, rgba(245, 158, 11, 0.14) 0%, rgba(245, 158, 11, 0.03) 100%) !important;
+    border-color: #f59e0b !important;
+    border-left-color: #d97706 !important;
+  }
+  :root[data-theme="light"] .diff-stat-chip.diff-chip-add,
+  :root:not([data-theme="dark"]):not([data-theme="oled"]) .diff-stat-chip.diff-chip-add {
+    background: rgba(5, 150, 105, 0.12) !important;
+    color: #047857 !important;
+    border-color: rgba(5, 150, 105, 0.3) !important;
+  }
+  :root[data-theme="light"] .diff-stat-chip.diff-chip-del,
+  :root:not([data-theme="dark"]):not([data-theme="oled"]) .diff-stat-chip.diff-chip-del {
+    background: rgba(225, 29, 72, 0.12) !important;
+    color: #be123c !important;
+    border-color: rgba(225, 29, 72, 0.3) !important;
+  }
+  :root[data-theme="light"] .diff-stat-chip.diff-chip-mod,
+  :root:not([data-theme="dark"]):not([data-theme="oled"]) .diff-stat-chip.diff-chip-mod {
+    background: rgba(217, 119, 6, 0.12) !important;
+    color: #b45309 !important;
+    border-color: rgba(217, 119, 6, 0.3) !important;
+  }
+  :root[data-theme="light"] .diff-table-wrap,
+  :root:not([data-theme="dark"]):not([data-theme="oled"]) .diff-table-wrap {
+    background: #ffffff !important;
+    border-color: var(--panel-edge) !important;
+  }
+  :root[data-theme="light"] .diff-table th,
+  :root:not([data-theme="dark"]):not([data-theme="oled"]) .diff-table th {
+    background: var(--panel-alt) !important;
+    color: var(--muted) !important;
+    border-color: var(--panel-edge) !important;
+  }
+  :root[data-theme="light"] .diff-table td,
+  :root:not([data-theme="dark"]):not([data-theme="oled"]) .diff-table td {
+    border-color: var(--panel-edge) !important;
+    color: var(--text) !important;
+  }
+  :root[data-theme="light"] .syntax-editor-container,
+  :root:not([data-theme="dark"]):not([data-theme="oled"]) .syntax-editor-container {
+    border: 1px solid #cbd5e1 !important;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06) !important;
+  }
+  :root[data-theme="light"] .syntax-editor-container:focus-within,
+  :root:not([data-theme="dark"]):not([data-theme="oled"]) .syntax-editor-container:focus-within {
+    border-color: var(--accent, #0284c7) !important;
+    box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.2) !important;
+  }
+  :root[data-theme="light"] .diff-viewer-wrap,
+  :root:not([data-theme="dark"]):not([data-theme="oled"]) .diff-viewer-wrap {
+    border-color: #cbd5e1 !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
+  }
+  :root[data-theme="light"] .diff-col-header,
+  :root:not([data-theme="dark"]):not([data-theme="oled"]) .diff-col-header {
+    background: #232733 !important;
+    color: #e2e8f0 !important;
+    border-bottom: 1px solid #363c4e !important;
+  }
+  :root[data-theme="light"] .chk-highlight,
+  :root:not([data-theme="dark"]):not([data-theme="oled"]) .chk-highlight {
+    color: #0284c7 !important;
+  }
 </style>
 
 <div x-data="visorAlpineApp()">

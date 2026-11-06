@@ -4757,6 +4757,83 @@ select option {
   50% { transform: scale(1.15); }
 }
 
+/* Adaptaciones y Alto Contraste para Modo Claro (Light Mode) */
+:root[data-theme="light"] .cyber-version-pill,
+:root:not([data-theme="dark"]):not([data-theme="oled"]) .cyber-version-pill {
+  background: #ffffff !important;
+  border: 1px solid var(--panel-edge) !important;
+  color: var(--text) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 0 10px rgba(var(--accent-rgb), 0.15) !important;
+}
+:root[data-theme="light"] .cyber-version-pill .cvp-ver,
+:root:not([data-theme="dark"]):not([data-theme="oled"]) .cyber-version-pill .cvp-ver {
+  color: var(--text) !important;
+}
+:root[data-theme="light"] .btn-git-update,
+:root:not([data-theme="dark"]):not([data-theme="oled"]) .btn-git-update {
+  background: #ffffff !important;
+  border-color: var(--panel-edge) !important;
+  color: var(--text) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06) !important;
+}
+:root[data-theme="light"] .btn-git-update:hover,
+:root:not([data-theme="dark"]):not([data-theme="oled"]) .btn-git-update:hover {
+  background: var(--accent-soft) !important;
+  border-color: var(--accent) !important;
+  color: var(--accent-dark) !important;
+}
+:root[data-theme="light"] :is(.clock, .topbar-db-btn),
+:root:not([data-theme="dark"]):not([data-theme="oled"]) :is(.clock, .topbar-db-btn) {
+  background: #ffffff !important;
+  border: 1px solid var(--panel-edge) !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06) !important;
+  color: var(--text) !important;
+}
+:root[data-theme="light"] .clock .clock-time,
+:root:not([data-theme="dark"]):not([data-theme="oled"]) .clock .clock-time {
+  color: var(--text) !important;
+}
+:root[data-theme="light"] .clock .clock-date,
+:root:not([data-theme="dark"]):not([data-theme="oled"]) .clock .clock-date {
+  color: var(--muted) !important;
+}
+:root[data-theme="light"] .topbar-db-btn .tbe-name,
+:root:not([data-theme="dark"]):not([data-theme="oled"]) .topbar-db-btn .tbe-name {
+  color: var(--text) !important;
+}
+:root[data-theme="light"] body:not(.guest) .theme-toggle,
+:root:not([data-theme="dark"]):not([data-theme="oled"]) body:not(.guest) .theme-toggle {
+  background: var(--panel-alt);
+  border-color: var(--panel-edge);
+  color: var(--text);
+}
+:root[data-theme="light"] body:not(.guest) .theme-toggle:hover,
+:root:not([data-theme="dark"]):not([data-theme="oled"]) body:not(.guest) .theme-toggle:hover {
+  background: var(--accent-soft);
+  color: var(--accent-dark);
+  border-color: var(--accent);
+}
+:root[data-theme="light"] .git-modal-head,
+:root:not([data-theme="dark"]):not([data-theme="oled"]) .git-modal-head {
+  border-bottom: 1px solid var(--panel-edge) !important;
+}
+:root[data-theme="light"] .git-modal-foot,
+:root:not([data-theme="dark"]):not([data-theme="oled"]) .git-modal-foot {
+  background: var(--panel-alt) !important;
+  border-top: 1px solid var(--panel-edge) !important;
+}
+:root[data-theme="light"] .gub-stat,
+:root:not([data-theme="dark"]):not([data-theme="oled"]) .gub-stat {
+  background: var(--panel) !important;
+  border: 1px solid var(--panel-edge) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+}
+:root[data-theme="light"] .git-commit-item,
+:root:not([data-theme="dark"]):not([data-theme="oled"]) .git-commit-item {
+  background: var(--panel-alt) !important;
+  border: 1px solid var(--panel-edge) !important;
+}
+
 /* Modal Revisor de Actualizaciones - Posicionamiento Fijo Centrado */
 .git-modal-overlay {
   position: fixed !important;
@@ -4960,8 +5037,6 @@ select option {
 }
 @keyframes hudFadeIn {
   from { opacity: 0; transform: scale(0.98); }
-  to { opacity: 1; transform: scale(1); }
-}
   to { opacity: 1; transform: scale(1); }
 }
 
@@ -6229,10 +6304,10 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
     <div class="topbar-left">
       <div class="topbar-ver-update-group" style="display:inline-flex; align-items:center; gap:6px; flex-wrap:wrap;">
         <!-- Insignia Holográfica de Versión del Sistema (Visible en todo el programa) -->
-        <div class="cyber-version-pill" data-title="Suite Bóveda Jira · Versión activa: <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.10.25') %>" title="Suite Bóveda Jira · Versión <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.10.25') %>">
+        <div class="cyber-version-pill" data-title="Suite Bóveda Jira · Versión activa: <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.10.26') %>" title="Suite Bóveda Jira · Versión <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.10.26') %>">
           <span class="cvp-icon"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></span>
           <span class="cvp-lbl">BUILD</span>
-          <strong class="cvp-ver"><%= typeof appVersion !== 'undefined' ? appVersion : 'v2.10.25' %></strong>
+          <strong class="cvp-ver"><%= typeof appVersion !== 'undefined' ? appVersion : 'v2.10.26' %></strong>
           <% if (typeof gitCommit !== 'undefined' && gitCommit) { %><span class="cvp-commit" style="font-size:10px; opacity:0.75; font-family:var(--mono); margin-left:3px;">(<%= gitCommit %>)</span><% } %>
           <span class="cvp-pulse"></span>
         </div>
@@ -7921,7 +7996,7 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
             </div>
             <div class="gub-info">
               <div class="gub-branch" style="color:#10b981;">✅ Sistema Sincronizado y Estable</div>
-              <div class="gub-desc">Tu versión actual (<%= typeof appVersion !== "undefined" ? appVersion : "v2.10.25" %>) cuenta con todas las mejoras y parches más recientes publicados en GitHub. No hay versiones ni cambios nuevos pendientes de descargar.</div>
+              <div class="gub-desc">Tu versión actual (<%= typeof appVersion !== "undefined" ? appVersion : "v2.10.26" %>) cuenta con todas las mejoras y parches más recientes publicados en GitHub. No hay versiones ni cambios nuevos pendientes de descargar.</div>
             </div>
           </div>
           <div style="padding: 12px 14px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; font-size: 12.5px; color: var(--muted); line-height: 1.45;">
@@ -8108,7 +8183,7 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
                 // Estado: Al día (0 cambios)
                 if (bguBadge) bguBadge.style.display = 'none';
                 if (modalIcon) modalIcon.textContent = '✨';
-                if (modalTitle) modalTitle.textContent = 'Sistema al Día (' + (data.version ? 'v' + data.version : '<%= typeof appVersion !== "undefined" ? appVersion : "v2.10.25" %>') + (data.commit ? ' · ' + data.commit : '') + ')';
+                if (modalTitle) modalTitle.textContent = 'Sistema al Día (' + (data.version ? 'v' + data.version : '<%= typeof appVersion !== "undefined" ? appVersion : "v2.10.26" %>') + (data.commit ? ' · ' + data.commit : '') + ')';
                 if (modalSubtitle) modalSubtitle.textContent = 'No existen versiones o cambios nuevos disponibles';
                 if (viewPending) viewPending.style.display = 'none';
                 if (viewUpToDate) viewUpToDate.style.display = 'block';

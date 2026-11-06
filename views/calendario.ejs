@@ -369,6 +369,35 @@
     color: #f43f5e;
   }
 
+  /* Adaptación a Modo Claro (Light Mode) en KPIs */
+  :root[data-theme="light"] .kpi-card,
+  :root:not([data-theme="dark"]):not([data-theme="oled"]) .kpi-card {
+    background: var(--panel) !important;
+    border-color: var(--panel-edge) !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05) !important;
+  }
+  :root[data-theme="light"] .kpi-card.kpi-weekend,
+  :root:not([data-theme="dark"]):not([data-theme="oled"]) .kpi-card.kpi-weekend {
+    background: var(--panel) !important;
+    border-color: rgba(239, 68, 68, 0.25) !important;
+  }
+  :root[data-theme="light"] .kpi-card.kpi-total .kpi-val,
+  :root:not([data-theme="dark"]):not([data-theme="oled"]) .kpi-card.kpi-total .kpi-val {
+    color: #0284c7 !important;
+  }
+  :root[data-theme="light"] .kpi-card.kpi-weekend .kpi-val,
+  :root:not([data-theme="dark"]):not([data-theme="oled"]) .kpi-card.kpi-weekend .kpi-val {
+    color: #dc2626 !important;
+  }
+  :root[data-theme="light"] .kpi-card.kpi-laborales .kpi-val,
+  :root:not([data-theme="dark"]):not([data-theme="oled"]) .kpi-card.kpi-laborales .kpi-val {
+    color: #059669 !important;
+  }
+  :root[data-theme="light"] .kpi-card.kpi-festivos .kpi-val,
+  :root:not([data-theme="dark"]):not([data-theme="oled"]) .kpi-card.kpi-festivos .kpi-val {
+    color: #e11d48 !important;
+  }
+
   /* Elementos internos */
   .kpi-head {
     display: flex;
@@ -1786,7 +1815,7 @@
     <div style="overflow-x:auto; border:1px solid var(--panel-edge); border-radius:12px; background:var(--panel-alt);">
       <table class="rol-disp-table" style="width:100%; border-collapse:collapse; font-size:13px; min-width:880px;">
         <thead>
-          <tr style="background:rgba(0,0,0,0.25); color:var(--muted); text-transform:uppercase; font-size:11px; letter-spacing:0.5px;">
+          <tr style="background:var(--panel); color:var(--muted); text-transform:uppercase; font-size:11px; letter-spacing:0.5px;">
             <th style="padding:12px 14px; text-align:left; border-bottom:1px solid var(--panel-edge); width:130px;">Cédula</th>
             <th style="padding:12px 14px; text-align:left; border-bottom:1px solid var(--panel-edge); width:160px;">Celular de Guardia</th>
             <th style="padding:12px 14px; text-align:left; border-bottom:1px solid var(--panel-edge); min-width:240px;">Técnico Asignado</th>
