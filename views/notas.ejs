@@ -336,12 +336,30 @@
   .solo-texto-oculto{ display:none; }
 
   /* Dropdown inteligente para categorías en Notas / Jaivaná */
+  /* Desactivar cualquier destello/shine (::after/::before) en tabs, botones auxiliares y dropdown */
+  .tabs button::after, .tabs button::before,
+  .tabs button:hover::after, .tabs button:hover::before,
+  .tab::after, .tab::before,
+  .tab:hover::after, .tab:hover::before,
+  .cat-more-btn::after, .cat-more-btn::before,
+  .cat-more-btn:hover::after, .cat-more-btn:hover::before,
+  .cat-dropdown-wrap *::after, .cat-dropdown-wrap *::before,
+  .cat-dropdown-menu *::after, .cat-dropdown-menu *::before {
+    display: none !important;
+    content: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    transform: none !important;
+    animation: none !important;
+  }
+
   .cat-dropdown-wrap {
     position: relative;
     display: inline-flex;
     align-items: center;
   }
   .cat-more-btn {
+    overflow: hidden !important;
     display: inline-flex !important;
     align-items: center !important;
     gap: 6px !important;
