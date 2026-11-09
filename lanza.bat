@@ -26,6 +26,6 @@ start "" /B node server.js > "%PROYECTO_DIR%\servidor.log" 2>&1
 powershell -NoProfile -ExecutionPolicy Bypass -Command "Start-Sleep -Seconds 2"
 
 :: 4. Abrir en el navegador por defecto
-start "" "http://localhost:5050"
+start "" "http://localhost:5050/login"
 
 exit /b 0

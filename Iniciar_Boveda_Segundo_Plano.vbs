@@ -19,4 +19,4 @@ End If
 
 ' 4. Esperar a que el servidor inicialice (2.5 segundos) y abrir el navegador
 WScript.Sleep 2500
-WshShell.Run "http://127.0.0.1:5050/logout"
+WshShell.Run "http://127.0.0.1:5050/login"

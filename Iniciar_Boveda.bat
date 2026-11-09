@@ -27,7 +27,7 @@ if exist "%~dp0ejecutar_segundo_plano.vbs" (
 :: 5. Abrir la aplicacion en el navegador por defecto
 echo set WshShell = WScript.CreateObject("WScript.Shell") > "%TEMP%\abrir_boveda.vbs"
 echo WScript.Sleep 2000 >> "%TEMP%\abrir_boveda.vbs"
-echo WshShell.Run "http://127.0.0.1:5050/logout" >> "%TEMP%\abrir_boveda.vbs"
+echo WshShell.Run "http://127.0.0.1:5050/login" >> "%TEMP%\abrir_boveda.vbs"
 start wscript "%TEMP%\abrir_boveda.vbs"
 
 :: 6. Cerrar esta ventana de consola inmediatamente

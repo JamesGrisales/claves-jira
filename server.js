@@ -367,6 +367,17 @@ app.get("/login", async (req, res) => {
     return res.redirect("/registro");
   }
 
+  // Al abrir /login, asegurarse de limpiar cualquier sesión previa activa para exigir inicio de sesión
+  if (req.session && req.session.user) {
+    delete req.session.user;
+    req.session.save(() => {
+      res.render("login", {
+        title: "Iniciar sesión",
+      });
+    });
+    return;
+  }
+
   res.render("login", {
     title: "Iniciar sesión",
   });
