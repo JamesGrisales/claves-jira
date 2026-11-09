@@ -14,8 +14,8 @@ title Iniciando Boveda Jira...
 :: 2. Ir a la carpeta principal del proyecto
 cd /d "%~dp0"
 
-:: 3. Matar cualquier proceso anterior en el puerto 5050
-for /f "tokens=5" %%a in ('netstat -aon ^| findstr :5050') do taskkill /F /PID %%a 2>nul
+:: 3. Matar cualquier proceso anterior en el puerto 5050 de forma robusta
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$c = Get-NetTCPConnection -LocalPort 5050 -State Listen -ErrorAction SilentlyContinue; if ($c) { Stop-Process -Id $c.OwningProcess -Force -ErrorAction SilentlyContinue; Start-Sleep -Milliseconds 600 }"
 
 :: 4. Iniciar el servidor Node.js en segundo plano (sin ventana de consola)
 if exist "%~dp0ejecutar_segundo_plano.vbs" (
