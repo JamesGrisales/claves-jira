@@ -389,17 +389,15 @@
     width: 320px !important;
     max-width: min(340px, 92vw) !important;
     max-height: 440px !important;
-    background: rgba(12, 18, 32, 0.96) !important;
+    background: #0d1527 !important;
     border: 1.5px solid rgba(var(--accent-rgb, 0, 245, 255), 0.35) !important;
     border-radius: 16px !important;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85), 0 0 30px rgba(var(--accent-rgb, 0, 245, 255), 0.2) !important;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.85) !important;
     padding: 10px !important;
     display: flex;
     flex-direction: column !important;
     gap: 8px !important;
-    backdrop-filter: blur(20px) saturate(1.8) !important;
-    -webkit-backdrop-filter: blur(20px) saturate(1.8) !important;
-    animation: catDropIn 0.18s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    animation: catDropIn 0.15s ease-out !important;
   }
 
   .cat-dropdown-menu[style*="display: none"],
@@ -1048,7 +1046,6 @@
   }
 
   .tab {
-    backdrop-filter: blur(8px);
     transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
   }
   .tab.active {
@@ -1108,11 +1105,11 @@
     <% }); %>
 
     <% if (pillsExtras.length > 0) { %>
-      <div class="cat-dropdown-wrap" x-data="{ dropAbierto: false, filtroDrop: '' }" @click.outside="dropAbierto = false" @keydown.escape.window="dropAbierto = false">
+      <div class="cat-dropdown-wrap" @click.outside="dropAbierto = false" @keydown.escape.window="dropAbierto = false">
         <button type="button" class="tab cat-more-btn" @click.stop="dropAbierto = !dropAbierto" :class="{ active: esCatExtra(catActiva) }" title="Ver más categorías">
           <span x-text="nombreCatExtra(catActiva) || ('📂 Más categorías (<%= pillsExtras.length %>) ▾')">📂 Más categorías (<%= pillsExtras.length %>) ▾</span>
         </button>
-        <div class="cat-dropdown-menu" x-show="dropAbierto" x-cloak @click.outside="dropAbierto = false" style="display:none;">
+        <div class="cat-dropdown-menu" x-show="dropAbierto" x-cloak style="display:none;">
           <div class="cat-dropdown-header">
             <span class="cdh-title">Más categorías (<%= pillsExtras.length %>)</span>
             <button type="button" class="cdh-close" @click.stop="dropAbierto = false" title="Cerrar">✕</button>
@@ -1131,7 +1128,7 @@
                       class="cat-dropdown-item" 
                       :class="{ active: catActiva === '<%= cKey %>' }"
                       x-show="!filtroDrop || '<%= cKey %>'.includes(filtroDrop.toLowerCase())"
-                      @click="setCategoria('<%= cKey %>'); dropAbierto = false;"
+                      @click="setCategoria('<%= cKey %>')"
                       title="<%= cat %> (<%= cant %> <%= cant === 1 ? 'nota' : 'notas' %>)">
                 <span class="cat-item-name">
                   <span class="cat-item-dot"></span>
@@ -1409,6 +1406,8 @@ window.notasAlpineApp = function() {
   return {
     q: '',
     catActiva: '__todas__',
+    dropAbierto: false,
+    filtroDrop: '',
     panelActivo: null,
     totalNotas: <%= notas.length %>,
     visibles: <%= notas.length %>,
@@ -1422,7 +1421,9 @@ window.notasAlpineApp = function() {
           const inp = document.getElementById('searchInput');
           if (inp) { inp.focus(); inp.select(); }
         } else if (e.key === 'Escape') {
-          if (this.panelActivo) {
+          if (this.dropAbierto) {
+            this.dropAbierto = false;
+          } else if (this.panelActivo) {
             this.cerrarPaneles();
           } else if (t && t.id === 'searchInput') {
             this.q = '';
@@ -1456,7 +1457,7 @@ window.notasAlpineApp = function() {
       this.panelActivo = null;
     },
 
-        esCatExtra(cat) {
+    esCatExtra(cat) {
       if (!cat || cat === '__todas__') return false;
       const extras = <%- JSON.stringify(categorias.slice(6).map(function(c){ return { raw: c, low: c.toLowerCase() }; })) %>;
       return extras.some(e => e.low === cat);
@@ -1468,8 +1469,11 @@ window.notasAlpineApp = function() {
       const m = extras.find(e => e.low === cat);
       return m ? ('📂 ' + m.raw + ' ▾') : null;
     },
+
     setCategoria(cat) {
       this.catActiva = cat;
+      this.dropAbierto = false;
+      this.filtroDrop = '';
       categoriaActiva = cat;
       if (typeof aplicarFiltros === 'function') {
         aplicarFiltros();
