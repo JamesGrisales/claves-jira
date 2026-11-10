@@ -18,6 +18,7 @@ const path = require("path");
 const crypto = require("crypto");
 const { spawn } = require("child_process");
 const { PDFDocument, StandardFonts, rgb } = require("pdf-lib");
+const XLSX = require("xlsx");
 
 const MAX_VIDEO_MB = Number(process.env.MANUAL_MAX_MB) || 500;
 const MAX_PASOS = Number(process.env.MANUAL_MAX_PASOS) || 120;
@@ -842,6 +843,278 @@ async function transcribirImagenConIA({ buffer, mimeType, modo }) {
   throw ultimoError || new Error("No se pudo extraer texto de la imagen.");
 }
 
+// ---------- Extracción estructurada de tablas desde imagen a Excel (.xlsx / .xls) ----------
+function extraerJsonLimpio(raw) {
+  let s = String(raw || "").trim();
+  const bloque = s.match(/```(?:json)?\s*([\s\S]*?)```/i);
+  if (bloque) s = bloque[1].trim();
+  const inicio = s.indexOf("{");
+  const fin = s.lastIndexOf("}");
+  if (inicio !== -1 && fin > inicio) {
+    s = s.slice(inicio, fin + 1);
+  }
+  return JSON.parse(s);
+}
+
+function normalizarTablasExtraidas(data) {
+  const obj = data && typeof data === "object" ? data : {};
+  let tablasRaw = Array.isArray(obj.tablas) ? obj.tablas : [];
+
+  if (!tablasRaw.length && Array.isArray(obj.filas)) {
+    tablasRaw = [{ nombre: obj.nombre || "Tabla 1", encabezados: obj.encabezados || [], filas: obj.filas }];
+  }
+  if (!tablasRaw.length && Array.isArray(obj.texto_suelto) && obj.texto_suelto.length) {
+    tablasRaw = [{
+      nombre: "Datos",
+      encabezados: ["Campo", "Valor"],
+      filas: obj.texto_suelto.map((item) => Array.isArray(item) ? item : [String(item || ""), ""]),
+    }];
+  }
+
+  const tablas = [];
+  tablasRaw.forEach((t, idx) => {
+    if (!t || typeof t !== "object") return;
+    let encabezados = Array.isArray(t.encabezados) ? t.encabezados.map((h) => String(h == null ? "" : h).trim()) : [];
+    let filas = Array.isArray(t.filas)
+      ? t.filas.filter((f) => Array.isArray(f)).map((f) => f.map((v) => (v == null ? "" : v)))
+      : [];
+
+    let maxCols = encabezados.length;
+    for (const f of filas) {
+      if (f.length > maxCols) maxCols = f.length;
+    }
+    if (maxCols === 0) return;
+
+    if (!encabezados.length) {
+      encabezados = Array.from({ length: maxCols }, (_, i) => "Columna " + (i + 1));
+    } else {
+      while (encabezados.length < maxCols) encabezados.push("Columna " + (encabezados.length + 1));
+    }
+
+    filas = filas
+      .map((f) => {
+        const copia = f.slice(0, maxCols);
+        while (copia.length < maxCols) copia.push("");
+        return copia;
+      })
+      .filter((f) => f.some((c) => String(c).trim() !== ""));
+
+    if (!filas.length && encabezados.every((h) => !h)) return;
+
+    tablas.push({
+      nombre: String(t.nombre || ("Tabla " + (tablas.length + 1))).trim() || ("Tabla " + (tablas.length + 1)),
+      encabezados,
+      filas,
+    });
+  });
+
+  if (!tablas.length) {
+    throw new Error("No se detectaron tablas ni datos estructurados en la imagen.");
+  }
+
+  return {
+    titulo: String(obj.titulo_documento || obj.titulo || "tabla_extraida").trim() || "tabla_extraida",
+    tablas,
+  };
+}
+
+async function extraerTablasDeImagenConIA({ buffer, mimeType, modo }) {
+  const base64Data = buffer.toString("base64");
+  const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || process.env.OPENAI_API_KEY;
+
+  if (!apiKey) {
+    throw new Error("No hay una clave de IA configurada en el archivo .env.");
+  }
+
+  let reglaModo = "Extrae todas las tablas visibles con precisión de filas y columnas. Si la imagen tiene formularios, recibos o listas clave-valor sin bordes de cuadrícula, organízalos igualmente como tablas con columnas claras.";
+  if (modo === "estricto") {
+    reglaModo = "Extrae ÚNICAMENTE las tablas o cuadrículas de datos reales visibles en la imagen; omite títulos decorativos externos, logotipos y notas al pie.";
+  } else if (modo === "todo") {
+    reglaModo = "Extrae todas las tablas visibles y, si existen textos sueltos, títulos, observaciones o totales fuera de las tablas, agrégalos en una tabla adicional llamada 'Resumen y Textos'.";
+  }
+
+  const sistema =
+    "Eres un especialista en extracción estructurada de datos desde imágenes hacia hojas de cálculo Excel (.xlsx / .xls). " +
+    "Analiza cuidadosamente la imagen y devuelve ÚNICAMENTE un objeto JSON válido (sin markdown ni explicaciones) con esta estructura exacta:\n" +
+    '{\n  "titulo_documento": "nombre_corto_descriptivo",\n  "tablas": [\n    {\n      "nombre": "Nombre Hoja",\n      "encabezados": ["Col 1", "Col 2"],\n      "filas": [["dato 1", "dato 2"]]\n    }\n  ]\n}\n' +
+    "Reglas obligatorias:\n" +
+    "1. Detecta todas las tablas en orden de arriba a abajo y de izquierda a derecha.\n" +
+    "2. Todas las filas de una tabla deben tener la misma cantidad de columnas que 'encabezados'. Usa \"\" para celdas vacías.\n" +
+    "3. Si hay celdas combinadas visualmente, repite o ubica el valor en la columna correspondiente sin desplazar ni desalinear las demás columnas.\n" +
+    "4. Mantén códigos, NIT, cédulas, teléfonos, fechas y números con ceros a la izquierda como cadenas de texto (ej. \"00415\") para no perder ceros ni formato.\n" +
+    "5. NO inventes ni omitas filas o columnas. Respeta al 100% los textos y valores de la imagen.\n" +
+    "6. " + reglaModo;
+
+  const modelos = ["gemini-2.5-flash", "gemini-3-flash-preview", "gemini-flash-lite-latest", "gemini-3.1-flash-lite"];
+  let ultimoError = null;
+
+  for (const modelo of modelos) {
+    try {
+      const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${apiKey}`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: sistema }] },
+          contents: [{
+            parts: [
+              { inlineData: { mimeType: mimeType || "image/jpeg", data: base64Data } },
+              { text: "Extrae todas las tablas y datos estructurados de esta imagen en el JSON indicado." }
+            ]
+          }],
+          generationConfig: {
+            maxOutputTokens: 8192,
+            temperature: 0.1,
+            responseMimeType: "application/json"
+          }
+        })
+      });
+
+      const data = await resp.json();
+      if (data && data.candidates && data.candidates[0] && data.candidates[0].content) {
+        const parts = data.candidates[0].content.parts || [];
+        const rawText = parts.map((p) => p.text || "").join("").trim();
+        if (rawText) {
+          return normalizarTablasExtraidas(extraerJsonLimpio(rawText));
+        }
+      }
+      if (data && data.error) {
+        ultimoError = new Error(data.error.message || `Error con modelo ${modelo}`);
+      }
+    } catch (e) {
+      ultimoError = e;
+    }
+  }
+
+  // Fallback a preguntarIA (compatible OpenAI / endpoint configurado en .env)
+  try {
+    const fallbackTexto = await preguntarIA({
+      sistema,
+      contenido: [
+        { type: "image", source: { media_type: mimeType || "image/jpeg", data: base64Data } },
+        { type: "text", text: "Extrae todas las tablas y datos estructurados de esta imagen en JSON." }
+      ],
+      maxTokens: 8192
+    });
+    if (fallbackTexto) {
+      return normalizarTablasExtraidas(extraerJsonLimpio(fallbackTexto));
+    }
+  } catch (e) {
+    ultimoError = e;
+  }
+
+  throw ultimoError || new Error("No se pudieron extraer tablas de la imagen.");
+}
+
+function sanitizarNombreHoja(nombre, usados) {
+  let limpio = String(nombre || "Hoja")
+    .replace(/[:\\/?*\[\]]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!limpio) limpio = "Hoja";
+  limpio = limpio.slice(0, 31);
+
+  let candidato = limpio;
+  let n = 2;
+  while (usados.has(candidato.toLowerCase())) {
+    const suf = " (" + n + ")";
+    candidato = limpio.slice(0, 31 - suf.length) + suf;
+    n++;
+  }
+  usados.add(candidato.toLowerCase());
+  return candidato;
+}
+
+function valorCeldaExcel(val, convertirNumeros) {
+  if (val === null || val === undefined) return "";
+  if (typeof val === "number") return Number.isFinite(val) ? val : "";
+  const s = String(val).trim();
+  if (!s) return "";
+  if (convertirNumeros && /^-?(?:0|[1-9]\d*)(?:\.\d+)?$/.test(s)) {
+    const num = Number(s);
+    if (Number.isSafeInteger(num) || (Number.isFinite(num) && s.includes("."))) {
+      return num;
+    }
+  }
+  return s;
+}
+
+function calcularAnchosColumnas(aoa) {
+  const maxCols = aoa.reduce((m, r) => Math.max(m, r.length), 0);
+  const cols = [];
+  for (let c = 0; c < maxCols; c++) {
+    let ancho = 10;
+    for (let r = 0; r < aoa.length; r++) {
+      const texto = aoa[r][c] == null ? "" : String(aoa[r][c]);
+      const lineas = texto.split(/\r?\n/);
+      for (const l of lineas) {
+        if (l.length + 3 > ancho) ancho = l.length + 3;
+      }
+    }
+    cols.push({ wch: Math.min(60, ancho) });
+  }
+  return cols;
+}
+
+function construirLibroExcel({ tablas, formato, unirHojas, convertirNumeros }) {
+  const wb = XLSX.utils.book_new();
+  const usados = new Set();
+  const convNum = convertirNumeros !== false;
+
+  if (unirHojas && tablas.length > 1) {
+    const aoa = [];
+    tablas.forEach((t, idx) => {
+      if (idx > 0) aoa.push([]);
+      if (t.nombre) aoa.push([String(t.nombre)]);
+      if (Array.isArray(t.encabezados) && t.encabezados.length) {
+        aoa.push(t.encabezados.map((h) => String(h == null ? "" : h)));
+      }
+      (t.filas || []).forEach((f) => {
+        aoa.push(f.map((v) => valorCeldaExcel(v, convNum)));
+      });
+    });
+    const ws = XLSX.utils.aoa_to_sheet(aoa);
+    ws["!cols"] = calcularAnchosColumnas(aoa);
+    XLSX.utils.book_append_sheet(wb, ws, sanitizarNombreHoja("Datos", usados));
+  } else {
+    tablas.forEach((t, idx) => {
+      const aoa = [];
+      if (Array.isArray(t.encabezados) && t.encabezados.length) {
+        aoa.push(t.encabezados.map((h) => String(h == null ? "" : h)));
+      }
+      (t.filas || []).forEach((f) => {
+        aoa.push(f.map((v) => valorCeldaExcel(v, convNum)));
+      });
+      const ws = XLSX.utils.aoa_to_sheet(aoa);
+      ws["!cols"] = calcularAnchosColumnas(aoa);
+      const nombreHoja = sanitizarNombreHoja(t.nombre || ("Tabla " + (idx + 1)), usados);
+      XLSX.utils.book_append_sheet(wb, ws, nombreHoja);
+    });
+  }
+
+  const bookType = formato === "xls" ? "xls" : "xlsx";
+  return XLSX.write(wb, { type: "buffer", bookType });
+}
+
+function extraerImagenDeRequest(req) {
+  let buffer = null;
+  let mimeType = "image/jpeg";
+
+  if (req.file && req.file.buffer) {
+    buffer = req.file.buffer;
+    mimeType = req.file.mimetype || "image/jpeg";
+  } else if (req.body && req.body.base64) {
+    const raw = String(req.body.base64);
+    const match = /^data:(image\/[a-zA-Z0-9\.\+\-]+);base64,(.+)$/.exec(raw);
+    if (match) {
+      mimeType = match[1];
+      buffer = Buffer.from(match[2], "base64");
+    } else {
+      buffer = Buffer.from(raw, "base64");
+    }
+  }
+  return { buffer, mimeType };
+}
+
 // ---------- rutas ----------
 module.exports = function (app, { requireLogin }) {
   const express = require("express");
@@ -889,22 +1162,7 @@ module.exports = function (app, { requireLogin }) {
         return res.status(400).json({ ok: false, error: err.message || "Error al recibir la imagen." });
       }
 
-      let buffer = null;
-      let mimeType = "image/jpeg";
-
-      if (req.file && req.file.buffer) {
-        buffer = req.file.buffer;
-        mimeType = req.file.mimetype || "image/jpeg";
-      } else if (req.body && req.body.base64) {
-        const raw = String(req.body.base64);
-        const match = /^data:(image\/[a-zA-Z0-9\.\+\-]+);base64,(.+)$/.exec(raw);
-        if (match) {
-          mimeType = match[1];
-          buffer = Buffer.from(match[2], "base64");
-        } else {
-          buffer = Buffer.from(raw, "base64");
-        }
-      }
+      const { buffer, mimeType } = extraerImagenDeRequest(req);
 
       if (!buffer || !buffer.length) {
         return res.status(400).json({ ok: false, error: "No se proporcionó ninguna imagen para transcribir." });
@@ -935,6 +1193,81 @@ module.exports = function (app, { requireLogin }) {
         });
       }
     });
+  });
+
+  // Extraer tablas y datos estructurados de imagen para Excel (.xlsx / .xls)
+  app.post("/manual/imagen-a-excel", apiRequireLogin, (req, res) => {
+    subirImagen.single("imagen")(req, res, async (err) => {
+      if (err) {
+        return res.status(400).json({ ok: false, error: err.message || "Error al recibir la imagen." });
+      }
+
+      const { buffer, mimeType } = extraerImagenDeRequest(req);
+
+      if (!buffer || !buffer.length) {
+        return res.status(400).json({ ok: false, error: "No se proporcionó ninguna imagen para analizar." });
+      }
+
+      if (!iaActiva()) {
+        return res.status(400).json({
+          ok: false,
+          error: "La IA no está configurada en el archivo .env (se requiere OPENAI_API_KEY o GEMINI_API_KEY).",
+        });
+      }
+
+      try {
+        const modo = (req.body && req.body.modo) || "auto";
+        const resultado = await extraerTablasDeImagenConIA({ buffer, mimeType, modo });
+        const totalFilas = resultado.tablas.reduce((acc, t) => acc + (t.filas ? t.filas.length : 0), 0);
+
+        res.json({
+          ok: true,
+          titulo: resultado.titulo,
+          tablas: resultado.tablas,
+          totalTablas: resultado.tablas.length,
+          totalFilas,
+        });
+      } catch (error) {
+        console.error("Error convirtiendo imagen a Excel:", error);
+        res.status(500).json({
+          ok: false,
+          error: error.message || "Error al extraer tablas de la imagen con la IA."
+        });
+      }
+    });
+  });
+
+  // Generar y descargar archivo real .xlsx o .xls desde las tablas extraídas/editadas
+  app.post("/manual/exportar-excel", apiRequireLogin, express.json({ limit: "15mb" }), (req, res) => {
+    try {
+      const body = req.body || {};
+      const tablas = Array.isArray(body.tablas) ? body.tablas : [];
+      if (!tablas.length) {
+        return res.status(400).json({ ok: false, error: "No hay tablas para exportar a Excel." });
+      }
+
+      const formato = String(body.formato || "xlsx").toLowerCase() === "xls" ? "xls" : "xlsx";
+      const unirHojas = !!body.unirHojas;
+      const convertirNumeros = body.convertirNumeros !== false;
+      const baseNombre = String(body.nombreArchivo || "tabla_extraida")
+        .replace(/\.(xlsx|xls)$/i, "")
+        .replace(/[^\w\- áéíóúñÁÉÍÓÚÑ]/g, "")
+        .trim()
+        .replace(/\s+/g, "_") || "tabla_extraida";
+
+      const buffer = construirLibroExcel({ tablas, formato, unirHojas, convertirNumeros });
+      const nombreDescarga = `${baseNombre}.${formato}`;
+      const mime = formato === "xls"
+        ? "application/vnd.ms-excel"
+        : "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+
+      res.setHeader("Content-Type", mime);
+      res.setHeader("Content-Disposition", `attachment; filename="${nombreDescarga}"; filename*=UTF-8''${encodeURIComponent(nombreDescarga)}`);
+      res.send(buffer);
+    } catch (error) {
+      console.error("Error exportando Excel:", error);
+      res.status(500).json({ ok: false, error: error.message || "No se pudo generar el archivo Excel." });
+    }
   });
 
   // Recibe el video y lo procesa en segundo plano; la página consulta /estado

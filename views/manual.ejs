@@ -389,6 +389,210 @@
     box-shadow:0 0 16px -2px rgba(var(--accent-rgb), .35);
   }
 
+  /* =====================================================================
+     ESTILOS DEL MÓDULO IMAGEN A EXCEL (TABLAS EDITABLES Y EXPORTACIÓN)
+     ===================================================================== */
+  .xl-conv-sheet-tabs{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    flex-wrap:wrap;
+    margin-bottom:12px;
+    padding:6px;
+    background:var(--panel-alt);
+    border:1px solid var(--panel-edge);
+    border-radius:12px;
+  }
+  .xl-conv-sheet-tab{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:6px 12px;
+    border-radius:8px;
+    border:1px solid transparent;
+    background:transparent;
+    color:var(--muted);
+    font-size:12.5px;
+    font-weight:700;
+    cursor:pointer;
+    transition:all .15s ease;
+    box-shadow:none;
+  }
+  .xl-conv-sheet-tab:hover{
+    color:var(--text);
+    background:rgba(255,255,255,.06);
+    transform:none;
+    box-shadow:none;
+  }
+  .xl-conv-sheet-tab.active{
+    background:rgba(16, 185, 129, .16);
+    color:#34d399;
+    border-color:rgba(16, 185, 129, .45);
+    box-shadow:0 2px 10px rgba(16, 185, 129, .2);
+  }
+  .xl-conv-sheet-count{
+    font-size:10.5px;
+    padding:1px 6px;
+    border-radius:999px;
+    background:rgba(255,255,255,.08);
+    color:inherit;
+  }
+  .xl-conv-toolbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-bottom:10px;
+  }
+  .xl-conv-name-wrap{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    flex-wrap:wrap;
+  }
+  .xl-conv-name-wrap input{
+    padding:6px 11px;
+    border-radius:8px;
+    border:1px solid var(--panel-edge);
+    background:var(--panel-alt);
+    color:var(--text);
+    font-size:13px;
+    font-weight:600;
+    width:230px;
+    max-width:100%;
+  }
+  .xl-conv-grid-wrap{
+    overflow:auto;
+    max-height:460px;
+    border:1px solid var(--panel-edge);
+    border-radius:12px;
+    background:var(--panel-alt);
+  }
+  .xl-conv-table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:13px;
+    min-width:480px;
+  }
+  .xl-conv-table th, .xl-conv-table td{
+    border:1px solid var(--panel-edge);
+    padding:7px 10px;
+    text-align:left;
+    vertical-align:middle;
+    min-width:90px;
+    max-width:340px;
+    word-break:break-word;
+  }
+  .xl-conv-table thead tr.xl-col-letters th{
+    background:rgba(255,255,255,.04);
+    color:var(--muted);
+    font-size:11px;
+    font-weight:700;
+    text-align:center;
+    padding:4px 8px;
+    user-select:none;
+    position:sticky;
+    top:0;
+    z-index:2;
+  }
+  .xl-conv-table thead tr.xl-col-headers th{
+    background:rgba(16, 185, 129, .12);
+    color:var(--text);
+    font-weight:700;
+    position:sticky;
+    top:24px;
+    z-index:2;
+  }
+  .xl-conv-table th.xl-row-idx, .xl-conv-table td.xl-row-idx{
+    width:42px;
+    min-width:42px;
+    max-width:42px;
+    text-align:center;
+    color:var(--muted);
+    font-size:11.5px;
+    font-weight:700;
+    background:rgba(255,255,255,.03);
+    user-select:none;
+  }
+  .xl-conv-table td.xl-row-del{
+    width:36px;
+    min-width:36px;
+    max-width:36px;
+    text-align:center;
+    padding:3px;
+  }
+  .xl-row-del-btn{
+    background:transparent !important;
+    border:none !important;
+    color:var(--muted) !important;
+    padding:2px 6px !important;
+    font-size:12px !important;
+    cursor:pointer;
+    border-radius:6px;
+    box-shadow:none !important;
+  }
+  .xl-row-del-btn:hover{
+    color:#fb7185 !important;
+    background:rgba(244, 63, 94, .14) !important;
+    transform:none !important;
+  }
+  .xl-conv-table [contenteditable="true"]:focus{
+    outline:2px solid #10b981;
+    outline-offset:-2px;
+    background:rgba(16, 185, 129, .08);
+  }
+  .xl-conv-export-bar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    flex-wrap:wrap;
+    margin-top:14px;
+    padding-top:14px;
+    border-top:1px solid var(--panel-edge);
+  }
+  .xl-conv-opts{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    flex-wrap:wrap;
+  }
+  .btn-excel-xlsx{
+    background:linear-gradient(135deg, #10b981, #059669) !important;
+    color:#fff !important;
+    border:1px solid rgba(255,255,255,.25) !important;
+    font-weight:700 !important;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:9px 18px;
+    border-radius:10px;
+    box-shadow:0 4px 16px -3px rgba(16, 185, 129, .65) !important;
+    cursor:pointer;
+  }
+  .btn-excel-xlsx:hover{
+    transform:translateY(-1px) scale(1.02);
+    box-shadow:0 6px 20px -2px rgba(16, 185, 129, .85) !important;
+  }
+  .btn-excel-xls{
+    background:rgba(16, 185, 129, .14) !important;
+    color:#34d399 !important;
+    border:1.5px solid #10b981 !important;
+    font-weight:700 !important;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:8px 16px;
+    border-radius:10px;
+    box-shadow:none !important;
+    cursor:pointer;
+  }
+  .btn-excel-xls:hover{
+    background:rgba(16, 185, 129, .24) !important;
+    transform:translateY(-1px);
+  }
+
   @media (max-width:760px){
     .mv-grid{ grid-template-columns:1fr; }
     .mv-step{ grid-template-columns:1fr; }
@@ -419,6 +623,17 @@
     </svg>
     <span>Transcribir Imagen</span>
     <span class="mtab-pill">OCR con IA</span>
+  </button>
+  <button type="button" class="mtab-btn" id="tabBtnExcel" data-tab="excel" role="tab" aria-selected="false" aria-controls="panelExcel">
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="3" width="18" height="18" rx="2"/>
+      <line x1="3" y1="9" x2="21" y2="9"/>
+      <line x1="3" y1="15" x2="21" y2="15"/>
+      <line x1="9" y1="3" x2="9" y2="21"/>
+      <line x1="15" y1="3" x2="15" y2="21"/>
+    </svg>
+    <span>Imagen a Excel</span>
+    <span class="mtab-pill">XLSX / XLS</span>
   </button>
 </div>
 
@@ -641,6 +856,161 @@
   </div>
 </div>
 
+<!-- =====================================================================
+     PANEL 3: CONVERSOR DE IMAGEN A EXCEL REAL (.XLSX / .XLS)
+     ===================================================================== -->
+<div id="panelExcel" class="manual-panel" role="tabpanel" aria-labelledby="tabBtnExcel">
+  <h1>Imagen a Excel (Tablas reales .xlsx / .xls)</h1>
+  <p class="sub">Sube una imagen, captura de pantalla o foto que contenga tablas o datos organizados. La IA detecta las filas, columnas y encabezados para convertirlos en celdas reales de Excel editables (sin pegar la imagen), listos para descargar en <b>.xlsx</b> o <b>.xls</b>.</p>
+
+  <div class="card">
+    <div class="mv-chips">
+      <span class="mv-chip <%= iaOk ? 'on' : '' %>">Motor de Extracción de Tablas: <%= iaOk ? 'Gemini Vision Activo' : 'Sin clave en .env' %></span>
+    </div>
+
+    <div class="ocr-dropzone" id="xlDropzone">
+      <input type="file" id="xlInput" accept="image/*,.png,.jpg,.jpeg,.webp,.gif,.bmp,.tif,.tiff" style="display:none">
+      <div class="ocr-dropzone-icon" style="color:#34d399; border-color:rgba(16,185,129,.4); background:rgba(16,185,129,.12);">
+        <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2"/>
+          <line x1="3" y1="9" x2="21" y2="9"/>
+          <line x1="3" y1="15" x2="21" y2="15"/>
+          <line x1="9" y1="3" x2="9" y2="21"/>
+          <line x1="15" y1="3" x2="15" y2="21"/>
+        </svg>
+      </div>
+      <h3>Arrastra y suelta tu imagen con tablas aquí</h3>
+      <p>O haz clic para buscar en tu equipo (capturas de tablas, facturas, reportes, listas o cuadros).<br>También puedes pegar directamente tu captura con tu teclado.</p>
+      <span class="ocr-kbd-badge"><kbd>Ctrl</kbd> + <kbd>V</kbd> para pegar captura del portapapeles</span>
+    </div>
+
+    <div class="ocr-preview-card" id="xlPreviewCard">
+      <div class="ocr-thumb-wrap">
+        <img id="xlPreviewImg" src="" alt="Vista previa de tabla">
+      </div>
+      <div class="ocr-meta">
+        <div class="ocr-meta-name" id="xlMetaName">tabla.png</div>
+        <div class="ocr-meta-info" id="xlMetaInfo">0 KB · 0 x 0 px</div>
+      </div>
+      <div class="ocr-preview-tools">
+        <button type="button" class="secondary" id="xlBtnCambiar">Cambiar</button>
+        <button type="button" class="iconbtn warn lbl" id="xlBtnQuitar" title="Quitar imagen">✕</button>
+      </div>
+    </div>
+
+    <div class="ocr-options-bar">
+      <div class="ocr-modo-select">
+        <label for="xlModo" style="margin:0;font-weight:700">Modo de extracción:</label>
+        <select id="xlModo">
+          <option value="auto" selected>Inteligente (tablas + datos estructurados)</option>
+          <option value="estricto">Solo tablas exactas (ignorar textos externos)</option>
+          <option value="todo">Documento completo (tablas + resumen de textos)</option>
+        </select>
+      </div>
+
+      <div class="mv-actions" style="margin-top:0">
+        <button type="button" id="btnConvertirExcel" class="btn-excel-xlsx" disabled>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <line x1="3" y1="9" x2="21" y2="9"/>
+            <line x1="9" y1="3" x2="9" y2="21"/>
+          </svg>
+          <span id="btnConvertirExcelTxt">Convertir imagen a Excel</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="ocr-progress-box" id="xlProgreso">
+      <div class="ocr-progress-label">
+        <span style="display:inline-flex;align-items:center;gap:8px">
+          <i class="ocr-spinner"></i>
+          <span id="xlProgresoTxt">La IA está detectando filas, columnas y valores de tus tablas...</span>
+        </span>
+      </div>
+      <div class="meter"><i class="vago" style="background:linear-gradient(90deg, #10b981, #059669)"></i></div>
+    </div>
+
+    <p class="mv-note" id="xlErrorMsg" style="color:var(--danger);display:none;margin-top:14px"></p>
+  </div>
+
+  <!-- Tarjeta con la Vista Previa Editable y Descarga XLSX / XLS -->
+  <div class="card ocr-result-card" id="xlResultadoCard">
+    <div class="ocr-result-header">
+      <div class="ocr-result-title">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#10b981" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2"/>
+          <line x1="3" y1="9" x2="21" y2="9"/>
+          <line x1="3" y1="15" x2="21" y2="15"/>
+          <line x1="9" y1="3" x2="9" y2="21"/>
+          <line x1="15" y1="3" x2="15" y2="21"/>
+        </svg>
+        <span>Vista previa editable de Excel</span>
+        <div class="ocr-result-stats">
+          <span class="ocr-stat-chip" id="xlStatTablas">0 tablas</span>
+          <span class="ocr-stat-chip" id="xlStatFilas">0 filas</span>
+        </div>
+      </div>
+
+      <div class="xl-conv-name-wrap">
+        <label for="xlNombreArchivo" style="margin:0;font-size:12.5px;font-weight:700">Archivo:</label>
+        <input type="text" id="xlNombreArchivo" value="tabla_extraida" placeholder="Nombre del archivo Excel">
+      </div>
+    </div>
+
+    <div class="xl-conv-sheet-tabs" id="xlSheetTabs"></div>
+
+    <div class="xl-conv-toolbar">
+      <div class="xl-conv-name-wrap">
+        <label for="xlNombreHojaActiva" style="margin:0;font-size:12px;font-weight:600;color:var(--muted)">Nombre de hoja:</label>
+        <input type="text" id="xlNombreHojaActiva" maxlength="31" style="width:180px" placeholder="Nombre de hoja">
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button type="button" class="secondary" id="xlBtnAddRow" style="padding:6px 12px;font-size:12.5px">+ Fila</button>
+        <button type="button" class="secondary" id="xlBtnAddCol" style="padding:6px 12px;font-size:12.5px">+ Columna</button>
+      </div>
+    </div>
+
+    <div class="xl-conv-grid-wrap" id="xlGridWrap"></div>
+
+    <div class="xl-conv-export-bar">
+      <div class="xl-conv-opts">
+        <label class="mv-check" id="xlOptUnirWrap">
+          <input type="checkbox" id="xlOptUnir"> Unir todas las tablas en 1 sola hoja
+        </label>
+        <label class="mv-check">
+          <input type="checkbox" id="xlOptNumeros" checked> Convertir números puros a formato numérico
+        </label>
+      </div>
+
+      <div class="ocr-result-actions">
+        <button type="button" class="btn-excel-xlsx" id="btnDescargarXlsx" title="Descargar libro de Excel moderno (.xlsx)">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          <span>Descargar .XLSX</span>
+        </button>
+        <button type="button" class="btn-excel-xls" id="btnDescargarXls" title="Descargar libro de Excel clásico 97-2003 (.xls)">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          <span>Descargar .XLS</span>
+        </button>
+        <button type="button" class="secondary" id="btnCopiarTablaExcel" title="Copiar hoja actual para pegar directo en Excel">
+          <span id="btnCopiarTablaExcelTxt">Copiar para Excel</span>
+        </button>
+        <button type="button" class="secondary" id="btnLimpiarExcel" title="Limpiar y subir otra imagen">
+          Nueva imagen
+        </button>
+      </div>
+    </div>
+    <p class="mv-note">Haz clic en cualquier encabezado o celda para editarlo antes de descargar. Cada tabla detectada se genera como una hoja real de Excel (puedes unirlas en una sola hoja si prefieres).</p>
+  </div>
+</div>
+
 </div>
 
 <script>
@@ -657,39 +1027,40 @@ window.manualAlpineApp = function() {
   var $ = function(id){ return document.getElementById(id); };
 
   /* =====================================================================
-     1. GESTIÓN DE PESTAÑAS (TABS) Y HASH DE URL (#video, #ocr)
+     1. GESTIÓN DE PESTAÑAS (TABS) Y HASH DE URL (#video, #ocr, #excel)
      ===================================================================== */
-  var tabBtnVideo = $('tabBtnVideo');
-  var tabBtnOcr = $('tabBtnOcr');
-  var panelVideo = $('panelVideo');
-  var panelOcr = $('panelOcr');
+  var tabMapa = {
+    video: { btn: $('tabBtnVideo'), panel: $('panelVideo'), hash: '#video' },
+    ocr:   { btn: $('tabBtnOcr'),   panel: $('panelOcr'),   hash: '#ocr' },
+    excel: { btn: $('tabBtnExcel'), panel: $('panelExcel'), hash: '#excel' }
+  };
+  var pestanaActual = 'video';
 
   function cambiarPestana(tabName){
-    if (tabName === 'ocr') {
-      tabBtnOcr.classList.add('active');
-      tabBtnOcr.setAttribute('aria-selected', 'true');
-      tabBtnVideo.classList.remove('active');
-      tabBtnVideo.setAttribute('aria-selected', 'false');
-      panelOcr.classList.add('active');
-      panelVideo.classList.remove('active');
-      if (history.replaceState) history.replaceState(null, null, '#ocr');
-    } else {
-      tabBtnVideo.classList.add('active');
-      tabBtnVideo.setAttribute('aria-selected', 'true');
-      tabBtnOcr.classList.remove('active');
-      tabBtnOcr.setAttribute('aria-selected', 'false');
-      panelVideo.classList.add('active');
-      panelOcr.classList.remove('active');
-      if (history.replaceState) history.replaceState(null, null, '#video');
-    }
+    var destino = tabMapa[tabName] ? tabName : 'video';
+    pestanaActual = destino;
+    Object.keys(tabMapa).forEach(function(k){
+      var activo = (k === destino);
+      var item = tabMapa[k];
+      if (!item.btn || !item.panel) return;
+      item.btn.classList.toggle('active', activo);
+      item.btn.setAttribute('aria-selected', activo ? 'true' : 'false');
+      item.panel.classList.toggle('active', activo);
+    });
+    if (history.replaceState) history.replaceState(null, null, tabMapa[destino].hash);
   }
 
-  tabBtnVideo.addEventListener('click', function(){ cambiarPestana('video'); });
-  tabBtnOcr.addEventListener('click', function(){ cambiarPestana('ocr'); });
+  Object.keys(tabMapa).forEach(function(k){
+    if (tabMapa[k].btn) {
+      tabMapa[k].btn.addEventListener('click', function(){ cambiarPestana(k); });
+    }
+  });
 
   // Activar según hash inicial si existe
   if (location.hash === '#ocr' || location.hash === '#transcribir' || location.hash === '#imagen') {
     cambiarPestana('ocr');
+  } else if (location.hash === '#excel' || location.hash === '#imagen-excel' || location.hash === '#tablas') {
+    cambiarPestana('excel');
   }
 
   /* =====================================================================
@@ -1003,18 +1374,24 @@ window.manualAlpineApp = function() {
     }
   });
 
-  // Capturar pegado de capturas con Ctrl + V
+  // Capturar pegado de capturas con Ctrl + V según pestaña activa
   window.addEventListener('paste', function(e){
+    if (document.activeElement && document.activeElement.isContentEditable) return;
     var items = (e.clipboardData || (e.originalEvent && e.originalEvent.clipboardData)) ? (e.clipboardData || e.originalEvent.clipboardData).items : null;
     if (!items) return;
     for (var i = 0; i < items.length; i++) {
       if (items[i].type.indexOf('image') !== -1) {
         var blob = items[i].getAsFile();
         if (blob) {
-          cambiarPestana('ocr');
           var fecha = new Date();
           var timeStr = fecha.getHours() + '-' + fecha.getMinutes() + '-' + fecha.getSeconds();
-          cargarImagen(blob, 'captura_' + timeStr + '.png');
+          var nombre = 'captura_' + timeStr + '.png';
+          if (pestanaActual === 'excel' && typeof xlCargarImagen === 'function') {
+            xlCargarImagen(blob, nombre);
+          } else {
+            cambiarPestana('ocr');
+            cargarImagen(blob, nombre);
+          }
           if (window.boveToast) window.boveToast('Captura pegada desde el portapapeles');
           break;
         }
@@ -1132,6 +1509,366 @@ window.manualAlpineApp = function() {
     ocrSalida.value = '';
     ocrResultadoCard.classList.remove('show');
     ocrDropzone.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+
+  /* =====================================================================
+     4. LÓGICA DEL MÓDULO IMAGEN A EXCEL (.XLSX / .XLS)
+     ===================================================================== */
+  var xlDropzone = $('xlDropzone');
+  var xlInput = $('xlInput');
+  var xlPreviewCard = $('xlPreviewCard');
+  var xlPreviewImg = $('xlPreviewImg');
+  var xlMetaName = $('xlMetaName');
+  var xlMetaInfo = $('xlMetaInfo');
+  var xlBtnCambiar = $('xlBtnCambiar');
+  var xlBtnQuitar = $('xlBtnQuitar');
+  var xlModo = $('xlModo');
+  var btnConvertirExcel = $('btnConvertirExcel');
+  var btnConvertirExcelTxt = $('btnConvertirExcelTxt');
+  var xlProgreso = $('xlProgreso');
+  var xlProgresoTxt = $('xlProgresoTxt');
+  var xlErrorMsg = $('xlErrorMsg');
+  var xlResultadoCard = $('xlResultadoCard');
+  var xlStatTablas = $('xlStatTablas');
+  var xlStatFilas = $('xlStatFilas');
+  var xlNombreArchivo = $('xlNombreArchivo');
+  var xlSheetTabs = $('xlSheetTabs');
+  var xlNombreHojaActiva = $('xlNombreHojaActiva');
+  var xlGridWrap = $('xlGridWrap');
+  var xlBtnAddRow = $('xlBtnAddRow');
+  var xlBtnAddCol = $('xlBtnAddCol');
+  var xlOptUnirWrap = $('xlOptUnirWrap');
+  var xlOptUnir = $('xlOptUnir');
+  var xlOptNumeros = $('xlOptNumeros');
+  var btnDescargarXlsx = $('btnDescargarXlsx');
+  var btnDescargarXls = $('btnDescargarXls');
+  var btnCopiarTablaExcel = $('btnCopiarTablaExcel');
+  var btnCopiarTablaExcelTxt = $('btnCopiarTablaExcelTxt');
+  var btnLimpiarExcel = $('btnLimpiarExcel');
+
+  var xlEstado = {
+    archivo: null,
+    base64: null,
+    tablas: [],
+    hojaIdx: 0
+  };
+
+  function xlMostrarError(msg){
+    xlErrorMsg.textContent = msg;
+    xlErrorMsg.style.display = 'block';
+  }
+  function xlLimpiarError(){
+    xlErrorMsg.textContent = '';
+    xlErrorMsg.style.display = 'none';
+  }
+
+  function xlCargarImagen(file, nombreSugerido){
+    if (!file) return;
+    if (!file.type.match(/^image\//i)) {
+      xlMostrarError('El archivo seleccionado no es una imagen válida.');
+      return;
+    }
+    xlLimpiarError();
+    xlEstado.archivo = file;
+
+    var reader = new FileReader();
+    reader.onload = function(e){
+      xlEstado.base64 = e.target.result;
+      xlPreviewImg.src = xlEstado.base64;
+      xlMetaName.textContent = file.name || nombreSugerido || 'tabla-portapapeles.png';
+
+      var img = new Image();
+      img.onload = function(){
+        xlMetaInfo.textContent = formatearTamano(file.size) + ' · ' + img.naturalWidth + ' × ' + img.naturalHeight + ' px';
+      };
+      img.src = xlEstado.base64;
+
+      xlDropzone.style.display = 'none';
+      xlPreviewCard.classList.add('show');
+      btnConvertirExcel.disabled = false;
+    };
+    reader.onerror = function(){
+      xlMostrarError('No se pudo leer el archivo de imagen.');
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function xlLimpiarImagen(){
+    xlEstado.archivo = null;
+    xlEstado.base64 = null;
+    xlInput.value = '';
+    xlPreviewImg.src = '';
+    xlPreviewCard.classList.remove('show');
+    xlDropzone.style.display = 'flex';
+    btnConvertirExcel.disabled = true;
+    xlLimpiarError();
+  }
+
+  xlDropzone.addEventListener('click', function(){ xlInput.click(); });
+  xlBtnCambiar.addEventListener('click', function(){ xlInput.click(); });
+  xlBtnQuitar.addEventListener('click', xlLimpiarImagen);
+  xlInput.addEventListener('change', function(e){
+    if (e.target.files && e.target.files[0]) xlCargarImagen(e.target.files[0]);
+  });
+
+  ['dragenter', 'dragover'].forEach(function(evt){
+    xlDropzone.addEventListener(evt, function(e){
+      e.preventDefault(); e.stopPropagation();
+      xlDropzone.classList.add('dragover');
+    });
+  });
+  ['dragleave', 'drop'].forEach(function(evt){
+    xlDropzone.addEventListener(evt, function(e){
+      e.preventDefault(); e.stopPropagation();
+      xlDropzone.classList.remove('dragover');
+    });
+  });
+  xlDropzone.addEventListener('drop', function(e){
+    var dt = e.dataTransfer;
+    if (dt && dt.files && dt.files[0]) xlCargarImagen(dt.files[0]);
+  });
+
+  function letraColumna(idx){
+    var s = '';
+    idx = Number(idx);
+    while (idx >= 0) {
+      s = String.fromCharCode(65 + (idx % 26)) + s;
+      idx = Math.floor(idx / 26) - 1;
+    }
+    return s;
+  }
+
+  function actualizarEstadisticasExcel(){
+    var totalTablas = xlEstado.tablas.length;
+    var totalFilas = xlEstado.tablas.reduce(function(acc, t){ return acc + (t.filas ? t.filas.length : 0); }, 0);
+    xlStatTablas.textContent = totalTablas + (totalTablas === 1 ? ' tabla' : ' tablas');
+    xlStatFilas.textContent = totalFilas.toLocaleString() + (totalFilas === 1 ? ' fila' : ' filas');
+    xlOptUnirWrap.style.display = totalTablas > 1 ? 'flex' : 'none';
+  }
+
+  function pintarHojasExcel(){
+    xlSheetTabs.innerHTML = xlEstado.tablas.map(function(t, i){
+      var activa = i === xlEstado.hojaIdx ? ' active' : '';
+      return '<button type="button" class="xl-conv-sheet-tab' + activa + '" data-sheet="' + i + '">' +
+        '<span>' + esc(t.nombre || ('Tabla ' + (i + 1))) + '</span>' +
+        '<span class="xl-conv-sheet-count">' + (t.filas ? t.filas.length : 0) + '</span>' +
+      '</button>';
+    }).join('');
+  }
+
+  function pintarTablaActiva(){
+    var t = xlEstado.tablas[xlEstado.hojaIdx];
+    if (!t) { xlGridWrap.innerHTML = ''; return; }
+    xlNombreHojaActiva.value = t.nombre || '';
+    var nCols = (t.encabezados || []).length;
+
+    var lettersHtml = '<tr class="xl-col-letters"><th class="xl-row-idx">#</th>';
+    var headersHtml = '<tr class="xl-col-headers"><th class="xl-row-idx">1</th>';
+    for (var c = 0; c < nCols; c++) {
+      lettersHtml += '<th>' + letraColumna(c) + '</th>';
+      headersHtml += '<th contenteditable="true" data-kind="head" data-col="' + c + '">' + esc(t.encabezados[c] == null ? '' : t.encabezados[c]) + '</th>';
+    }
+    lettersHtml += '<th class="xl-row-idx"></th></tr>';
+    headersHtml += '<th class="xl-row-idx"></th></tr>';
+
+    var bodyHtml = (t.filas || []).map(function(fila, r){
+      var tds = '<td class="xl-row-idx">' + (r + 2) + '</td>';
+      for (var c = 0; c < nCols; c++) {
+        var v = fila[c] == null ? '' : fila[c];
+        tds += '<td contenteditable="true" data-kind="cell" data-row="' + r + '" data-col="' + c + '">' + esc(v) + '</td>';
+      }
+      tds += '<td class="xl-row-del"><button type="button" class="xl-row-del-btn" data-del-row="' + r + '" title="Eliminar esta fila">✕</button></td>';
+      return '<tr>' + tds + '</tr>';
+    }).join('');
+
+    xlGridWrap.innerHTML = '<table class="xl-conv-table"><thead>' + lettersHtml + headersHtml + '</thead><tbody>' + bodyHtml + '</tbody></table>';
+  }
+
+  function renderResultadoExcel(){
+    actualizarEstadisticasExcel();
+    pintarHojasExcel();
+    pintarTablaActiva();
+  }
+
+  xlSheetTabs.addEventListener('click', function(e){
+    var btn = e.target.closest('button[data-sheet]');
+    if (!btn) return;
+    xlEstado.hojaIdx = Number(btn.dataset.sheet) || 0;
+    renderResultadoExcel();
+  });
+
+  xlNombreHojaActiva.addEventListener('input', function(){
+    var t = xlEstado.tablas[xlEstado.hojaIdx];
+    if (!t) return;
+    t.nombre = xlNombreHojaActiva.value.trim() || ('Tabla ' + (xlEstado.hojaIdx + 1));
+    pintarHojasExcel();
+  });
+
+  xlGridWrap.addEventListener('input', function(e){
+    var el = e.target.closest('[contenteditable="true"]');
+    var t = xlEstado.tablas[xlEstado.hojaIdx];
+    if (!el || !t) return;
+    var c = Number(el.dataset.col);
+    var val = el.textContent;
+    if (el.dataset.kind === 'head') {
+      t.encabezados[c] = val;
+    } else if (el.dataset.kind === 'cell') {
+      var r = Number(el.dataset.row);
+      if (t.filas[r]) t.filas[r][c] = val;
+    }
+  });
+
+  xlGridWrap.addEventListener('click', function(e){
+    var del = e.target.closest('button[data-del-row]');
+    if (!del) return;
+    var t = xlEstado.tablas[xlEstado.hojaIdx];
+    if (!t) return;
+    var r = Number(del.dataset.delRow);
+    t.filas.splice(r, 1);
+    renderResultadoExcel();
+  });
+
+  xlBtnAddRow.addEventListener('click', function(){
+    var t = xlEstado.tablas[xlEstado.hojaIdx];
+    if (!t) return;
+    var filaVacia = new Array((t.encabezados || []).length).fill('');
+    t.filas.push(filaVacia);
+    renderResultadoExcel();
+  });
+
+  xlBtnAddCol.addEventListener('click', function(){
+    var t = xlEstado.tablas[xlEstado.hojaIdx];
+    if (!t) return;
+    t.encabezados.push('Columna ' + (t.encabezados.length + 1));
+    t.filas.forEach(function(f){ f.push(''); });
+    renderResultadoExcel();
+  });
+
+  btnConvertirExcel.addEventListener('click', function(){
+    if (!xlEstado.archivo && !xlEstado.base64) {
+      xlMostrarError('Primero selecciona o pega una imagen.');
+      return;
+    }
+
+    xlLimpiarError();
+    btnConvertirExcel.disabled = true;
+    btnConvertirExcelTxt.textContent = 'Extrayendo tablas...';
+    xlProgreso.classList.add('show');
+    xlProgresoTxt.textContent = 'Analizando imagen y estructurando tablas para Excel...';
+
+    var fd = new FormData();
+    if (xlEstado.archivo) fd.append('imagen', xlEstado.archivo);
+    else if (xlEstado.base64) fd.append('base64', xlEstado.base64);
+    fd.append('modo', xlModo.value);
+
+    fetch('/manual/imagen-a-excel', {
+      method: 'POST',
+      body: fd
+    })
+    .then(function(res){
+      return res.json().then(function(data){ return { status: res.status, data: data }; });
+    })
+    .then(function(resp){
+      btnConvertirExcel.disabled = false;
+      btnConvertirExcelTxt.textContent = 'Convertir imagen a Excel';
+      xlProgreso.classList.remove('show');
+
+      if (!resp.data.ok) {
+        throw new Error(resp.data.error || 'No se pudieron extraer tablas de la imagen.');
+      }
+
+      xlEstado.tablas = resp.data.tablas || [];
+      xlEstado.hojaIdx = 0;
+
+      var baseArchivo = (xlMetaName.textContent || '').replace(/\.[^/.]+$/, '');
+      if (!baseArchivo || /^captura[-_]/i.test(baseArchivo)) {
+        baseArchivo = resp.data.titulo || 'tabla_extraida';
+      }
+      xlNombreArchivo.value = baseArchivo.replace(/[^\w\- áéíóúñÁÉÍÓÚÑ]/g, '').trim().replace(/\s+/g, '_') || 'tabla_extraida';
+
+      renderResultadoExcel();
+      xlResultadoCard.classList.add('show');
+      xlResultadoCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (window.boveToast) window.boveToast('¡Tablas convertidas a Excel listas para descargar!');
+    })
+    .catch(function(err){
+      btnConvertirExcel.disabled = false;
+      btnConvertirExcelTxt.textContent = 'Convertir imagen a Excel';
+      xlProgreso.classList.remove('show');
+      xlMostrarError(err.message || 'Error al procesar la imagen.');
+    });
+  });
+
+  function descargarExcelEnFormato(formato){
+    if (!xlEstado.tablas.length) return;
+    xlLimpiarError();
+    var btn = formato === 'xls' ? btnDescargarXls : btnDescargarXlsx;
+    btn.disabled = true;
+
+    fetch('/manual/exportar-excel', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        formato: formato,
+        nombreArchivo: xlNombreArchivo.value || 'tabla_extraida',
+        tablas: xlEstado.tablas,
+        unirHojas: !!xlOptUnir.checked,
+        convertirNumeros: !!xlOptNumeros.checked
+      })
+    })
+    .then(function(res){
+      if (!res.ok) return res.json().then(function(d){ throw new Error(d.error || 'Error generando el archivo Excel.'); });
+      return res.blob();
+    })
+    .then(function(blob){
+      btn.disabled = false;
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      var base = (xlNombreArchivo.value || 'tabla_extraida').replace(/\.(xlsx|xls)$/i, '').replace(/[^\w\- áéíóúñÁÉÍÓÚÑ]/g, '').trim().replace(/\s+/g, '_') || 'tabla_extraida';
+      a.href = url;
+      a.download = base + '.' + formato;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(function(){ URL.revokeObjectURL(url); }, 60000);
+      if (window.boveToast) window.boveToast('Descargando ' + base + '.' + formato);
+    })
+    .catch(function(err){
+      btn.disabled = false;
+      xlMostrarError(err.message || 'No se pudo descargar el Excel.');
+    });
+  }
+
+  btnDescargarXlsx.addEventListener('click', function(){ descargarExcelEnFormato('xlsx'); });
+  btnDescargarXls.addEventListener('click', function(){ descargarExcelEnFormato('xls'); });
+
+  btnCopiarTablaExcel.addEventListener('click', function(){
+    var t = xlEstado.tablas[xlEstado.hojaIdx];
+    if (!t) return;
+    var lineas = [];
+    var limpiarCelda = function(v){ return String(v == null ? '' : v).replace(/[\t\r\n]+/g, ' '); };
+    if (t.encabezados && t.encabezados.length) {
+      lineas.push(t.encabezados.map(limpiarCelda).join('\t'));
+    }
+    (t.filas || []).forEach(function(f){
+      lineas.push(f.map(limpiarCelda).join('\t'));
+    });
+    var tsv = lineas.join('\n');
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(tsv).then(function(){
+        btnCopiarTablaExcelTxt.textContent = '✓ ¡Copiado!';
+        if (window.boveToast) window.boveToast('Tabla copiada: pégala directo en Excel (Ctrl+V)');
+        setTimeout(function(){ btnCopiarTablaExcelTxt.textContent = 'Copiar para Excel'; }, 2400);
+      });
+    }
+  });
+
+  btnLimpiarExcel.addEventListener('click', function(){
+    xlLimpiarImagen();
+    xlEstado.tablas = [];
+    xlEstado.hojaIdx = 0;
+    xlResultadoCard.classList.remove('show');
+    xlDropzone.scrollIntoView({ behavior: 'smooth', block: 'center' });
   });
 
 })();
