@@ -934,23 +934,30 @@ async function extraerTablasDeImagenConIA({ buffer, mimeType, modo }) {
   }
 
   const sistema =
-    "Eres un especialista en extracción estructurada de datos desde imágenes hacia hojas de cálculo Excel (.xlsx / .xls). " +
-    "Analiza cuidadosamente la imagen y devuelve ÚNICAMENTE un objeto JSON válido (sin markdown ni explicaciones) con esta estructura exacta:\n" +
+    "Eres un especialista en extracción estructurada de datos desde imágenes y documentos PDF hacia hojas de cálculo Excel (.xlsx / .xls). " +
+    "Analiza cuidadosamente el documento o imagen y devuelve ÚNICAMENTE un objeto JSON válido (sin markdown ni explicaciones) con esta estructura exacta:\n" +
     '{\n  "titulo_documento": "nombre_corto_descriptivo",\n  "tablas": [\n    {\n      "nombre": "Nombre Hoja",\n      "encabezados": ["Col 1", "Col 2"],\n      "filas": [["dato 1", "dato 2"]]\n    }\n  ]\n}\n' +
     "Reglas obligatorias:\n" +
-    "1. Detecta todas las tablas en orden de arriba a abajo y de izquierda a derecha.\n" +
+    "1. Detecta todas las tablas de todas las páginas en orden de arriba a abajo y de izquierda a derecha. Si un PDF divide una misma tabla en varias páginas con los mismos encabezados, consolídala en una sola tabla continua.\n" +
     "2. Todas las filas de una tabla deben tener la misma cantidad de columnas que 'encabezados'. Usa \"\" para celdas vacías.\n" +
     "3. Si hay celdas combinadas visualmente, repite o ubica el valor en la columna correspondiente sin desplazar ni desalinear las demás columnas.\n" +
     "4. Mantén códigos, NIT, cédulas, teléfonos, fechas y números con ceros a la izquierda como cadenas de texto (ej. \"00415\") para no perder ceros ni formato.\n" +
-    "5. NO inventes ni omitas filas o columnas. Respeta al 100% los textos y valores de la imagen.\n" +
+    "5. NO inventes ni omitas filas o columnas. Respeta al 100% los textos y valores del documento.\n" +
     "6. " + reglaModo;
 
-  const modelos = ["gemini-2.5-flash", "gemini-3-flash-preview", "gemini-flash-lite-latest", "gemini-3.1-flash-lite"];
+  const modelos = Array.from(new Set([
+    modeloIA(),
+    "gemini-flash-lite-latest",
+    "gemini-3.1-flash-lite",
+    "gemini-3-flash-preview",
+    "gemini-2.5-flash"
+  ].filter(Boolean)));
   let ultimoError = null;
+  const esPdf = mimeType === "application/pdf";
 
   for (const modelo of modelos) {
     try {
-      const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${apiKey}`, {
+      const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modelo)}:generateContent?key=${apiKey}`, {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
@@ -958,11 +965,13 @@ async function extraerTablasDeImagenConIA({ buffer, mimeType, modo }) {
           contents: [{
             parts: [
               { inlineData: { mimeType: mimeType || "image/jpeg", data: base64Data } },
-              { text: "Extrae todas las tablas y datos estructurados de esta imagen en el JSON indicado." }
+              { text: esPdf
+                ? "Extrae todas las tablas y datos estructurados de este documento PDF en el JSON indicado."
+                : "Extrae todas las tablas y datos estructurados de esta imagen en el JSON indicado." }
             ]
           }],
           generationConfig: {
-            maxOutputTokens: 8192,
+            maxOutputTokens: 16384,
             temperature: 0.1,
             responseMimeType: "application/json"
           }
@@ -987,12 +996,42 @@ async function extraerTablasDeImagenConIA({ buffer, mimeType, modo }) {
 
   // Fallback a preguntarIA (compatible OpenAI / endpoint configurado en .env)
   try {
+    const partesFallback = [];
+    if (esPdf) {
+      const { PDFParse } = require("pdf-parse");
+      const parser = new PDFParse({ data: buffer });
+      let textoPdf = "";
+      try {
+        const rt = await parser.getText();
+        textoPdf = (rt && rt.text ? rt.text : "").trim();
+        try {
+          const ri = await parser.getImage({ imageThreshold: 40 });
+          for (const pag of (ri && ri.pages) || []) {
+            for (const im of pag.images || []) {
+              if (im.data && partesFallback.length < 4) {
+                partesFallback.push({
+                  type: "image",
+                  source: { media_type: "image/png", data: Buffer.from(im.data).toString("base64") }
+                });
+              }
+            }
+          }
+        } catch (eImg) {}
+      } finally {
+        await parser.destroy().catch(() => {});
+      }
+      partesFallback.push({
+        type: "text",
+        text: "Extrae todas las tablas y datos estructurados de este PDF en JSON:\n\n" + textoPdf.slice(0, 48000)
+      });
+    } else {
+      partesFallback.push({ type: "image", source: { media_type: mimeType || "image/jpeg", data: base64Data } });
+      partesFallback.push({ type: "text", text: "Extrae todas las tablas y datos estructurados de esta imagen en JSON." });
+    }
+
     const fallbackTexto = await preguntarIA({
       sistema,
-      contenido: [
-        { type: "image", source: { media_type: mimeType || "image/jpeg", data: base64Data } },
-        { type: "text", text: "Extrae todas las tablas y datos estructurados de esta imagen en JSON." }
-      ],
+      contenido: partesFallback,
       maxTokens: 8192
     });
     if (fallbackTexto) {
@@ -1002,7 +1041,7 @@ async function extraerTablasDeImagenConIA({ buffer, mimeType, modo }) {
     ultimoError = e;
   }
 
-  throw ultimoError || new Error("No se pudieron extraer tablas de la imagen.");
+  throw ultimoError || new Error("No se pudieron extraer tablas del archivo.");
 }
 
 function sanitizarNombreHoja(nombre, usados) {
@@ -1101,10 +1140,15 @@ function extraerImagenDeRequest(req) {
 
   if (req.file && req.file.buffer) {
     buffer = req.file.buffer;
-    mimeType = req.file.mimetype || "image/jpeg";
+    const ext = path.extname(req.file.originalname || "").toLowerCase();
+    if (ext === ".pdf" || req.file.mimetype === "application/pdf") {
+      mimeType = "application/pdf";
+    } else {
+      mimeType = req.file.mimetype || "image/jpeg";
+    }
   } else if (req.body && req.body.base64) {
     const raw = String(req.body.base64);
-    const match = /^data:(image\/[a-zA-Z0-9\.\+\-]+);base64,(.+)$/.exec(raw);
+    const match = /^data:((?:image\/[a-zA-Z0-9\.\+\-]+)|application\/pdf);base64,(.+)$/.exec(raw);
     if (match) {
       mimeType = match[1];
       buffer = Buffer.from(match[2], "base64");
