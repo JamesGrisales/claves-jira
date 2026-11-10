@@ -745,7 +745,7 @@
 
     <!-- Zona Drag & Drop -->
     <div class="ocr-dropzone" id="ocrDropzone">
-      <input type="file" id="ocrInput" accept="image/*,.png,.jpg,.jpeg,.webp,.gif,.bmp,.tif,.tiff" style="display:none">
+      <input type="file" id="ocrInput" accept="image/*,.png,.jpg,.jpeg,.webp,.gif,.bmp,.tif,.tiff,.pdf,application/pdf" style="display:none">
       <div class="ocr-dropzone-icon">
         <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
@@ -753,15 +753,22 @@
           <line x1="12" y1="3" x2="12" y2="15"/>
         </svg>
       </div>
-      <h3>Arrastra y suelta tu imagen aquí</h3>
-      <p>O haz clic para seleccionar una imagen desde tus carpetas.<br>También puedes pegar directamente cualquier captura con tu teclado.</p>
-      <span class="ocr-kbd-badge"><kbd>Ctrl</kbd> + <kbd>V</kbd> para pegar captura del portapapeles</span>
+      <h3>Arrastra y suelta tu imagen o PDF aquí</h3>
+      <p>O haz clic para seleccionar una imagen o PDF desde tus carpetas.<br>También puedes pegar directamente cualquier captura con tu teclado.</p>
+      <span class="ocr-kbd-badge"><kbd>Ctrl</kbd> + <kbd>V</kbd> para pegar captura · Admite .PDF y capturas</span>
     </div>
 
-    <!-- Previsualización de imagen seleccionada -->
+    <!-- Previsualización de archivo seleccionado -->
     <div class="ocr-preview-card" id="ocrPreviewCard">
       <div class="ocr-thumb-wrap">
         <img id="ocrPreviewImg" src="" alt="Vista previa">
+        <div id="ocrPreviewPdfBadge" style="display:none;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;background:linear-gradient(135deg,#dc2626,#991b1b);color:#fff;font-weight:800;font-size:13px;letter-spacing:.06em;gap:2px;">
+          <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+          </svg>
+          <span>PDF</span>
+        </div>
       </div>
       <div class="ocr-meta">
         <div class="ocr-meta-name" id="ocrMetaName">captura.png</div>
@@ -1256,6 +1263,7 @@ window.manualAlpineApp = function() {
   var ocrInput = $('ocrInput');
   var ocrPreviewCard = $('ocrPreviewCard');
   var ocrPreviewImg = $('ocrPreviewImg');
+  var ocrPreviewPdfBadge = $('ocrPreviewPdfBadge');
   var ocrMetaName = $('ocrMetaName');
   var ocrMetaInfo = $('ocrMetaInfo');
   var ocrBtnCambiar = $('ocrBtnCambiar');
@@ -1295,37 +1303,63 @@ window.manualAlpineApp = function() {
   }
   ocrSalida.addEventListener('input', actualizarContadores);
 
-  function cargarImagen(file, nombreSugerido){
+  // Helper compartido para cargar imagen o PDF en cualquier vista (OCR o Excel)
+  function cargarArchivoEnVista(file, cfg){
     if (!file) return;
-    if (!file.type.match(/^image\//i)) {
-      mostrarErrorOcr('El archivo seleccionado no es una imagen válida.');
+    var esPdf = file.type === 'application/pdf' || /\.pdf$/i.test(file.name || '');
+    var esImg = /^image\//i.test(file.type || '');
+    if (!esPdf && !esImg) {
+      cfg.mostrarError('El archivo seleccionado debe ser una imagen o un documento PDF.');
       return;
     }
-
-    limpiarErrorOcr();
-    archivoActual = file;
+    cfg.limpiarError();
+    cfg.onFile(file);
 
     var reader = new FileReader();
     reader.onload = function(e){
-      base64Actual = e.target.result;
-      ocrPreviewImg.src = base64Actual;
-      ocrMetaName.textContent = file.name || nombreSugerido || 'captura-portapapeles.png';
-
-      // Obtener resolución de la imagen
-      var img = new Image();
-      img.onload = function(){
-        ocrMetaInfo.textContent = formatearTamano(file.size) + ' · ' + img.naturalWidth + ' × ' + img.naturalHeight + ' px';
-      };
-      img.src = base64Actual;
-
-      ocrDropzone.style.display = 'none';
-      ocrPreviewCard.classList.add('show');
-      btnTranscribir.disabled = false;
+      var b64 = e.target.result;
+      cfg.onBase64(b64);
+      cfg.metaName.textContent = file.name || cfg.nombreFallback || (esPdf ? 'documento.pdf' : 'captura-portapapeles.png');
+      if (esPdf) {
+        cfg.previewImg.style.display = 'none';
+        cfg.previewImg.src = '';
+        if (cfg.pdfBadge) cfg.pdfBadge.style.display = 'flex';
+        cfg.metaInfo.textContent = formatearTamano(file.size) + ' · Documento PDF';
+      } else {
+        if (cfg.pdfBadge) cfg.pdfBadge.style.display = 'none';
+        cfg.previewImg.style.display = 'block';
+        cfg.previewImg.src = b64;
+        var img = new Image();
+        img.onload = function(){
+          cfg.metaInfo.textContent = formatearTamano(file.size) + ' · ' + img.naturalWidth + ' × ' + img.naturalHeight + ' px';
+        };
+        img.src = b64;
+      }
+      cfg.dropzone.style.display = 'none';
+      cfg.previewCard.classList.add('show');
+      cfg.actionBtn.disabled = false;
     };
     reader.onerror = function(){
-      mostrarErrorOcr('No se pudo leer el archivo de imagen.');
+      cfg.mostrarError('No se pudo leer el archivo seleccionado.');
     };
     reader.readAsDataURL(file);
+  }
+
+  function cargarImagen(file, nombreSugerido){
+    cargarArchivoEnVista(file, {
+      nombreFallback: nombreSugerido,
+      mostrarError: mostrarErrorOcr,
+      limpiarError: limpiarErrorOcr,
+      onFile: function(f){ archivoActual = f; },
+      onBase64: function(b){ base64Actual = b; },
+      metaName: ocrMetaName,
+      metaInfo: ocrMetaInfo,
+      previewImg: ocrPreviewImg,
+      pdfBadge: ocrPreviewPdfBadge,
+      dropzone: ocrDropzone,
+      previewCard: ocrPreviewCard,
+      actionBtn: btnTranscribir
+    });
   }
 
   function limpiarImagen(){
@@ -1333,6 +1367,8 @@ window.manualAlpineApp = function() {
     base64Actual = null;
     ocrInput.value = '';
     ocrPreviewImg.src = '';
+    ocrPreviewImg.style.display = 'block';
+    if (ocrPreviewPdfBadge) ocrPreviewPdfBadge.style.display = 'none';
     ocrPreviewCard.classList.remove('show');
     ocrDropzone.style.display = 'flex';
     btnTranscribir.disabled = true;
@@ -1571,45 +1607,20 @@ window.manualAlpineApp = function() {
   }
 
   function xlCargarImagen(file, nombreSugerido){
-    if (!file) return;
-    var esPdf = file.type === 'application/pdf' || /\.pdf$/i.test(file.name || '');
-    var esImg = /^image\//i.test(file.type || '');
-    if (!esPdf && !esImg) {
-      xlMostrarError('El archivo seleccionado debe ser una imagen o un documento PDF.');
-      return;
-    }
-    xlLimpiarError();
-    xlEstado.archivo = file;
-
-    var reader = new FileReader();
-    reader.onload = function(e){
-      xlEstado.base64 = e.target.result;
-      xlMetaName.textContent = file.name || nombreSugerido || (esPdf ? 'documento.pdf' : 'tabla-portapapeles.png');
-
-      if (esPdf) {
-        xlPreviewImg.style.display = 'none';
-        xlPreviewImg.src = '';
-        if (xlPreviewPdfBadge) xlPreviewPdfBadge.style.display = 'flex';
-        xlMetaInfo.textContent = formatearTamano(file.size) + ' · Documento PDF';
-      } else {
-        if (xlPreviewPdfBadge) xlPreviewPdfBadge.style.display = 'none';
-        xlPreviewImg.style.display = 'block';
-        xlPreviewImg.src = xlEstado.base64;
-        var img = new Image();
-        img.onload = function(){
-          xlMetaInfo.textContent = formatearTamano(file.size) + ' · ' + img.naturalWidth + ' × ' + img.naturalHeight + ' px';
-        };
-        img.src = xlEstado.base64;
-      }
-
-      xlDropzone.style.display = 'none';
-      xlPreviewCard.classList.add('show');
-      btnConvertirExcel.disabled = false;
-    };
-    reader.onerror = function(){
-      xlMostrarError('No se pudo leer el archivo seleccionado.');
-    };
-    reader.readAsDataURL(file);
+    cargarArchivoEnVista(file, {
+      nombreFallback: nombreSugerido,
+      mostrarError: xlMostrarError,
+      limpiarError: xlLimpiarError,
+      onFile: function(f){ xlEstado.archivo = f; },
+      onBase64: function(b){ xlEstado.base64 = b; },
+      metaName: xlMetaName,
+      metaInfo: xlMetaInfo,
+      previewImg: xlPreviewImg,
+      pdfBadge: xlPreviewPdfBadge,
+      dropzone: xlDropzone,
+      previewCard: xlPreviewCard,
+      actionBtn: btnConvertirExcel
+    });
   }
 
   function xlLimpiarImagen(){

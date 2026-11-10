@@ -1,3 +1,4 @@
+require("dns").setDefaultResultOrder("ipv4first");
 require("dotenv").config();
 process.on("unhandledRejection", (reason, promise) => {
   console.error("Unhandled Rejection:", reason);

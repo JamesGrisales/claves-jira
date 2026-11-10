@@ -769,7 +769,87 @@ async function generarPdf({ titulo, objetivo, autor, pasos, grande }) {
   return Buffer.from(await pdf.save());
 }
 
-// ---------- Transcripción OCR de imagen con IA ----------
+// ---------- Extracción local de texto e imágenes de PDF (apoyo para IA) ----------
+async function extraerDatosPdfLocal(buffer, maxImagenes = 4) {
+  let texto = "";
+  const imagenes = [];
+  try {
+    const { PDFParse } = require("pdf-parse");
+    const parser = new PDFParse({ data: buffer });
+    try {
+      const rt = await parser.getText();
+      texto = (rt && rt.text ? rt.text : "")
+        .replace(/^-- \d+ of \d+ --$/gm, "")
+        .trim();
+      if (maxImagenes > 0) {
+        try {
+          const ri = await parser.getImage({ imageThreshold: 40 });
+          for (const pag of (ri && ri.pages) || []) {
+            for (const im of pag.images || []) {
+              if (im.data && imagenes.length < maxImagenes) {
+                imagenes.push({
+                  type: "image",
+                  source: { media_type: "image/png", data: Buffer.from(im.data).toString("base64") }
+                });
+              }
+            }
+          }
+        } catch (eImg) {}
+      }
+    } finally {
+      await parser.destroy().catch(() => {});
+    }
+  } catch (e) {}
+  return { texto, imagenes };
+}
+
+const MODELOS_VISION_PRECISOS = [
+  "gemini-3-flash-preview",
+  "gemini-flash-latest",
+  "gemini-3.8-flash",
+  "gemini-flash-lite-latest",
+  "gemini-3.1-flash-lite"
+];
+
+try { require("dns").setDefaultResultOrder("ipv4first"); } catch (e) {}
+
+async function llamarGeminiVision({ apiKey, sistema, partes, generationConfig, etiqueta }) {
+  const modelos = Array.from(new Set(MODELOS_VISION_PRECISOS));
+  let ultimoError = null;
+
+  for (const modelo of modelos) {
+    try {
+      const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modelo)}:generateContent?key=${apiKey}`, {
+        method: "POST",
+        headers: { "content-type": "application/json", "connection": "close" },
+        signal: AbortSignal.timeout(65000),
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: sistema }] },
+          contents: [{ parts: partes }],
+          generationConfig
+        })
+      });
+
+      const data = await resp.json();
+      if (data && data.candidates && data.candidates[0] && data.candidates[0].content) {
+        const parts = data.candidates[0].content.parts || [];
+        const texto = parts.map((p) => p.text || "").join("").trim();
+        if (texto) return { texto, ultimoError: null };
+      }
+
+      if (data && data.error) {
+        console.warn(`[${etiqueta}] Modelo ${modelo} falló:`, data.error.message);
+        ultimoError = new Error(data.error.message || `Error con modelo ${modelo}`);
+      }
+    } catch (e) {
+      console.warn(`[${etiqueta}] Excepción con ${modelo}:`, e.message);
+      ultimoError = e;
+    }
+  }
+  return { texto: "", ultimoError };
+}
+
+// ---------- Transcripción OCR de imagen o PDF con IA ----------
 async function transcribirImagenConIA({ buffer, mimeType, modo }) {
   const base64Data = buffer.toString("base64");
   const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || process.env.OPENAI_API_KEY;
@@ -778,8 +858,8 @@ async function transcribirImagenConIA({ buffer, mimeType, modo }) {
     throw new Error("No hay una clave de IA configurada en el archivo .env.");
   }
 
-  let prompt = "Eres un transcriptor óptico (OCR) de altísima precisión para manuales, capturas y documentos. " +
-    "Transcribe de manera completa, exacta y fiel TODO el texto, números, datos, títulos, tablas, códigos y detalles visibles en la imagen proporcionada. " +
+  let prompt = "Eres un transcriptor óptico (OCR) de altísima precisión para manuales, capturas y documentos (imágenes y PDF). " +
+    "Transcribe de manera completa, exacta y fiel TODO el texto, números, datos, títulos, tablas, códigos y detalles visibles en el documento proporcionado. " +
     "Conserva fielmente la estructura original (saltos de línea, párrafos, listas, columnas o sangrías). " +
     "No inventes contenido, no resumas y no añadas saludos, introducciones ni notas personales como 'Aquí tienes la transcripción:'. Devuelve ÚNICAMENTE el texto extraído tal como se lee.";
 
@@ -789,79 +869,113 @@ async function transcribirImagenConIA({ buffer, mimeType, modo }) {
     prompt += " Corrige posibles errores tipográficos evidentes de captura y entrega el texto limpio y ordenado en párrafos legibles.";
   }
 
-  // 1. Intentar con modelos Gemini rápidos y estables
-  const modelos = ["gemini-flash-lite-latest", "gemini-3.1-flash-lite", "gemini-3-flash-preview"];
-  let ultimoError = null;
+  const esPdf = mimeType === "application/pdf";
+  const pdfLocal = esPdf ? await extraerDatosPdfLocal(buffer, 6) : { texto: "", imagenes: [] };
 
-  for (const modelo of modelos) {
-    try {
-      const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${apiKey}`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          systemInstruction: { parts: [{ text: prompt }] },
-          contents: [{
-            parts: [
-              { inlineData: { mimeType: mimeType || "image/jpeg", data: base64Data } },
-              { text: "Transcribe exactamente todo el texto visible en esta imagen." }
-            ]
-          }],
-          generationConfig: { maxOutputTokens: 8192 }
-        })
-      });
+  const textoPeticion = esPdf
+    ? ("Transcribe exactamente todo el contenido de este documento PDF." +
+        (pdfLocal.texto.length > 20
+          ? "\n\nReferencia de texto digital extraído del PDF (úsalos juntos para garantizar 100% precisión en códigos, cifras y tildes):\n" + pdfLocal.texto.slice(0, 40000)
+          : ""))
+    : "Transcribe exactamente todo el texto visible en esta imagen.";
 
-      const data = await resp.json();
-      if (data && data.candidates && data.candidates[0] && data.candidates[0].content) {
-        const parts = data.candidates[0].content.parts || [];
-        const texto = parts.map(p => p.text || "").join("").trim();
-        if (texto) return texto;
-      }
-
-      if (data && data.error) {
-        ultimoError = new Error(data.error.message || `Error con modelo ${modelo}`);
-      }
-    } catch (e) {
-      ultimoError = e;
-    }
-  }
+  // 1. Intentar con modelos Gemini de alta precisión visual primero
+  const resVision = await llamarGeminiVision({
+    apiKey,
+    sistema: prompt,
+    partes: [
+      { inlineData: { mimeType: mimeType || "image/jpeg", data: base64Data } },
+      { text: textoPeticion }
+    ],
+    generationConfig: { maxOutputTokens: 16384, temperature: 0.1 },
+    etiqueta: "OCR"
+  });
+  if (resVision.texto) return resVision.texto;
+  let ultimoError = resVision.ultimoError;
 
   // 2. Fallback a preguntarIA si las llamadas directas fallan
   try {
+    const partesFallback = [];
+    if (esPdf) {
+      pdfLocal.imagenes.forEach((im) => partesFallback.push(im));
+      partesFallback.push({
+        type: "text",
+        text: "Transcribe y ordena todo el contenido de este documento PDF:\n\n" + pdfLocal.texto.slice(0, 48000)
+      });
+    } else {
+      partesFallback.push({ type: "image", source: { media_type: mimeType || "image/jpeg", data: base64Data } });
+      partesFallback.push({ type: "text", text: "Transcribe todo el texto contenido en esta imagen." });
+    }
     const fallbackTexto = await preguntarIA({
       sistema: prompt,
-      contenido: [
-        { type: "image", source: { media_type: mimeType || "image/jpeg", data: base64Data } },
-        { type: "text", text: "Transcribe todo el texto contenido en esta imagen." }
-      ],
-      maxTokens: 8192
+      contenido: partesFallback,
+      maxTokens: 16384
     });
     if (fallbackTexto) return fallbackTexto;
   } catch (e) {
     ultimoError = e;
   }
 
-  throw ultimoError || new Error("No se pudo extraer texto de la imagen.");
+  throw ultimoError || new Error("No se pudo extraer texto del archivo.");
 }
 
-// ---------- Extracción estructurada de tablas desde imagen a Excel (.xlsx / .xls) ----------
+// ---------- Extracción estructurada de tablas desde imagen o PDF a Excel (.xlsx / .xls) ----------
 function extraerJsonLimpio(raw) {
   let s = String(raw || "").trim();
   const bloque = s.match(/```(?:json)?\s*([\s\S]*?)```/i);
   if (bloque) s = bloque[1].trim();
-  const inicio = s.indexOf("{");
-  const fin = s.lastIndexOf("}");
-  if (inicio !== -1 && fin > inicio) {
-    s = s.slice(inicio, fin + 1);
+  try {
+    return JSON.parse(s);
+  } catch (eDirecto) {
+    const iObj = s.indexOf("{");
+    const fObj = s.lastIndexOf("}");
+    const iArr = s.indexOf("[");
+    const fArr = s.lastIndexOf("]");
+    if (iObj !== -1 && fObj > iObj && (iArr === -1 || iObj < iArr)) {
+      return JSON.parse(s.slice(iObj, fObj + 1));
+    }
+    if (iArr !== -1 && fArr > iArr) {
+      return JSON.parse(s.slice(iArr, fArr + 1));
+    }
+    throw eDirecto;
   }
-  return JSON.parse(s);
 }
 
 function normalizarTablasExtraidas(data) {
-  const obj = data && typeof data === "object" ? data : {};
-  let tablasRaw = Array.isArray(obj.tablas) ? obj.tablas : [];
+  let obj = data;
+  if (Array.isArray(obj)) {
+    // Si la IA devolvió directamente un arreglo de objetos [{Col1: val1, ...}] o arreglo 2D
+    if (obj.length && Array.isArray(obj[0])) {
+      obj = { tablas: [{ nombre: "Tabla 1", encabezados: obj[0], filas: obj.slice(1) }] };
+    } else if (obj.length && typeof obj[0] === "object" && obj[0] !== null) {
+      if (obj[0].encabezados || obj[0].headers || obj[0].filas || obj[0].rows) {
+        obj = { tablas: obj };
+      } else {
+        const keys = Array.from(new Set(obj.flatMap((r) => Object.keys(r || {}))));
+        obj = {
+          tablas: [{
+            nombre: "Tabla 1",
+            encabezados: keys,
+            filas: obj.map((r) => keys.map((k) => (r && r[k] != null ? r[k] : "")))
+          }]
+        };
+      }
+    }
+  }
 
-  if (!tablasRaw.length && Array.isArray(obj.filas)) {
-    tablasRaw = [{ nombre: obj.nombre || "Tabla 1", encabezados: obj.encabezados || [], filas: obj.filas }];
+  obj = obj && typeof obj === "object" ? obj : {};
+  let tablasRaw = Array.isArray(obj.tablas)
+    ? obj.tablas
+    : Array.isArray(obj.tables)
+      ? obj.tables
+      : [];
+
+  if (!tablasRaw.length && (Array.isArray(obj.filas) || Array.isArray(obj.rows))) {
+    tablasRaw = [{
+      nombre: obj.nombre || obj.name || "Tabla 1",
+      encabezados: obj.encabezados || obj.headers || obj.columns || [],
+      filas: obj.filas || obj.rows || []
+    }];
   }
   if (!tablasRaw.length && Array.isArray(obj.texto_suelto) && obj.texto_suelto.length) {
     tablasRaw = [{
@@ -872,12 +986,15 @@ function normalizarTablasExtraidas(data) {
   }
 
   const tablas = [];
-  tablasRaw.forEach((t, idx) => {
+  tablasRaw.forEach((t) => {
     if (!t || typeof t !== "object") return;
-    let encabezados = Array.isArray(t.encabezados) ? t.encabezados.map((h) => String(h == null ? "" : h).trim()) : [];
-    let filas = Array.isArray(t.filas)
-      ? t.filas.filter((f) => Array.isArray(f)).map((f) => f.map((v) => (v == null ? "" : v)))
-      : [];
+    const rawHeads = Array.isArray(t.encabezados) ? t.encabezados : Array.isArray(t.headers) ? t.headers : Array.isArray(t.columns) ? t.columns : [];
+    const rawRows = Array.isArray(t.filas) ? t.filas : Array.isArray(t.rows) ? t.rows : Array.isArray(t.data) ? t.data : [];
+
+    let encabezados = rawHeads.map((h) => String(h == null ? "" : h).trim());
+    let filas = rawRows
+      .filter((f) => Array.isArray(f))
+      .map((f) => f.map((v) => (v == null ? "" : String(v).trim())));
 
     let maxCols = encabezados.length;
     for (const f of filas) {
@@ -897,23 +1014,23 @@ function normalizarTablasExtraidas(data) {
         while (copia.length < maxCols) copia.push("");
         return copia;
       })
-      .filter((f) => f.some((c) => String(c).trim() !== ""));
+      .filter((f) => f.some((c) => c !== ""));
 
     if (!filas.length && encabezados.every((h) => !h)) return;
 
     tablas.push({
-      nombre: String(t.nombre || ("Tabla " + (tablas.length + 1))).trim() || ("Tabla " + (tablas.length + 1)),
+      nombre: String(t.nombre || t.name || ("Tabla " + (tablas.length + 1))).trim() || ("Tabla " + (tablas.length + 1)),
       encabezados,
       filas,
     });
   });
 
   if (!tablas.length) {
-    throw new Error("No se detectaron tablas ni datos estructurados en la imagen.");
+    throw new Error("No se detectaron tablas ni datos estructurados en el archivo.");
   }
 
   return {
-    titulo: String(obj.titulo_documento || obj.titulo || "tabla_extraida").trim() || "tabla_extraida",
+    titulo: String(obj.titulo_documento || obj.titulo || obj.title || "tabla_extraida").trim() || "tabla_extraida",
     tablas,
   };
 }
@@ -926,113 +1043,93 @@ async function extraerTablasDeImagenConIA({ buffer, mimeType, modo }) {
     throw new Error("No hay una clave de IA configurada en el archivo .env.");
   }
 
-  let reglaModo = "Extrae todas las tablas visibles con precisión de filas y columnas. Si la imagen tiene formularios, recibos o listas clave-valor sin bordes de cuadrícula, organízalos igualmente como tablas con columnas claras.";
+  let reglaModo = "Extrae todas las tablas visibles con precisión de filas y columnas. Si el archivo tiene formularios, recibos, facturas o listas clave-valor sin bordes de cuadrícula, organízalos igualmente como tablas con columnas claras.";
   if (modo === "estricto") {
-    reglaModo = "Extrae ÚNICAMENTE las tablas o cuadrículas de datos reales visibles en la imagen; omite títulos decorativos externos, logotipos y notas al pie.";
+    reglaModo = "Extrae ÚNICAMENTE las tablas o cuadrículas de datos reales visibles; omite títulos decorativos externos, logotipos y notas al pie.";
   } else if (modo === "todo") {
     reglaModo = "Extrae todas las tablas visibles y, si existen textos sueltos, títulos, observaciones o totales fuera de las tablas, agrégalos en una tabla adicional llamada 'Resumen y Textos'.";
   }
 
   const sistema =
     "Eres un especialista en extracción estructurada de datos desde imágenes y documentos PDF hacia hojas de cálculo Excel (.xlsx / .xls). " +
-    "Analiza cuidadosamente el documento o imagen y devuelve ÚNICAMENTE un objeto JSON válido (sin markdown ni explicaciones) con esta estructura exacta:\n" +
-    '{\n  "titulo_documento": "nombre_corto_descriptivo",\n  "tablas": [\n    {\n      "nombre": "Nombre Hoja",\n      "encabezados": ["Col 1", "Col 2"],\n      "filas": [["dato 1", "dato 2"]]\n    }\n  ]\n}\n' +
+    "Analiza minuciosamente cada fila, columna y celda y devuelve ÚNICAMENTE un objeto JSON válido respetando el esquema.\n" +
     "Reglas obligatorias:\n" +
     "1. Detecta todas las tablas de todas las páginas en orden de arriba a abajo y de izquierda a derecha. Si un PDF divide una misma tabla en varias páginas con los mismos encabezados, consolídala en una sola tabla continua.\n" +
-    "2. Todas las filas de una tabla deben tener la misma cantidad de columnas que 'encabezados'. Usa \"\" para celdas vacías.\n" +
-    "3. Si hay celdas combinadas visualmente, repite o ubica el valor en la columna correspondiente sin desplazar ni desalinear las demás columnas.\n" +
-    "4. Mantén códigos, NIT, cédulas, teléfonos, fechas y números con ceros a la izquierda como cadenas de texto (ej. \"00415\") para no perder ceros ni formato.\n" +
-    "5. NO inventes ni omitas filas o columnas. Respeta al 100% los textos y valores del documento.\n" +
+    "2. Todas las filas de una tabla deben tener exactamente la misma cantidad de columnas que 'encabezados'. Usa \"\" para celdas vacías sin desplazar las columnas siguientes.\n" +
+    "3. Si hay celdas combinadas visualmente, repite o ubica el valor en la columna correspondiente sin desalinear las demás columnas.\n" +
+    "4. Mantén códigos, NIT, cédulas, teléfonos, fechas y números con ceros a la izquierda como texto exacto (ej. \"00415\") para no perder ceros ni formato.\n" +
+    "5. NO inventes ni omitas filas o columnas. Respeta al 100% cada letra, símbolo y dígito del documento original.\n" +
     "6. " + reglaModo;
 
-  const modelos = Array.from(new Set([
-    modeloIA(),
-    "gemini-flash-lite-latest",
-    "gemini-3.1-flash-lite",
-    "gemini-3-flash-preview",
-    "gemini-2.5-flash"
-  ].filter(Boolean)));
-  let ultimoError = null;
-  const esPdf = mimeType === "application/pdf";
-
-  for (const modelo of modelos) {
-    try {
-      const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modelo)}:generateContent?key=${apiKey}`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          systemInstruction: { parts: [{ text: sistema }] },
-          contents: [{
-            parts: [
-              { inlineData: { mimeType: mimeType || "image/jpeg", data: base64Data } },
-              { text: esPdf
-                ? "Extrae todas las tablas y datos estructurados de este documento PDF en el JSON indicado."
-                : "Extrae todas las tablas y datos estructurados de esta imagen en el JSON indicado." }
-            ]
-          }],
-          generationConfig: {
-            maxOutputTokens: 16384,
-            temperature: 0.1,
-            responseMimeType: "application/json"
-          }
-        })
-      });
-
-      const data = await resp.json();
-      if (data && data.candidates && data.candidates[0] && data.candidates[0].content) {
-        const parts = data.candidates[0].content.parts || [];
-        const rawText = parts.map((p) => p.text || "").join("").trim();
-        if (rawText) {
-          return normalizarTablasExtraidas(extraerJsonLimpio(rawText));
+  const responseSchema = {
+    type: "OBJECT",
+    properties: {
+      titulo_documento: { type: "STRING" },
+      tablas: {
+        type: "ARRAY",
+        items: {
+          type: "OBJECT",
+          properties: {
+            nombre: { type: "STRING" },
+            encabezados: { type: "ARRAY", items: { type: "STRING" } },
+            filas: { type: "ARRAY", items: { type: "ARRAY", items: { type: "STRING" } } }
+          },
+          required: ["nombre", "encabezados", "filas"]
         }
       }
-      if (data && data.error) {
-        ultimoError = new Error(data.error.message || `Error con modelo ${modelo}`);
-      }
-    } catch (e) {
-      ultimoError = e;
-    }
+    },
+    required: ["titulo_documento", "tablas"]
+  };
+
+  const esPdf = mimeType === "application/pdf";
+  const pdfLocal = esPdf ? await extraerDatosPdfLocal(buffer, 6) : { texto: "", imagenes: [] };
+
+  const instruccionUsuario = esPdf
+    ? ("Extrae todas las tablas y datos estructurados de este documento PDF respetando exactamente filas, columnas y valores." +
+        (pdfLocal.texto.length > 20
+          ? "\n\nReferencia de texto digital extraído internamente del PDF (usa el PDF visual para alinear las columnas/celdas y este texto para confirmar al 100% cada cifra, NIT, código y palabra sin errores OCR):\n" + pdfLocal.texto.slice(0, 45000)
+          : ""))
+    : "Extrae todas las tablas y datos estructurados visibles en esta imagen respetando exactamente cada fila, columna, celda vacía y valor.";
+
+  const resVision = await llamarGeminiVision({
+    apiKey,
+    sistema,
+    partes: [
+      { inlineData: { mimeType: mimeType || "image/jpeg", data: base64Data } },
+      { text: instruccionUsuario }
+    ],
+    generationConfig: {
+      maxOutputTokens: 16384,
+      temperature: 0.1,
+      responseMimeType: "application/json",
+      responseSchema
+    },
+    etiqueta: "Imagen/PDF -> Excel"
+  });
+
+  if (resVision.texto) {
+    return normalizarTablasExtraidas(extraerJsonLimpio(resVision.texto));
   }
+  let ultimoError = resVision.ultimoError;
 
   // Fallback a preguntarIA (compatible OpenAI / endpoint configurado en .env)
   try {
     const partesFallback = [];
     if (esPdf) {
-      const { PDFParse } = require("pdf-parse");
-      const parser = new PDFParse({ data: buffer });
-      let textoPdf = "";
-      try {
-        const rt = await parser.getText();
-        textoPdf = (rt && rt.text ? rt.text : "").trim();
-        try {
-          const ri = await parser.getImage({ imageThreshold: 40 });
-          for (const pag of (ri && ri.pages) || []) {
-            for (const im of pag.images || []) {
-              if (im.data && partesFallback.length < 4) {
-                partesFallback.push({
-                  type: "image",
-                  source: { media_type: "image/png", data: Buffer.from(im.data).toString("base64") }
-                });
-              }
-            }
-          }
-        } catch (eImg) {}
-      } finally {
-        await parser.destroy().catch(() => {});
-      }
+      pdfLocal.imagenes.forEach((im) => partesFallback.push(im));
       partesFallback.push({
         type: "text",
-        text: "Extrae todas las tablas y datos estructurados de este PDF en JSON:\n\n" + textoPdf.slice(0, 48000)
+        text: "Extrae todas las tablas y datos estructurados de este PDF en JSON con clave 'tablas' [{nombre, encabezados, filas}]:\n\n" + pdfLocal.texto.slice(0, 48000)
       });
     } else {
       partesFallback.push({ type: "image", source: { media_type: mimeType || "image/jpeg", data: base64Data } });
-      partesFallback.push({ type: "text", text: "Extrae todas las tablas y datos estructurados de esta imagen en JSON." });
+      partesFallback.push({ type: "text", text: "Extrae todas las tablas y datos estructurados de esta imagen en JSON con clave 'tablas' [{nombre, encabezados, filas}]." });
     }
 
     const fallbackTexto = await preguntarIA({
       sistema,
       contenido: partesFallback,
-      maxTokens: 8192
+      maxTokens: 16384
     });
     if (fallbackTexto) {
       return normalizarTablasExtraidas(extraerJsonLimpio(fallbackTexto));
