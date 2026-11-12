@@ -49,10 +49,14 @@
     flex: 1;
   }
   .doc-pill {
+    position: relative !important;
+    overflow: hidden !important;
     all: unset;
     box-sizing: border-box;
     display: inline-flex;
     align-items: center;
+    position: relative !important;
+    overflow: hidden !important;
     gap: 6px;
     padding: 5px 12px;
     border-radius: 8px;
@@ -453,6 +457,11 @@
 
   /* Dropdown inteligente para categorías en Notas / Jaivaná */
   /* Desactivar cualquier destello/shine (::after/::before) en tabs, botones auxiliares y dropdown */
+  .doc-types-bar button::after, .doc-types-bar button::before,
+  .doc-types-bar button:hover::after, .doc-types-bar button:hover::before,
+  .doc-pill::after, .doc-pill::before,
+  .doc-pill:hover::after, .doc-pill:hover::before,
+  .doc-types-bar *::after, .doc-types-bar *::before,
   .tabs button::after, .tabs button::before,
   .tabs button:hover::after, .tabs button:hover::before,
   .tab::after, .tab::before,

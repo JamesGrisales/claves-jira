@@ -364,9 +364,30 @@ button:hover, .btn:hover{ background-position:100% 0; transform:translateY(-2px)
 button:active, .btn:active{ transform:translateY(0) scale(.97); box-shadow:inset 0 2px 4px rgba(0,0,0,.18), 0 3px 8px -4px rgba(var(--accent-rgb), .6); }
 button:focus-visible, .btn:focus-visible{ outline:none; box-shadow:0 0 0 4px rgba(var(--accent-rgb), .28), 0 8px 18px -8px rgba(var(--accent-rgb), .75); }
 button:disabled, .btn:disabled{ opacity:.5; cursor:not-allowed; transform:none; box-shadow:none; filter:grayscale(.25); }
-button::after, .btn::after{ content:''; position:absolute; top:0; bottom:0; left:0; width:55%; pointer-events:none;
+button:not(.tab):not(.doc-pill):not(.tipo-pill):not(.cat-more-btn):not(.cat-dropdown-item):not(.iconbtn):not(.pdf-tab):not(.theme-toggle):not(.nav-item):not(.acc-btn)::after,
+.btn:not(.tab):not(.doc-pill):not(.tipo-pill):not(.cat-more-btn):not(.cat-dropdown-item):not(.iconbtn):not(.pdf-tab):not(.theme-toggle):not(.nav-item):not(.acc-btn)::after{ content:''; position:absolute; top:0; bottom:0; left:0; width:55%; pointer-events:none;
   background:linear-gradient(105deg, transparent 20%, rgba(255,255,255,.34) 50%, transparent 80%); transform:translateX(-130%) skewX(-12deg); transition:transform .7s ease; }
-button:hover::after, .btn:hover::after{ transform:translateX(250%) skewX(-12deg); }
+button:not(.tab):not(.doc-pill):not(.tipo-pill):not(.cat-more-btn):not(.cat-dropdown-item):not(.iconbtn):not(.pdf-tab):not(.theme-toggle):not(.nav-item):not(.acc-btn):hover::after,
+.btn:not(.tab):not(.doc-pill):not(.tipo-pill):not(.cat-more-btn):not(.cat-dropdown-item):not(.iconbtn):not(.pdf-tab):not(.theme-toggle):not(.nav-item):not(.acc-btn):hover::after{ transform:translateX(250%) skewX(-12deg); }
+
+/* Desactivar cualquier pseudo-elemento de destello/glare en tabs, pills y dropdowns */
+.tab::after, .tab::before,
+.doc-pill::after, .doc-pill::before,
+.tipo-pill::after, .tipo-pill::before,
+.doc-types-bar *::after, .doc-types-bar *::before,
+.tabs *::after, .tabs *::before,
+.cat-dropdown-wrap *::after, .cat-dropdown-wrap *::before,
+.cat-dropdown-menu *::after, .cat-dropdown-menu *::before,
+.iconbtn::after, .iconbtn::before,
+.pdf-tab::after, .pdf-tab::before,
+.cyber-active-module-badge::after, .cyber-active-module-badge::before {
+  display: none !important;
+  content: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  transform: none !important;
+  animation: none !important;
+}
 
 button.secondary, .btn.secondary{ background:var(--panel); color:var(--text); border:1px solid var(--panel-edge); box-shadow:0 1px 2px rgba(15,35,80,.06), inset 0 -2px 0 rgba(var(--accent-rgb), .05); }
 button.secondary:hover, .btn.secondary:hover{ background:color-mix(in srgb, var(--accent) 9%, var(--panel)); color:var(--accent-dark); border-color:var(--accent); box-shadow:0 10px 20px -12px rgba(var(--accent-rgb), .6), 0 1px 2px rgba(15,35,80,.06); }
@@ -4583,9 +4604,7 @@ select option {
   gap: 8px !important;
   padding: 5px 14px 5px 10px !important;
   border-radius: 999px !important;
-  background: rgba(9, 14, 28, 0.78) !important;
-  backdrop-filter: blur(20px) saturate(1.8) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(1.8) !important;
+  background: #090e1c !important;
   border: 1px solid rgba(var(--accent-rgb), 0.45) !important;
   box-shadow: 0 4px 18px rgba(0, 0, 0, 0.5), 0 0 20px rgba(var(--accent-rgb), 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
   color: var(--text) !important;
@@ -6315,10 +6334,10 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
     <div class="topbar-left">
       <div class="topbar-ver-update-group" style="display:inline-flex; align-items:center; gap:6px; flex-wrap:wrap;">
         <!-- Insignia Holográfica de Versión del Sistema (Visible en todo el programa) -->
-        <div class="cyber-version-pill" data-title="Suite Bóveda Jira · Versión activa: <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.10.37') %>" title="Suite Bóveda Jira · Versión <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.10.37') %>">
+        <div class="cyber-version-pill" data-title="Suite Bóveda Jira · Versión activa: <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.10.38') %>" title="Suite Bóveda Jira · Versión <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.10.38') %>">
           <span class="cvp-icon"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></span>
           <span class="cvp-lbl">BUILD</span>
-          <strong class="cvp-ver"><%= typeof appVersion !== 'undefined' ? appVersion : 'v2.10.37' %></strong>
+          <strong class="cvp-ver"><%= typeof appVersion !== 'undefined' ? appVersion : 'v2.10.38' %></strong>
           <% if (typeof gitCommit !== 'undefined' && gitCommit) { %><span class="cvp-commit" style="font-size:10px; opacity:0.75; font-family:var(--mono); margin-left:3px;">(<%= gitCommit %>)</span><% } %>
           <span class="cvp-pulse"></span>
         </div>
@@ -8035,7 +8054,7 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
             </div>
             <div class="gub-info">
               <div class="gub-branch" style="color:#10b981;">✅ Sistema Sincronizado y Estable</div>
-              <div class="gub-desc">Tu versión actual (<%= typeof appVersion !== "undefined" ? appVersion : "v2.10.37" %>) cuenta con todas las mejoras y parches más recientes publicados en GitHub. No hay versiones ni cambios nuevos pendientes de descargar.</div>
+              <div class="gub-desc">Tu versión actual (<%= typeof appVersion !== "undefined" ? appVersion : "v2.10.38" %>) cuenta con todas las mejoras y parches más recientes publicados en GitHub. No hay versiones ni cambios nuevos pendientes de descargar.</div>
             </div>
           </div>
           <div style="padding: 12px 14px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; font-size: 12.5px; color: var(--muted); line-height: 1.45;">
@@ -8288,7 +8307,7 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
                 // Estado: Al día (0 cambios)
                 if (bguBadge) bguBadge.style.display = 'none';
                 if (modalIcon) modalIcon.textContent = '✨';
-                if (modalTitle) modalTitle.textContent = 'Sistema al Día (' + (data.version ? 'v' + data.version : '<%= typeof appVersion !== "undefined" ? appVersion : "v2.10.37" %>') + (data.commit ? ' · ' + data.commit : '') + ')';
+                if (modalTitle) modalTitle.textContent = 'Sistema al Día (' + (data.version ? 'v' + data.version : '<%= typeof appVersion !== "undefined" ? appVersion : "v2.10.38" %>') + (data.commit ? ' · ' + data.commit : '') + ')';
                 if (modalSubtitle) modalSubtitle.textContent = 'No existen versiones o cambios nuevos disponibles';
                 if (viewPending) viewPending.style.display = 'none';
                 if (viewUpToDate) viewUpToDate.style.display = 'block';
