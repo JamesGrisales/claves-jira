@@ -14,6 +14,123 @@
   .tab:active{ transform:translateY(0) scale(.96); }
   .tab.active{ background:linear-gradient(135deg, var(--accent), var(--accent-dark)); border-color:var(--accent); color:#fff; box-shadow:0 2px 8px rgba(47,158,143,.3); }
 
+  /* ---------- Categorización / Filtro por Tipo de Documento ---------- */
+  .doc-types-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    padding: 7px 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--panel-edge);
+    border-radius: 12px;
+    flex-wrap: wrap;
+  }
+  :root[data-theme="light"] .doc-types-bar {
+    background: rgba(0, 0, 0, 0.02);
+  }
+  .doc-type-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: var(--muted);
+    padding-right: 4px;
+    user-select: none;
+  }
+  .doc-type-pills {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    flex: 1;
+  }
+  .doc-pill {
+    all: unset;
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+    background: var(--panel);
+    border: 1px solid var(--panel-edge);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    user-select: none;
+  }
+  .doc-pill:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  }
+  .doc-pill:active {
+    transform: translateY(0) scale(0.97);
+  }
+  .doc-pill.active {
+    background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+    border-color: var(--accent);
+    color: #fff !important;
+    box-shadow: 0 2px 10px rgba(var(--accent-rgb, 0, 245, 255), 0.35);
+  }
+  .doc-pill.dp-pdf.active {
+    background: linear-gradient(135deg, #ef4444, #b91c1c) !important;
+    border-color: #ef4444 !important;
+    color: #fff !important;
+    box-shadow: 0 2px 12px rgba(239, 68, 68, 0.45) !important;
+  }
+  .doc-pill.dp-excel.active {
+    background: linear-gradient(135deg, #10b981, #059669) !important;
+    border-color: #10b981 !important;
+    color: #fff !important;
+    box-shadow: 0 2px 12px rgba(16, 185, 129, 0.45) !important;
+  }
+  .doc-pill.dp-sql.active {
+    background: linear-gradient(135deg, #0284c7, #0369a1) !important;
+    border-color: #38bdf8 !important;
+    color: #fff !important;
+    box-shadow: 0 2px 12px rgba(2, 132, 199, 0.45) !important;
+  }
+  .doc-pill.dp-texto.active {
+    background: linear-gradient(135deg, #64748b, #475569) !important;
+    border-color: #94a3b8 !important;
+    color: #fff !important;
+    box-shadow: 0 2px 12px rgba(100, 116, 139, 0.45) !important;
+  }
+  .dp-icon {
+    font-size: 13px;
+    line-height: 1;
+  }
+  .dp-txt {
+    font-size: 12px;
+  }
+  .dp-badge {
+    font-size: 10.5px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--muted);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+  }
+  :root[data-theme="light"] .dp-badge {
+    background: rgba(0, 0, 0, 0.06);
+    border-color: rgba(0, 0, 0, 0.08);
+    color: #4b5563;
+  }
+  .doc-pill.active .dp-badge {
+    background: rgba(0, 0, 0, 0.28) !important;
+    color: #ffffff !important;
+    border-color: transparent !important;
+  }
+
   #results{ display:flex; flex-direction:column; gap:8px; }
   .row{ position:relative; overflow:hidden; background:var(--panel); border:1px solid var(--panel-edge); border-radius:12px; padding:13px 15px; box-shadow:var(--shadow); transition: border-color .18s ease, transform .18s ease, box-shadow .18s ease, background-color .2s ease; }
   .row:hover{ border-color:var(--accent); transform:translateY(-1px); box-shadow:0 0 16px -2px rgba(var(--accent-rgb), 0.35), var(--shadow); }
@@ -1087,6 +1204,52 @@
     <% } %>
   </div>
 
+  <%
+    var conteoTipos = { pdf: 0, excel: 0, sql: 0, texto: 0 };
+    if (typeof notas !== 'undefined' && Array.isArray(notas)) {
+      notas.forEach(function(n) {
+        if (n.es_pdf) conteoTipos.pdf++;
+        else if (n.es_excel) conteoTipos.excel++;
+        else if (n.es_sql) conteoTipos.sql++;
+        else conteoTipos.texto++;
+      });
+    }
+  %>
+
+  <div class="doc-types-bar" id="docTypesBar">
+    <div class="doc-type-label">
+      <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+      <span>Tipo:</span>
+    </div>
+    <div class="doc-type-pills">
+      <button type="button" class="doc-pill" :class="{ active: tipoActivo === '__todos__' }" @click="setTipo('__todos__')" data-tipo="__todos__">
+        <span class="dp-icon">📁</span>
+        <span class="dp-txt">Todos</span>
+        <span class="dp-badge"><%= notas.length %></span>
+      </button>
+      <button type="button" class="doc-pill dp-pdf" :class="{ active: tipoActivo === 'pdf' }" @click="setTipo('pdf')" data-tipo="pdf" title="Ver únicamente documentos PDF">
+        <span class="dp-icon">📑</span>
+        <span class="dp-txt">PDFs</span>
+        <span class="dp-badge"><%= conteoTipos.pdf %></span>
+      </button>
+      <button type="button" class="doc-pill dp-excel" :class="{ active: tipoActivo === 'excel' }" @click="setTipo('excel')" data-tipo="excel" title="Ver únicamente hojas de cálculo Excel (XLSX, XLS)">
+        <span class="dp-icon">📊</span>
+        <span class="dp-txt">Excel (XLS/XLSX)</span>
+        <span class="dp-badge"><%= conteoTipos.excel %></span>
+      </button>
+      <button type="button" class="doc-pill dp-sql" :class="{ active: tipoActivo === 'sql' }" @click="setTipo('sql')" data-tipo="sql" title="Ver únicamente scripts y consultas SQL / Código">
+        <span class="dp-icon">⚡</span>
+        <span class="dp-txt">SQL / Código</span>
+        <span class="dp-badge"><%= conteoTipos.sql %></span>
+      </button>
+      <button type="button" class="doc-pill dp-texto" :class="{ active: tipoActivo === 'texto' }" @click="setTipo('texto')" data-tipo="texto" title="Ver únicamente notas de texto plano">
+        <span class="dp-icon">📝</span>
+        <span class="dp-txt">Texto</span>
+        <span class="dp-badge"><%= conteoTipos.texto %></span>
+      </button>
+    </div>
+  </div>
+
   <div class="tabs" id="tabs">
     <button type="button" class="tab" :class="{ active: catActiva === '__todas__' }" @click="setCategoria('__todas__')" data-cat="__todas__">Todas</button>
     <% 
@@ -1217,7 +1380,7 @@
 
 <div id="results">
   <% notas.forEach(function(n) { %>
-  <div class="row" data-id="<%= n.id %>" data-cat="<%= n.categoria.toLowerCase() %>" data-tit="<%= n.titulo.toLowerCase() %>" id="row-<%= n.id %>">
+  <div class="row" data-id="<%= n.id %>" data-cat="<%= n.categoria.toLowerCase() %>" data-tipo="<%= n.es_pdf ? 'pdf' : (n.es_excel ? 'excel' : (n.es_sql ? 'sql' : 'texto')) %>" data-tit="<%= n.titulo.toLowerCase() %>" id="row-<%= n.id %>">
     <div class="main" onclick="toggleRow(<%= n.id %>)">
       <div class="name">
         <span class="cat-badge"><%= n.categoria %></span>
@@ -1407,6 +1570,7 @@ window.notasAlpineApp = function() {
   return {
     q: '',
     catActiva: '__todas__',
+    tipoActivo: '__todos__',
     dropAbierto: false,
     filtroDrop: '',
     panelActivo: null,
@@ -1482,6 +1646,15 @@ window.notasAlpineApp = function() {
       }
     },
 
+    setTipo(tipo) {
+      this.tipoActivo = tipo;
+      tipoActivo = tipo;
+      if (typeof aplicarFiltros === 'function') {
+        aplicarFiltros();
+        this.actualizarVisibles();
+      }
+    },
+
     alEscribir() {
       textoBusqueda = (this.q || '').trim();
       if (typeof aplicarFiltros === 'function') {
@@ -1503,8 +1676,11 @@ window.notasAlpineApp = function() {
 
     get contadorTexto() {
       const plural = <%- JSON.stringify(C.plural) %>;
-      if (this.q || this.catActiva !== '__todas__') {
-        const suf = this.catActiva === '__todas__' ? '' : (' [' + this.catActiva.toUpperCase() + ']');
+      const tieneFiltro = this.q || this.catActiva !== '__todas__' || this.tipoActivo !== '__todos__';
+      if (tieneFiltro) {
+        let suf = '';
+        if (this.catActiva !== '__todas__') suf += ' [' + this.catActiva.toUpperCase() + ']';
+        if (this.tipoActivo !== '__todos__') suf += ' [' + this.tipoActivo.toUpperCase() + ']';
         return this.visibles + ' de ' + this.totalNotas + ' ' + plural + suf;
       }
       return this.totalNotas + ' ' + plural;
@@ -1520,6 +1696,7 @@ const SALTO = 120;          // si una coincidencia está más lejos que esto, se
 const AVISO_CARGAR_TODO = 60000; // "cargar todo" pide confirmación si faltan más líneas que esto
 
 let categoriaActiva = '__todas__';
+let tipoActivo = '__todos__';
 let textoBusqueda = '';
 let idsCoinciden = null;
 let seqBusqueda = 0;
@@ -3080,13 +3257,14 @@ function formatearNota(id){ cambiarModoNota(id, 'codigo'); }
 function deshacerFormato(id){ cambiarModoNota(id, 'plano'); }
 
 // ---------------------------------------------------------------------------
-// Filtros de la lista: apartados (pestañas) + búsqueda en el servidor
+// Filtros de la lista: apartados (pestañas) + tipo de documento + búsqueda en el servidor
 // ---------------------------------------------------------------------------
 const filasCache = Array.from(document.querySelectorAll('#results .row')).map(function(row){
   return {
     el: row,
     id: Number(row.dataset.id),
     cat: row.dataset.cat || '',
+    tipo: row.dataset.tipo || 'texto',
     tit: (row.dataset.tit || (row.querySelector('.titulo') ? row.querySelector('.titulo').textContent : '')).toLowerCase()
   };
 });
@@ -3097,13 +3275,26 @@ function aplicarFiltros(){
   for (let i = 0; i < filasCache.length; i++) {
     const row = filasCache[i];
     const okCat = categoriaActiva === '__todas__' || row.cat === categoriaActiva;
+    const okTipo = tipoActivo === '__todos__' || row.tipo === tipoActivo;
     const okLocal = !q || row.tit.indexOf(q) !== -1 || row.cat.indexOf(q) !== -1;
     const okServer = idsCoinciden !== null && idsCoinciden.has(row.id);
-    const ver = okCat && (okLocal || okServer);
+    const ver = okCat && okTipo && (okLocal || okServer);
     row.el.style.display = ver ? '' : 'none';
     if (ver) visibles++;
   }
-  document.getElementById('sinResultados').style.display = (filasCache.length && !visibles) ? 'block' : 'none';
+  const sinRes = document.getElementById('sinResultados');
+  if (sinRes) {
+    sinRes.style.display = (filasCache.length && !visibles) ? 'block' : 'none';
+    if (filasCache.length && !visibles) {
+      if (tipoActivo !== '__todos__' && categoriaActiva !== '__todas__') {
+        sinRes.textContent = 'No hay notas de tipo ' + tipoActivo.toUpperCase() + ' en la categoría seleccionada.';
+      } else if (tipoActivo !== '__todos__') {
+        sinRes.textContent = 'No hay notas de tipo ' + tipoActivo.toUpperCase() + '.';
+      } else {
+        sinRes.textContent = 'Ninguna coincidencia con la búsqueda.';
+      }
+    }
+  }
 }
 
 function buscarEnServidor(q){
@@ -3149,6 +3340,17 @@ document.getElementById('searchInput').addEventListener('input', function(e){
   aplicarFiltrosRapido();
   clearTimeout(debounceBusqueda);
   debounceBusqueda = setTimeout(function(){ buscarEnServidor(valor); }, 200);
+});
+
+document.querySelectorAll('#docTypesBar .doc-pill').forEach(function(pill){
+  pill.addEventListener('click', function(){
+    const t = pill.dataset.tipo || '__todos__';
+    tipoActivo = t;
+    document.querySelectorAll('#docTypesBar .doc-pill').forEach(function(p){
+      p.classList.toggle('active', (p.dataset.tipo || '__todos__') === t);
+    });
+    aplicarFiltros();
+  });
 });
 
 document.querySelectorAll('#tabs .tab').forEach(function(tab){
