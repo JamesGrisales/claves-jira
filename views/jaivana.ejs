@@ -19,7 +19,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-bottom: 12px;
+    margin-bottom: 16px;
     padding: 7px 12px;
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid var(--panel-edge);
@@ -1257,70 +1257,6 @@
       </button>
     </div>
   </div>
-
-  <div class="tabs" id="tabs">
-    <button type="button" class="tab" :class="{ active: catActiva === '__todas__' }" @click="setCategoria('__todas__')" data-cat="__todas__">Todas</button>
-    <% 
-      var LIMITE_PILLS = 6;
-      var pillsVisibles = categorias.slice(0, LIMITE_PILLS);
-      var pillsExtras = categorias.slice(LIMITE_PILLS);
-      var conteoCat = {};
-      if (typeof notas !== 'undefined' && Array.isArray(notas)) {
-        notas.forEach(function(n) {
-          var c = (n && n.categoria ? String(n.categoria).trim().toLowerCase() : 'general');
-          conteoCat[c] = (conteoCat[c] || 0) + 1;
-        });
-      }
-    %>
-    <% pillsVisibles.forEach(function(cat) { %>
-      <button type="button" class="tab" :class="{ active: catActiva === '<%= cat.toLowerCase() %>' }" @click="setCategoria('<%= cat.toLowerCase() %>')" data-cat="<%= cat.toLowerCase() %>"><%= cat %></button>
-    <% }); %>
-
-    <% if (pillsExtras.length > 0) { %>
-      <div class="cat-dropdown-wrap" @click.outside="dropAbierto = false" @keydown.escape.window="dropAbierto = false">
-        <button type="button" class="tab cat-more-btn" @click.stop="dropAbierto = !dropAbierto" :class="{ active: esCatExtra(catActiva) }" title="Ver más categorías">
-          <span x-text="nombreCatExtra(catActiva) || ('📂 Más categorías (<%= pillsExtras.length %>) ▾')">📂 Más categorías (<%= pillsExtras.length %>) ▾</span>
-        </button>
-        <div class="cat-dropdown-menu" x-show="dropAbierto" x-cloak style="display:none;">
-          <div class="cat-dropdown-header">
-            <span class="cdh-title">Más categorías (<%= pillsExtras.length %>)</span>
-            <button type="button" class="cdh-close" @click.stop="dropAbierto = false" title="Cerrar">✕</button>
-          </div>
-          <div class="cat-dropdown-search">
-            <svg class="cd-search-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-            <input type="text" x-model="filtroDrop" placeholder="Buscar categoría..." @keydown.escape.stop="dropAbierto = false">
-            <button type="button" class="cat-dropdown-clear" x-show="filtroDrop" @click.stop="filtroDrop = ''" title="Limpiar búsqueda">×</button>
-          </div>
-          <div class="cat-dropdown-list">
-            <% pillsExtras.forEach(function(cat) { 
-                var cKey = cat.toLowerCase();
-                var cant = conteoCat[cKey] || 0;
-            %>
-              <button type="button" 
-                      class="cat-dropdown-item" 
-                      :class="{ active: catActiva === '<%= cKey %>' }"
-                      x-show="!filtroDrop || '<%= cKey %>'.includes(filtroDrop.toLowerCase())"
-                      @click="setCategoria('<%= cKey %>')"
-                      title="<%= cat %> (<%= cant %> <%= cant === 1 ? 'nota' : 'notas' %>)">
-                <span class="cat-item-name">
-                  <span class="cat-item-dot"></span>
-                  <span class="cat-item-text"><%= cat %></span>
-                </span>
-                <span class="cat-item-meta">
-                  <span class="cat-count-badge"><%= cant %></span>
-                  <span class="cat-check" x-show="catActiva === '<%= cKey %>'">✓</span>
-                </span>
-              </button>
-            <% }); %>
-            <div class="cat-dropdown-empty" 
-                 x-show="filtroDrop && <%= JSON.stringify(pillsExtras.map(function(c){ return c.toLowerCase(); })) %>.filter(function(c){ return c.includes(filtroDrop.toLowerCase()); }).length === 0">
-              No se encontraron categorías
-            </div>
-          </div>
-        </div>
-      </div>
-    <% } %>
-  </div>
 </div>
 
 <div class="card add-card" id="uploadCard" :class="{ open: panelActivo === 'subir' }">
@@ -1684,10 +1620,9 @@ window.notasAlpineApp = function() {
 
     get contadorTexto() {
       const plural = <%- JSON.stringify(C.plural) %>;
-      const tieneFiltro = this.q || this.catActiva !== '__todas__' || this.tipoActivo !== '__todos__';
+      const tieneFiltro = this.q || this.tipoActivo !== '__todos__';
       if (tieneFiltro) {
         let suf = '';
-        if (this.catActiva !== '__todas__') suf += ' [' + this.catActiva.toUpperCase() + ']';
         if (this.tipoActivo !== '__todos__') suf += ' [' + this.tipoActivo.toUpperCase() + ']';
         return this.visibles + ' de ' + this.totalNotas + ' ' + plural + suf;
       }
@@ -3295,11 +3230,10 @@ function aplicarFiltros(){
   const q = (textoBusqueda || '').toLowerCase().trim();
   for (let i = 0; i < filasCache.length; i++) {
     const row = filasCache[i];
-    const okCat = categoriaActiva === '__todas__' || row.cat === categoriaActiva;
     const okTipo = tipoActivo === '__todos__' || row.tipo === tipoActivo;
     const okLocal = !q || row.tit.indexOf(q) !== -1 || row.cat.indexOf(q) !== -1;
     const okServer = idsCoinciden !== null && idsCoinciden.has(row.id);
-    const ver = okCat && okTipo && (okLocal || okServer);
+    const ver = okTipo && (okLocal || okServer);
     row.el.style.display = ver ? '' : 'none';
     if (ver) visibles++;
   }
@@ -3368,15 +3302,7 @@ document.querySelectorAll('#docTypesBar .doc-pill').forEach(function(pill){
   });
 });
 
-document.querySelectorAll('#tabs .tab').forEach(function(tab){
-  if (!tab.dataset.cat) return; // Ignorar botones auxiliares como el desplegable de más categorías
-  tab.addEventListener('click', function(){
-    document.querySelectorAll('#tabs .tab').forEach(function(t){ t.classList.remove('active'); });
-    tab.classList.add('active');
-    categoriaActiva = tab.dataset.cat;
-    aplicarFiltros();
-  });
-});
+
 
 // ---------------------------------------------------------------------------
 // Paneles de agregar / subir, eliminar todo
