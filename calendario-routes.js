@@ -27,6 +27,11 @@ module.exports = function (app, { pool, requireLogin }) {
          UNIQUE(usuario, fecha_inicio, fecha_fin)
        )`
     )
+    .then(() => pool.query(`
+      ALTER TABLE turnos_disponibilidad ADD COLUMN IF NOT EXISTS cedula TEXT DEFAULT '';
+      ALTER TABLE turnos_disponibilidad ADD COLUMN IF NOT EXISTS celular TEXT DEFAULT '';
+      ALTER TABLE turnos_disponibilidad ADD COLUMN IF NOT EXISTS mes TEXT DEFAULT 'OCTUBRE';
+    `))
     .catch((e) => console.error("Error creando tabla turnos_disponibilidad:", e.message));
 
 
@@ -174,22 +179,44 @@ module.exports = function (app, { pool, requireLogin }) {
   });
 
 
-  app.post("/api/disponibilidad/guardar-rol", requireLogin, json, async (req, res) => {
+  const MESES_ES_MAP = ['ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'];
+
+  function calcularMesNombre(fechaStr, fallback) {
+    if (typeof fechaStr === 'string' && /^\d{4}-\d{2}-\d{2}/.test(fechaStr)) {
+      const partes = fechaStr.split('-');
+      const m = parseInt(partes[1], 10);
+      if (m >= 1 && m <= 12) return MESES_ES_MAP[m - 1];
+    }
+    return fallback || 'NOVIEMBRE';
+  }
+
+  app.all("/api/disponibilidad/guardar-rol", requireLogin, json, async (req, res) => {
     try {
-      const { rol } = req.body || {};
+      const payload = req.body || req.query || {};
+      let rol = payload.rol;
+      if (!rol && (payload.usuario || payload.inicio)) {
+        rol = [payload];
+      }
       if (Array.isArray(rol)) {
         for (const t of rol) {
           if (!t.inicio || !t.fin || !t.usuario) continue;
+          const mesFinal = (t.mes && t.mes !== 'OCTUBRE') ? t.mes : calcularMesNombre(t.inicio, t.mes || 'NOVIEMBRE');
           await pool.query(`
             INSERT INTO turnos_disponibilidad (cedula, celular, usuario, fecha_inicio, fecha_fin, mes, activo, notas)
             VALUES ($1, $2, $3, $4::date, $5::date, $6, TRUE, $7)
             ON CONFLICT (usuario, fecha_inicio, fecha_fin) 
-            DO UPDATE SET cedula = EXCLUDED.cedula, celular = EXCLUDED.celular, activo = TRUE, mes = EXCLUDED.mes
-          `, [t.cedula || '', t.celular || '', t.usuario, t.inicio, t.fin, t.mes || 'OCTUBRE', t.notas || 'Rol Oficial']);
+            DO UPDATE SET 
+              cedula = COALESCE(NULLIF(EXCLUDED.cedula, ''), turnos_disponibilidad.cedula),
+              celular = COALESCE(NULLIF(EXCLUDED.celular, ''), turnos_disponibilidad.celular),
+              activo = TRUE, 
+              mes = EXCLUDED.mes,
+              notas = EXCLUDED.notas
+          `, [t.cedula || '', t.celular || '', t.usuario, t.inicio, t.fin, mesFinal, t.notas || 'Rol Oficial']);
         }
       }
-      res.json({ ok: true });
+      res.json({ ok: true, mensaje: "Turno guardado exitosamente." });
     } catch (err) {
+      console.error("Error guardando rol disponibilidad:", err.message);
       res.status(500).json({ ok: false, error: err.message });
     }
   });

@@ -1786,7 +1786,7 @@
             Rol Oficial de Disponibilidad y Guardias Técnicas
           </h2>
           <span style="background:rgba(245,158,11,0.2); color:#f59e0b; border:1px solid rgba(245,158,11,0.5); font-size:11.5px; font-weight:900; padding:3px 10px; border-radius:12px;">
-            Octubre 2026
+            Guardia 24/7
           </span>
         </div>
         <p style="margin:5px 0 0; font-size:13.5px; color:var(--muted);">
@@ -2083,9 +2083,18 @@
   function api(url, opt){
     opt = opt || {};
     var headers = Object.assign({ 'Content-Type': 'application/json' }, opt.headers || {});
-    var init = { method: opt.method || (opt.body ? 'POST' : 'GET'), headers: headers };
-    if (opt.body) init.body = JSON.stringify(opt.body);
+    var body = opt.body !== undefined ? opt.body : (opt.method === 'POST' || opt.rol ? opt : null);
+    var method = opt.method || (body ? 'POST' : 'GET');
+    var init = { method: method, headers: headers };
+    if (body) init.body = JSON.stringify(body);
     return fetch(url, init).then(function(r){
+      var ct = r.headers.get('content-type') || '';
+      if (!ct.includes('application/json')) {
+        return r.text().then(function(txt){
+          if (r.status === 401) throw new Error('Sesión expirada. Por favor recarga e inicia sesión.');
+          throw new Error('Error en el servidor (' + r.status + '): ' + (r.status === 404 ? 'Ruta no encontrada' : r.statusText));
+        });
+      }
       return r.json().then(function(d){
         if (!r.ok || d.ok === false) throw new Error(d.error || ('Error HTTP ' + r.status));
         return d;
@@ -2900,7 +2909,13 @@
       var fechasHtml = '<div style="font-weight:700; font-size:12.5px; color:var(--text);">' + fPretty + '</div>';
 
       // Mes Box
-      var mesHtml = '<span style="background:rgba(255,255,255,0.06); border:1px solid var(--panel-edge); font-size:11px; font-weight:800; padding:2px 8px; border-radius:6px; color:var(--muted);">' + (t.mes || 'OCTUBRE') + '</span>';
+      var mesNombre = t.mes;
+      if (!mesNombre || (mesNombre === 'OCTUBRE' && pIni.length > 1 && pIni[1] !== '10')) {
+        var mIdx = parseInt(pIni[1], 10);
+        var MESES_NOMBRES_TBL = ['ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'];
+        if (mIdx >= 1 && mIdx <= 12) mesNombre = MESES_NOMBRES_TBL[mIdx - 1];
+      }
+      var mesHtml = '<span style="background:rgba(255,255,255,0.06); border:1px solid var(--panel-edge); font-size:11px; font-weight:800; padding:2px 8px; border-radius:6px; color:var(--muted);">' + (mesNombre || 'OCTUBRE') + '</span>';
 
       // Acciones Box: Botón Eliminar
       var safeNombre = (t.usuario || '').replace(/'/g, "\'");
@@ -2966,8 +2981,17 @@
         return;
       }
 
+      var MESES_NOMBRES = ['ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'];
+      var pMes = inicio.split('-');
+      var mesNombre = (pMes.length > 1 && parseInt(pMes[1], 10) >= 1 && parseInt(pMes[1], 10) <= 12)
+        ? MESES_NOMBRES[parseInt(pMes[1], 10) - 1]
+        : 'NOVIEMBRE';
+
       api('/api/disponibilidad/guardar-rol', {
-        rol: [{ cedula: cedula, celular: celular, usuario: usuario, inicio: inicio, fin: fin, mes: 'OCTUBRE', notas: 'Rol Oficial' }]
+        method: 'POST',
+        body: {
+          rol: [{ cedula: cedula, celular: celular, usuario: usuario, inicio: inicio, fin: fin, mes: mesNombre, notas: 'Rol Oficial' }]
+        }
       }).then(function(res){
         if (res && res.ok) {
           msgBox.style.display = 'block';
