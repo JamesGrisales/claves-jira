@@ -6114,7 +6114,7 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
   bottom: 24px !important;
   right: 24px !important;
   z-index: 9999999 !important;
-  display: flex !important;
+  display: none !important;
   align-items: center !important;
   gap: 14px !important;
   max-width: 490px !important;
@@ -6124,9 +6124,12 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
   border: 1px solid rgba(245, 158, 11, 0.6) !important;
   border-radius: 16px !important;
   box-shadow: 0 16px 40px -8px rgba(0, 0, 0, 0.8), 0 0 30px rgba(245, 158, 11, 0.35) !important;
-  animation: baiSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) !important;
   color: var(--text) !important;
   font-family: var(--sans) !important;
+}
+.banner-inactividad.bai-visible {
+  display: flex !important;
+  animation: baiSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 @keyframes baiSlideIn {
   from { opacity: 0; transform: translateY(20px) scale(0.96); }
@@ -6547,10 +6550,10 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
     <div class="topbar-left">
       <div class="topbar-ver-update-group" style="display:inline-flex; align-items:center; gap:6px; flex-wrap:wrap;">
         <!-- Insignia Holográfica de Versión del Sistema (Visible en todo el programa) -->
-        <div class="cyber-version-pill" data-title="Suite Bóveda Jira · Versión activa: <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.10.43') %>" title="Suite Bóveda Jira · Versión <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.10.43') %>">
+        <div class="cyber-version-pill" data-title="Suite Bóveda Jira · Versión activa: <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.10.44') %>" title="Suite Bóveda Jira · Versión <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.10.44') %>">
           <span class="cvp-icon"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></span>
           <span class="cvp-lbl">BUILD</span>
-          <strong class="cvp-ver"><%= typeof appVersion !== 'undefined' ? appVersion : 'v2.10.43' %></strong>
+          <strong class="cvp-ver"><%= typeof appVersion !== 'undefined' ? appVersion : 'v2.10.44' %></strong>
           <% if (typeof gitCommit !== 'undefined' && gitCommit) { %><span class="cvp-commit" style="font-size:10px; opacity:0.75; font-family:var(--mono); margin-left:3px;">(<%= gitCommit %>)</span><% } %>
           <span class="cvp-pulse"></span>
         </div>
@@ -9413,8 +9416,8 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
   var brsTxt = document.getElementById('brsTxt');
   var brsDot = document.getElementById('brsDot');
 
-  // Umbral de inactividad real: 30 minutos sin ninguna interacción del usuario
-  var TIEMPO_INACTIVIDAD_MS = 30 * 60 * 1000;
+  // Umbral de inactividad: 45 minutos continuos sin ninguna interacción del usuario
+  var TIEMPO_INACTIVIDAD_MS = 45 * 60 * 1000;
   var ultimaActividad = Date.now();
   var estadoInactivo = false;
   var timerInactividad = null;
@@ -9444,7 +9447,7 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
     if (bannerAviso) {
       var descEl = bannerAviso.querySelector('.bai-desc');
       if (descEl && motivo) descEl.textContent = motivo;
-      bannerAviso.style.display = 'flex';
+      bannerAviso.classList.add('bai-visible');
     }
   }
 
@@ -9460,20 +9463,20 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
       brsDot.classList.add('brs-online');
     }
     if (bannerAviso) {
-      bannerAviso.style.display = 'none';
+      bannerAviso.classList.remove('bai-visible');
     }
   }
 
   function reiniciarTimerInactividad() {
     if (timerInactividad) clearTimeout(timerInactividad);
     timerInactividad = setTimeout(function(){
-      marcarInactivo('El programa estuvo inactivo por más de 30 minutos. Si alguna función no responde, haz clic en Recargar para reactivar el sistema.');
+      marcarInactivo('El programa estuvo inactivo por más de 45 minutos. Si alguna función no responde, haz clic en Recargar para reactivar el sistema.');
     }, TIEMPO_INACTIVIDAD_MS);
   }
 
   function registrarActividad() {
     var ahora = Date.now();
-    // Si estaba inactivo y el usuario vuelve a interactuar, reactivar inmediatamente
+    // Si estaba marcado como inactivo y el usuario vuelve a interactuar, reactivar y ocultar de inmediato
     if (estadoInactivo) {
       marcarActivo();
     }
@@ -9488,30 +9491,13 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
     }
   }
 
-  // Interceptor global de fetch: captura SOLO respuestas HTTP 401 reales en acciones del usuario
-  if (window.fetch) {
-    var originalFetch = window.fetch;
-    window.fetch = function(){
-      var args = arguments;
-      var url = (args && args[0]) ? String(args[0]) : '';
-      return originalFetch.apply(this, args).then(function(response){
-        // Excluir llamadas de sondeo secundario o verificación periódica
-        var esSegundoPlano = url.indexOf('/api/git/') !== -1 || url.indexOf('/api/sesion/') !== -1 || url.indexOf('/api/disponibilidad/') !== -1;
-        if (!esSegundoPlano && response && response.status === 401) {
-          marcarInactivo('Tu sesión se ha pausado por tiempo de inactividad. Haz clic en Recargar para reactivar el sistema.');
-        }
-        return response;
-      });
-    };
-  }
-
   // Escuchar TODOS los eventos de interacción física del usuario
   var eventosActividad = ['mousemove', 'pointermove', 'mousedown', 'keydown', 'wheel', 'touchstart', 'scroll', 'click'];
   for (var i = 0; i < eventosActividad.length; i++) {
     window.addEventListener(eventosActividad[i], registrarActividad, { passive: true });
   }
 
-  // Al volver a la pestaña tras más de 30 minutos de ausencia real
+  // Al volver a la pestaña tras más de 45 minutos de ausencia real
   document.addEventListener('visibilitychange', function(){
     if (!document.hidden) {
       var tiempoAusente = Date.now() - ultimaActividad;
@@ -9537,7 +9523,7 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
   if (btnBaiClose && bannerAviso) {
     btnBaiClose.addEventListener('click', function(e){
       e.stopPropagation();
-      bannerAviso.style.display = 'none';
+      bannerAviso.classList.remove('bai-visible');
       marcarActivo();
     });
   }
