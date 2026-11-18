@@ -58,7 +58,7 @@ const { encryptValue, decryptValue } = require("./crypto-vault");
 const multer = require("multer");
 const { procesarArchivo } = require("./procesar-archivo");
 const { leerArchivoClaves, leerTextoClaves, compararConBd, normalizar } = require("./importar-claves");
-const { esExcel, leerLibro, hojasATexto } = require("./excel-hoja");
+const { esExcel, leerLibro, hojasATexto, guardarLibro } = require("./excel-hoja");
 const biometria = require("./biometria-service");
 
 // Excel (.xlsx, .xlsm, .xls, .csv) se guarda y se muestra como hoja de cálculo
@@ -1470,6 +1470,44 @@ function crearRutasDeSubida({ base, tabla, tablaImg }) {
     } catch (error) {
       console.error("Error leyendo hoja de cálculo:", error.message);
       res.status(500).json({ error: "No fue posible leer la hoja de cálculo." });
+    }
+  });
+
+  // Guardar cambios editados en una hoja de cálculo Excel (agrega columnas, filas o edita celdas)
+  app.post(base + "/:id/guardar-hoja", requireLogin, express.json({ limit: "50mb" }), async (req, res) => {
+    try {
+      if (!/^\d+$/.test(req.params.id)) return res.status(400).json({ ok: false, error: "Id inválido." });
+
+      const { hojas } = req.body || {};
+      if (!Array.isArray(hojas) || !hojas.length) {
+        return res.status(400).json({ ok: false, error: "Estructura de hojas inválida o vacía." });
+      }
+
+      const { rows } = await pool.query(
+        `SELECT archivo_tipo, archivo_nombre FROM ${tabla} WHERE id = $1`,
+        [req.params.id]
+      );
+      const row = rows[0];
+      if (!row || !esExcel(row.archivo_tipo)) {
+        return res.status(404).json({ ok: false, error: "Esta nota no corresponde a una hoja de cálculo editable." });
+      }
+
+      const nuevoBuffer = guardarLibro(hojas, row.archivo_tipo);
+      const nuevoTexto = hojasATexto(hojas);
+
+      await pool.query(
+        `UPDATE ${tabla} 
+         SET archivo_datos = $1, contenido = $2, updated_at = NOW() 
+         WHERE id = $3`,
+        [nuevoBuffer, nuevoTexto, req.params.id]
+      );
+
+      memCache.del(`${tabla}:list`);
+
+      res.json({ ok: true, mensaje: "Hoja de cálculo actualizada y guardada correctamente." });
+    } catch (error) {
+      console.error("Error guardando hoja de cálculo (" + base + "):", error.message);
+      res.status(500).json({ ok: false, error: "No fue posible guardar la hoja de cálculo: " + error.message });
     }
   });
 

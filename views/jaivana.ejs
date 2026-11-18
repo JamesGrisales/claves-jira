@@ -432,10 +432,20 @@
   /* ---------- Hojas de cálculo (se ven como Excel) ---------- */
   .excel-badge{ font-size:10.5px; font-weight:800; letter-spacing:.05em; color:#fff; background:linear-gradient(135deg,#21a366,#107c41); padding:2px 7px; border-radius:5px; }
   .xl-box{ display:flex; flex-direction:column; background:#fff; color:#1f2328; border:1px solid #bfc5cc; border-radius:9px; overflow:hidden; max-height:68vh; min-height:120px; resize:vertical; font-family:Calibri,'Segoe UI',Arial,sans-serif; font-size:13px; }
-  .xl-barra{ display:flex; align-items:center; gap:8px; background:#f3f3f3; border-bottom:1px solid #d0d0d0; padding:5px 8px; flex-shrink:0; }
-  .xl-ref{ min-width:58px; text-align:center; background:#fff; border:1px solid #c6c6c6; padding:2px 8px; font-size:12px; }
-  .xl-fx{ color:#7a7a7a; font-style:italic; font-family:'Times New Roman',serif; font-size:13px; }
-  .xl-valor{ flex:1; min-width:0; background:#fff; border:1px solid #c6c6c6; padding:2px 8px; height:20px; line-height:20px; font-size:12.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .xl-barra{ display:flex; align-items:center; gap:8px; background:#f3f3f3; border-bottom:1px solid #d0d0d0; padding:6px 10px; flex-shrink:0; flex-wrap:wrap; }
+  .xl-ref{ min-width:58px; text-align:center; background:#fff; border:1px solid #c6c6c6; padding:3px 8px; font-size:12px; font-weight:700; border-radius:4px; color:#1f2328; }
+  .xl-fx{ color:#7a7a7a; font-style:italic; font-family:'Times New Roman',serif; font-size:13px; font-weight:700; user-select:none; }
+  .xl-valor{ flex:1; min-width:140px; background:#fff; border:1px solid #c6c6c6; padding:3px 8px; height:24px; line-height:20px; font-size:12.5px; border-radius:4px; color:#1f2328; outline:none; transition:border-color 0.15s; }
+  .xl-valor:focus{ border-color:#107c41; box-shadow:0 0 0 2px rgba(16,124,65,0.2); }
+  .xl-herramientas{ display:inline-flex; align-items:center; gap:6px; flex-wrap:wrap; margin-left:auto; }
+  .xl-btn{ display:inline-flex; align-items:center; gap:4px; font-size:11.5px; font-weight:700; padding:3px 10px; border-radius:6px; border:1px solid #c6c6c6; background:#ffffff; color:#1f2328; cursor:pointer; transition:all 0.15s ease; user-select:none; height:26px; }
+  .xl-btn:hover{ background:#e8f5e9; border-color:#21a366; color:#107c41; transform:translateY(-1px); }
+  .xl-btn.xl-btn-save{ background:#107c41; color:#fff; border-color:#0b592e; font-weight:800; box-shadow:0 1px 3px rgba(0,0,0,0.15); }
+  .xl-btn.xl-btn-save:hover{ background:#0e6b37; }
+  .xl-btn.xl-btn-save.xl-dirty{ background:linear-gradient(135deg, #f59e0b, #d97706); border-color:#b45309; color:#000; animation:xlPulse 1.5s infinite; }
+  @keyframes xlPulse { 0%, 100% { box-shadow:0 0 4px rgba(245,158,11,0.5); } 50% { box-shadow:0 0 12px rgba(245,158,11,0.9); } }
+  .xl-cambios-badge{ font-size:11px; font-weight:700; color:#d97706; background:#fef3c7; border:1px solid #fde68a; padding:2px 8px; border-radius:4px; }
+  .xl-table td.xl-editing{ outline:2px solid #2563eb !important; background:#eff6ff !important; }
   .xl-aviso{ background:#fff8e1; color:#6b5300; font-size:12px; padding:4px 10px; border-bottom:1px solid #f0e2a8; flex-shrink:0; }
   .xl-scroll{ flex:1; min-height:60px; overflow:auto; background:#fff; }
   .xl-table{ border-collapse:separate; border-spacing:0; table-layout:fixed; }
@@ -1413,7 +1423,11 @@
             <div><label>Apartado (categoría)</label><input type="text" name="categoria" value="<%= n.categoria %>" required></div>
             <div><label>Título</label><input type="text" name="titulo" value="<%= n.titulo %>" required></div>
           </div>
-          <% if (n.es_excel) { %><p class="sub" style="margin:10px 0 0;">Aquí puedes cambiar el apartado y el título. Para cambiar los datos de la hoja, sube el archivo de Excel de nuevo.</p><% } %>
+          <% if (n.es_excel) { %>
+          <div style="background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.3); border-radius:8px; padding:10px 12px; margin-top:12px; font-size:12.5px; color:var(--text);">
+            <strong style="color:#10b981;">📊 Hoja de Cálculo Activa:</strong> Puedes cambiar el apartado y el título aquí. Para editar las celdas, agregar columnas o información adicional al Excel, abre la nota y usa la barra de herramientas del visor: <strong>«➕ Columna»</strong>, <strong>«➕ Fila»</strong> y <strong>«💾 Guardar Hoja»</strong>.
+          </div>
+          <% } %>
           <div class="<%= n.es_excel ? 'solo-texto-oculto' : '' %>" style="margin-top:10px;">
             <label style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;"><span>Contenido (Editor SQL)</span><span style="font-size:11px; font-weight:normal; color:var(--muted); font-family:var(--mono);"><kbd style="font-family:var(--mono); font-size:10px; padding:1px 5px; border-radius:4px; border:1px solid var(--panel-edge); background:var(--panel);">Tab</kbd> para sangría · Mitad de pantalla</span></label>
             <div class="nt-ed-frame">
@@ -2043,7 +2057,17 @@ function mapaCombinadas(h){
 function construirExcel(id, cont){
   cont.className = 'xl-box';
   cont.innerHTML =
-    '<div class="xl-barra"><div class="xl-ref" id="xlref-' + id + '">A1</div><div class="xl-fx">fx</div><div class="xl-valor" id="xlval-' + id + '"></div></div>' +
+    '<div class="xl-barra">' +
+      '<div class="xl-ref" id="xlref-' + id + '">A1</div>' +
+      '<div class="xl-fx">fx</div>' +
+      '<input type="text" class="xl-valor" id="xlval-' + id + '" placeholder="Selecciona o haz doble clic en una celda para editar...">' +
+      '<div class="xl-herramientas">' +
+        '<button type="button" class="xl-btn" onclick="event.stopPropagation(); agregarColumnaExcel(' + id + ')" title="Agregar una nueva columna al Excel">➕ Columna</button>' +
+        '<button type="button" class="xl-btn" onclick="event.stopPropagation(); agregarFilaExcel(' + id + ')" title="Agregar una nueva fila vacía al final">➕ Fila</button>' +
+        '<button type="button" class="xl-btn xl-btn-save" id="xlsave-' + id + '" onclick="event.stopPropagation(); guardarHojaExcel(' + id + ')" title="Guardar cambios permanentemente en el archivo Excel">💾 Guardar Hoja</button>' +
+        '<span class="xl-cambios-badge" id="xlbadge-' + id + '" style="display:none;">• Cambios pendientes</span>' +
+      '</div>' +
+    '</div>' +
     '<div class="xl-aviso" id="xlaviso-' + id + '" style="display:none"></div>' +
     '<div class="xl-scroll"></div>' +
     '<div class="xl-hojas"></div>';
@@ -2056,16 +2080,223 @@ function construirExcel(id, cont){
     const td = e.target.closest ? e.target.closest('td[data-r]') : null;
     if (td) seleccionarCelda(id, Number(td.dataset.r), Number(td.dataset.c), td);
   });
+  sc.addEventListener('dblclick', function(e){
+    const td = e.target.closest ? e.target.closest('td[data-r]') : null;
+    if (td) editarCeldaDirecta(id, Number(td.dataset.r), Number(td.dataset.c), td);
+  });
+
+  const inpVal = cont.querySelector('#xlval-' + id);
+  if (inpVal) {
+    inpVal.addEventListener('input', function(){
+      actualizarCeldaDesdeInput(id, inpVal.value);
+    });
+    inpVal.addEventListener('keydown', function(e){
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        inpVal.blur();
+      }
+    });
+  }
 }
 
 function seleccionarCelda(id, r, c, td){
   const d = notasData[id];
+  if (!d || !d.xl) return;
   const cont = document.getElementById('texto-' + id);
-  cont.querySelectorAll('.xl-sel').forEach(function(e){ e.classList.remove('xl-sel'); });
+  if (cont) cont.querySelectorAll('.xl-sel').forEach(function(e){ e.classList.remove('xl-sel'); });
   if (td) td.classList.add('xl-sel');
+  d.xl.celdaSel = { r: r, c: c };
   const h = d.xl.hojas[d.xl.activa];
-  document.getElementById('xlref-' + id).textContent = letraColumna(c) + (r + 1);
-  document.getElementById('xlval-' + id).textContent = (h.filas[r] && h.filas[r][c]) || '';
+  const refEl = document.getElementById('xlref-' + id);
+  const valEl = document.getElementById('xlval-' + id);
+  if (refEl) refEl.textContent = letraColumna(c) + (r + 1);
+  const v = (h && h.filas && h.filas[r] && h.filas[r][c]) || '';
+  if (valEl) {
+    if (valEl.tagName === 'INPUT') valEl.value = v;
+    else valEl.textContent = v;
+  }
+}
+
+function actualizarCeldaDesdeInput(id, valor){
+  const d = notasData[id];
+  if (!d || !d.xl) return;
+  const h = d.xl.hojas[d.xl.activa];
+  const sel = d.xl.celdaSel || { r: 0, c: 0 };
+  while (h.filas.length <= sel.r) {
+    h.filas.push(new Array(h.nCols || 1).fill(''));
+  }
+  while (h.filas[sel.r].length <= sel.c) {
+    h.filas[sel.r].push('');
+  }
+  h.filas[sel.r][sel.c] = valor;
+  const cont = document.getElementById('texto-' + id);
+  if (cont) {
+    const td = cont.querySelector('td[data-r="' + sel.r + '"][data-c="' + sel.c + '"]');
+    if (td) td.textContent = valor;
+  }
+  marcarCambiosExcel(id, true);
+}
+
+function editarCeldaDirecta(id, r, c, td){
+  const d = notasData[id];
+  if (!d || !d.xl || !td) return;
+  seleccionarCelda(id, r, c, td);
+  td.contentEditable = "true";
+  td.classList.add('xl-editing');
+  td.focus();
+
+  function terminarEdicion(){
+    td.contentEditable = "false";
+    td.classList.remove('xl-editing');
+    const nuevoValor = td.textContent.trim();
+    const h = d.xl.hojas[d.xl.activa];
+    while (h.filas.length <= r) {
+      h.filas.push(new Array(h.nCols || 1).fill(''));
+    }
+    while (h.filas[r].length <= c) {
+      h.filas[r].push('');
+    }
+    if (h.filas[r][c] !== nuevoValor) {
+      h.filas[r][c] = nuevoValor;
+      const valEl = document.getElementById('xlval-' + id);
+      if (valEl) {
+        if (valEl.tagName === 'INPUT') valEl.value = nuevoValor;
+        else valEl.textContent = nuevoValor;
+      }
+      marcarCambiosExcel(id, true);
+    }
+    td.removeEventListener('blur', terminarEdicion);
+    td.removeEventListener('keydown', onKeyDown);
+  }
+
+  function onKeyDown(e){
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      terminarEdicion();
+    } else if (e.key === 'Escape') {
+      const h = d.xl.hojas[d.xl.activa];
+      td.textContent = (h.filas && h.filas[r] && h.filas[r][c]) || '';
+      terminarEdicion();
+    }
+  }
+
+  td.addEventListener('blur', terminarEdicion);
+  td.addEventListener('keydown', onKeyDown);
+}
+
+function agregarColumnaExcel(id){
+  const d = notasData[id];
+  if (!d || !d.xl) return;
+  const h = d.xl.hojas[d.xl.activa];
+  const colIndex = h.nCols || 0;
+  const sugerencia = 'Columna ' + letraColumna(colIndex);
+  const nombreCol = prompt('Escribe el nombre o encabezado para la nueva columna:', sugerencia);
+  if (nombreCol === null) return; // cancelado
+  const colTit = nombreCol.trim() || sugerencia;
+
+  if (!h.filas || h.filas.length === 0) {
+    h.filas = [[colTit]];
+    h.nCols = 1;
+  } else {
+    h.filas.forEach(function(fila, idx){
+      fila.push(idx === 0 ? colTit : '');
+    });
+    h.nCols = Math.max(h.nCols + 1, h.filas[0].length);
+  }
+
+  if (!h.anchos) h.anchos = [];
+  h.anchos.push(Math.max(14, colTit.length + 4));
+
+  marcarCambiosExcel(id, true);
+  dibujarHoja(id);
+  showToast('Columna «' + colTit + '» agregada. Clic en «💾 Guardar Hoja» para aplicar.');
+}
+
+function agregarFilaExcel(id){
+  const d = notasData[id];
+  if (!d || !d.xl) return;
+  const h = d.xl.hojas[d.xl.activa];
+  const nCols = h.nCols || (h.filas[0] ? h.filas[0].length : 1);
+  const nuevaFila = new Array(nCols).fill('');
+  if (!h.filas) h.filas = [];
+  h.filas.push(nuevaFila);
+
+  marcarCambiosExcel(id, true);
+  dibujarHoja(id);
+  showToast('Fila vacía agregada al final de la hoja.');
+}
+
+function marcarCambiosExcel(id, dirty){
+  const d = notasData[id];
+  if (!d || !d.xl) return;
+  d.xl.dirty = !!dirty;
+  const btnSave = document.getElementById('xlsave-' + id);
+  const badge = document.getElementById('xlbadge-' + id);
+  if (btnSave) {
+    if (dirty) {
+      btnSave.classList.add('xl-dirty');
+      btnSave.textContent = '💾 Guardar Hoja *';
+    } else {
+      btnSave.classList.remove('xl-dirty');
+      btnSave.textContent = '💾 Guardar Hoja';
+    }
+  }
+  if (badge) {
+    badge.style.display = dirty ? 'inline-block' : 'none';
+  }
+}
+
+function guardarHojaExcel(id){
+  const d = notasData[id];
+  if (!d || !d.xl) return;
+  const btnSave = document.getElementById('xlsave-' + id);
+  const badge = document.getElementById('xlbadge-' + id);
+  if (btnSave) {
+    btnSave.disabled = true;
+    btnSave.textContent = 'Guardando...';
+  }
+
+  fetch(RUTA_BASE + '/' + id + '/guardar-hoja', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ hojas: d.xl.hojas })
+  })
+  .then(function(r){
+    return r.json().then(function(j){
+      if (!r.ok || !j.ok) throw new Error(j.error || ('HTTP ' + r.status));
+      return j;
+    });
+  })
+  .then(function(res){
+    if (btnSave) {
+      btnSave.disabled = false;
+      btnSave.classList.remove('xl-dirty');
+      btnSave.textContent = '💾 Guardar Hoja';
+    }
+    marcarCambiosExcel(id, false);
+    if (badge) {
+      badge.style.display = 'inline-block';
+      badge.textContent = '✔ Guardado';
+      badge.style.color = '#10b981';
+      badge.style.background = '#ecfdf5';
+      badge.style.borderColor = '#a7f3d0';
+      setTimeout(function(){
+        badge.style.display = 'none';
+        badge.textContent = '• Cambios pendientes';
+        badge.style.color = '';
+        badge.style.background = '';
+        badge.style.borderColor = '';
+      }, 3500);
+    }
+    showToast('✔ Hoja de cálculo actualizada y guardada correctamente.');
+  })
+  .catch(function(err){
+    if (btnSave) {
+      btnSave.disabled = false;
+      btnSave.textContent = '💾 Guardar Hoja *';
+    }
+    alert('Error guardando la hoja de cálculo: ' + err.message);
+  });
 }
 
 function htmlFilaExcel(h, mm, hits, r){
@@ -2120,7 +2351,11 @@ function dibujarHoja(id){
   }
 
   document.getElementById('xlref-' + id).textContent = 'A1';
-  document.getElementById('xlval-' + id).textContent = '';
+  const valEl = document.getElementById('xlval-' + id);
+  if (valEl) {
+    if (valEl.tagName === 'INPUT') valEl.value = '';
+    else valEl.textContent = '';
+  }
   x.dibujadas = 0;
 
   if (!h.filas.length) {

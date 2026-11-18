@@ -163,4 +163,47 @@ function hojasATexto(hojas) {
   return partes.join("\n").trim();
 }
 
-module.exports = { esExcel, leerLibro, hojasATexto };
+// Genera un Buffer binario de Excel (.xlsx, .xls o .csv) a partir de la estructura de hojas
+function guardarLibro(hojas, formato = "xlsx") {
+  const wb = XLSX.utils.book_new();
+  const nombresUsados = new Set();
+
+  (hojas || []).forEach(function (h, idx) {
+    let nombre = String(h.nombre || `Hoja${idx + 1}`).trim().slice(0, 31).replace(/[\\/?*[\]]/g, "_") || `Hoja${idx + 1}`;
+    let contador = 1;
+    let baseNombre = nombre;
+    while (nombresUsados.has(nombre.toLowerCase())) {
+      nombre = `${baseNombre.slice(0, 27)}_${contador++}`;
+    }
+    nombresUsados.add(nombre.toLowerCase());
+
+    const filas = (h.filas || []).map(function (fila) {
+      return (fila || []).map(function (c) {
+        if (c === null || c === undefined) return "";
+        return c;
+      });
+    });
+
+    const ws = XLSX.utils.aoa_to_sheet(filas.length ? filas : [[""]]);
+
+    if (h.anchos && Array.isArray(h.anchos)) {
+      ws["!cols"] = h.anchos.map(function (w) {
+        return { wch: w || 14 };
+      });
+    }
+
+    if (h.combinadas && Array.isArray(h.combinadas)) {
+      ws["!merges"] = h.combinadas.map(function (m) {
+        return { s: { r: m[0], c: m[1] }, e: { r: m[2], c: m[3] } };
+      });
+    }
+
+    XLSX.utils.book_append_sheet(wb, ws, nombre);
+  });
+
+  const ext = String(formato || "xlsx").toLowerCase().replace(".", "");
+  const bookType = (ext === "xls") ? "biff8" : ((ext === "csv") ? "csv" : "xlsx");
+  return XLSX.write(wb, { type: "buffer", bookType });
+}
+
+module.exports = { esExcel, leerLibro, hojasATexto, guardarLibro };
