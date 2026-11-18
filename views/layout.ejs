@@ -1949,13 +1949,14 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5) !important;
 }
 
-:root[data-nav-style="cyber-dock"] .topbar-right #topbarDbDropdown {
+:root[data-nav-style="cyber-dock"] .topbar-right .topbar-right-subrow {
   order: 2 !important;
   align-self: flex-end !important;
   margin-top: 1px !important;
 }
 
-:root[data-nav-style="cyber-dock"] .topbar-right .topbar-db-btn {
+:root[data-nav-style="cyber-dock"] .topbar-right .topbar-db-btn,
+:root[data-nav-style="cyber-dock"] .topbar-right .btn-recargar-sesion {
   padding: 4px 12px 4px 6px !important;
   font-size: 11.5px !important;
   background: rgba(8, 14, 26, 0.88) !important;
@@ -2136,7 +2137,7 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
   :root[data-nav-style="cyber-dock"] .topbar-right .clock {
     order: 2 !important;
   }
-  :root[data-nav-style="cyber-dock"] .topbar-right #topbarDbDropdown {
+  :root[data-nav-style="cyber-dock"] .topbar-right .topbar-right-subrow {
     order: 1 !important;
     margin-top: 0 !important;
   }
@@ -2528,7 +2529,7 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
   margin: 0 !important;
 }
 
-:root[data-nav-style="dynamic-island"] .topbar-right #topbarDbDropdown {
+:root[data-nav-style="dynamic-island"] .topbar-right .topbar-right-subrow {
   order: 1 !important;
   margin-top: 0 !important;
 }
@@ -3796,6 +3797,11 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
 /* ==========================================================================
    SELECTOR DE MOTOR DE BD EN TOPBAR (DROPDOWN MODERNO)
    ========================================================================== */
+.topbar-right-subrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
 .topbar-db-dropdown {
   position: relative;
   display: inline-flex;
@@ -6541,10 +6547,10 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
     <div class="topbar-left">
       <div class="topbar-ver-update-group" style="display:inline-flex; align-items:center; gap:6px; flex-wrap:wrap;">
         <!-- Insignia Holográfica de Versión del Sistema (Visible en todo el programa) -->
-        <div class="cyber-version-pill" data-title="Suite Bóveda Jira · Versión activa: <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.10.42') %>" title="Suite Bóveda Jira · Versión <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.10.42') %>">
+        <div class="cyber-version-pill" data-title="Suite Bóveda Jira · Versión activa: <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.10.43') %>" title="Suite Bóveda Jira · Versión <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.10.43') %>">
           <span class="cvp-icon"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></span>
           <span class="cvp-lbl">BUILD</span>
-          <strong class="cvp-ver"><%= typeof appVersion !== 'undefined' ? appVersion : 'v2.10.42' %></strong>
+          <strong class="cvp-ver"><%= typeof appVersion !== 'undefined' ? appVersion : 'v2.10.43' %></strong>
           <% if (typeof gitCommit !== 'undefined' && gitCommit) { %><span class="cvp-commit" style="font-size:10px; opacity:0.75; font-family:var(--mono); margin-left:3px;">(<%= gitCommit %>)</span><% } %>
           <span class="cvp-pulse"></span>
         </div>
@@ -6559,7 +6565,15 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
           <span class="bgu-txt" id="bguTxt">Bajar Cambios</span>
           <span class="bgu-badge" id="bguBadge" style="display:none;">0</span>
         </button>
-
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div id="badgeDisponibilidadHeaderTopbar" class="badge-disp-header" style="display:none;" title="Tienes turno de disponibilidad activo esta semana. Clic para ver detalles.">
+        <span class="badge-disp-dot"></span>
+        <span class="badge-disp-txt">🚨 DISPONIBILIDAD ESTA SEMANA</span>
+      </div>
+      <%- clockBox %>
+      <div class="topbar-right-subrow" id="topbarRightSubrow">
         <!-- Botón de Recarga Rápida y Estado de Sesión / Inactividad -->
         <button type="button" class="btn-recargar-sesion" id="btnRecargarSesion" title="Estado de la conexión y sesión activa. Haz clic para recargar el sistema y refrescar funciones si ha estado inactivo.">
           <span class="brs-spinner" id="brsSpinner">
@@ -6570,11 +6584,9 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
           <span class="brs-txt" id="brsTxt">Recargar</span>
           <span class="brs-dot brs-online" id="brsDot" title="Sistema en línea y activo"></span>
         </button>
-      </div>
-    </div>
-    <div class="topbar-right">
-      <!-- Selector Interactivo de Motor de Base de Datos y Color Global -->
-      <div class="topbar-db-dropdown" id="topbarDbDropdown">
+
+        <!-- Selector Interactivo de Motor de Base de Datos y Color Global -->
+        <div class="topbar-db-dropdown" id="topbarDbDropdown">
         <button type="button" class="topbar-db-btn" id="btnTopbarDb" title="Motor de Base de Datos Activo (Clic para alternar motor y color)">
           <span class="db-orb db-orb-lg db-orb-pg" id="topbarEngineOrb">🐘</span>
           <span class="tbe-name" id="topbarEngineName">PostgreSQL 16</span>
@@ -6652,12 +6664,9 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
             <span class="db-orb db-orb-sm db-orb-go">🩵</span>
             <div class="tbm-info"><div class="tbm-title">Go / Golang</div><small>Azul Celeste · Goroutines Pipeline</small></div>
           </button>
-        </div>      </div>
-      <div id="badgeDisponibilidadHeaderTopbar" class="badge-disp-header" style="display:none;" title="Tienes turno de disponibilidad activo esta semana. Clic para ver detalles.">
-        <span class="badge-disp-dot"></span>
-        <span class="badge-disp-txt">🚨 DISPONIBILIDAD ESTA SEMANA</span>
+        </div>
       </div>
-      <%- clockBox %>
+    </div>
     </div>
   </div>
   <% } %>
@@ -9404,10 +9413,12 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
   var brsTxt = document.getElementById('brsTxt');
   var brsDot = document.getElementById('brsDot');
 
-  var TIEMPO_INACTIVIDAD_MS = 15 * 60 * 1000; // 15 minutos sin uso
+  // Umbral de inactividad real: 30 minutos sin ninguna interacción del usuario
+  var TIEMPO_INACTIVIDAD_MS = 30 * 60 * 1000;
   var ultimaActividad = Date.now();
   var estadoInactivo = false;
   var timerInactividad = null;
+  var throttleTimer = null;
 
   function recargarApp() {
     if (btnRecargar) {
@@ -9423,7 +9434,7 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
     estadoInactivo = true;
     if (btnRecargar) {
       btnRecargar.classList.add('brs-inactivo');
-      btnRecargar.title = '¡Inactividad detectada! Clic aquí para recargar y reactivar el programa.';
+      btnRecargar.title = 'Inactividad detectada. Haz clic para recargar y restablecer el sistema.';
     }
     if (brsTxt) brsTxt.textContent = 'Inactivo';
     if (brsDot) {
@@ -9438,11 +9449,10 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
   }
 
   function marcarActivo() {
-    if (!estadoInactivo) return;
     estadoInactivo = false;
     if (btnRecargar) {
       btnRecargar.classList.remove('brs-inactivo');
-      btnRecargar.title = 'Sesión activa · Clic para recargar o refrescar si estuvo inactivo.';
+      btnRecargar.title = 'Sesión activa · Clic para recargar o refrescar si es necesario.';
     }
     if (brsTxt) brsTxt.textContent = 'Recargar';
     if (brsDot) {
@@ -9454,78 +9464,62 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
     }
   }
 
-  function registrarActividad() {
-    var ahora = Date.now();
-    // Si ha pasado más del tiempo de inactividad, verificar con el servidor
-    if (ahora - ultimaActividad > TIEMPO_INACTIVIDAD_MS) {
-      verificarSesionEnSegundoPlano();
-    }
-    ultimaActividad = ahora;
-    reiniciarTimerInactividad();
-  }
-
   function reiniciarTimerInactividad() {
-    clearTimeout(timerInactividad);
+    if (timerInactividad) clearTimeout(timerInactividad);
     timerInactividad = setTimeout(function(){
-      marcarInactivo('El programa estuvo inactivo por más de 15 minutos y las opciones pueden no responder. Recarga para continuar normalmente.');
+      marcarInactivo('El programa estuvo inactivo por más de 30 minutos. Si alguna función no responde, haz clic en Recargar para reactivar el sistema.');
     }, TIEMPO_INACTIVIDAD_MS);
   }
 
-  function verificarSesionEnSegundoPlano() {
-    if (!window.fetch) return;
-    fetch('/api/sesion/estado', { credentials: 'same-origin' })
-      .then(function(r){
-        if (r.status === 401 || !r.ok) {
-          marcarInactivo('Tu sesión se ha pausado por tiempo de inactividad. Haz clic en Recargar para reactivar el sistema.');
-        } else {
-          marcarActivo();
-        }
-      })
-      .catch(function(){
-        marcarInactivo('Conexión en pausa tras período de inactividad. Haz clic en Recargar para restablecer la comunicación.');
-      });
+  function registrarActividad() {
+    var ahora = Date.now();
+    // Si estaba inactivo y el usuario vuelve a interactuar, reactivar inmediatamente
+    if (estadoInactivo) {
+      marcarActivo();
+    }
+    ultimaActividad = ahora;
+
+    // Throttle del temporizador para no sobrecargar el navegador en cada movimiento de ratón
+    if (!throttleTimer) {
+      throttleTimer = setTimeout(function(){
+        throttleTimer = null;
+        reiniciarTimerInactividad();
+      }, 2000);
+    }
   }
 
-  // Interceptor global de fetch: captura cualquier 401 o fallo de red tras inactividad
+  // Interceptor global de fetch: captura SOLO respuestas HTTP 401 reales en acciones del usuario
   if (window.fetch) {
     var originalFetch = window.fetch;
     window.fetch = function(){
-      return originalFetch.apply(this, arguments).then(function(response){
-        if (response && response.status === 401) {
-          marcarInactivo('La opción seleccionada requiere recargar el sistema debido al tiempo de inactividad.');
+      var args = arguments;
+      var url = (args && args[0]) ? String(args[0]) : '';
+      return originalFetch.apply(this, args).then(function(response){
+        // Excluir llamadas de sondeo secundario o verificación periódica
+        var esSegundoPlano = url.indexOf('/api/git/') !== -1 || url.indexOf('/api/sesion/') !== -1 || url.indexOf('/api/disponibilidad/') !== -1;
+        if (!esSegundoPlano && response && response.status === 401) {
+          marcarInactivo('Tu sesión se ha pausado por tiempo de inactividad. Haz clic en Recargar para reactivar el sistema.');
         }
         return response;
-      }).catch(function(err){
-        var tiempoDesdeActividad = Date.now() - ultimaActividad;
-        if (tiempoDesdeActividad > 45000) { // Si estuvo más de 45s inactivo y falla una petición
-          marcarInactivo('La opción no respondió debido a tiempo de inactividad. Haz clic en Recargar para continuar.');
-        }
-        throw err;
       });
     };
   }
 
-  // Escuchar eventos de usuario para registrar actividad
-  ['mousedown', 'keydown', 'touchstart', 'scroll'].forEach(function(ev){
-    window.addEventListener(ev, function(){
-      registrarActividad();
-    }, { passive: true });
-  });
+  // Escuchar TODOS los eventos de interacción física del usuario
+  var eventosActividad = ['mousemove', 'pointermove', 'mousedown', 'keydown', 'wheel', 'touchstart', 'scroll', 'click'];
+  for (var i = 0; i < eventosActividad.length; i++) {
+    window.addEventListener(eventosActividad[i], registrarActividad, { passive: true });
+  }
 
-  // Al volver a la pestaña o reactivar pantalla tras suspensión/reposo
+  // Al volver a la pestaña tras más de 30 minutos de ausencia real
   document.addEventListener('visibilitychange', function(){
     if (!document.hidden) {
       var tiempoAusente = Date.now() - ultimaActividad;
-      if (tiempoAusente > 5 * 60 * 1000) { // más de 5 min ausente
-        verificarSesionEnSegundoPlano();
+      if (tiempoAusente > TIEMPO_INACTIVIDAD_MS) {
+        marcarInactivo('Has regresado tras un período prolongado de inactividad. Recarga para continuar normalmente.');
+      } else {
+        registrarActividad();
       }
-    }
-  });
-
-  window.addEventListener('focus', function(){
-    var tiempoAusente = Date.now() - ultimaActividad;
-    if (tiempoAusente > 5 * 60 * 1000) {
-      verificarSesionEnSegundoPlano();
     }
   });
 
@@ -9544,6 +9538,7 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
     btnBaiClose.addEventListener('click', function(e){
       e.stopPropagation();
       bannerAviso.style.display = 'none';
+      marcarActivo();
     });
   }
 
