@@ -186,6 +186,7 @@ app.use(
     secret: process.env.SESSION_SECRET || "cambia-esto",
     resave: false,
     saveUninitialized: false,
+    rolling: true, // Renueva la cookie con cada interacción activa del usuario
     cookie: {
       maxAge: 1000 * 60 * 60 * 8,
     },
@@ -256,14 +257,36 @@ function flash(req, category, message) {
 
 function requireLogin(req, res, next) {
   if (!req.session.user) {
-    if (req.xhr || (req.headers.accept && req.headers.accept.includes("json")) || req.path.startsWith("/api/") || req.path.includes("/actualizar-")) {
-      return res.status(401).json({ error: "Sesión expirada. Por favor recarga la página e inicia sesión." });
+    const isAjaxOrFetch = req.xhr ||
+      (req.headers.accept && req.headers.accept.includes("json")) ||
+      (req.headers["sec-fetch-dest"] === "empty") ||
+      req.path.startsWith("/api/") ||
+      req.path.includes("/clave") ||
+      req.path.includes("/actualizar-") ||
+      req.path.includes("/contenido") ||
+      req.path.includes("/hoja") ||
+      req.path.includes("/buscar");
+
+    if (isAjaxOrFetch) {
+      return res.status(401).json({
+        ok: false,
+        error: "Sesión pausada o expirada por tiempo de inactividad. Por favor recarga la página.",
+        sesionExpirada: true
+      });
     }
     return res.redirect("/login");
   }
 
   next();
 }
+
+// Endpoint de verificación ligera de estado de sesión y conectividad
+app.get("/api/sesion/estado", (req, res) => {
+  if (req.session && req.session.user) {
+    return res.json({ ok: true, activo: true, usuario: req.session.user.username });
+  }
+  return res.status(401).json({ ok: false, activo: false, error: "Sesión pausada o expirada por inactividad." });
+});
 
 async function anyUserExists() {
   const { rows } = await pool.query(

@@ -6002,6 +6002,213 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
   0% { background-position: 0% 50%; }
   100% { background-position: 200% 50%; }
 }
+
+/* =====================================================================
+   BOTÓN DE RECARGA POR INACTIVIDAD / ESTADO DE SESIÓN
+   ===================================================================== */
+.btn-recargar-sesion {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 4px 10px 4px 8px !important;
+  border-radius: 999px !important;
+  background: rgba(14, 21, 39, 0.75) !important;
+  border: 1px solid rgba(var(--accent-rgb), 0.35) !important;
+  color: var(--text) !important;
+  font-family: var(--sans) !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  transition: all 0.22s cubic-bezier(0.34, 1.3, 0.64, 1) !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4) !important;
+  user-select: none !important;
+  white-space: nowrap !important;
+}
+.btn-recargar-sesion:hover {
+  background: rgba(var(--accent-rgb), 0.18) !important;
+  border-color: var(--accent) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6), 0 0 16px rgba(var(--accent-rgb), 0.4) !important;
+  transform: translateY(-1px) !important;
+  color: #fff !important;
+}
+.btn-recargar-sesion .brs-spinner {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 14px !important;
+  height: 14px !important;
+  color: var(--accent) !important;
+}
+.btn-recargar-sesion .brs-spinner svg {
+  width: 13px !important;
+  height: 13px !important;
+  transition: transform 0.25s ease !important;
+}
+.btn-recargar-sesion.brs-reloading .brs-spinner svg {
+  animation: brsSpin 0.8s linear infinite !important;
+}
+@keyframes brsSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.btn-recargar-sesion .brs-dot {
+  width: 7px !important;
+  height: 7px !important;
+  border-radius: 50% !important;
+  display: inline-block !important;
+  transition: all 0.3s ease !important;
+}
+.btn-recargar-sesion .brs-dot.brs-online {
+  background: #10b981 !important;
+  box-shadow: 0 0 7px #10b981 !important;
+}
+/* Estado Inactivo (Advertencia al usuario) */
+.btn-recargar-sesion.brs-inactivo {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.25), rgba(239, 68, 68, 0.2)) !important;
+  border-color: #f59e0b !important;
+  color: #fbbf24 !important;
+  animation: brsPulseInact 1.8s infinite ease-in-out !important;
+}
+.btn-recargar-sesion.brs-inactivo .brs-dot,
+.btn-recargar-sesion .brs-dot.brs-warn {
+  background: #f59e0b !important;
+  box-shadow: 0 0 10px #f59e0b !important;
+  animation: brsDotBlink 1.2s infinite ease-in-out !important;
+}
+.btn-recargar-sesion.brs-inactivo .brs-spinner {
+  color: #f59e0b !important;
+}
+@keyframes brsPulseInact {
+  0%, 100% { box-shadow: 0 0 8px rgba(245, 158, 11, 0.35); border-color: rgba(245, 158, 11, 0.6); }
+  50% { box-shadow: 0 0 18px rgba(245, 158, 11, 0.8), 0 0 24px rgba(239, 68, 68, 0.4); border-color: #f59e0b; }
+}
+@keyframes brsDotBlink {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.35; transform: scale(1.35); }
+}
+
+/* Adaptación a Modo Claro */
+:root[data-theme="light"] .btn-recargar-sesion,
+:root:not([data-theme="dark"]):not([data-theme="oled"]) .btn-recargar-sesion {
+  background: #ffffff !important;
+  border-color: var(--panel-edge) !important;
+  color: var(--text) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06) !important;
+}
+:root[data-theme="light"] .btn-recargar-sesion:hover,
+:root:not([data-theme="dark"]):not([data-theme="oled"]) .btn-recargar-sesion:hover {
+  background: var(--accent-soft) !important;
+  border-color: var(--accent) !important;
+  color: var(--accent-dark) !important;
+}
+
+/* BANNER FLOTANTE DE AVISO DE INACTIVIDAD */
+.banner-inactividad {
+  position: fixed !important;
+  bottom: 24px !important;
+  right: 24px !important;
+  z-index: 9999999 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 14px !important;
+  max-width: 490px !important;
+  padding: 14px 18px !important;
+  background: rgba(15, 23, 42, 0.95) !important;
+  backdrop-filter: blur(16px) !important;
+  border: 1px solid rgba(245, 158, 11, 0.6) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 16px 40px -8px rgba(0, 0, 0, 0.8), 0 0 30px rgba(245, 158, 11, 0.35) !important;
+  animation: baiSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  color: var(--text) !important;
+  font-family: var(--sans) !important;
+}
+@keyframes baiSlideIn {
+  from { opacity: 0; transform: translateY(20px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.bai-icon {
+  font-size: 26px !important;
+  line-height: 1 !important;
+  flex-shrink: 0 !important;
+  animation: baiBounce 2s infinite ease-in-out !important;
+}
+@keyframes baiBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+.bai-content {
+  flex: 1 !important;
+  min-width: 0 !important;
+}
+.bai-title {
+  font-size: 13.5px !important;
+  font-weight: 800 !important;
+  color: #fbbf24 !important;
+  margin-bottom: 3px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+.bai-desc {
+  font-size: 12px !important;
+  color: var(--muted) !important;
+  line-height: 1.4 !important;
+}
+.bai-actions {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  flex-shrink: 0 !important;
+}
+.btn-bai-reload {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 8px 14px !important;
+  background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+  color: #000 !important;
+  border: none !important;
+  border-radius: 10px !important;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  cursor: pointer !important;
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.4) !important;
+  transition: all 0.2s ease !important;
+  white-space: nowrap !important;
+}
+.btn-bai-reload:hover {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b) !important;
+  transform: translateY(-1px) scale(1.03) !important;
+  box-shadow: 0 6px 18px rgba(245, 158, 11, 0.6) !important;
+}
+.btn-bai-close {
+  background: transparent !important;
+  border: none !important;
+  color: var(--muted) !important;
+  font-size: 16px !important;
+  cursor: pointer !important;
+  padding: 4px 6px !important;
+  border-radius: 6px !important;
+  transition: all 0.15s ease !important;
+}
+.btn-bai-close:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: var(--text) !important;
+}
+
+@media (max-width: 600px) {
+  .banner-inactividad {
+    left: 14px !important;
+    right: 14px !important;
+    bottom: 14px !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+  }
+  .bai-actions {
+    justify-content: flex-end !important;
+  }
+}
 </style>
 </head>
 <%
@@ -6334,10 +6541,10 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
     <div class="topbar-left">
       <div class="topbar-ver-update-group" style="display:inline-flex; align-items:center; gap:6px; flex-wrap:wrap;">
         <!-- Insignia Holográfica de Versión del Sistema (Visible en todo el programa) -->
-        <div class="cyber-version-pill" data-title="Suite Bóveda Jira · Versión activa: <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.10.40') %>" title="Suite Bóveda Jira · Versión <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.10.40') %>">
+        <div class="cyber-version-pill" data-title="Suite Bóveda Jira · Versión activa: <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.10.41') %>" title="Suite Bóveda Jira · Versión <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.10.41') %>">
           <span class="cvp-icon"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></span>
           <span class="cvp-lbl">BUILD</span>
-          <strong class="cvp-ver"><%= typeof appVersion !== 'undefined' ? appVersion : 'v2.10.40' %></strong>
+          <strong class="cvp-ver"><%= typeof appVersion !== 'undefined' ? appVersion : 'v2.10.41' %></strong>
           <% if (typeof gitCommit !== 'undefined' && gitCommit) { %><span class="cvp-commit" style="font-size:10px; opacity:0.75; font-family:var(--mono); margin-left:3px;">(<%= gitCommit %>)</span><% } %>
           <span class="cvp-pulse"></span>
         </div>
@@ -6351,6 +6558,17 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
           </span>
           <span class="bgu-txt" id="bguTxt">Bajar Cambios</span>
           <span class="bgu-badge" id="bguBadge" style="display:none;">0</span>
+        </button>
+
+        <!-- Botón de Recarga Rápida y Estado de Sesión / Inactividad -->
+        <button type="button" class="btn-recargar-sesion" id="btnRecargarSesion" title="Estado de la conexión y sesión activa. Haz clic para recargar el sistema y refrescar funciones si ha estado inactivo.">
+          <span class="brs-spinner" id="brsSpinner">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+            </svg>
+          </span>
+          <span class="brs-txt" id="brsTxt">Recargar</span>
+          <span class="brs-dot brs-online" id="brsDot" title="Sistema en línea y activo"></span>
         </button>
       </div>
     </div>
@@ -6488,6 +6706,26 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
           ✔ Entendido, estoy disponible esta semana
         </button>
       </div>
+    </div>
+  </div>
+
+  <!-- Banner / Notificación Flotante de Inactividad y Reconexión -->
+  <div id="bannerAvisoInactividad" class="banner-inactividad" style="display:none;" role="alert">
+    <div class="bai-icon">⏳</div>
+    <div class="bai-content">
+      <div class="bai-title">
+        <span>⚠️ Tiempo de Inactividad Detectado</span>
+      </div>
+      <div class="bai-desc">
+        El programa estuvo sin uso y las funciones se pausaron para proteger tu sesión. Recarga para continuar normalmente.
+      </div>
+    </div>
+    <div class="bai-actions">
+      <button type="button" class="btn-bai-reload" id="btnBaiReload">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        Recargar Programa
+      </button>
+      <button type="button" class="btn-bai-close" id="btnBaiClose" title="Cerrar aviso">✕</button>
     </div>
   </div>
 
@@ -7467,6 +7705,7 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
           L.push({ g:'Cuenta', t:'Mi contraseña y Huella digital', i:I.lock, k:'clave cambiar contraseña huella biometria windows hello', run:function(){ location.href = '/cambiar-clave'; } });
           L.push({ g:'Cuenta', t:'Crear usuario', i:I.user, k:'registro nuevo', run:function(){ location.href = '/registro'; } });
           L.push({ g:'Cuenta', t:'Cerrar sesión', i:I.out,  k:'salir logout', run:function(){ location.href = '/logout'; } });
+          L.push({ g:'Sistema', t:'Recargar Programa (Refrescar por Inactividad)', i:ico('<path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>'), k:'recargar refrescar sesion inactividad reload conexion reconectar', run:function(){ window.location.reload(); } });
           L.push({ g:'Sistema', t:'Bajar cambios de GitHub (Actualizar)', i:ico('<path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>'), k:'actualizar git pull bajar cambios version update github', run:function(){ var b = $('btnGitUpdate'); if (b) b.click(); } });
         }
         return L;
@@ -8054,7 +8293,7 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
             </div>
             <div class="gub-info">
               <div class="gub-branch" style="color:#10b981;">✅ Sistema Sincronizado y Estable</div>
-              <div class="gub-desc">Tu versión actual (<%= typeof appVersion !== "undefined" ? appVersion : "v2.10.40" %>) cuenta con todas las mejoras y parches más recientes publicados en GitHub. No hay versiones ni cambios nuevos pendientes de descargar.</div>
+              <div class="gub-desc">Tu versión actual (<%= typeof appVersion !== "undefined" ? appVersion : "v2.10.41" %>) cuenta con todas las mejoras y parches más recientes publicados en GitHub. No hay versiones ni cambios nuevos pendientes de descargar.</div>
             </div>
           </div>
           <div style="padding: 12px 14px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; font-size: 12.5px; color: var(--muted); line-height: 1.45;">
@@ -8307,7 +8546,7 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
                 // Estado: Al día (0 cambios)
                 if (bguBadge) bguBadge.style.display = 'none';
                 if (modalIcon) modalIcon.textContent = '✨';
-                if (modalTitle) modalTitle.textContent = 'Sistema al Día (' + (data.version ? 'v' + data.version : '<%= typeof appVersion !== "undefined" ? appVersion : "v2.10.40" %>') + (data.commit ? ' · ' + data.commit : '') + ')';
+                if (modalTitle) modalTitle.textContent = 'Sistema al Día (' + (data.version ? 'v' + data.version : '<%= typeof appVersion !== "undefined" ? appVersion : "v2.10.41" %>') + (data.commit ? ' · ' + data.commit : '') + ')';
                 if (modalSubtitle) modalSubtitle.textContent = 'No existen versiones o cambios nuevos disponibles';
                 if (viewPending) viewPending.style.display = 'none';
                 if (viewUpToDate) viewUpToDate.style.display = 'block';
@@ -9152,6 +9391,164 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
       }, 120);
     }
   });
+})();
+
+/* =====================================================================
+   DETECTOR DE INACTIVIDAD, RECONEXIÓN Y CONTROL DE SESIÓN
+   ===================================================================== */
+(function(){
+  var btnRecargar = document.getElementById('btnRecargarSesion');
+  var bannerAviso = document.getElementById('bannerAvisoInactividad');
+  var btnBaiReload = document.getElementById('btnBaiReload');
+  var btnBaiClose = document.getElementById('btnBaiClose');
+  var brsTxt = document.getElementById('brsTxt');
+  var brsDot = document.getElementById('brsDot');
+
+  var TIEMPO_INACTIVIDAD_MS = 15 * 60 * 1000; // 15 minutos sin uso
+  var ultimaActividad = Date.now();
+  var estadoInactivo = false;
+  var timerInactividad = null;
+
+  function recargarApp() {
+    if (btnRecargar) {
+      btnRecargar.classList.add('brs-reloading');
+      btnRecargar.classList.remove('brs-inactivo');
+    }
+    if (brsTxt) brsTxt.textContent = 'Recargando...';
+    window.location.reload();
+  }
+
+  function marcarInactivo(motivo) {
+    if (estadoInactivo) return;
+    estadoInactivo = true;
+    if (btnRecargar) {
+      btnRecargar.classList.add('brs-inactivo');
+      btnRecargar.title = '¡Inactividad detectada! Clic aquí para recargar y reactivar el programa.';
+    }
+    if (brsTxt) brsTxt.textContent = 'Inactivo';
+    if (brsDot) {
+      brsDot.classList.remove('brs-online');
+      brsDot.classList.add('brs-warn');
+    }
+    if (bannerAviso) {
+      var descEl = bannerAviso.querySelector('.bai-desc');
+      if (descEl && motivo) descEl.textContent = motivo;
+      bannerAviso.style.display = 'flex';
+    }
+  }
+
+  function marcarActivo() {
+    if (!estadoInactivo) return;
+    estadoInactivo = false;
+    if (btnRecargar) {
+      btnRecargar.classList.remove('brs-inactivo');
+      btnRecargar.title = 'Sesión activa · Clic para recargar o refrescar si estuvo inactivo.';
+    }
+    if (brsTxt) brsTxt.textContent = 'Recargar';
+    if (brsDot) {
+      brsDot.classList.remove('brs-warn');
+      brsDot.classList.add('brs-online');
+    }
+    if (bannerAviso) {
+      bannerAviso.style.display = 'none';
+    }
+  }
+
+  function registrarActividad() {
+    var ahora = Date.now();
+    // Si ha pasado más del tiempo de inactividad, verificar con el servidor
+    if (ahora - ultimaActividad > TIEMPO_INACTIVIDAD_MS) {
+      verificarSesionEnSegundoPlano();
+    }
+    ultimaActividad = ahora;
+    reiniciarTimerInactividad();
+  }
+
+  function reiniciarTimerInactividad() {
+    clearTimeout(timerInactividad);
+    timerInactividad = setTimeout(function(){
+      marcarInactivo('El programa estuvo inactivo por más de 15 minutos y las opciones pueden no responder. Recarga para continuar normalmente.');
+    }, TIEMPO_INACTIVIDAD_MS);
+  }
+
+  function verificarSesionEnSegundoPlano() {
+    if (!window.fetch) return;
+    fetch('/api/sesion/estado', { credentials: 'same-origin' })
+      .then(function(r){
+        if (r.status === 401 || !r.ok) {
+          marcarInactivo('Tu sesión se ha pausado por tiempo de inactividad. Haz clic en Recargar para reactivar el sistema.');
+        } else {
+          marcarActivo();
+        }
+      })
+      .catch(function(){
+        marcarInactivo('Conexión en pausa tras período de inactividad. Haz clic en Recargar para restablecer la comunicación.');
+      });
+  }
+
+  // Interceptor global de fetch: captura cualquier 401 o fallo de red tras inactividad
+  if (window.fetch) {
+    var originalFetch = window.fetch;
+    window.fetch = function(){
+      return originalFetch.apply(this, arguments).then(function(response){
+        if (response && response.status === 401) {
+          marcarInactivo('La opción seleccionada requiere recargar el sistema debido al tiempo de inactividad.');
+        }
+        return response;
+      }).catch(function(err){
+        var tiempoDesdeActividad = Date.now() - ultimaActividad;
+        if (tiempoDesdeActividad > 45000) { // Si estuvo más de 45s inactivo y falla una petición
+          marcarInactivo('La opción no respondió debido a tiempo de inactividad. Haz clic en Recargar para continuar.');
+        }
+        throw err;
+      });
+    };
+  }
+
+  // Escuchar eventos de usuario para registrar actividad
+  ['mousedown', 'keydown', 'touchstart', 'scroll'].forEach(function(ev){
+    window.addEventListener(ev, function(){
+      registrarActividad();
+    }, { passive: true });
+  });
+
+  // Al volver a la pestaña o reactivar pantalla tras suspensión/reposo
+  document.addEventListener('visibilitychange', function(){
+    if (!document.hidden) {
+      var tiempoAusente = Date.now() - ultimaActividad;
+      if (tiempoAusente > 5 * 60 * 1000) { // más de 5 min ausente
+        verificarSesionEnSegundoPlano();
+      }
+    }
+  });
+
+  window.addEventListener('focus', function(){
+    var tiempoAusente = Date.now() - ultimaActividad;
+    if (tiempoAusente > 5 * 60 * 1000) {
+      verificarSesionEnSegundoPlano();
+    }
+  });
+
+  // Botón de la barra superior
+  if (btnRecargar) {
+    btnRecargar.addEventListener('click', recargarApp);
+  }
+
+  // Botón dentro del banner
+  if (btnBaiReload) {
+    btnBaiReload.addEventListener('click', recargarApp);
+  }
+
+  // Botón de cerrar aviso
+  if (btnBaiClose && bannerAviso) {
+    btnBaiClose.addEventListener('click', function(e){
+      e.stopPropagation();
+      bannerAviso.style.display = 'none';
+    });
+  }
+
+  // Iniciar timer
+  reiniciarTimerInactividad();
 })();
 </script>
 
