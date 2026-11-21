@@ -2108,7 +2108,45 @@ require("./manual-video")(app, { requireLogin });
 // Datos pequeños compartidos entre pestañas y navegadores
 // ---------------------------------------------------------------------------
 
-const KV_PERMITIDAS = new Set(["aceptados-resumen", "menu-personalizado"]);
+const KV_PERMITIDAS = new Set(["aceptados-resumen", "menu-personalizado", "informe-destinatarios"]);
+
+async function guardarDestinatariosKv(to, cc) {
+  try {
+    const arrTo = Array.isArray(to) ? to : (to ? [String(to).trim()] : []);
+    const arrCc = Array.isArray(cc) ? cc : (cc ? [String(cc).trim()] : []);
+    if (!arrTo.length && !arrCc.length) return;
+
+    const prevKv = await pool.query("SELECT v FROM kv_store WHERE k = 'informe-destinatarios'");
+    let contactosPrev = [];
+    if (prevKv.rows[0] && prevKv.rows[0].v && Array.isArray(prevKv.rows[0].v.contactos)) {
+      contactosPrev = prevKv.rows[0].v.contactos;
+    }
+    const setEmails = new Set(contactosPrev.map(c => typeof c === "string" ? c.toLowerCase() : (c.email || "").toLowerCase()));
+    [...arrTo, ...arrCc].forEach(em => {
+      const clean = String(em || "").trim().toLowerCase();
+      if (clean && clean.includes("@") && !setEmails.has(clean)) {
+        const user = clean.split("@")[0] || "";
+        const nombre = user.split(/[._-]/).map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(" ");
+        contactosPrev.push({ email: clean, nombre: nombre || clean });
+        setEmails.add(clean);
+      }
+    });
+
+    const dataGuardar = {
+      to: arrTo,
+      cc: arrCc,
+      contactos: contactosPrev,
+      updated_at: new Date().toISOString()
+    };
+    await pool.query(
+      `INSERT INTO kv_store (k, v, updated_at) VALUES ('informe-destinatarios', $1::jsonb, NOW())
+       ON CONFLICT (k) DO UPDATE SET v = EXCLUDED.v, updated_at = NOW()`,
+      [JSON.stringify(dataGuardar)]
+    );
+  } catch (eKv) {
+    console.warn("Aviso: no se pudo guardar informe-destinatarios en kv_store:", eKv.message);
+  }
+}
 
 app.get("/api/kv/:k", requireLogin, async (req, res) => {
   if (!KV_PERMITIDAS.has(req.params.k)) return res.status(404).json({ v: null });
@@ -2277,6 +2315,9 @@ app.post("/informe/enviar-email", requireLogin, express.json({ limit: "1mb" }), 
       return res.status(400).json({ error: "Debes especificar al menos un destinatario en el campo 'Para'." });
     }
 
+    // Persistir destinatarios en segundo plano para futuros informes
+    guardarDestinatariosKv(to, cc);
+
     // Generar el PDF oficial del informe en memoria
     const { generarInformePdf } = require("./informe-pdf");
     const { buffer, filename } = await generarInformePdf(reporte || {});
@@ -2384,6 +2425,8 @@ app.post("/informe/abrir-enviados", requireLogin, (req, res) => {
 app.post("/informe/abrir-outlook", requireLogin, express.json({ limit: "1mb" }), async (req, res) => {
   try {
     const { to, cc, asunto, mensaje, reporte, tecnico, cargo } = req.body || {};
+    // Persistir destinatarios en segundo plano para futuros informes
+    guardarDestinatariosKv(to, cc);
     const { generarInformePdf } = require("./informe-pdf");
     const { buffer: pdfBuffer, filename } = await generarInformePdf(reporte || {});
 
