@@ -539,6 +539,9 @@
 <div class="top">
   <h1>Visor XML / JSON</h1>
   <div style="display:inline-flex; align-items:center; gap:8px;">
+    <span class="chip ok" id="chipAutoGuardado" style="font-size:11px; padding:3px 9px; display:inline-flex; align-items:center; gap:5px; border-radius:12px; background:rgba(34,197,94,0.12); color:#4ade80; border:1px solid rgba(74,222,128,0.3);" title="Tus documentos y comparaciones se guardan automáticamente en tu navegador para que nunca se pierdan al cambiar de pestaña">
+      <span>💾</span> Memoria activa
+    </span>
     <span class="chip info" id="chipVacio">Pega o abre un archivo</span>
     <span class="db-orb db-orb-pg" id="visorHeaderOrb" title="Motor activo">🐘</span>
   </div>
@@ -981,6 +984,94 @@ function fmtNum(n){ return Number(n).toLocaleString('es-CO'); }
 function fmtTam(n){ return n >= 1048576 ? (n/1048576).toFixed(1) + ' MB' : (n >= 1024 ? (n/1024).toFixed(1) + ' KB' : n + ' caracteres'); }
 function esc(t){ return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function escAttr(t){ return esc(t).replace(/"/g,'&quot;'); }
+
+/* ======================================================================
+   PERSISTENCIA AUTOMÁTICA EN LOCALSTORAGE / SESSIONSTORAGE
+   Evita que el contenido del visor o comparador se borre al pasar de pestaña o recargar.
+   ====================================================================== */
+function leerStorage(k, def) {
+  try {
+    var v = localStorage.getItem(k);
+    if (v !== null) return v;
+    v = sessionStorage.getItem(k);
+    if (v !== null) return v;
+  } catch(e) {}
+  return def !== undefined ? def : '';
+}
+
+function guardarStorage(k, val) {
+  try {
+    localStorage.setItem(k, val);
+  } catch(e) {
+    try { sessionStorage.setItem(k, val); } catch(e2) {}
+  }
+}
+
+function borrarStorage(k) {
+  try { localStorage.removeItem(k); } catch(e){}
+  try { sessionStorage.removeItem(k); } catch(e){}
+}
+
+var tGuardarVisor = null;
+function guardarEstadoVisorDebounced() {
+  clearTimeout(tGuardarVisor);
+  tGuardarVisor = setTimeout(function(){
+    if (entrada) guardarStorage('boveda_visor_entrada', entrada.value);
+  }, 250);
+}
+
+var tGuardarDiffA = null;
+var tGuardarDiffB = null;
+function guardarEstadoDiffDebounced(lado) {
+  if (lado === 'A') {
+    clearTimeout(tGuardarDiffA);
+    tGuardarDiffA = setTimeout(function(){
+      var ed = $('diffEntradaA');
+      if (ed) guardarStorage('boveda_diff_entrada_a', ed.value);
+    }, 250);
+  } else {
+    clearTimeout(tGuardarDiffB);
+    tGuardarDiffB = setTimeout(function(){
+      var ed = $('diffEntradaB');
+      if (ed) guardarStorage('boveda_diff_entrada_b', ed.value);
+    }, 250);
+  }
+}
+
+function guardarTodoEstadoInmediato() {
+  try {
+    if (entrada) guardarStorage('boveda_visor_entrada', entrada.value);
+    guardarStorage('boveda_visor_modo', modoSel);
+    guardarStorage('boveda_visor_vista', vistaSel);
+    var pPed = $('inputWmsPedido');
+    if (pPed) guardarStorage('boveda_visor_wms_pedido', pPed.value);
+    var pCamp = $('inputWmsCampo');
+    if (pCamp) guardarStorage('boveda_visor_wms_campo', pCamp.value);
+
+    var edA = $('diffEntradaA');
+    if (edA) guardarStorage('boveda_diff_entrada_a', edA.value);
+    var edB = $('diffEntradaB');
+    if (edB) guardarStorage('boveda_diff_entrada_b', edB.value);
+    if (typeof diffState !== 'undefined') {
+      if (diffState.modoA) guardarStorage('boveda_diff_modo_a', diffState.modoA);
+      if (diffState.modoB) guardarStorage('boveda_diff_modo_b', diffState.modoB);
+    }
+    var cTrim = $('chkDiffTrim'), cSort = $('chkDiffSortKeys'), cCross = $('chkDiffCross'), cCase = $('chkDiffCase');
+    if (cTrim && cSort && cCross && cCase) {
+      guardarStorage('boveda_diff_opts', JSON.stringify({
+        trim: cTrim.checked,
+        sortKeys: cSort.checked,
+        cross: cCross.checked,
+        caseInsensitive: cCase.checked
+      }));
+    }
+  } catch(e) {}
+}
+
+window.addEventListener('beforeunload', guardarTodoEstadoInmediato);
+document.addEventListener('visibilitychange', function(){
+  if (document.visibilityState === 'hidden') guardarTodoEstadoInmediato();
+});
 
 /* ======================================================================
    RESALTADOR DE SINTAXIS Y FORMATEADOR UNIVERSAL EN VIVO (XML & JSON)
@@ -2302,6 +2393,7 @@ function dibujarArbol(){
 
 function mostrarVista(v){
   vistaSel = v;
+  guardarStorage('boveda_visor_vista', v);
   Array.prototype.forEach.call($('segVista').querySelectorAll('button'), function(b){ b.classList.toggle('active', b.dataset.vista === v); });
   $('vista-codigo').style.display = v === 'codigo' ? '' : 'none';
   $('vista-arbol').style.display = v === 'arbol' ? 'block' : 'none';
@@ -2406,6 +2498,7 @@ function abrirArchivo(file){
     entrada.value = decodificar(fr.result);
     var n = file.name.toLowerCase();
     if (/\.json$/.test(n)) fijarModo('json'); else if (/\.(xml|xsd|xsl|xslt|svg|config|csproj|wsdl)$/.test(n)) fijarModo('xml'); else fijarModo('auto');
+    guardarStorage('boveda_visor_entrada', entrada.value);
     procesar();
     toast('Archivo cargado: ' + file.name);
   };
@@ -2415,6 +2508,7 @@ function abrirArchivo(file){
 
 function fijarModo(m){
   modoSel = m;
+  guardarStorage('boveda_visor_modo', m);
   Array.prototype.forEach.call($('seg').querySelectorAll('button'), function(b){ b.classList.toggle('active', b.dataset.modo === m); });
   if (entrada && entrada._actualizarSintaxis) entrada._actualizarSintaxis();
 }
@@ -2427,6 +2521,7 @@ bindToggleColor('btnToggleColorEntrada', 'wrapEntrada');
 entrada.addEventListener('input', function(){
   clearTimeout(temporizador);
   temporizador = setTimeout(procesar, 300);
+  guardarEstadoVisorDebounced();
 });
 ['dragenter', 'dragover'].forEach(function(ev){
   entrada.addEventListener(ev, function(e){ e.preventDefault(); entrada.classList.add('drag'); });
@@ -2439,7 +2534,13 @@ entrada.addEventListener('drop', function(e){
   if (f) abrirArchivo(f);
 });
 $('archivo').addEventListener('change', function(e){ abrirArchivo(e.target.files[0]); e.target.value = ''; });
-$('btnLimpiar').addEventListener('click', function(){ entrada.value = ''; procesar(); if (entrada._actualizarSintaxis) entrada._actualizarSintaxis(); entrada.focus(); });
+$('btnLimpiar').addEventListener('click', function(){
+  entrada.value = '';
+  borrarStorage('boveda_visor_entrada');
+  procesar();
+  if (entrada._actualizarSintaxis) entrada._actualizarSintaxis();
+  entrada.focus();
+});
 
 var btnFmtEntrada = $('btnFormatearEntrada');
 if (btnFmtEntrada) {
@@ -2449,6 +2550,7 @@ if (btnFmtEntrada) {
     var res = formatearDocumentoUniversal(val, (estado && estado.tipo) || modoSel);
     if (res && res.texto) {
       entrada.value = res.texto;
+      guardarStorage('boveda_visor_entrada', entrada.value);
       if (res.tipo && modoSel === 'auto') {
         fijarModo(res.tipo);
       }
@@ -2470,6 +2572,7 @@ $('btnMinificar').addEventListener('click', function(){
     } else if (val.startsWith('<')) {
       entrada.value = val.replace(/>\s+</g, '><').trim();
     }
+    guardarStorage('boveda_visor_entrada', entrada.value);
     if (entrada._actualizarSintaxis) entrada._actualizarSintaxis();
     procesar();
     toast('Código minificado');
@@ -2689,11 +2792,20 @@ if (cardWms) {
 }
 
 if (inputWmsPedido) {
+  inputWmsPedido.addEventListener('input', function(){
+    guardarStorage('boveda_visor_wms_pedido', inputWmsPedido.value);
+  });
   inputWmsPedido.addEventListener('keydown', function(e){
     if (e.key === 'Enter') {
       e.preventDefault();
       ejecutarExtraccionWms();
     }
+  });
+}
+
+if (inputWmsCampo) {
+  inputWmsCampo.addEventListener('input', function(){
+    guardarStorage('boveda_visor_wms_campo', inputWmsCampo.value);
   });
 }
 
@@ -2706,6 +2818,8 @@ if (btnWmsExtraer) {
 async function ejecutarExtraccionWms() {
   var pedido = inputWmsPedido.value.trim();
   var campo = (inputWmsCampo.value || 'numero_pedido').trim();
+  guardarStorage('boveda_visor_wms_pedido', pedido);
+  guardarStorage('boveda_visor_wms_campo', campo);
   var exacto = chkWmsExacto.checked;
   var soloJson = chkWmsSoloJson.checked;
 
@@ -2911,6 +3025,7 @@ var txtSeccionInfo = $('txtSeccionInfo');
 var btnEnviarAComparar = $('btnEnviarAComparar');
 
 function activarSeccion(seccion) {
+  guardarStorage('boveda_visor_active_tab', seccion);
   if (seccion === 'comparador') {
     if (tabModoComparador) tabModoComparador.classList.add('active');
     if (tabModoVisor) tabModoVisor.classList.remove('active');
@@ -2944,6 +3059,7 @@ if (btnEnviarAComparar) {
     var edA = $('diffEntradaA');
     if (edA) {
       edA.value = txt;
+      guardarStorage('boveda_diff_entrada_a', txt);
       autoFormatearDocumento(edA, 'A', true);
       if (edA._actualizarSintaxis) edA._actualizarSintaxis();
       actualizarStatsPanel('A');
@@ -2962,8 +3078,13 @@ function setupModoSeg(segId, lado) {
       seg.querySelectorAll('button').forEach(function(b){ b.classList.remove('active'); });
       btn.classList.add('active');
       var m = btn.dataset.mododiff;
-      if (lado === 'A') diffState.modoA = m;
-      else diffState.modoB = m;
+      if (lado === 'A') {
+        diffState.modoA = m;
+        guardarStorage('boveda_diff_modo_a', m);
+      } else {
+        diffState.modoB = m;
+        guardarStorage('boveda_diff_modo_b', m);
+      }
       actualizarStatsPanel(lado);
     });
   });
@@ -2983,6 +3104,7 @@ function bindFileInput(inputId, textareaId, lado) {
     fr.onload = function(){
       txt.value = decodificar(fr.result);
       autoFormatearSiMinificado(txt, lado);
+      guardarStorage('boveda_diff_entrada_' + lado.toLowerCase(), txt.value);
       if (txt._actualizarSintaxis) txt._actualizarSintaxis();
       actualizarStatsPanel(lado);
       toast('Archivo cargado en Documento ' + lado + ': ' + file.name);
@@ -3009,6 +3131,7 @@ function bindDragDrop(textareaId, lado) {
       fr.onload = function(){
         t.value = decodificar(fr.result);
         autoFormatearSiMinificado(t, lado);
+        guardarStorage('boveda_diff_entrada_' + lado.toLowerCase(), t.value);
         if (t._actualizarSintaxis) t._actualizarSintaxis();
         actualizarStatsPanel(lado);
         toast('Archivo cargado en Documento ' + lado + ': ' + file.name);
@@ -3018,6 +3141,7 @@ function bindDragDrop(textareaId, lado) {
   });
   t.addEventListener('input', function(){
     actualizarStatsPanel(lado);
+    guardarEstadoDiffDebounced(lado);
   });
 }
 bindDragDrop('diffEntradaA', 'A');
@@ -3067,6 +3191,7 @@ function bindQuickButtons(lado) {
         if (clip) {
           txtArea.value = clip;
           autoFormatearDocumento(txtArea, lado, true);
+          guardarStorage('boveda_diff_entrada_' + lado.toLowerCase(), txtArea.value);
           if (txtArea._actualizarSintaxis) txtArea._actualizarSintaxis();
           actualizarStatsPanel(lado);
           toast('Pegado y estructurado en Documento ' + lado);
@@ -3080,6 +3205,7 @@ function bindQuickButtons(lado) {
   if (btnLimpiar) {
     btnLimpiar.addEventListener('click', function(){
       txtArea.value = '';
+      borrarStorage('boveda_diff_entrada_' + lado.toLowerCase());
       if (txtArea._actualizarSintaxis) txtArea._actualizarSintaxis();
       actualizarStatsPanel(lado);
       toast('Documento ' + lado + ' limpiado');
@@ -3092,6 +3218,7 @@ function bindQuickButtons(lado) {
       if (!raw.trim()) { toast('Documento ' + lado + ' está vacío'); return; }
       var ok = autoFormatearDocumento(txtArea, lado, true);
       if (ok) {
+        guardarStorage('boveda_diff_entrada_' + lado.toLowerCase(), txtArea.value);
         toast('Documento ' + lado + ' estructurado e indentado');
       } else {
         toast('No se pudo formatear el contenido');
@@ -3111,6 +3238,8 @@ if (btnSwapDiff) {
     var temp = edA.value;
     edA.value = edB.value;
     edB.value = temp;
+    guardarStorage('boveda_diff_entrada_a', edA.value);
+    guardarStorage('boveda_diff_entrada_b', edB.value);
     if (edA._actualizarSintaxis) edA._actualizarSintaxis();
     if (edB._actualizarSintaxis) edB._actualizarSintaxis();
     actualizarStatsPanel('A');
@@ -3130,6 +3259,9 @@ if (btnLimpiarDiff) {
     var edB = $('diffEntradaB');
     edA.value = '';
     edB.value = '';
+    borrarStorage('boveda_diff_entrada_a');
+    borrarStorage('boveda_diff_entrada_b');
+    guardarStorage('boveda_diff_has_compared', '0');
     if (edA._actualizarSintaxis) edA._actualizarSintaxis();
     if (edB._actualizarSintaxis) edB._actualizarSintaxis();
     $('diffSalidaBox').style.display = 'none';
@@ -3606,14 +3738,18 @@ function highlightWordDiff(strA, strB) {
 }
 
 // 7. EJECUCIÓN PRINCIPAL DE LA COMPARACIÓN
-function ejecutarComparacion() {
+function ejecutarComparacion(esSilencioso) {
   var rawA = $('diffEntradaA').value;
   var rawB = $('diffEntradaB').value;
 
   if (!rawA.trim() && !rawB.trim()) {
-    alert('Por favor ingresa o carga al menos un archivo en el Documento A o Documento B para comparar.');
+    if (!esSilencioso) alert('Por favor ingresa o carga al menos un archivo en el Documento A o Documento B para comparar.');
     return;
   }
+
+  guardarStorage('boveda_diff_has_compared', '1');
+  guardarStorage('boveda_diff_entrada_a', rawA);
+  guardarStorage('boveda_diff_entrada_b', rawB);
 
   var chkTrim = $('chkDiffTrim').checked;
   var chkSortKeys = $('chkDiffSortKeys').checked;
@@ -3719,12 +3855,33 @@ function ejecutarComparacion() {
   diffState.curDiffIdx = -1;
   renderVisualDiff();
 
-  // Scroll suave al resultado
-  salidaBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  // Scroll suave al resultado (solo si no es restauración silenciosa)
+  if (!esSilencioso) {
+    salidaBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 }
 
 var btnEjecutarDiff = $('btnEjecutarDiff');
-if (btnEjecutarDiff) btnEjecutarDiff.addEventListener('click', ejecutarComparacion);
+if (btnEjecutarDiff) {
+  btnEjecutarDiff.addEventListener('click', function(){
+    ejecutarComparacion(false);
+  });
+}
+
+// Guardar opciones de Diff automáticamente cuando el usuario cambia un checkbox
+['chkDiffTrim', 'chkDiffSortKeys', 'chkDiffCross', 'chkDiffCase'].forEach(function(chkId){
+  var el = $(chkId);
+  if (el) {
+    el.addEventListener('change', function(){
+      guardarStorage('boveda_diff_opts', JSON.stringify({
+        trim: $('chkDiffTrim') ? $('chkDiffTrim').checked : true,
+        sortKeys: $('chkDiffSortKeys') ? $('chkDiffSortKeys').checked : true,
+        cross: $('chkDiffCross') ? $('chkDiffCross').checked : true,
+        caseInsensitive: $('chkDiffCase') ? $('chkDiffCase').checked : false
+      }));
+    });
+  }
+});
 
 // 8. RENDERIZADO DE TABLA DE DIFERENCIAS
 function renderTablaDiferencias() {
@@ -4141,6 +4298,95 @@ if (btnCargarEjemploDiff) {
     ejecutarComparacion();
   });
 }
+
+// 12. RESTAURAR ESTADO PERSISTIDO (Anti-pérdida de datos entre pestañas y módulos)
+function restaurarEstadoPersistido() {
+  try {
+    // 1. Restaurar Visor
+    var modoGuardado = leerStorage('boveda_visor_modo', '');
+    if (modoGuardado && (modoGuardado === 'auto' || modoGuardado === 'json' || modoGuardado === 'xml')) {
+      fijarModo(modoGuardado);
+    }
+    var vistaGuardada = leerStorage('boveda_visor_vista', '');
+    if (vistaGuardada && (vistaGuardada === 'codigo' || vistaGuardada === 'arbol' || vistaGuardada === 'bloques' || vistaGuardada === 'wms')) {
+      mostrarVista(vistaGuardada);
+    }
+    var wmsPed = leerStorage('boveda_visor_wms_pedido', '');
+    if (wmsPed && $('inputWmsPedido')) {
+      $('inputWmsPedido').value = wmsPed;
+    }
+    var wmsCamp = leerStorage('boveda_visor_wms_campo', '');
+    if (wmsCamp && $('inputWmsCampo')) {
+      $('inputWmsCampo').value = wmsCamp;
+    }
+    var entradaGuardada = leerStorage('boveda_visor_entrada', '');
+    if (entradaGuardada && entrada) {
+      entrada.value = entradaGuardada;
+      if (entrada._actualizarSintaxis) entrada._actualizarSintaxis();
+      procesar();
+    }
+
+    // 2. Restaurar Comparador (Diff)
+    var modoDiffA = leerStorage('boveda_diff_modo_a', '');
+    if (modoDiffA && $('segModoA')) {
+      diffState.modoA = modoDiffA;
+      $('segModoA').querySelectorAll('button').forEach(function(b){
+        b.classList.toggle('active', b.dataset.mododiff === modoDiffA);
+      });
+    }
+    var modoDiffB = leerStorage('boveda_diff_modo_b', '');
+    if (modoDiffB && $('segModoB')) {
+      diffState.modoB = modoDiffB;
+      $('segModoB').querySelectorAll('button').forEach(function(b){
+        b.classList.toggle('active', b.dataset.mododiff === modoDiffB);
+      });
+    }
+
+    var optsGuardadas = leerStorage('boveda_diff_opts', '');
+    if (optsGuardadas) {
+      try {
+        var optsObj = JSON.parse(optsGuardadas);
+        if (typeof optsObj.trim === 'boolean' && $('chkDiffTrim')) $('chkDiffTrim').checked = optsObj.trim;
+        if (typeof optsObj.sortKeys === 'boolean' && $('chkDiffSortKeys')) $('chkDiffSortKeys').checked = optsObj.sortKeys;
+        if (typeof optsObj.cross === 'boolean' && $('chkDiffCross')) $('chkDiffCross').checked = optsObj.cross;
+        if (typeof optsObj.caseInsensitive === 'boolean' && $('chkDiffCase')) $('chkDiffCase').checked = optsObj.caseInsensitive;
+      } catch(e){}
+    }
+
+    var entradaDiffA = leerStorage('boveda_diff_entrada_a', '');
+    var edA = $('diffEntradaA');
+    if (entradaDiffA && edA) {
+      edA.value = entradaDiffA;
+      if (edA._actualizarSintaxis) edA._actualizarSintaxis();
+      actualizarStatsPanel('A');
+    }
+
+    var entradaDiffB = leerStorage('boveda_diff_entrada_b', '');
+    var edB = $('diffEntradaB');
+    if (entradaDiffB && edB) {
+      edB.value = entradaDiffB;
+      if (edB._actualizarSintaxis) edB._actualizarSintaxis();
+      actualizarStatsPanel('B');
+    }
+
+    var hasCompared = leerStorage('boveda_diff_has_compared', '');
+    if (hasCompared === '1' && (entradaDiffA.trim() || entradaDiffB.trim())) {
+      ejecutarComparacion(true);
+    }
+
+    // 3. Restaurar Pestaña Principal (Visor vs Comparador)
+    var tabGuardada = leerStorage('boveda_visor_active_tab', 'visor');
+    if (tabGuardada === 'comparador') {
+      activarSeccion('comparador');
+    } else {
+      activarSeccion('visor');
+    }
+  } catch(err) {
+    console.error('Error restaurando estado persistido de visor/diff:', err);
+  }
+}
+
+restaurarEstadoPersistido();
 
 // Para pruebas / uso avanzado
 window.__diff = { ejecutar: ejecutarComparacion, state: diffState, preparar: prepararParaDiff };
