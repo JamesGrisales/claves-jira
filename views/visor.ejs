@@ -922,7 +922,52 @@
         </div>
         <span class="sp"></span>
         <button type="button" class="secondary" id="btnCopiarReporteDiff" style="font-size:12px; padding:6px 12px;">📋 Copiar Reporte</button>
-        <button type="button" class="secondary" id="btnDescargarReporteDiff" style="font-size:12px; padding:6px 12px;">⬇ Descargar Reporte</button>
+
+        <!-- Botón de Descarga Directa en Formato JSON / XML con Diferencias -->
+        <button type="button" id="btnDescargarFormatoNativo" style="font-size:12px; padding:6px 13px; font-weight:700; background:linear-gradient(135deg, rgba(14,165,233,0.22), rgba(99,102,241,0.28)); border:1px solid rgba(56,189,248,0.5); color:#38bdf8; border-radius:8px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; box-shadow:0 2px 8px rgba(14,165,233,0.2);" title="Descargar documento completo en formato original (JSON o XML) con diferencias y estructura completa">
+          <span id="txtIconDescargarNativo">📄</span>
+          <span id="txtLabelDescargarNativo">Descargar .JSON</span>
+        </button>
+
+        <!-- Menú Desplegable con Formatos Adicionales -->
+        <div style="position:relative; display:inline-block;">
+          <button type="button" class="secondary" id="btnToggleMenuDescarga" style="font-size:12px; padding:6px 10px; display:inline-flex; align-items:center; gap:4px;" title="Más opciones de descarga (HTML visual, JSON anotado, TXT)">
+            <span>⬇ Formatos</span>
+            <span style="font-size:10px;">▼</span>
+          </button>
+          <div id="menuDescargaDiff" style="display:none; position:absolute; right:0; top:calc(100% + 6px); background:#0f172a; border:1px solid rgba(255,255,255,0.18); border-radius:10px; box-shadow:0 12px 30px rgba(0,0,0,0.7); z-index:9999; min-width:320px; padding:6px; backdrop-filter:blur(16px);">
+            <div style="padding:6px 10px 4px; font-size:10.5px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em;">Opciones de Descarga</div>
+            <a href="javascript:void(0)" id="opcDescargarNativo" style="display:flex; align-items:flex-start; gap:10px; padding:8px 10px; border-radius:6px; text-decoration:none; color:var(--text); transition:background 0.15s;">
+              <span style="font-size:18px;">📄</span>
+              <div>
+                <strong style="display:block; font-size:12.5px; color:#38bdf8;" id="titOpcNativo">Documento .JSON con Diferencias</strong>
+                <span style="display:block; font-size:11px; color:var(--muted);">Toda la estructura con marcas [-] y [+] en cada cambio</span>
+              </div>
+            </a>
+            <a href="javascript:void(0)" id="opcDescargarHtml" style="display:flex; align-items:flex-start; gap:10px; padding:8px 10px; border-radius:6px; text-decoration:none; color:var(--text); transition:background 0.15s;">
+              <span style="font-size:18px;">🌐</span>
+              <div>
+                <strong style="display:block; font-size:12.5px; color:#4ade80;">Visor Visual Interactivo (.html)</strong>
+                <span style="display:block; font-size:11px; color:var(--muted);">Abre en cualquier navegador con vista lado a lado y colores</span>
+              </div>
+            </a>
+            <a href="javascript:void(0)" id="opcDescargarJsonAnotado" style="display:flex; align-items:flex-start; gap:10px; padding:8px 10px; border-radius:6px; text-decoration:none; color:var(--text); transition:background 0.15s;">
+              <span style="font-size:18px;">📊</span>
+              <div>
+                <strong style="display:block; font-size:12.5px; color:#f59e0b;">JSON Semántico Anotado (.json)</strong>
+                <span style="display:block; font-size:11px; color:var(--muted);">Estructura 100% JSON con campos modificados anotados</span>
+              </div>
+            </a>
+            <div style="height:1px; background:rgba(255,255,255,0.08); margin:4px 0;"></div>
+            <a href="javascript:void(0)" id="opcDescargarTxt" style="display:flex; align-items:flex-start; gap:10px; padding:8px 10px; border-radius:6px; text-decoration:none; color:var(--text); transition:background 0.15s;">
+              <span style="font-size:18px;">📝</span>
+              <div>
+                <strong style="display:block; font-size:12.5px; color:var(--text);">Reporte de Auditoría (.txt)</strong>
+                <span style="display:block; font-size:11px; color:var(--muted);">Listado clásico de líneas en texto plano</span>
+              </div>
+            </a>
+          </div>
+        </div>
       </div>
 
       <!-- Contenedor del Visor Visual de Diferencias -->
@@ -3848,6 +3893,13 @@ function ejecutarComparacion(esSilencioso) {
     $('diffResumenSub').textContent = 'Revisa la tabla de diferencias específicas y el visor comparativo a continuación.';
   }
 
+  // Actualizar etiqueta del botón de descarga según el formato de archivo comparado
+  var esDocXml = (prepA && prepA.tipo === 'xml') || (prepB && prepB.tipo === 'xml');
+  var lblNat = $('txtLabelDescargarNativo');
+  var titOpc = $('titOpcNativo');
+  if (lblNat) lblNat.textContent = esDocXml ? 'Descargar .XML' : 'Descargar .JSON';
+  if (titOpc) titOpc.textContent = esDocXml ? 'Documento .XML con Diferencias' : 'Documento .JSON con Diferencias';
+
   // 5. Renderizado de Tabla de Diferencias
   renderTablaDiferencias();
 
@@ -4231,16 +4283,309 @@ if (btnCopiarReporteDiff) {
   });
 }
 
-var btnDescargarReporteDiff = $('btnDescargarReporteDiff');
-if (btnDescargarReporteDiff) {
-  btnDescargarReporteDiff.addEventListener('click', function(){
+function descargarBlob(contenido, nombreArchivo, mimeType) {
+  var blob = new Blob([contenido], { type: mimeType || 'text/plain;charset=utf-8' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = nombreArchivo;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(a.href); }, 2500);
+}
+
+// 1. GENERAR DOCUMENTO ESTRUCTURADO COMPLETO CON MARCADORES (JSON / XML)
+function generarDocumentoDiffEstructurado(forzarTipo) {
+  var rows = diffState.diffRows || [];
+  if (!rows || rows.length === 0) return '';
+
+  var esXml = forzarTipo === 'xml' || (!forzarTipo && ((diffState.resParsedB && diffState.resParsedB.tipo === 'xml') || (diffState.resParsedA && diffState.resParsedA.tipo === 'xml')));
+  var lineas = [];
+  var fecha = new Date().toLocaleString('es-CO');
+
+  if (esXml) {
+    lineas.push('<!-- ==============================================================================');
+    lineas.push('  COMPARACIÓN ESTRUCTURAL XML - DOCUMENTO A vs DOCUMENTO B');
+    lineas.push('  Fecha: ' + fecha);
+    lineas.push('  [-] Línea / elemento original en Documento A (Eliminado o Modificado)');
+    lineas.push('  [+] Línea / elemento nuevo en Documento B (Agregado o Modificado)');
+    lineas.push('============================================================================== -->');
+  } else {
+    lineas.push('/* ==============================================================================');
+    lineas.push('  COMPARACIÓN ESTRUCTURAL JSON - DOCUMENTO A vs DOCUMENTO B');
+    lineas.push('  Fecha: ' + fecha);
+    lineas.push('  [-] Propiedad / línea original en Documento A (Eliminada o Modificada)');
+    lineas.push('  [+] Propiedad / línea nueva en Documento B (Agregada o Modificada)');
+    lineas.push('============================================================================== */');
+  }
+
+  rows.forEach(function(row){
+    if (row.type === 'equal') {
+      lineas.push(row.textB !== undefined ? row.textB : row.textA);
+    } else if (row.type === 'del') {
+      if (esXml) {
+        lineas.push('<!-- [-] ' + row.textA + ' -->');
+      } else {
+        lineas.push('/* [-] ' + row.textA + ' */');
+      }
+    } else if (row.type === 'add') {
+      if (esXml) {
+        lineas.push('<!-- [+] --> ' + row.textB);
+      } else {
+        lineas.push('/* [+] */ ' + row.textB);
+      }
+    } else if (row.type === 'mod') {
+      if (esXml) {
+        lineas.push('<!-- [-] ' + row.textA + ' -->');
+        lineas.push('<!-- [+] --> ' + row.textB);
+      } else {
+        lineas.push('/* [-] ' + row.textA + ' */');
+        lineas.push('/* [+] */ ' + row.textB);
+      }
+    }
+  });
+
+  return lineas.join('\n');
+}
+
+// 2. GENERAR JSON SEMÁNTICO ANOTADO (OBJETO JSON 100% ESTÁNDAR)
+function generarJsonSemanticoAnotado() {
+  var objA = diffState.resParsedA && diffState.resParsedA.objeto;
+  var objB = diffState.resParsedB && diffState.resParsedB.objeto;
+
+  if (!objA && !objB) {
+    return '{\n  "error": "No se encontraron objetos JSON estructurados para exportar."\n}';
+  }
+
+  function compararNodos(a, b) {
+    if (a === undefined) return { "__diff": "AGREGADO_EN_B", "valor_B": b };
+    if (b === undefined) return { "__diff": "ELIMINADO_EN_B", "valor_A": a };
+    if (a === b) return b;
+
+    var tipoA = Array.isArray(a) ? 'array' : (a !== null ? typeof a : 'null');
+    var tipoB = Array.isArray(b) ? 'array' : (b !== null ? typeof b : 'null');
+
+    if (tipoA !== tipoB) {
+      return {
+        "__diff": "TIPO_MODIFICADO",
+        "documento_A": a,
+        "documento_B": b
+      };
+    }
+
+    if (tipoA === 'object') {
+      var res = {};
+      var todasClaves = Array.from(new Set(Object.keys(a).concat(Object.keys(b))));
+      todasClaves.forEach(function(k){
+        if (!(k in a)) {
+          res[k] = { "__diff": "AGREGADO_EN_B", "valor": b[k] };
+        } else if (!(k in b)) {
+          res[k] = { "__diff": "ELIMINADO_EN_B", "valor_original": a[k] };
+        } else if (JSON.stringify(a[k]) !== JSON.stringify(b[k])) {
+          res[k] = compararNodos(a[k], b[k]);
+        } else {
+          res[k] = b[k];
+        }
+      });
+      return res;
+    }
+
+    if (tipoA === 'array') {
+      var arr = [];
+      var maxL = Math.max(a.length, b.length);
+      for (var i = 0; i < maxL; i++) {
+        if (i >= a.length) arr.push({ "__diff": "ELEMENTO_AGREGADO_EN_B", "valor": b[i] });
+        else if (i >= b.length) arr.push({ "__diff": "ELEMENTO_ELIMINADO_EN_B", "valor_anterior": a[i] });
+        else if (JSON.stringify(a[i]) !== JSON.stringify(b[i])) arr.push(compararNodos(a[i], b[i]));
+        else arr.push(b[i]);
+      }
+      return arr;
+    }
+
+    return {
+      "__diff": "MODIFICADO",
+      "documento_A": a,
+      "documento_B": b
+    };
+  }
+
+  var res = compararNodos(objA || {}, objB || {});
+  return JSON.stringify(res, null, 2);
+}
+
+// 3. GENERAR VISOR VISUAL HTML AUTÓNOMO (OFFLINE)
+function generarHtmlVisualReporte() {
+  var fecha = new Date().toLocaleString('es-CO');
+  var tA = diffState.resParsedA ? diffState.resParsedA.tipo.toUpperCase() : 'DOC_A';
+  var tB = diffState.resParsedB ? diffState.resParsedB.tipo.toUpperCase() : 'DOC_B';
+  var numDiffs = (diffState.diffLineIndices && diffState.diffLineIndices.length) || 0;
+  var rows = diffState.diffRows || [];
+
+  var colAHtml = '', colBHtml = '';
+
+  rows.forEach(function(row){
+    var rowClsA = '', rowClsB = '';
+    var textHtmlA = '', textHtmlB = '';
+
+    if (row.type === 'equal') {
+      textHtmlA = highlightCodeTokens(row.textA, diffState.modoA) || '&nbsp;';
+      textHtmlB = highlightCodeTokens(row.textB, diffState.modoB) || '&nbsp;';
+    } else if (row.type === 'del') {
+      rowClsA = ' diff-row-del';
+      rowClsB = ' diff-row-empty';
+      textHtmlA = '<mark class="diff-token-del">- ' + (highlightCodeTokens(row.textA, diffState.modoA) || '&nbsp;') + '</mark>';
+      textHtmlB = '&nbsp;';
+    } else if (row.type === 'add') {
+      rowClsA = ' diff-row-empty';
+      rowClsB = ' diff-row-add';
+      textHtmlA = '&nbsp;';
+      textHtmlB = '<mark class="diff-token-add">+ ' + (highlightCodeTokens(row.textB, diffState.modoB) || '&nbsp;') + '</mark>';
+    } else if (row.type === 'mod') {
+      rowClsA = ' diff-row-mod';
+      rowClsB = ' diff-row-mod';
+      var highlighted = highlightWordDiff(row.textA, row.textB);
+      textHtmlA = '~ ' + highlighted.htmlA;
+      textHtmlB = '~ ' + highlighted.htmlB;
+    }
+
+    colAHtml += '<div class="diff-line-row' + rowClsA + '"><span class="diff-ln">' + (row.lineA !== null ? row.lineA : '') + '</span><span class="diff-content">' + textHtmlA + '</span></div>';
+    colBHtml += '<div class="diff-line-row' + rowClsB + '"><span class="diff-ln">' + (row.lineB !== null ? row.lineB : '') + '</span><span class="diff-content">' + textHtmlB + '</span></div>';
+  });
+
+  return '<!DOCTYPE html>\n<html lang="es">\n<head>\n' +
+    '<meta charset="UTF-8">\n' +
+    '<title>Comparación ' + tA + ' vs ' + tB + ' — ' + fecha + '</title>\n' +
+    '<style>\n' +
+    ':root { --bg:#0b0f19; --card:#111827; --text:#f1f5f9; --muted:#94a3b8; --border:rgba(255,255,255,0.1); --accent:#38bdf8; }\n' +
+    'body { margin:0; padding:20px; font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif; background:var(--bg); color:var(--text); }\n' +
+    '.hdr { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:18px; padding-bottom:14px; border-bottom:1px solid var(--border); }\n' +
+    '.badge { background:rgba(56,189,248,0.15); color:var(--accent); border:1px solid rgba(56,189,248,0.3); padding:4px 10px; border-radius:14px; font-size:12px; font-weight:700; }\n' +
+    '.diff-side-by-side { display:grid; grid-template-columns:1fr 1fr; gap:10px; background:#070a12; border:1px solid var(--border); border-radius:10px; overflow:hidden; }\n' +
+    '.diff-col { overflow-x:auto; font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; font-size:12px; line-height:1.55; }\n' +
+    '.diff-col-header { position:sticky; top:0; z-index:5; background:#0f172a; padding:9px 12px; font-weight:700; font-size:11.5px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; color:var(--text); }\n' +
+    '.diff-line-row { display:flex; min-height:22px; }\n' +
+    '.diff-ln { width:46px; flex-shrink:0; text-align:right; padding-right:10px; color:#475569; user-select:none; border-right:1px solid rgba(255,255,255,0.06); background:rgba(0,0,0,0.25); }\n' +
+    '.diff-content { padding-left:10px; white-space:pre; flex-grow:1; }\n' +
+    '.diff-row-del { background:rgba(239,68,68,0.14); }\n' +
+    '.diff-row-add { background:rgba(16,185,129,0.14); }\n' +
+    '.diff-row-mod { background:rgba(245,158,11,0.14); }\n' +
+    '.diff-row-empty { background:rgba(0,0,0,0.35); opacity:0.5; }\n' +
+    'mark.diff-token-del { background:rgba(239,68,68,0.35); color:#fca5a5; border-radius:3px; padding:1px 3px; text-decoration:none; }\n' +
+    'mark.diff-token-add { background:rgba(16,185,129,0.35); color:#6ee7b7; border-radius:3px; padding:1px 3px; text-decoration:none; }\n' +
+    '.tk-tg { color:#f43f5e; font-weight:700; }\n' +
+    '.tk-an { color:#38bdf8; }\n' +
+    '.tk-av { color:#34d399; }\n' +
+    '.tk-jk { color:#38bdf8; font-weight:600; }\n' +
+    '.tk-js { color:#34d399; }\n' +
+    '.tk-jn { color:#f59e0b; }\n' +
+    '.tk-jb { color:#a855f7; font-weight:700; }\n' +
+    '.tk-jl { color:#64748b; font-style:italic; }\n' +
+    '.tk-cm { color:#64748b; font-style:italic; }\n' +
+    '.tk-pn { color:#94a3b8; }\n' +
+    '</style>\n</head>\n<body>\n' +
+    '<div class="hdr">\n' +
+    '  <div>\n' +
+    '    <h2 style="margin:0 0 4px; font-size:18px;">Reporte de Diferencias Visual — ' + tA + ' ⇄ ' + tB + '</h2>\n' +
+    '    <span style="font-size:12px; color:var(--muted);">Generado el ' + fecha + ' · Suite Bóveda Jira</span>\n' +
+    '  </div>\n' +
+    '  <div style="display:flex; align-items:center; gap:8px;">\n' +
+    '    <span class="badge">' + numDiffs + ' diferencias detectadas</span>\n' +
+    '  </div>\n' +
+    '</div>\n' +
+    '<div class="diff-side-by-side">\n' +
+    '  <div class="diff-col" id="colA">\n' +
+    '    <div class="diff-col-header"><span>DOCUMENTO A (BASE)</span><span style="font-size:10.5px; color:#f87171;">Rojo = Eliminado / Modificado</span></div>\n' +
+    '    ' + colAHtml + '\n' +
+    '  </div>\n' +
+    '  <div class="diff-col" id="colB">\n' +
+    '    <div class="diff-col-header"><span>DOCUMENTO B (COMPARADO)</span><span style="font-size:10.5px; color:#34d399;">Verde = Agregado / Modificado</span></div>\n' +
+    '    ' + colBHtml + '\n' +
+    '  </div>\n' +
+    '</div>\n' +
+    '<script>\n' +
+    'var a = document.getElementById("colA"), b = document.getElementById("colB"), s = false;\n' +
+    'a.addEventListener("scroll", function(){ if (s) return; s = true; b.scrollTop = a.scrollTop; b.scrollLeft = a.scrollLeft; s = false; });\n' +
+    'b.addEventListener("scroll", function(){ if (s) return; s = true; a.scrollTop = b.scrollTop; a.scrollLeft = b.scrollLeft; s = false; });\n' +
+    '<\/script>\n</body>\n</html>';
+}
+
+function descargarFormatoNativoActual() {
+  if (!diffState.diffRows || diffState.diffRows.length === 0) {
+    toast('No hay una comparación activa para descargar');
+    return;
+  }
+  var esDocXml = ((diffState.resParsedB && diffState.resParsedB.tipo === 'xml') || (diffState.resParsedA && diffState.resParsedA.tipo === 'xml'));
+  var ext = esDocXml ? 'xml' : 'json';
+  var contenido = generarDocumentoDiffEstructurado(ext);
+  var mime = esDocXml ? 'application/xml;charset=utf-8' : 'application/json;charset=utf-8';
+  var nombre = 'comparacion_completa_' + Date.now() + '.' + ext;
+  descargarBlob(contenido, nombre, mime);
+  toast('Archivo .' + ext.toUpperCase() + ' con estructura completa descargado');
+}
+
+var btnDescargarFormatoNativo = $('btnDescargarFormatoNativo');
+if (btnDescargarFormatoNativo) {
+  btnDescargarFormatoNativo.addEventListener('click', descargarFormatoNativoActual);
+}
+
+var btnToggleMenuDescarga = $('btnToggleMenuDescarga');
+var menuDescargaDiff = $('menuDescargaDiff');
+if (btnToggleMenuDescarga && menuDescargaDiff) {
+  btnToggleMenuDescarga.addEventListener('click', function(e){
+    e.stopPropagation();
+    var oculto = menuDescargaDiff.style.display === 'none';
+    menuDescargaDiff.style.display = oculto ? 'block' : 'none';
+  });
+  document.addEventListener('click', function(e){
+    if (menuDescargaDiff && !menuDescargaDiff.contains(e.target) && e.target !== btnToggleMenuDescarga) {
+      menuDescargaDiff.style.display = 'none';
+    }
+  });
+}
+
+var opcDescargarNativo = $('opcDescargarNativo');
+if (opcDescargarNativo) {
+  opcDescargarNativo.addEventListener('click', function(){
+    if (menuDescargaDiff) menuDescargaDiff.style.display = 'none';
+    descargarFormatoNativoActual();
+  });
+}
+
+var opcDescargarHtml = $('opcDescargarHtml');
+if (opcDescargarHtml) {
+  opcDescargarHtml.addEventListener('click', function(){
+    if (menuDescargaDiff) menuDescargaDiff.style.display = 'none';
+    if (!diffState.diffRows || diffState.diffRows.length === 0) {
+      toast('No hay una comparación activa para descargar');
+      return;
+    }
+    var html = generarHtmlVisualReporte();
+    descargarBlob(html, 'visor_comparacion_' + Date.now() + '.html', 'text/html;charset=utf-8');
+    toast('Visor visual interactivo (.html) descargado');
+  });
+}
+
+var opcDescargarJsonAnotado = $('opcDescargarJsonAnotado');
+if (opcDescargarJsonAnotado) {
+  opcDescargarJsonAnotado.addEventListener('click', function(){
+    if (menuDescargaDiff) menuDescargaDiff.style.display = 'none';
+    if (!diffState.diffRows || diffState.diffRows.length === 0) {
+      toast('No hay una comparación activa para descargar');
+      return;
+    }
+    var jsonAnotado = generarJsonSemanticoAnotado();
+    descargarBlob(jsonAnotado, 'comparacion_semantica_' + Date.now() + '.json', 'application/json;charset=utf-8');
+    toast('JSON semántico anotado descargado');
+  });
+}
+
+var opcDescargarTxt = $('opcDescargarTxt');
+if (opcDescargarTxt) {
+  opcDescargarTxt.addEventListener('click', function(){
+    if (menuDescargaDiff) menuDescargaDiff.style.display = 'none';
     var rep = generarReporteTexto();
-    var blob = new Blob([rep], { type: 'text/plain;charset=utf-8' });
-    var a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'reporte_diferencias_' + Date.now() + '.txt';
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    setTimeout(function(){ URL.revokeObjectURL(a.href); }, 2000);
+    descargarBlob(rep, 'reporte_diferencias_' + Date.now() + '.txt', 'text/plain;charset=utf-8');
+    toast('Reporte de auditoría (.txt) descargado');
   });
 }
 
