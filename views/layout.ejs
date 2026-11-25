@@ -6961,10 +6961,10 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
     <div class="topbar-left">
       <div class="topbar-ver-update-group" style="display:inline-flex; align-items:center; gap:6px; flex-wrap:wrap;">
         <!-- Insignia Holográfica de Versión del Sistema (Visible en todo el programa) -->
-        <div class="cyber-version-pill" data-title="Suite Bóveda Jira · Versión activa: <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.10.53') %>" title="Suite Bóveda Jira · Versión <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.10.53') %>">
+        <div class="cyber-version-pill" data-title="Suite Bóveda Jira · Versión activa: <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.10.54') %>" title="Suite Bóveda Jira · Versión <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.10.54') %>">
           <span class="cvp-icon"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></span>
           <span class="cvp-lbl">BUILD</span>
-          <strong class="cvp-ver"><%= typeof appVersion !== 'undefined' ? appVersion : 'v2.10.53' %></strong>
+          <strong class="cvp-ver"><%= typeof appVersion !== 'undefined' ? appVersion : 'v2.10.54' %></strong>
           <% if (typeof gitCommit !== 'undefined' && gitCommit) { %><span class="cvp-commit" style="font-size:10px; opacity:0.75; font-family:var(--mono); margin-left:3px;">(<%= gitCommit %>)</span><% } %>
           <span class="cvp-pulse"></span>
         </div>
@@ -8472,6 +8472,73 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
     })();
   })();
   </script>
+<% if (currentUser) { %>
+<style>
+/* ===== PANTALLA DE BIENVENIDA (tras iniciar sesión) ===== */
+.welcome-overlay{position:fixed;inset:0;z-index:99000;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 40%,rgba(var(--accent-rgb),.16),rgba(3,6,16,.86) 70%);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);opacity:0;transition:opacity .45s ease;cursor:pointer}
+.welcome-overlay.show{opacity:1}
+.welcome-overlay.hide{opacity:0;pointer-events:none}
+.welcome-card{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;padding:38px 56px 32px;border-radius:28px;text-align:center;background:linear-gradient(160deg,rgba(18,26,48,.82),rgba(7,11,24,.9));border:1px solid rgba(var(--accent-rgb),.45);box-shadow:0 30px 80px rgba(0,0,0,.6),0 0 60px rgba(var(--accent-rgb),.28),inset 0 1px 0 rgba(255,255,255,.18);transform:translateY(24px) scale(.94);transition:transform .6s cubic-bezier(.34,1.45,.64,1);max-width:92vw;overflow:hidden}
+.welcome-overlay.show .welcome-card{transform:translateY(0) scale(1)}
+.welcome-card::before{content:"";position:absolute;inset:-60% -20% auto -20%;height:100%;background:conic-gradient(from 0deg,transparent,rgba(var(--accent-rgb),.22),transparent 40%);animation:wlcSpin 6s linear infinite;pointer-events:none}
+.welcome-card>*{position:relative}
+@keyframes wlcSpin{to{transform:rotate(360deg)}}
+.welcome-avatar{width:84px;height:84px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:38px;font-weight:800;color:#fff;text-transform:uppercase;background:linear-gradient(135deg,var(--accent),#7c3aed);box-shadow:0 0 0 6px rgba(var(--accent-rgb),.16),0 0 40px rgba(var(--accent-rgb),.55);margin-bottom:10px;animation:wlcPulse 2.2s ease-in-out infinite}
+@keyframes wlcPulse{0%,100%{box-shadow:0 0 0 6px rgba(var(--accent-rgb),.16),0 0 30px rgba(var(--accent-rgb),.45)}50%{box-shadow:0 0 0 12px rgba(var(--accent-rgb),.08),0 0 52px rgba(var(--accent-rgb),.75)}}
+.welcome-greet{font-family:var(--mono);font-size:11.5px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--accent)}
+.welcome-title{margin:2px 0 0;font-size:clamp(26px,5vw,42px);font-weight:800;letter-spacing:-.02em;color:#fff;line-height:1.1}
+.welcome-name{display:block;margin-top:2px;font-size:clamp(30px,6vw,52px);background:linear-gradient(90deg,var(--accent),#a78bfa,#f472b6);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;word-break:break-word}
+.welcome-sub{margin-top:10px;font-size:13.5px;color:rgba(226,232,240,.7)}
+.welcome-bar{margin-top:18px;width:180px;height:3px;border-radius:99px;background:rgba(255,255,255,.1);overflow:hidden}
+.welcome-bar i{display:block;height:100%;width:100%;background:linear-gradient(90deg,var(--accent),#a78bfa);transform-origin:left;animation:wlcBar 3.2s linear forwards}
+@keyframes wlcBar{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+@media (max-width:520px){.welcome-card{padding:28px 26px 24px}}
+@media (prefers-reduced-motion:reduce){.welcome-card::before,.welcome-avatar{animation:none}}
+</style>
+<script>
+(function(){
+  var USER = <%- JSON.stringify(currentUser.username).replace(/</g, '\\u003c') %>;
+  function esc(s){ return String(s).replace(/[&<>"']/g, function(c){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]; }); }
+  function showWelcome(){
+    if (document.getElementById('welcomeOverlay')) return;
+    var h = new Date().getHours();
+    var saludo = h < 12 ? 'Buenos días' : (h < 19 ? 'Buenas tardes' : 'Buenas noches');
+    var ov = document.createElement('div');
+    ov.className = 'welcome-overlay';
+    ov.id = 'welcomeOverlay';
+    ov.setAttribute('role', 'status');
+    ov.innerHTML = '<div class="welcome-card">' +
+      '<div class="welcome-avatar">' + esc(USER.charAt(0)) + '</div>' +
+      '<div class="welcome-greet">' + saludo + '</div>' +
+      '<h2 class="welcome-title">¡Bienvenido,<span class="welcome-name">' + esc(USER) + '</span></h2>' +
+      '<div class="welcome-sub">Tu bóveda está lista ✨</div>' +
+      '<div class="welcome-bar"><i></i></div></div>';
+    document.body.appendChild(ov);
+    requestAnimationFrame(function(){ requestAnimationFrame(function(){ ov.classList.add('show'); }); });
+    var closed = false;
+    function close(){
+      if (closed) return; closed = true;
+      ov.classList.remove('show'); ov.classList.add('hide');
+      setTimeout(function(){ if (ov.parentNode) ov.parentNode.removeChild(ov); }, 600);
+    }
+    ov.addEventListener('click', close);
+    document.addEventListener('keydown', function onK(e){ if (e.key === 'Escape' || e.key === 'Enter') { close(); document.removeEventListener('keydown', onK); } });
+    setTimeout(close, 3200);
+  }
+  function init(){
+    var p = new URLSearchParams(window.location.search);
+    if (p.get('login_sync') === '1' && !sessionStorage.getItem('boveda_welcome_shown_ts')) {
+      sessionStorage.setItem('boveda_welcome_shown_ts', String(Date.now()));
+      showWelcome();
+    } else if (p.get('login_sync') === '1') {
+      var last = parseInt(sessionStorage.getItem('boveda_welcome_shown_ts') || '0', 10);
+      if (Date.now() - last > 8000) { sessionStorage.setItem('boveda_welcome_shown_ts', String(Date.now())); showWelcome(); }
+    }
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+</script>
+<% } %>
 <% if (currentUser) { %><script src="/persistir.js">
     /* ===== MOTOR UNIVERSAL DE SELECTORES CYBERPUNK (CYBER-SELECT) ===== */
     (function initCyberSelects(){
@@ -8693,7 +8760,7 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
             </div>
             <div class="gub-info">
               <div class="gub-branch" style="color:#10b981;">✅ Sistema Sincronizado y Estable</div>
-              <div class="gub-desc">Tu versión activa (<%= typeof appVersion !== "undefined" ? appVersion : "v2.10.53" %>) cuenta con todas las mejoras y parches más recientes publicados en GitHub.</div>
+              <div class="gub-desc">Tu versión activa (<%= typeof appVersion !== "undefined" ? appVersion : "v2.10.54" %>) cuenta con todas las mejoras y parches más recientes publicados en GitHub.</div>
             </div>
           </div>
           <div style="padding: 12px 14px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; font-size: 12.5px; color: var(--muted); line-height: 1.45;">
@@ -8934,7 +9001,7 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
                 // Estado: Al día (0 cambios)
                 if (bguBadge) bguBadge.style.display = 'none';
                 if (modalIcon) modalIcon.textContent = '✨';
-                if (modalTitle) modalTitle.textContent = 'Sistema al Día (' + (data.version ? (data.version.startsWith('v') ? data.version : 'v' + data.version) : '<%= typeof appVersion !== "undefined" ? appVersion : "v2.10.53" %>') + (data.commit ? ' · ' + data.commit : '') + ')';
+                if (modalTitle) modalTitle.textContent = 'Sistema al Día (' + (data.version ? (data.version.startsWith('v') ? data.version : 'v' + data.version) : '<%= typeof appVersion !== "undefined" ? appVersion : "v2.10.54" %>') + (data.commit ? ' · ' + data.commit : '') + ')';
                 if (modalSubtitle) modalSubtitle.textContent = 'No existen versiones o cambios nuevos disponibles';
                 if (viewPending) viewPending.style.display = 'none';
                 if (viewUpToDate) viewUpToDate.style.display = 'block';

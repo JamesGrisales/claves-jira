@@ -14,9 +14,9 @@ const express = require("express");
 function getAppVersion() {
   try {
     delete require.cache[require.resolve("./package.json")];
-    return require("./package.json").version || "2.10.53";
+    return require("./package.json").version || "2.10.54";
   } catch(e) {
-    return "2.10.53";
+    return "2.10.54";
   }
 }
 
@@ -386,11 +386,7 @@ app.post("/registro", async (req, res) => {
         username: nuevoUsuario.username,
       };
 
-      flash(
-        req,
-        "ok",
-        `¡Bienvenido, ${nuevoUsuario.username}! Tu cuenta ha sido creada exitosamente.`
-      );
+      /* Bienvenida animada en layout (login_sync=1) */
 
       return res.redirect("/?login_sync=1");
     }
@@ -444,7 +440,7 @@ app.post("/login", async (req, res) => {
       username: user.username,
     };
 
-    flash(req, "ok", `¡Bienvenido de nuevo, ${user.username}!`);
+    /* La bienvenida se muestra con la pantalla animada del layout (login_sync=1) */
 
     if (isAjax) {
       return res.json({ ok: true, redirect: "/?login_sync=1" });
