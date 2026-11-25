@@ -10,13 +10,24 @@ process.on("uncaughtException", (err) => {
 
 
 const express = require("express");
-const pkgJson = require("./package.json");
-const APP_VERSION = pkgJson.version || "2.9.0";
-let GIT_COMMIT = "";
-try {
-  const { execSync } = require("child_process");
-  GIT_COMMIT = execSync("git rev-parse --short HEAD", { cwd: __dirname, timeout: 3000 }).toString().trim();
-} catch(e) {}
+
+function getAppVersion() {
+  try {
+    delete require.cache[require.resolve("./package.json")];
+    return require("./package.json").version || "2.10.46";
+  } catch(e) {
+    return "2.10.46";
+  }
+}
+
+function getGitCommit() {
+  try {
+    const { execSync } = require("child_process");
+    return execSync("git rev-parse --short HEAD", { cwd: __dirname, timeout: 2000 }).toString().trim();
+  } catch(e) {
+    return "";
+  }
+}
 
 const compression = require("compression");
 const session = require("express-session");
@@ -205,10 +216,12 @@ app.use(async (req, res, next) => {
   res.locals.flashes = req.session.flashes || [];
   res.locals.currentPath = req.path;
   res.locals.papeleraCount = papeleraCache.count;
-  res.locals.appVersion = "v" + APP_VERSION;
-  res.locals.rawVersion = APP_VERSION;
-  res.locals.gitCommit = GIT_COMMIT;
-  res.locals.buildString = "v" + APP_VERSION + (GIT_COMMIT ? " (" + GIT_COMMIT + ")" : "");
+  const curVer = getAppVersion();
+  const curCommit = getGitCommit();
+  res.locals.appVersion = "v" + curVer;
+  res.locals.rawVersion = curVer;
+  res.locals.gitCommit = curCommit;
+  res.locals.buildString = "v" + curVer + (curCommit ? " (" + curCommit + ")" : "");
 
   req.session.flashes = [];
 
@@ -2653,7 +2666,7 @@ app.use((err, req, res, next) => {
 // ---------------------------------------------------------------------------
 
 app.get("/api/health", (req, res) => {
-  res.json({ ok: true, version: APP_VERSION, commit: GIT_COMMIT, timestamp: Date.now() });
+  res.json({ ok: true, version: getAppVersion(), commit: getGitCommit(), timestamp: Date.now() });
 });
 
 app.get("/api/sistema/verificar-actualizacion", requireLogin, (req, res) => {
@@ -2693,15 +2706,17 @@ app.get("/api/sistema/verificar-actualizacion", requireLogin, (req, res) => {
       }
 
       const count = parseInt((countOut || "").trim(), 10) || 0;
+      const curVer = getAppVersion();
+      const curCommit = getGitCommit();
       if (count === 0) {
         return res.json({
           ok: true,
           hayCambios: false,
           numCambios: 0,
           branch: "main",
-          mensaje: "El sistema ya está actualizado con la última versión de GitHub (v" + APP_VERSION + (GIT_COMMIT ? " · " + GIT_COMMIT : "") + ").",
-          version: APP_VERSION,
-          commit: GIT_COMMIT
+          mensaje: "El sistema ya está actualizado con la última versión de GitHub (v" + curVer + (curCommit ? " · " + curCommit : "") + ").",
+          version: curVer,
+          commit: curCommit
         });
       }
 
@@ -2717,8 +2732,8 @@ app.get("/api/sistema/verificar-actualizacion", requireLogin, (req, res) => {
           numCambios: count,
           branch: "main",
           commits: commits,
-          version: APP_VERSION,
-          commit: GIT_COMMIT
+          version: curVer,
+          commit: curCommit
         });
       });
     });
