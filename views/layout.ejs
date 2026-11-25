@@ -2169,12 +2169,14 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
 }
 
 :root[data-nav-style="cyber-dock"] .topbar-right .clock .clock-date {
-  max-width: 140px !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
+  max-width: none !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
   white-space: nowrap !important;
   display: inline-block !important;
   vertical-align: middle !important;
+  font-size: 11.5px !important;
+  font-weight: 500 !important;
 }
 
 :root[data-nav-style="cyber-dock"] .topbar-right .topbar-right-subrow {
@@ -2332,13 +2334,6 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
 /* -------------------------------------------------------------
    RESPONSIVE CYBER-DOCK: ADAPTACIÓN TOTAL AL MINIMIZAR / ZOOM 100%
    ------------------------------------------------------------- */
-/* Trimming proactivo de fecha en resoluciones menores a 1680px */
-@media (max-width: 1680px) {
-  :root[data-nav-style="cyber-dock"] .clock .clock-date {
-    max-width: 110px !important;
-  }
-}
-
 /* Cuando la pantalla o ventana esté a zoom 100% en pantallas estándar (<= 1560px),
    el Cyber-Dock se traslada a su fila dedicada centrada arriba para no colisionar JAMÁS */
 @media (max-width: 1560px) {
@@ -2383,8 +2378,8 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
   }
 }
 
-/* Ocultar la fecha completa en <= 1380px para máxima ligereza visual */
-@media (max-width: 1380px) {
+/* Ocultar la fecha únicamente en pantallas muy compactas / móviles (<= 900px) */
+@media (max-width: 900px) {
   :root[data-nav-style="cyber-dock"] .clock .clock-date {
     display: none !important;
   }
@@ -6827,10 +6822,10 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
     <div class="topbar-left">
       <div class="topbar-ver-update-group" style="display:inline-flex; align-items:center; gap:6px; flex-wrap:wrap;">
         <!-- Insignia Holográfica de Versión del Sistema (Visible en todo el programa) -->
-        <div class="cyber-version-pill" data-title="Suite Bóveda Jira · Versión activa: <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.10.49') %>" title="Suite Bóveda Jira · Versión <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.10.49') %>">
+        <div class="cyber-version-pill" data-title="Suite Bóveda Jira · Versión activa: <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.10.50') %>" title="Suite Bóveda Jira · Versión <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.10.50') %>">
           <span class="cvp-icon"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></span>
           <span class="cvp-lbl">BUILD</span>
-          <strong class="cvp-ver"><%= typeof appVersion !== 'undefined' ? appVersion : 'v2.10.49' %></strong>
+          <strong class="cvp-ver"><%= typeof appVersion !== 'undefined' ? appVersion : 'v2.10.50' %></strong>
           <% if (typeof gitCommit !== 'undefined' && gitCommit) { %><span class="cvp-commit" style="font-size:10px; opacity:0.75; font-family:var(--mono); margin-left:3px;">(<%= gitCommit %>)</span><% } %>
           <span class="cvp-pulse"></span>
         </div>
@@ -8619,7 +8614,7 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
             </div>
             <div class="gub-info">
               <div class="gub-branch" style="color:#10b981;">✅ Sistema Sincronizado y Estable</div>
-              <div class="gub-desc">Tu versión activa (<%= typeof appVersion !== "undefined" ? appVersion : "v2.10.49" %>) cuenta con todas las mejoras y parches más recientes publicados en GitHub.</div>
+              <div class="gub-desc">Tu versión activa (<%= typeof appVersion !== "undefined" ? appVersion : "v2.10.50" %>) cuenta con todas las mejoras y parches más recientes publicados en GitHub.</div>
             </div>
           </div>
           <div style="padding: 12px 14px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; font-size: 12.5px; color: var(--muted); line-height: 1.45;">
@@ -8860,7 +8855,7 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
                 // Estado: Al día (0 cambios)
                 if (bguBadge) bguBadge.style.display = 'none';
                 if (modalIcon) modalIcon.textContent = '✨';
-                if (modalTitle) modalTitle.textContent = 'Sistema al Día (' + (data.version ? (data.version.startsWith('v') ? data.version : 'v' + data.version) : '<%= typeof appVersion !== "undefined" ? appVersion : "v2.10.49" %>') + (data.commit ? ' · ' + data.commit : '') + ')';
+                if (modalTitle) modalTitle.textContent = 'Sistema al Día (' + (data.version ? (data.version.startsWith('v') ? data.version : 'v' + data.version) : '<%= typeof appVersion !== "undefined" ? appVersion : "v2.10.50" %>') + (data.commit ? ' · ' + data.commit : '') + ')';
                 if (modalSubtitle) modalSubtitle.textContent = 'No existen versiones o cambios nuevos disponibles';
                 if (viewPending) viewPending.style.display = 'none';
                 if (viewUpToDate) viewUpToDate.style.display = 'block';
