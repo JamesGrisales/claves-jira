@@ -32,6 +32,9 @@
       var theme = m === 'oled' ? 'oled' : ((m === 'dark' || (m === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches)) ? 'dark' : 'light');
       d.setAttribute('data-theme', theme); d.setAttribute('data-mode', m);
 
+      var themePreset = localStorage.getItem('boveda-theme-preset') || 'cyber-hud';
+      d.setAttribute('data-theme-preset', themePreset);
+
       var dbEng = localStorage.getItem('boveda_db_engine') || 'postgres';
       d.setAttribute('data-db-engine', dbEng);
       var DB_ENGINES_CONFIG = {
@@ -211,6 +214,163 @@
 :root[data-theme="oled"] .ed-frame:focus-within {
   border-color:var(--accent) !important;
   box-shadow:0 0 0 1px var(--accent) !important;
+}
+
+/* =====================================================================
+   PRESETS DE ESTILO VISUAL DEL SISTEMA (Centro de Apariencias)
+   Garantizan personalización estética 100% segura sin tocar la lógica.
+   ===================================================================== */
+
+/* 1. LINEAR MINIMALIST SLATE (Modo Oscuro Grafito Anti-Fatiga) */
+:root[data-theme-preset="linear-slate"] {
+  --bg: #0b0f19 !important;
+  --bg-glow: rgba(16, 185, 129, 0.12) !important;
+  --panel: #111827 !important;
+  --panel-glass: rgba(17, 24, 39, 0.95) !important;
+  --panel-alt: #0d1424 !important;
+  --panel-edge: rgba(255, 255, 255, 0.08) !important;
+  --card-border: rgba(255, 255, 255, 0.08) !important;
+  --text: #f1f5f9 !important;
+  --muted: #94a3b8 !important;
+  --accent: #10b981 !important;
+  --accent-rgb: 16, 185, 129 !important;
+  color-scheme: dark;
+}
+:root[data-theme-preset="linear-slate"] body {
+  background-color: #0b0f19 !important;
+  background-image: radial-gradient(ellipse 800px 600px at 50% -10%, rgba(16, 185, 129, 0.08), transparent 70%) !important;
+}
+:root[data-theme-preset="linear-slate"] .card {
+  background: #111827 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 4px 20px -2px rgba(0,0,0,0.5) !important;
+  border-radius: 14px !important;
+}
+:root[data-theme-preset="linear-slate"] .row {
+  background: #0f172a !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  border-radius: 10px !important;
+}
+:root[data-theme-preset="linear-slate"] .row:hover {
+  background: #1e293b !important;
+  border-color: rgba(16, 185, 129, 0.4) !important;
+}
+:root[data-theme-preset="linear-slate"] .navbar {
+  background: rgba(17, 24, 39, 0.94) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.7) !important;
+}
+
+/* 2. SWISS CLEAN LIGHT (Modo Claro Ejecutivo y Corporativo) */
+:root[data-theme-preset="swiss-light"] {
+  --bg: #f8fafc !important;
+  --bg-glow: rgba(37, 99, 235, 0.06) !important;
+  --panel: #ffffff !important;
+  --panel-glass: rgba(255, 255, 255, 0.96) !important;
+  --panel-alt: #f1f5f9 !important;
+  --panel-edge: #e2e8f0 !important;
+  --card-border: #e2e8f0 !important;
+  --text: #0f172a !important;
+  --muted: #64748b !important;
+  --accent: #2563eb !important;
+  --accent-rgb: 37, 99, 235 !important;
+  --scrollbar: #cbd5e1 !important;
+  color-scheme: light;
+}
+:root[data-theme-preset="swiss-light"] body {
+  background-color: #f8fafc !important;
+  background-image: radial-gradient(ellipse 900px 500px at 50% 0%, rgba(37, 99, 235, 0.05), transparent 70%) !important;
+  color: #0f172a !important;
+}
+:root[data-theme-preset="swiss-light"] .card {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 4px 18px -4px rgba(0,0,0,0.06) !important;
+  border-radius: 14px !important;
+  color: #0f172a !important;
+}
+:root[data-theme-preset="swiss-light"] .row {
+  background: #f8fafc !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #0f172a !important;
+}
+:root[data-theme-preset="swiss-light"] .row:hover {
+  background: #f1f5f9 !important;
+  border-color: #93c5fd !important;
+}
+:root[data-theme-preset="swiss-light"] input[type=text],
+:root[data-theme-preset="swiss-light"] input[type=password],
+:root[data-theme-preset="swiss-light"] input[type=number],
+:root[data-theme-preset="swiss-light"] select,
+:root[data-theme-preset="swiss-light"] textarea {
+  background: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+:root[data-theme-preset="swiss-light"] .navbar {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08) !important;
+}
+:root[data-theme-preset="swiss-light"] .nav-tabs a {
+  background: rgba(0, 0, 0, 0.03) !important;
+  border-color: #e2e8f0 !important;
+  color: #334155 !important;
+}
+:root[data-theme-preset="swiss-light"] .nav-tabs a .nav-ic svg {
+  stroke: #334155 !important;
+}
+
+/* 3. SPATIAL CYBER GLASS (Cristal Neón Sci-Fi & Nebulosa) */
+:root[data-theme-preset="spatial-glass"] {
+  --bg: #070a13 !important;
+  --bg-glow: rgba(0, 245, 255, 0.25) !important;
+  --panel: rgba(14, 21, 37, 0.72) !important;
+  --panel-glass: rgba(14, 21, 37, 0.82) !important;
+  --panel-alt: rgba(9, 14, 26, 0.6) !important;
+  --panel-edge: rgba(0, 245, 255, 0.25) !important;
+  --text: #ffffff !important;
+  --muted: #94a3b8 !important;
+  --accent: #00f5ff !important;
+  --accent-rgb: 0, 245, 255 !important;
+  color-scheme: dark;
+}
+:root[data-theme-preset="spatial-glass"] body {
+  background-color: #070a13 !important;
+  background-image:
+    radial-gradient(ellipse 800px 800px at 20% 15%, rgba(0, 245, 255, 0.12), transparent 60%),
+    radial-gradient(ellipse 800px 800px at 80% 85%, rgba(168, 85, 247, 0.14), transparent 60%) !important;
+}
+:root[data-theme-preset="spatial-glass"] .card {
+  background: rgba(14, 21, 37, 0.65) !important;
+  backdrop-filter: blur(28px) saturate(1.8) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(1.8) !important;
+  border: 1px solid rgba(0, 245, 255, 0.25) !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+}
+
+/* 4. OLED PURE BLACK (Negro Absoluto 100% #000) */
+:root[data-theme-preset="oled-black"] {
+  --bg: #000000 !important;
+  --panel: #050505 !important;
+  --panel-alt: #000000 !important;
+  --panel-edge: rgba(255, 255, 255, 0.12) !important;
+  color-scheme: dark;
+}
+:root[data-theme-preset="oled-black"] body {
+  background-color: #000000 !important;
+  background-image: none !important;
+}
+:root[data-theme-preset="oled-black"] .card {
+  background: #050505 !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: none !important;
+}
+
+/* 5. CYBER-HUD (Predeterminado - Mantiene 100% el diseño actual) */
+:root[data-theme-preset="cyber-hud"],
+:root:not([data-theme-preset]) {
+  /* No sobreescribe nada, mantiene la configuración nativa actual */
 }
 
 /* ---------- 3) BASE ---------- */
@@ -1722,6 +1882,57 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
 .seg button.plain{ padding:7px 4px; border-radius:8px; font-size:12.5px; font-weight:600; color:var(--muted); display:flex; align-items:center; justify-content:center; gap:5px; transition:background-color .15s ease, color .15s ease; }
 .seg button.plain:hover{ color:var(--text); }
 .seg button.plain.on{ background:var(--panel); color:var(--accent-dark); box-shadow:0 1px 4px rgba(15,27,51,.14); }
+
+/* Selector de Presets de Estilo Visual en el panel de Apariencia */
+.theme-preset-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, 1fr) !important;
+  gap: 7px !important;
+  margin: 6px 0 12px 0 !important;
+}
+.theme-preset-btn {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  gap: 2px !important;
+  padding: 8px 10px !important;
+  border-radius: 12px !important;
+  background: var(--panel-alt) !important;
+  border: 1px solid var(--panel-edge) !important;
+  color: var(--text) !important;
+  font-family: var(--sans) !important;
+  cursor: pointer !important;
+  text-align: left !important;
+  transition: all .2s ease !important;
+  position: relative !important;
+  overflow: hidden !important;
+  box-shadow: none !important;
+}
+.theme-preset-btn:hover {
+  border-color: var(--accent) !important;
+  background: rgba(var(--accent-rgb), 0.08) !important;
+  transform: translateY(-1px) !important;
+  color: var(--text) !important;
+}
+.theme-preset-btn.active, .theme-preset-btn.on {
+  border-color: var(--accent) !important;
+  background: rgba(var(--accent-rgb), 0.16) !important;
+  box-shadow: 0 0 14px -2px rgba(var(--accent-rgb), 0.45) !important;
+}
+.theme-preset-btn .tp-icon {
+  font-size: 18px !important;
+  line-height: 1 !important;
+  margin-bottom: 2px !important;
+}
+.theme-preset-btn b {
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  color: var(--text) !important;
+}
+.theme-preset-btn small {
+  font-size: 10.5px !important;
+  color: var(--muted) !important;
+}
 
 /* Selector de Estilo de Menú en el panel de Apariencia */
 .nav-style-grid{
@@ -6495,7 +6706,40 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
   <div class="pal-panel" id="palPanel" role="dialog" aria-label="Apariencia">
     <h4>Apariencia</h4>
     <p class="hint">Elige cómo quieres ver la aplicación. Se guarda en este navegador.</p>
-    <div class="pal-sec" style="margin-top:0">Modo</div>
+    
+    <div class="pal-sec" style="margin-top:0; display:flex; align-items:center; justify-content:space-between;">
+      <span>🎨 Estilo Visual (Preset)</span>
+      <span style="font-size:10px; opacity:0.65; font-weight:normal;">Seguro · Cero riesgo</span>
+    </div>
+    <div class="theme-preset-grid" id="themePresetSeg">
+      <button type="button" class="plain theme-preset-btn" data-preset="cyber-hud">
+        <span class="tp-icon">🛸</span>
+        <b>Cyber-HUD</b>
+        <small>Actual / Neón</small>
+      </button>
+      <button type="button" class="plain theme-preset-btn" data-preset="linear-slate">
+        <span class="tp-icon">🌌</span>
+        <b>Linear Slate</b>
+        <small>Grafito Minimal</small>
+      </button>
+      <button type="button" class="plain theme-preset-btn" data-preset="swiss-light">
+        <span class="tp-icon">☀️</span>
+        <b>Swiss Light</b>
+        <small>Blanco Ejecutivo</small>
+      </button>
+      <button type="button" class="plain theme-preset-btn" data-preset="spatial-glass">
+        <span class="tp-icon">🔮</span>
+        <b>Spatial Glass</b>
+        <small>Cristal Nebulosa</small>
+      </button>
+      <button type="button" class="plain theme-preset-btn" data-preset="oled-black">
+        <span class="tp-icon">✦</span>
+        <b>OLED Pure</b>
+        <small>Negro Absoluto</small>
+      </button>
+    </div>
+
+    <div class="pal-sec">Modo Luminoso</div>
     <div class="seg" id="modeSeg" style="grid-template-columns:repeat(4,1fr);">
       <button type="button" class="plain" data-mode="light">☀ Claro</button>
       <button type="button" class="plain" data-mode="dark">☾ Oscuro</button>
@@ -6583,10 +6827,10 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
     <div class="topbar-left">
       <div class="topbar-ver-update-group" style="display:inline-flex; align-items:center; gap:6px; flex-wrap:wrap;">
         <!-- Insignia Holográfica de Versión del Sistema (Visible en todo el programa) -->
-        <div class="cyber-version-pill" data-title="Suite Bóveda Jira · Versión activa: <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.10.48') %>" title="Suite Bóveda Jira · Versión <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.10.48') %>">
+        <div class="cyber-version-pill" data-title="Suite Bóveda Jira · Versión activa: <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.10.49') %>" title="Suite Bóveda Jira · Versión <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.10.49') %>">
           <span class="cvp-icon"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></span>
           <span class="cvp-lbl">BUILD</span>
-          <strong class="cvp-ver"><%= typeof appVersion !== 'undefined' ? appVersion : 'v2.10.48' %></strong>
+          <strong class="cvp-ver"><%= typeof appVersion !== 'undefined' ? appVersion : 'v2.10.49' %></strong>
           <% if (typeof gitCommit !== 'undefined' && gitCommit) { %><span class="cvp-commit" style="font-size:10px; opacity:0.75; font-family:var(--mono); margin-left:3px;">(<%= gitCommit %>)</span><% } %>
           <span class="cvp-pulse"></span>
         </div>
@@ -6600,6 +6844,12 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
           </span>
           <span class="bgu-txt" id="bguTxt">Bajar Cambios</span>
           <span class="bgu-badge" id="bguBadge" style="display:none;">0</span>
+        </button>
+
+        <!-- Botón de Acceso Rápido a Centro de Apariencias -->
+        <button type="button" class="btn-git-update" id="btnOpenApariencia" title="Personalizar apariencia, temas visuales y estilos">
+          <span style="font-size:13.5px; line-height:1; display:inline-flex; align-items:center;">🎨</span>
+          <span class="bgu-txt">Apariencia</span>
         </button>
       </div>
     </div>
@@ -7285,6 +7535,12 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
     };
     function marcar(){
       var m = root.getAttribute('data-mode') || 'auto', p = root.getAttribute('data-palette') || 'db-engine', st = root.getAttribute('data-nav-style') || 'oculto';
+      var activePreset = root.getAttribute('data-theme-preset') || 'cyber-hud';
+      Array.prototype.forEach.call(panel.querySelectorAll('[data-preset]'), function(b){
+        var isPr = (b.dataset.preset === activePreset);
+        b.classList.toggle('active', isPr);
+        b.classList.toggle('on', isPr);
+      });
       Array.prototype.forEach.call(panel.querySelectorAll('[data-mode]'), function(b){ b.classList.toggle('on', b.dataset.mode === m); });
       Array.prototype.forEach.call(panel.querySelectorAll('[data-pal]'), function(b){ b.classList.toggle('on', b.dataset.pal === p); });
       Array.prototype.forEach.call(panel.querySelectorAll('[data-nav]'), function(b){ b.classList.toggle('on', b.dataset.nav === st); });
@@ -7313,6 +7569,24 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
           if (dot) dot.classList.toggle('checked', isCurrent);
         });
       }
+    }
+    function setThemePreset(pr){
+      pr = pr || 'cyber-hud';
+      store('boveda-theme-preset', pr);
+      root.setAttribute('data-theme-preset', pr);
+      if (pr === 'swiss-light') {
+        setModo('light');
+        setPaleta('cobalto');
+      } else if (pr === 'linear-slate') {
+        setModo('oled');
+        setPaleta('menta');
+      } else if (pr === 'spatial-glass') {
+        setModo('dark');
+        setPaleta('cyber');
+      } else if (pr === 'oled-black') {
+        setModo('oled');
+      }
+      marcar();
     }
     function setNavStyle(st){
       root.setAttribute('data-nav-style', st);
@@ -7357,14 +7631,21 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
     if (mq.addEventListener) mq.addEventListener('change', function(){ if (root.getAttribute('data-mode') === 'auto') setModo('auto'); });
 
     panel.addEventListener('click', function(e){
-      var m = e.target.closest('[data-mode]'), p = e.target.closest('[data-pal]'), n = e.target.closest('[data-nav]');
+      var pr = e.target.closest('[data-preset]'), m = e.target.closest('[data-mode]'), p = e.target.closest('[data-pal]'), n = e.target.closest('[data-nav]');
+      if (pr) setThemePreset(pr.dataset.preset);
       if (m) setModo(m.dataset.mode);
       if (p) setPaleta(p.dataset.pal);
       if (n) setNavStyle(n.dataset.nav);
     });
     $('palCustom').addEventListener('input', function(){ setPaleta('custom', this.value); });
-    $('palReset').addEventListener('click', function(){ setModo('oled'); setPaleta('lima'); setNavStyle('oculto'); });
+    $('palReset').addEventListener('click', function(){ setThemePreset('cyber-hud'); setModo('oled'); setPaleta('lima'); setNavStyle('cyber-dock'); });
     $('themeToggle').addEventListener('click', function(){ setModo(root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'); });
+    if ($('btnOpenApariencia')) {
+      $('btnOpenApariencia').addEventListener('click', function(e){
+        e.stopPropagation();
+        togglePal();
+      });
+    }
     function posicionarPanelPaleta(){
       var btn = $('palBtn');
       if (!btn || !panel) return;
@@ -8338,7 +8619,7 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
             </div>
             <div class="gub-info">
               <div class="gub-branch" style="color:#10b981;">✅ Sistema Sincronizado y Estable</div>
-              <div class="gub-desc">Tu versión activa (<%= typeof appVersion !== "undefined" ? appVersion : "v2.10.48" %>) cuenta con todas las mejoras y parches más recientes publicados en GitHub.</div>
+              <div class="gub-desc">Tu versión activa (<%= typeof appVersion !== "undefined" ? appVersion : "v2.10.49" %>) cuenta con todas las mejoras y parches más recientes publicados en GitHub.</div>
             </div>
           </div>
           <div style="padding: 12px 14px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; font-size: 12.5px; color: var(--muted); line-height: 1.45;">
@@ -8579,7 +8860,7 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
                 // Estado: Al día (0 cambios)
                 if (bguBadge) bguBadge.style.display = 'none';
                 if (modalIcon) modalIcon.textContent = '✨';
-                if (modalTitle) modalTitle.textContent = 'Sistema al Día (' + (data.version ? (data.version.startsWith('v') ? data.version : 'v' + data.version) : '<%= typeof appVersion !== "undefined" ? appVersion : "v2.10.48" %>') + (data.commit ? ' · ' + data.commit : '') + ')';
+                if (modalTitle) modalTitle.textContent = 'Sistema al Día (' + (data.version ? (data.version.startsWith('v') ? data.version : 'v' + data.version) : '<%= typeof appVersion !== "undefined" ? appVersion : "v2.10.49" %>') + (data.commit ? ' · ' + data.commit : '') + ')';
                 if (modalSubtitle) modalSubtitle.textContent = 'No existen versiones o cambios nuevos disponibles';
                 if (viewPending) viewPending.style.display = 'none';
                 if (viewUpToDate) viewUpToDate.style.display = 'block';
