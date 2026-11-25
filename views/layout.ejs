@@ -1869,18 +1869,18 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
 /* El navbar se convierte en una cápsula horizontal flotante en el CENTRO de la barra superior */
 :root[data-nav-style="cyber-dock"] body:not(.guest) .navbar {
   position: absolute !important;
-  top: 12px !important;
+  top: 10px !important;
   bottom: auto !important;
   left: 50% !important;
   right: auto !important;
   transform: translateX(-50%) !important;
   width: auto !important;
-  min-width: 280px !important;
+  min-width: 260px !important;
   width: max-content !important;
-  max-width: calc(100vw - 40px) !important;
-  height: 60px !important;
-  padding: 6px 14px !important;
-  border-radius: 22px !important;
+  max-width: calc(100vw - 32px) !important;
+  height: 52px !important;
+  padding: 4px 10px !important;
+  border-radius: 18px !important;
   background: rgba(9, 14, 25, 0.88) !important;
   backdrop-filter: blur(28px) saturate(2.0) !important;
   -webkit-backdrop-filter: blur(28px) saturate(2.0) !important;
@@ -1889,7 +1889,7 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
   display: flex !important;
   flex-direction: row !important;
   align-items: center !important;
-  gap: 5px !important;
+  gap: 4px !important;
   z-index: 500 !important;
   overflow: hidden !important;
   box-sizing: border-box !important;
@@ -1909,7 +1909,7 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
   display: flex !important;
   align-items: flex-start !important;
   justify-content: space-between !important;
-  min-height: 84px !important;
+  min-height: 76px !important;
   margin-bottom: 12px !important;
   position: relative !important;
   z-index: 100 !important;
@@ -1922,13 +1922,17 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
   gap: 6px !important;
   align-self: flex-start !important;
   padding-top: 2px !important;
+  max-width: 25% !important;
+  flex-shrink: 0 !important;
 }
 
 :root[data-nav-style="cyber-dock"] .topbar-left .btn-nav-modal {
-  padding: 6px 12px !important;
+  padding: 5px 11px !important;
+  font-size: 11.5px !important;
   background: rgba(8, 14, 26, 0.88) !important;
   border: 1px solid rgba(var(--accent-rgb), 0.35) !important;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5) !important;
+  white-space: nowrap !important;
 }
 
 /* Stack vertical en la derecha: Reloj arriba y Motor de BD justo debajo */
@@ -1938,30 +1942,47 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
   align-items: flex-end !important;
   gap: 5px !important;
   margin-left: auto !important;
+  max-width: 28% !important;
+  flex-shrink: 0 !important;
 }
 
 :root[data-nav-style="cyber-dock"] .topbar-right .clock {
   order: 1 !important;
   margin: 0 !important;
-  padding: 5px 14px 5px 8px !important;
+  padding: 4px 12px 4px 8px !important;
   background: rgba(8, 14, 26, 0.88) !important;
   border: 1px solid rgba(var(--accent-rgb), 0.35) !important;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5) !important;
+  font-size: 12px !important;
+  white-space: nowrap !important;
+}
+
+:root[data-nav-style="cyber-dock"] .topbar-right .clock .clock-date {
+  max-width: 140px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  display: inline-block !important;
+  vertical-align: middle !important;
 }
 
 :root[data-nav-style="cyber-dock"] .topbar-right .topbar-right-subrow {
   order: 2 !important;
   align-self: flex-end !important;
   margin-top: 1px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
 }
 
 :root[data-nav-style="cyber-dock"] .topbar-right .topbar-db-btn,
 :root[data-nav-style="cyber-dock"] .topbar-right .btn-recargar-sesion {
-  padding: 4px 12px 4px 6px !important;
-  font-size: 11.5px !important;
+  padding: 4px 10px 4px 6px !important;
+  font-size: 11px !important;
   background: rgba(8, 14, 26, 0.88) !important;
   border: 1px solid rgba(var(--accent-rgb), 0.35) !important;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5) !important;
+  white-space: nowrap !important;
 }
 
 /* Ocultar elementos innecesarios en el dock horizontal para mantenerlo limpio */
@@ -1975,13 +1996,13 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
 
 :root[data-nav-style="cyber-dock"] .nav-account {
   border: none !important;
-  padding: 0 0 0 6px !important;
-  margin: 0 0 0 4px !important;
+  padding: 0 0 0 5px !important;
+  margin: 0 0 0 3px !important;
   border-left: 1px solid rgba(255,255,255,0.12) !important;
   display: flex !important;
   flex-direction: row !important;
   align-items: center !important;
-  gap: 4px !important;
+  gap: 3px !important;
   flex-shrink: 0 !important;
 }
 
@@ -1989,17 +2010,17 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
   display: flex !important;
   flex-direction: row !important;
   align-items: center !important;
-  gap: 6px !important;
+  gap: 4px !important;
 }
 :root[data-nav-style="cyber-dock"] .theme-toggle {
-  width: 38px !important;
-  height: 38px !important;
-  border-radius: 12px !important;
+  width: 35px !important;
+  height: 35px !important;
+  border-radius: 10px !important;
 }
 
 :root[data-nav-style="cyber-dock"] .acc-out {
-  width: 38px !important;
-  height: 38px !important;
+  width: 35px !important;
+  height: 35px !important;
   border-radius: 10px !important;
   padding: 0 !important;
   display: inline-flex !important;
@@ -2013,14 +2034,14 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
   display: flex !important;
   flex-direction: row !important;
   align-items: center !important;
-  gap: 6px !important;
+  gap: 3.5px !important;
   flex: 1 1 auto !important;
   min-width: 0 !important;
   overflow-x: auto !important;
   overflow-y: hidden !important;
   white-space: nowrap !important;
   -webkit-overflow-scrolling: touch !important;
-  padding: 2px 2px !important;
+  padding: 1px 2px !important;
   scrollbar-width: none !important;
 }
 :root[data-nav-style="cyber-dock"] .nav-tabs::-webkit-scrollbar { display: none !important; }
@@ -2028,9 +2049,9 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
 /* Icono individual en el Cyber-Dock con física de lupa */
 :root[data-nav-style="cyber-dock"] .nav-tabs a {
   position: relative !important;
-  width: 44px !important;
-  height: 44px !important;
-  border-radius: 14px !important;
+  width: 38px !important;
+  height: 38px !important;
+  border-radius: 11px !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -2048,18 +2069,18 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
 }
 
 :root[data-nav-style="cyber-dock"] .nav-tabs a .nav-ic {
-  width: 24px !important;
-  height: 24px !important;
+  width: 20px !important;
+  height: 20px !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
   transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
 }
 :root[data-nav-style="cyber-dock"] .nav-tabs a .nav-ic svg {
-  width: 22px !important;
-  height: 22px !important;
+  width: 19px !important;
+  height: 19px !important;
   stroke: var(--text) !important;
-  stroke-width: 2.1 !important;
+  stroke-width: 2.0 !important;
   transition: all 0.2s ease !important;
 }
 :root[data-nav-style="cyber-dock"] .nav-tabs a:hover .nav-ic svg,
@@ -2070,7 +2091,7 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
 
 /* Efecto Lupa al posar el cursor: se magnifica y baja suavemente */
 :root[data-nav-style="cyber-dock"] .nav-tabs a:hover {
-  transform: translateY(2px) scale(1.18) !important;
+  transform: translateY(2px) scale(1.15) !important;
   z-index: 100 !important;
   background: rgba(var(--accent-rgb), 0.22) !important;
   border-color: var(--accent) !important;
@@ -2090,22 +2111,28 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
   bottom: 2px !important;
   left: 50% !important;
   transform: translateX(-50%) !important;
-  width: 5px !important;
-  height: 5px !important;
+  width: 4px !important;
+  height: 4px !important;
   border-radius: 50% !important;
   background: var(--accent) !important;
   box-shadow: 0 0 8px var(--accent), 0 0 14px var(--accent) !important;
 }
 
 /* -------------------------------------------------------------
-   RESPONSIVE CYBER-DOCK: ADAPTACIÓN TOTAL AL MINIMIZAR / ACHICAR VENTANA
+   RESPONSIVE CYBER-DOCK: ADAPTACIÓN TOTAL AL MINIMIZAR / ZOOM 100%
    ------------------------------------------------------------- */
-/* Cuando la ventana no es ultra-panorámica (<= 1350px), el Cyber-Dock
-   se posiciona en su propia fila superior centrada para evitar cualquier
-   solapamiento o choque con el selector de estilo a la izquierda o el reloj a la derecha */
-@media (max-width: 1350px) {
+/* Trimming proactivo de fecha en resoluciones menores a 1680px */
+@media (max-width: 1680px) {
+  :root[data-nav-style="cyber-dock"] .clock .clock-date {
+    max-width: 110px !important;
+  }
+}
+
+/* Cuando la pantalla o ventana esté a zoom 100% en pantallas estándar (<= 1560px),
+   el Cyber-Dock se traslada a su fila dedicada centrada arriba para no colisionar JAMÁS */
+@media (max-width: 1560px) {
   :root[data-nav-style="cyber-dock"] body:not(.guest) {
-    padding-top: 12px !important;
+    padding-top: 10px !important;
   }
   :root[data-nav-style="cyber-dock"] body:not(.guest) .navbar {
     position: relative !important;
@@ -2114,25 +2141,27 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
     right: auto !important;
     bottom: auto !important;
     transform: none !important;
-    margin: 0 auto 12px auto !important;
+    margin: 0 auto 10px auto !important;
     max-width: calc(100vw - 32px) !important;
     width: max-content !important;
   }
   :root[data-nav-style="cyber-dock"] .topbar {
     min-height: auto !important;
-    margin-bottom: 14px !important;
+    margin-bottom: 12px !important;
     flex-direction: row !important;
     align-items: center !important;
   }
   :root[data-nav-style="cyber-dock"] .topbar-left {
+    max-width: none !important;
     flex-direction: row !important;
     align-items: center !important;
-    gap: 10px !important;
+    gap: 8px !important;
   }
   :root[data-nav-style="cyber-dock"] .topbar-right {
+    max-width: none !important;
     flex-direction: row !important;
     align-items: center !important;
-    gap: 10px !important;
+    gap: 8px !important;
   }
   :root[data-nav-style="cyber-dock"] .topbar-right .clock {
     order: 2 !important;
@@ -2143,40 +2172,44 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
   }
 }
 
+/* Ocultar la fecha completa en <= 1380px para máxima ligereza visual */
+@media (max-width: 1380px) {
+  :root[data-nav-style="cyber-dock"] .clock .clock-date {
+    display: none !important;
+  }
+}
+
 /* Pantallas medianas / Ventanas restauradas medianas (<= 1080px) */
 @media (max-width: 1080px) {
   :root[data-nav-style="cyber-dock"] body:not(.guest) .navbar {
-    height: 52px !important;
-    padding: 4px 10px !important;
-    border-radius: 18px !important;
+    height: 48px !important;
+    padding: 3px 8px !important;
+    border-radius: 16px !important;
   }
   :root[data-nav-style="cyber-dock"] .nav-tabs {
-    gap: 4px !important;
+    gap: 3px !important;
   }
   :root[data-nav-style="cyber-dock"] .nav-tabs a {
-    width: 38px !important;
-    height: 38px !important;
-    border-radius: 12px !important;
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 10px !important;
   }
   :root[data-nav-style="cyber-dock"] .nav-tabs a .nav-ic {
-    width: 20px !important;
-    height: 20px !important;
+    width: 19px !important;
+    height: 19px !important;
   }
   :root[data-nav-style="cyber-dock"] .nav-tabs a .nav-ic svg {
-    width: 18px !important;
-    height: 18px !important;
+    width: 17px !important;
+    height: 17px !important;
   }
   :root[data-nav-style="cyber-dock"] .theme-toggle,
   :root[data-nav-style="cyber-dock"] .acc-out {
-    width: 34px !important;
-    height: 34px !important;
-    border-radius: 10px !important;
+    width: 33px !important;
+    height: 33px !important;
+    border-radius: 9px !important;
   }
   :root[data-nav-style="cyber-dock"] .clock .clock-date {
-    max-width: 120px !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
+    display: none !important;
   }
 }
 
@@ -6550,10 +6583,10 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
     <div class="topbar-left">
       <div class="topbar-ver-update-group" style="display:inline-flex; align-items:center; gap:6px; flex-wrap:wrap;">
         <!-- Insignia Holográfica de Versión del Sistema (Visible en todo el programa) -->
-        <div class="cyber-version-pill" data-title="Suite Bóveda Jira · Versión activa: <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.10.47') %>" title="Suite Bóveda Jira · Versión <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.10.47') %>">
+        <div class="cyber-version-pill" data-title="Suite Bóveda Jira · Versión activa: <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.10.48') %>" title="Suite Bóveda Jira · Versión <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.10.48') %>">
           <span class="cvp-icon"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></span>
           <span class="cvp-lbl">BUILD</span>
-          <strong class="cvp-ver"><%= typeof appVersion !== 'undefined' ? appVersion : 'v2.10.47' %></strong>
+          <strong class="cvp-ver"><%= typeof appVersion !== 'undefined' ? appVersion : 'v2.10.48' %></strong>
           <% if (typeof gitCommit !== 'undefined' && gitCommit) { %><span class="cvp-commit" style="font-size:10px; opacity:0.75; font-family:var(--mono); margin-left:3px;">(<%= gitCommit %>)</span><% } %>
           <span class="cvp-pulse"></span>
         </div>
@@ -8305,7 +8338,7 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
             </div>
             <div class="gub-info">
               <div class="gub-branch" style="color:#10b981;">✅ Sistema Sincronizado y Estable</div>
-              <div class="gub-desc">Tu versión activa (<%= typeof appVersion !== "undefined" ? appVersion : "v2.10.47" %>) cuenta con todas las mejoras y parches más recientes publicados en GitHub.</div>
+              <div class="gub-desc">Tu versión activa (<%= typeof appVersion !== "undefined" ? appVersion : "v2.10.48" %>) cuenta con todas las mejoras y parches más recientes publicados en GitHub.</div>
             </div>
           </div>
           <div style="padding: 12px 14px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; font-size: 12.5px; color: var(--muted); line-height: 1.45;">
@@ -8546,7 +8579,7 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
                 // Estado: Al día (0 cambios)
                 if (bguBadge) bguBadge.style.display = 'none';
                 if (modalIcon) modalIcon.textContent = '✨';
-                if (modalTitle) modalTitle.textContent = 'Sistema al Día (' + (data.version ? (data.version.startsWith('v') ? data.version : 'v' + data.version) : '<%= typeof appVersion !== "undefined" ? appVersion : "v2.10.47" %>') + (data.commit ? ' · ' + data.commit : '') + ')';
+                if (modalTitle) modalTitle.textContent = 'Sistema al Día (' + (data.version ? (data.version.startsWith('v') ? data.version : 'v' + data.version) : '<%= typeof appVersion !== "undefined" ? appVersion : "v2.10.48" %>') + (data.commit ? ' · ' + data.commit : '') + ')';
                 if (modalSubtitle) modalSubtitle.textContent = 'No existen versiones o cambios nuevos disponibles';
                 if (viewPending) viewPending.style.display = 'none';
                 if (viewUpToDate) viewUpToDate.style.display = 'block';
