@@ -1934,6 +1934,44 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
   color: var(--muted) !important;
 }
 
+/* Botones de Motor, Editor y Lenguaje en el panel de Apariencia */
+.pal-eng-btn {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 6px 9px !important;
+  border-radius: 10px !important;
+  background: var(--panel-alt) !important;
+  border: 1px solid var(--panel-edge) !important;
+  color: var(--text) !important;
+  font-family: var(--sans) !important;
+  cursor: pointer !important;
+  text-align: left !important;
+  transition: all .18s ease !important;
+  box-shadow: none !important;
+}
+.pal-eng-btn:hover {
+  border-color: var(--accent) !important;
+  background: rgba(var(--accent-rgb), 0.12) !important;
+  transform: translateY(-1px) !important;
+}
+.pal-eng-btn.active, .pal-eng-btn.on {
+  border-color: var(--accent) !important;
+  background: rgba(var(--accent-rgb), 0.22) !important;
+  box-shadow: 0 0 10px rgba(var(--accent-rgb), 0.4) !important;
+}
+.pal-eng-btn .tbm-title {
+  font-size: 11.5px !important;
+  font-weight: 700 !important;
+  line-height: 1.2 !important;
+  color: var(--text) !important;
+}
+.pal-eng-btn small {
+  font-size: 10px !important;
+  color: var(--muted) !important;
+  display: block !important;
+}
+
 /* Selector de Estilo de Menú en el panel de Apariencia */
 .nav-style-grid{
   display:grid !important;
@@ -2188,10 +2226,10 @@ body.guest .pal-panel{ left:50%; transform:translateX(-50%); right:auto; bottom:
   gap: 6px !important;
 }
 
-:root[data-nav-style="cyber-dock"] .topbar-right .topbar-db-btn,
-:root[data-nav-style="cyber-dock"] .topbar-right .btn-recargar-sesion {
-  padding: 4px 10px 4px 6px !important;
-  font-size: 11px !important;
+:root[data-nav-style="cyber-dock"] .topbar-left .btn-recargar-sesion,
+:root[data-nav-style="cyber-dock"] .btn-recargar-sesion {
+  padding: 4px 10px 4px 8px !important;
+  font-size: 11.5px !important;
   background: rgba(8, 14, 26, 0.88) !important;
   border: 1px solid rgba(var(--accent-rgb), 0.35) !important;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5) !important;
@@ -6813,6 +6851,75 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
       <button type="button" class="plain sw" data-pal="custom" id="swCustom" style="--a:#2563eb;--b:#4f46e5" title="Tu propio color"><span class="dot"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>Propio</button>
     </div>
     <label class="pal-custom">Elegir un color propio <input type="color" id="palCustom" value="#2563eb"></label>
+    
+    <div class="pal-sec">🗄️ Motor, Editor & Lenguaje del Sistema</div>
+    <div class="pal-engine-grid" id="palEngineGrid" style="display:grid; grid-template-columns:repeat(2,1fr); gap:6px; max-height:220px; overflow-y:auto; padding:2px; margin-bottom:12px; scrollbar-width:thin;">
+      <button type="button" class="plain pal-eng-btn tbm-item" data-engine-pick="postgres">
+        <span class="db-orb db-orb-sm db-orb-pg">🐘</span>
+        <div class="tbm-info"><div class="tbm-title">PostgreSQL 16</div><small>Cian Neón · ACID</small></div>
+      </button>
+      <button type="button" class="plain pal-eng-btn tbm-item" data-engine-pick="oracle">
+        <span class="db-orb db-orb-sm db-orb-ora">🏛️</span>
+        <div class="tbm-info"><div class="tbm-title">Oracle Enterprise</div><small>Ámbar Dorado</small></div>
+      </button>
+      <button type="button" class="plain pal-eng-btn tbm-item" data-engine-pick="sqlserver">
+        <span class="db-orb db-orb-sm db-orb-sql">🟦</span>
+        <div class="tbm-info"><div class="tbm-title">Microsoft SQL</div><small>Azul Zafiro</small></div>
+      </button>
+      <button type="button" class="plain pal-eng-btn tbm-item" data-engine-pick="mysql">
+        <span class="db-orb db-orb-sm db-orb-my">🐬</span>
+        <div class="tbm-info"><div class="tbm-title">MySQL / MariaDB</div><small>Turquesa Cluster</small></div>
+      </button>
+      <button type="button" class="plain pal-eng-btn tbm-item" data-engine-pick="mongodb">
+        <span class="db-orb db-orb-sm db-orb-mg">🍃</span>
+        <div class="tbm-info"><div class="tbm-title">MongoDB</div><small>Verde Esmeralda</small></div>
+      </button>
+      <button type="button" class="plain pal-eng-btn tbm-item" data-engine-pick="redis">
+        <span class="db-orb db-orb-sm db-orb-rd">⚡</span>
+        <div class="tbm-info"><div class="tbm-title">Redis Cache</div><small>Rojo Rubí</small></div>
+      </button>
+      <button type="button" class="plain pal-eng-btn tbm-item" data-engine-pick="sqlite">
+        <span class="db-orb db-orb-sm db-orb-sqlite">💾</span>
+        <div class="tbm-info"><div class="tbm-title">SQLite</div><small>Púrpura Neón</small></div>
+      </button>
+      <button type="button" class="plain pal-eng-btn tbm-item" data-engine-pick="cassandra">
+        <span class="db-orb db-orb-sm db-orb-cas">🪐</span>
+        <div class="tbm-info"><div class="tbm-title">Cassandra</div><small>Índigo Ciber</small></div>
+      </button>
+      <button type="button" class="plain pal-eng-btn tbm-item" data-engine-pick="neo4j">
+        <span class="db-orb db-orb-sm db-orb-neo">🕸️</span>
+        <div class="tbm-info"><div class="tbm-title">Neo4j Graph</div><small>Cobalto Neón</small></div>
+      </button>
+      <button type="button" class="plain pal-eng-btn tbm-item" data-engine-pick="vscode">
+        <span class="db-orb db-orb-sm db-orb-vsc">💙</span>
+        <div class="tbm-info"><div class="tbm-title">VS Code</div><small>Azul Eléctrico</small></div>
+      </button>
+      <button type="button" class="plain pal-eng-btn tbm-item" data-engine-pick="neovim">
+        <span class="db-orb db-orb-sm db-orb-nvim">🟢</span>
+        <div class="tbm-info"><div class="tbm-title">Neovim / Vim</div><small>Verde Menta</small></div>
+      </button>
+      <button type="button" class="plain pal-eng-btn tbm-item" data-engine-pick="python">
+        <span class="db-orb db-orb-sm db-orb-py">🐍</span>
+        <div class="tbm-info"><div class="tbm-title">Python</div><small>Oro & Zafiro</small></div>
+      </button>
+      <button type="button" class="plain pal-eng-btn tbm-item" data-engine-pick="javascript">
+        <span class="db-orb db-orb-sm db-orb-js">🟨</span>
+        <div class="tbm-info"><div class="tbm-title">JavaScript</div><small>Amarillo Neón</small></div>
+      </button>
+      <button type="button" class="plain pal-eng-btn tbm-item" data-engine-pick="java">
+        <span class="db-orb db-orb-sm db-orb-java">☕</span>
+        <div class="tbm-info"><div class="tbm-title">Java JVM</div><small>Naranja Fuego</small></div>
+      </button>
+      <button type="button" class="plain pal-eng-btn tbm-item" data-engine-pick="rust">
+        <span class="db-orb db-orb-sm db-orb-rust">🦀</span>
+        <div class="tbm-info"><div class="tbm-title">Rust</div><small>Cobre & Fuego</small></div>
+      </button>
+      <button type="button" class="plain pal-eng-btn tbm-item" data-engine-pick="golang">
+        <span class="db-orb db-orb-sm db-orb-go">🩵</span>
+        <div class="tbm-info"><div class="tbm-title">Go / Golang</div><small>Azul Celeste</small></div>
+      </button>
+    </div>
+
     <button type="button" class="secondary pal-reset btn-sm" id="palBtnCustomMenu" style="width:100%; margin-bottom:8px; border-color:var(--accent); color:var(--accent); font-weight:700;">🎨 Personalizar Nombres e Iconos del Menú</button>
     <button type="button" class="secondary pal-reset btn-sm" id="palReset">Restablecer apariencia</button>
   </div>
@@ -6822,10 +6929,10 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
     <div class="topbar-left">
       <div class="topbar-ver-update-group" style="display:inline-flex; align-items:center; gap:6px; flex-wrap:wrap;">
         <!-- Insignia Holográfica de Versión del Sistema (Visible en todo el programa) -->
-        <div class="cyber-version-pill" data-title="Suite Bóveda Jira · Versión activa: <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.10.50') %>" title="Suite Bóveda Jira · Versión <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.10.50') %>">
+        <div class="cyber-version-pill" data-title="Suite Bóveda Jira · Versión activa: <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.10.51') %>" title="Suite Bóveda Jira · Versión <%= typeof buildString !== 'undefined' ? buildString : (typeof appVersion !== 'undefined' ? appVersion : 'v2.10.51') %>">
           <span class="cvp-icon"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></span>
           <span class="cvp-lbl">BUILD</span>
-          <strong class="cvp-ver"><%= typeof appVersion !== 'undefined' ? appVersion : 'v2.10.50' %></strong>
+          <strong class="cvp-ver"><%= typeof appVersion !== 'undefined' ? appVersion : 'v2.10.51' %></strong>
           <% if (typeof gitCommit !== 'undefined' && gitCommit) { %><span class="cvp-commit" style="font-size:10px; opacity:0.75; font-family:var(--mono); margin-left:3px;">(<%= gitCommit %>)</span><% } %>
           <span class="cvp-pulse"></span>
         </div>
@@ -6841,21 +6948,7 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
           <span class="bgu-badge" id="bguBadge" style="display:none;">0</span>
         </button>
 
-        <!-- Botón de Acceso Rápido a Centro de Apariencias -->
-        <button type="button" class="btn-git-update" id="btnOpenApariencia" title="Personalizar apariencia, temas visuales y estilos">
-          <span style="font-size:13.5px; line-height:1; display:inline-flex; align-items:center;">🎨</span>
-          <span class="bgu-txt">Apariencia</span>
-        </button>
-      </div>
-    </div>
-    <div class="topbar-right">
-      <div id="badgeDisponibilidadHeaderTopbar" class="badge-disp-header" style="display:none;" title="Tienes turno de disponibilidad activo esta semana. Clic para ver detalles.">
-        <span class="badge-disp-dot"></span>
-        <span class="badge-disp-txt">🚨 DISPONIBILIDAD ESTA SEMANA</span>
-      </div>
-      <%- clockBox %>
-      <div class="topbar-right-subrow" id="topbarRightSubrow">
-        <!-- Botón de Recarga Rápida y Estado de Sesión / Inactividad -->
+        <!-- Botón de Recarga Rápida y Estado de Sesión / Inactividad (Al lado de Bajar Cambios) -->
         <button type="button" class="btn-recargar-sesion" id="btnRecargarSesion" title="Estado de la conexión y sesión activa. Haz clic para recargar el sistema y refrescar funciones si ha estado inactivo.">
           <span class="brs-spinner" id="brsSpinner">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
@@ -6865,89 +6958,14 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
           <span class="brs-txt" id="brsTxt">Recargar</span>
           <span class="brs-dot brs-online" id="brsDot" title="Sistema en línea y activo"></span>
         </button>
-
-        <!-- Selector Interactivo de Motor de Base de Datos y Color Global -->
-        <div class="topbar-db-dropdown" id="topbarDbDropdown">
-        <button type="button" class="topbar-db-btn" id="btnTopbarDb" title="Motor de Base de Datos Activo (Clic para alternar motor y color)">
-          <span class="db-orb db-orb-lg db-orb-pg" id="topbarEngineOrb">🐘</span>
-          <span class="tbe-name" id="topbarEngineName">PostgreSQL 16</span>
-          <svg class="tbe-arrow" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
-        </button>
-        <div class="topbar-db-menu" id="topbarDbMenu">
-          <div class="tbm-header">Motor, Editor & Lenguaje del Sistema</div>
-
-          <div class="tbm-cat-hdr">🗄️ MOTORES DE BASE DE DATOS</div>
-          <button type="button" class="tbm-item" data-engine-pick="postgres">
-            <span class="db-orb db-orb-sm db-orb-pg">🐘</span>
-            <div class="tbm-info"><div class="tbm-title">PostgreSQL 16</div><small>Cian Neón · Relacional ACID</small></div>
-          </button>
-          <button type="button" class="tbm-item" data-engine-pick="oracle">
-            <span class="db-orb db-orb-sm db-orb-ora">🏛️</span>
-            <div class="tbm-info"><div class="tbm-title">Oracle Enterprise</div><small>Ámbar Dorado · Cloud</small></div>
-          </button>
-          <button type="button" class="tbm-item" data-engine-pick="sqlserver">
-            <span class="db-orb db-orb-sm db-orb-sql">🟦</span>
-            <div class="tbm-info"><div class="tbm-title">Microsoft SQL Server</div><small>Azul Zafiro · Matrix</small></div>
-          </button>
-          <button type="button" class="tbm-item" data-engine-pick="mysql">
-            <span class="db-orb db-orb-sm db-orb-my">🐬</span>
-            <div class="tbm-info"><div class="tbm-title">MySQL / MariaDB</div><small>Turquesa · InnoDB Cluster</small></div>
-          </button>
-          <button type="button" class="tbm-item" data-engine-pick="mongodb">
-            <span class="db-orb db-orb-sm db-orb-mg">🍃</span>
-            <div class="tbm-info"><div class="tbm-title">MongoDB Document</div><small>Verde Esmeralda · Shards</small></div>
-          </button>
-          <button type="button" class="tbm-item" data-engine-pick="redis">
-            <span class="db-orb db-orb-sm db-orb-rd">⚡</span>
-            <div class="tbm-info"><div class="tbm-title">Redis In-Memory</div><small>Rojo Rubí · Quantum Cache</small></div>
-          </button>
-          <button type="button" class="tbm-item" data-engine-pick="sqlite">
-            <span class="db-orb db-orb-sm db-orb-sqlite">💾</span>
-            <div class="tbm-info"><div class="tbm-title">SQLite Embedded</div><small>Púrpura Neón · Zero-Conf</small></div>
-          </button>
-          <button type="button" class="tbm-item" data-engine-pick="cassandra">
-            <span class="db-orb db-orb-sm db-orb-cas">🪐</span>
-            <div class="tbm-info"><div class="tbm-title">Apache Cassandra</div><small>Índigo Ciber · Wide-Column</small></div>
-          </button>
-          <button type="button" class="tbm-item" data-engine-pick="neo4j">
-            <span class="db-orb db-orb-sm db-orb-neo">🕸️</span>
-            <div class="tbm-info"><div class="tbm-title">Neo4j Graph DB</div><small>Cobalto Neón · Graph Nodes</small></div>
-          </button>
-
-          <div class="tbm-cat-hdr">💻 EDITORES DE CÓDIGO</div>
-          <button type="button" class="tbm-item" data-engine-pick="vscode">
-            <span class="db-orb db-orb-sm db-orb-vsc">💙</span>
-            <div class="tbm-info"><div class="tbm-title">VS Code</div><small>Azul Eléctrico · Editor Matrix</small></div>
-          </button>
-          <button type="button" class="tbm-item" data-engine-pick="neovim">
-            <span class="db-orb db-orb-sm db-orb-nvim">🟢</span>
-            <div class="tbm-info"><div class="tbm-title">Neovim / Vim</div><small>Verde Menta Neón · Terminal Core</small></div>
-          </button>
-
-          <div class="tbm-cat-hdr">⚡ LENGUAJES DE PROGRAMACIÓN</div>
-          <button type="button" class="tbm-item" data-engine-pick="python">
-            <span class="db-orb db-orb-sm db-orb-py">🐍</span>
-            <div class="tbm-info"><div class="tbm-title">Python</div><small>Oro & Zafiro · Data Intelligence</small></div>
-          </button>
-          <button type="button" class="tbm-item" data-engine-pick="javascript">
-            <span class="db-orb db-orb-sm db-orb-js">🟨</span>
-            <div class="tbm-info"><div class="tbm-title">JavaScript / Node</div><small>Amarillo Neón · V8 Engine</small></div>
-          </button>
-          <button type="button" class="tbm-item" data-engine-pick="java">
-            <span class="db-orb db-orb-sm db-orb-java">☕</span>
-            <div class="tbm-info"><div class="tbm-title">Java JVM</div><small>Naranja Fuego · JVM Enterprise</small></div>
-          </button>
-          <button type="button" class="tbm-item" data-engine-pick="rust">
-            <span class="db-orb db-orb-sm db-orb-rust">🦀</span>
-            <div class="tbm-info"><div class="tbm-title">Rust Systems</div><small>Cobre & Fuego · Memory-Safe</small></div>
-          </button>
-          <button type="button" class="tbm-item" data-engine-pick="golang">
-            <span class="db-orb db-orb-sm db-orb-go">🩵</span>
-            <div class="tbm-info"><div class="tbm-title">Go / Golang</div><small>Azul Celeste · Goroutines Pipeline</small></div>
-          </button>
-        </div>
       </div>
     </div>
+    <div class="topbar-right">
+      <div id="badgeDisponibilidadHeaderTopbar" class="badge-disp-header" style="display:none;" title="Tienes turno de disponibilidad activo esta semana. Clic para ver detalles.">
+        <span class="badge-disp-dot"></span>
+        <span class="badge-disp-txt">🚨 DISPONIBILIDAD ESTA SEMANA</span>
+      </div>
+      <%- clockBox %>
     </div>
   </div>
   <% } %>
@@ -8375,7 +8393,19 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
           dbDrop.classList.toggle('open');
         });
         document.addEventListener('click', function(e){
-          if (!dbDrop.contains(e.target)) dbDrop.classList.remove('open');
+          if (dbDrop && !dbDrop.contains(e.target)) dbDrop.classList.remove('open');
+        });
+      }
+      var palEngGrid = $('palEngineGrid');
+      if (palEngGrid) {
+        palEngGrid.addEventListener('click', function(e){
+          var item = e.target.closest('.tbm-item');
+          if (!item) return;
+          var pick = item.dataset.enginePick;
+          if (pick) {
+            window.setDbEngine(pick);
+            aviso((ENGINES[pick] ? ENGINES[pick].icon + ' ' + ENGINES[pick].name : pick) + ' activado');
+          }
         });
       }
       if (dbMenu) {
@@ -8614,7 +8644,7 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
             </div>
             <div class="gub-info">
               <div class="gub-branch" style="color:#10b981;">✅ Sistema Sincronizado y Estable</div>
-              <div class="gub-desc">Tu versión activa (<%= typeof appVersion !== "undefined" ? appVersion : "v2.10.50" %>) cuenta con todas las mejoras y parches más recientes publicados en GitHub.</div>
+              <div class="gub-desc">Tu versión activa (<%= typeof appVersion !== "undefined" ? appVersion : "v2.10.51" %>) cuenta con todas las mejoras y parches más recientes publicados en GitHub.</div>
             </div>
           </div>
           <div style="padding: 12px 14px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; font-size: 12.5px; color: var(--muted); line-height: 1.45;">
@@ -8855,7 +8885,7 @@ body:not(.guest) .navbar.dock-collapsed .nav-group-sep,
                 // Estado: Al día (0 cambios)
                 if (bguBadge) bguBadge.style.display = 'none';
                 if (modalIcon) modalIcon.textContent = '✨';
-                if (modalTitle) modalTitle.textContent = 'Sistema al Día (' + (data.version ? (data.version.startsWith('v') ? data.version : 'v' + data.version) : '<%= typeof appVersion !== "undefined" ? appVersion : "v2.10.50" %>') + (data.commit ? ' · ' + data.commit : '') + ')';
+                if (modalTitle) modalTitle.textContent = 'Sistema al Día (' + (data.version ? (data.version.startsWith('v') ? data.version : 'v' + data.version) : '<%= typeof appVersion !== "undefined" ? appVersion : "v2.10.51" %>') + (data.commit ? ' · ' + data.commit : '') + ')';
                 if (modalSubtitle) modalSubtitle.textContent = 'No existen versiones o cambios nuevos disponibles';
                 if (viewPending) viewPending.style.display = 'none';
                 if (viewUpToDate) viewUpToDate.style.display = 'block';
