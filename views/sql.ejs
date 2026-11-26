@@ -293,6 +293,130 @@
     overflow: auto !important;
   }
 
+  /* =====================================================================
+     PANEL: Funciones y Triggers (#fn)
+     ===================================================================== */
+  .ed-layout:has(#fn.on) #edFrame,
+  .ed-layout:has(#fn.on) .hint,
+  .ed-layout:has(#fn.on) #salida,
+  .ed-layout:has(#fn.on) #edDiag { display: none !important; }
+
+  #fn.rp.on {
+    flex: 1 1 auto !important; min-height: 0 !important; width: 100% !important; max-width: 100% !important;
+    margin: 0 !important; padding: 0 !important; border: none !important; background: transparent !important;
+    overflow: hidden !important; gap: 10px;
+  }
+  .fn-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 0 4px; }
+  .fn-title { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .fn-title-ico { width: 36px; height: 36px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; font-size: 18px; background: rgba(var(--accent-rgb, 56,189,248), .16); border: 1px solid rgba(var(--accent-rgb, 56,189,248), .4); flex-shrink: 0; }
+  .fn-title-txt { font-size: 14px; font-weight: 800; color: var(--text); line-height: 1.2; }
+  .fn-title-sub { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+  .fn-head-act { display: inline-flex; align-items: center; gap: 8px; }
+  .fn-badge { font-size: 11.5px; font-weight: 700; padding: 4px 10px; border-radius: 999px; background: var(--panel-alt); border: 1px solid var(--panel-edge); color: var(--muted); white-space: nowrap; }
+  .fn-badge.err { color: #f87171; border-color: rgba(239,68,68,.5); background: rgba(239,68,68,.1); }
+  .fn-badge.warn { color: #fbbf24; border-color: rgba(245,158,11,.5); background: rgba(245,158,11,.1); }
+  .fn-badge.ok { color: #4ade80; border-color: rgba(34,197,94,.5); background: rgba(34,197,94,.1); }
+
+  .fn-grid { display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); gap: 14px; width: 100%; min-width: 0; box-sizing: border-box; }
+  @media (max-width: 1200px) { .fn-grid { grid-template-columns: minmax(0, 1fr); } }
+  .fn-col { display: flex; flex-direction: column; gap: 6px; min-width: 0; max-width: 100%; overflow: hidden; }
+  .fn-col-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; min-height: 30px; }
+  .fn-col-tit { font-size: 11.5px; font-weight: 700; color: var(--muted); text-transform: uppercase; display: inline-flex; align-items: baseline; gap: 6px; }
+  .fn-col-tit small { font-size: 10.5px; font-weight: 400; text-transform: none; }
+  .fn-col-act { display: inline-flex; align-items: center; gap: 6px; }
+  .fn-lines { font-size: 11px; color: var(--muted); font-family: var(--mono); }
+  .fn-col .btn-sm { padding: 2px 8px; font-size: 11px; font-weight: 700; }
+
+  #fnEntrada {
+    width: 100% !important; max-width: 100% !important; min-width: 0 !important; box-sizing: border-box !important;
+    height: calc(100vh - 330px) !important; min-height: 380px !important; max-height: 74vh !important; resize: none !important;
+    font-family: var(--mono); font-size: 13px; line-height: 1.6; padding: 12px 14px; outline: none;
+    background: var(--ed-bg, #0a1124); color: var(--ed-fg, #d6e0f5); border: 1px solid var(--panel-edge); border-radius: 10px;
+  }
+  #fnEntrada:focus { border-color: var(--accent); }
+
+  .fn-tabs { display: inline-flex; align-items: center; background: var(--panel-alt, #0f172a); padding: 3px; border-radius: 999px; border: 1px solid var(--panel-edge); gap: 3px; flex-wrap: wrap; }
+  .fn-tab { border: none !important; background: transparent !important; color: var(--muted) !important; font-size: 11.5px !important; font-weight: 700 !important; padding: 4px 12px !important; border-radius: 999px !important; cursor: pointer; transition: all .15s ease; display: inline-flex; align-items: center; gap: 5px; }
+  .fn-tab:hover { color: var(--text) !important; }
+  .fn-tab.on { background: var(--accent) !important; color: #fff !important; }
+  .fn-tab-cnt { font-size: 10px; min-width: 16px; padding: 0 5px; border-radius: 999px; background: #ef4444; color: #fff; text-align: center; line-height: 16px; }
+  .fn-tab-cnt.warn { background: #f59e0b; color: #1a1202; }
+  .fn-tab-cnt.ok { background: #22c55e; color: #052e16; }
+
+  .fn-objs { display: flex; flex-wrap: wrap; gap: 6px; max-height: 76px; overflow-y: auto; }
+  .fn-objs:empty { display: none; }
+  .fn-chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px !important; font-size: 11.5px !important; font-weight: 700 !important; border-radius: 999px !important; background: var(--panel-alt) !important; border: 1px solid var(--panel-edge) !important; color: var(--text) !important; cursor: pointer; max-width: 260px; }
+  .fn-chip span.t { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .fn-chip:hover { border-color: var(--accent) !important; }
+  .fn-chip.on { background: rgba(var(--accent-rgb, 56,189,248), .18) !important; border-color: var(--accent) !important; color: var(--accent) !important; }
+  .fn-chip .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .fn-chip .dot.error { background: #ef4444; box-shadow: 0 0 6px #ef4444; }
+  .fn-chip .dot.warn { background: #f59e0b; }
+  .fn-chip .dot.ok { background: #22c55e; }
+  .fn-chip.otro { opacity: .75; font-weight: 600 !important; }
+
+  .fn-view { min-width: 0; }
+  #fnCodigo, #fnResumen, #fnAvisos {
+    width: 100% !important; max-width: 100% !important; min-width: 0 !important; box-sizing: border-box !important;
+    height: calc(100vh - 380px) !important; min-height: 330px !important; max-height: 70vh !important;
+    margin: 0; border-radius: 10px; overflow: auto !important;
+  }
+  .fn-objs:empty + .fn-view #fnCodigo, .fn-objs:empty + .fn-view #fnResumen, .fn-objs:empty + .fn-view #fnAvisos { height: calc(100vh - 330px) !important; min-height: 380px !important; max-height: 74vh !important; }
+  #fnResumen, #fnAvisos { background: var(--panel-alt); border: 1px solid var(--panel-edge); padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+  .fn-empty { padding: 22px 18px; color: var(--muted); font-size: 12.5px; line-height: 1.55; }
+  .fn-empty b { color: var(--text); }
+
+  .code-line.fn-l-error { background: rgba(239,68,68,.12); box-shadow: inset 3px 0 0 #ef4444; }
+  .code-line.fn-l-warn { background: rgba(245,158,11,.11); box-shadow: inset 3px 0 0 #f59e0b; }
+  .code-line.fn-l-info { background: rgba(56,189,248,.08); box-shadow: inset 3px 0 0 #38bdf8; }
+  .code-line.fn-flash { animation: fnFlash 1.8s ease; }
+  @keyframes fnFlash { 0%, 60% { background: rgba(var(--accent-rgb, 56,189,248), .4); } 100% { background: transparent; } }
+  .fn-objbar { position: sticky; top: 0; z-index: 3; display: flex; align-items: center; gap: 8px; padding: 6px 14px; font-family: var(--sans); font-size: 11.5px; font-weight: 800; color: var(--accent); background: var(--ed-gut-bg, #080e1d); border-bottom: 1px solid var(--panel-edge); border-top: 1px solid var(--panel-edge); min-width: max-content; }
+  .fn-objbar small { color: var(--muted); font-weight: 600; }
+
+  .fn-sec { display: flex; flex-direction: column; gap: 6px; }
+  .fn-sec-t { font-size: 10.5px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+  .fn-desc { padding: 10px 12px; border-radius: 10px; border-left: 3px solid var(--accent); background: rgba(var(--accent-rgb, 56,189,248), .08); font-size: 12.5px; line-height: 1.55; color: var(--text); }
+  .fn-kv { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 4px 14px; font-size: 12px; }
+  .fn-kv dt { color: var(--muted); font-weight: 700; margin: 0; }
+  .fn-kv dd { margin: 0; color: var(--text); font-family: var(--mono); font-size: 11.8px; word-break: break-word; }
+  .fn-tbl { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .fn-tbl th { text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); padding: 4px 8px; border-bottom: 1px solid var(--panel-edge); }
+  .fn-tbl td { padding: 5px 8px; border-bottom: 1px solid rgba(128,128,128,.12); font-family: var(--mono); font-size: 11.8px; color: var(--text); vertical-align: top; word-break: break-word; }
+  .fn-tbl tr.click { cursor: pointer; }
+  .fn-tbl tr.click:hover td { background: rgba(var(--accent-rgb, 56,189,248), .08); }
+  .fn-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+  .fn-pill { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 999px; font-size: 11.5px; font-weight: 700; font-family: var(--mono); background: var(--panel); border: 1px solid var(--panel-edge); color: var(--text); }
+  .fn-pill.r { border-color: rgba(56,189,248,.5); color: #38bdf8; }
+  .fn-pill.w { border-color: rgba(245,158,11,.55); color: #fbbf24; }
+  .fn-pill small { font-size: 10px; opacity: .85; }
+  .fn-flow { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; padding: 10px; border-radius: 10px; background: var(--panel); border: 1px solid var(--panel-edge); }
+  .fn-flow .box { padding: 6px 11px; border-radius: 8px; font-size: 11.8px; font-weight: 800; background: rgba(var(--accent-rgb, 56,189,248), .12); border: 1px solid rgba(var(--accent-rgb, 56,189,248), .4); color: var(--text); }
+  .fn-flow .box small { display: block; font-size: 9.5px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+  .fn-flow .arr { color: var(--muted); font-weight: 800; }
+  .fn-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; }
+  .fn-kpi { padding: 9px 11px; border-radius: 10px; background: var(--panel); border: 1px solid var(--panel-edge); }
+  .fn-kpi b { display: block; font-size: 18px; color: var(--text); line-height: 1.1; }
+  .fn-kpi span { font-size: 10.5px; color: var(--muted); font-weight: 700; text-transform: uppercase; }
+  .fn-kpi.error b { color: #f87171; } .fn-kpi.warn b { color: #fbbf24; } .fn-kpi.ok b { color: #4ade80; }
+  .fn-bar { height: 8px; border-radius: 99px; background: rgba(128,128,128,.2); overflow: hidden; }
+  .fn-bar i { display: block; height: 100%; border-radius: 99px; }
+
+  .fn-av { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: 10px; background: var(--panel); border: 1px solid var(--panel-edge); border-left-width: 4px; }
+  .fn-av.error { border-left-color: #ef4444; } .fn-av.warn { border-left-color: #f59e0b; }
+  .fn-av.info { border-left-color: #38bdf8; } .fn-av.ok { border-left-color: #22c55e; }
+  .fn-av-ico { font-size: 16px; line-height: 1.2; flex-shrink: 0; }
+  .fn-av-body { flex: 1; min-width: 0; }
+  .fn-av-t { font-size: 12.5px; font-weight: 800; color: var(--text); }
+  .fn-av-d { font-size: 12px; color: var(--muted); margin-top: 2px; line-height: 1.5; }
+  .fn-av-o { font-size: 10.5px; color: var(--accent); font-weight: 700; margin-bottom: 2px; }
+  .fn-av button { padding: 3px 9px !important; font-size: 11px !important; font-weight: 700 !important; white-space: nowrap; flex-shrink: 0; }
+
+  .ed-tools-sidebar .fn-opts { width: 100%; box-sizing: border-box; }
+  .ed-tools-sidebar .fn-opts select { width: 100%; font-size: 11.5px; padding: 6px 8px; border-radius: 6px; box-sizing: border-box; background: var(--bg); color: var(--text); border: 1px solid var(--panel-edge); }
+  .ed-tools-sidebar .fn-opts .fn-sidebtn { width: 100%; justify-content: center; padding: 7px 10px; font-size: 11.5px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+  .fn-sidebox { background: var(--panel); border: 1px solid var(--panel-edge); border-radius: 8px; padding: 10px; display: flex; flex-direction: column; gap: 5px; width: 100%; box-sizing: border-box; font-size: 11.5px; color: var(--text); line-height: 1.4; }
+
   /* Buscar y reemplazar no tiene editor central, debe ocultarse para no dejar un espacio gigante */
   #rp.rp.on { flex: 0; min-height: 0; height: 0; margin: 0; padding: 0; display: none !important; }
 
@@ -444,7 +568,8 @@
   .ed-layout:has(#mx.on) .ed-tools-sidebar .mx-opts,
   .ed-layout:has(#pq.on) .ed-tools-sidebar .pq-opts,
   .ed-layout:has(#rv.on) .ed-tools-sidebar .rv-opts,
-  .ed-layout:has(#ew.on) .ed-tools-sidebar .ew-opts {
+  .ed-layout:has(#ew.on) .ed-tools-sidebar .ew-opts,
+  .ed-layout:has(#fn.on) .ed-tools-sidebar .fn-opts {
     display: flex !important;
     flex-direction: column;
     gap: 12px;
@@ -1297,6 +1422,7 @@
           <button type="button" id="btnMX" title="Insert, Update o Delete masivo pegando datos de Excel"><svg viewBox="0 0 24 24" style="width:15px;height:15px;"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/><path d="M9 3v18"/><path d="M15 3v18"/></svg>Masivo Excel</button>
           <button type="button" id="btnPQ" title="Cambio de asesor: pegas NIT, sede y código de vendedor"><svg viewBox="0 0 24 24" style="width:15px;height:15px;"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>Procesar querys</button>
           <button type="button" id="btnEW" title="Envolver consulta en UPDATE/INSERT con escape automático de comillas simples (' -> '')"><svg viewBox="0 0 24 24" style="width:15px;height:15px;"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>Envolver en UPDATE (' ')</button>
+          <button type="button" id="btnFN" title="Pega funciones, procedimientos o triggers: los formatea y los revisa"><svg viewBox="0 0 24 24" style="width:15px;height:15px;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>Funciones y Triggers</button>
         </div>
       </div>
     </div>
@@ -1402,7 +1528,64 @@
     </div>
     
     <div class="ed-main" style="flex:1; display:flex; flex-direction:column; min-width:0; max-width:100%; position:relative; overflow:hidden;">
-  <!-- PANEL: Envolver en UPDATE / Comillas escapadas (' -> '') -->
+  <!-- PANEL: Funciones, procedimientos y triggers (revisor + formateador) -->
+  <div class="rp" id="fn">
+    <div class="fn-head">
+      <div class="fn-title">
+        <span class="fn-title-ico">⚡</span>
+        <div>
+          <div class="fn-title-txt">Funciones y Triggers</div>
+          <div class="fn-title-sub">Pega funciones, procedimientos o triggers: se formatean para leerlos y se revisan.</div>
+        </div>
+      </div>
+      <div class="fn-head-act">
+        <span class="fn-badge" id="fnBadge">Esperando código…</span>
+        <button type="button" class="secondary btn-sm" id="fnCerrar" title="Cerrar panel">✖</button>
+      </div>
+    </div>
+
+    <div class="fn-grid">
+      <div class="fn-col">
+        <div class="fn-col-head">
+          <span class="fn-col-tit">1. Código original <small>(pega aquí tus funciones o triggers)</small></span>
+          <span class="fn-col-act">
+            <span id="fnInLines" class="fn-lines"></span>
+            <button type="button" class="secondary btn-sm" id="fnBtnEjemplo" title="Carga un ejemplo con función y trigger">📘 Ejemplo</button>
+            <button type="button" class="secondary btn-sm" id="fnBtnFormatear" title="Reemplaza el texto de la izquierda por la versión formateada">✨ Formatear</button>
+          </span>
+        </div>
+        <textarea id="fnEntrada" spellcheck="false" wrap="off" placeholder="Pega aquí tu código…&#10;&#10;CREATE OR REPLACE FUNCTION mi_funcion() RETURNS trigger AS $$&#10;BEGIN&#10;  RETURN NEW;&#10;END; $$ LANGUAGE plpgsql;&#10;&#10;CREATE TRIGGER mi_trigger BEFORE INSERT ON mi_tabla&#10;FOR EACH ROW EXECUTE FUNCTION mi_funcion();"></textarea>
+      </div>
+
+      <div class="fn-col">
+        <div class="fn-col-head">
+          <span class="fn-tabs" id="fnTabs">
+            <button type="button" class="fn-tab on" data-tab="fmt">📄 Formateado</button>
+            <button type="button" class="fn-tab" data-tab="res">🧾 Resumen</button>
+            <button type="button" class="fn-tab" data-tab="avi">🛡️ Revisión <b id="fnTabCnt" class="fn-tab-cnt" style="display:none;">0</b></button>
+          </span>
+          <span class="fn-col-act">
+            <span id="fnOutLines" class="fn-lines"></span>
+            <button type="button" class="secondary btn-sm" id="fnBtnCopiarTop" title="Copiar lo que se está viendo">📋 Copiar</button>
+          </span>
+        </div>
+        <div class="fn-objs" id="fnObjs"></div>
+        <div class="fn-view">
+          <div class="code-block fn-code" id="fnCodigo"></div>
+          <div class="fn-resumen" id="fnResumen" style="display:none;"></div>
+          <div class="fn-avisos" id="fnAvisos" style="display:none;"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="rp-row" style="margin-top:2px; gap:10px; align-items:center;">
+      <button type="button" id="fnCopiar" style="font-weight:700; padding:8px 16px;">📋 Copiar formateado</button>
+      <button type="button" class="secondary" id="fnEnviar" title="Envía el código formateado al editor SQL principal">⬇ Enviar al Editor Principal</button>
+      <span class="cnt" id="fnStatus" style="margin-left:auto; font-weight:600; color:var(--text);"></span>
+    </div>
+  </div>
+
+  <!-- PANEL: Envolver en UPDATE / Comillas escapadas -->
   <div class="rp" id="ew">
     <!-- Encabezado con selector directo UPDATE / INSERT / AUTO -->
     <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; padding:0 4px; flex-wrap:wrap; gap:10px;">
@@ -1864,6 +2047,7 @@
 </div>
 
 <script src="/sql-formatter.js"></script>
+<script src="/sql-rutinas.js"></script>
 <script src="/sql-validador.js"></script>
 <script src="/sql-sentencias.js"></script>
 <script src="/sql-tablas.js"></script>
@@ -4988,9 +5172,52 @@ if (edLayout) {
         '💡 <strong>Escape automático:</strong> Convierte cada <code>&apos;</code> en <code>&apos;&apos;</code> para guardar queries SQL dentro del campo <code>query</code> sin romper la sintaxis en la base de datos.' +
       '</div>';
   }
+
+  // Configuración de la herramienta Funciones y Triggers en la barra lateral (#fn)
+  var pFn = $('fn');
+  if (pFn) {
+    var fnOptContainer = document.createElement('div');
+    fnOptContainer.className = 'tool-opts fn-opts';
+    rightSidebar.appendChild(fnOptContainer);
+
+    fnOptContainer.innerHTML =
+      '<div class="ew-field">' +
+        '<span class="presets">Palabras Clave</span>' +
+        '<select id="fnKw" style="font-weight:600;">' +
+          '<option value="upper" selected>MAYÚSCULAS (Estándar)</option>' +
+          '<option value="lower">minúsculas</option>' +
+          '<option value="keep">Conservar original</option>' +
+        '</select>' +
+      '</div>' +
+
+      '<div class="ew-field">' +
+        '<span class="presets">Sangría de Bloques</span>' +
+        '<select id="fnIndent" style="font-weight:600;">' +
+          '<option value="4" selected>4 espacios (PL/pgSQL)</option>' +
+          '<option value="2">2 espacios (Compacto)</option>' +
+          '<option value="tab">Tabulación (Tab)</option>' +
+        '</select>' +
+      '</div>' +
+
+      '<div style="display:flex; flex-direction:column; gap:6px; margin-top:4px;">' +
+        '<span class="presets">Acciones Rápidas</span>' +
+        '<button type="button" class="secondary btn-sm fn-sidebtn" id="fnCargarEditor" title="Trae el código actual del editor principal">⬇ Cargar desde Editor</button>' +
+        '<button type="button" class="secondary btn-sm fn-sidebtn" id="fnSideEjemplo" title="Carga un script de ejemplo con función y trigger">📘 Cargar ejemplo</button>' +
+        '<button type="button" class="secondary btn-sm fn-sidebtn" id="fnLimpiar" title="Limpia el código del panel">🧹 Limpiar</button>' +
+      '</div>' +
+
+      '<div style="display:flex; flex-direction:column; gap:6px; margin-top:4px;">' +
+        '<span class="presets">Resumen del Script</span>' +
+        '<div class="fn-sidebox" id="fnSideResumen">Esperando código…</div>' +
+      '</div>' +
+
+      '<div class="ls-hint" style="margin-top:6px; font-size:11px; line-height:1.45;">' +
+        '💡 <strong>Consejo:</strong> Puedes pegar varias funciones y triggers juntos. Usa las fichas superiores para filtrar por objeto y pulsa <em>Ir a línea</em> en cualquier aviso para ubicarlo al instante.' +
+      '</div>';
+  }
 }
 
-var PANELES = { btnRP: 'rp', btnLS: 'ls', btnSN: 'sn', btnMX: 'mx', btnPQ: 'pq', btnRV: 'rv', btnEW: 'ew' };
+var PANELES = { btnRP: 'rp', btnLS: 'ls', btnSN: 'sn', btnMX: 'mx', btnPQ: 'pq', btnRV: 'rv', btnEW: 'ew', btnFN: 'fn' };
 var NOMBRES_MODOS = {
   rp: 'Buscar / Reemplazar',
   ls: 'Lista datos',
@@ -4998,7 +5225,8 @@ var NOMBRES_MODOS = {
   mx: 'Masivo Excel',
   pq: 'Procesar querys',
   rv: 'Revisar SQL',
-  ew: 'Envolver en UPDATE'
+  ew: 'Envolver en UPDATE',
+  fn: 'Funciones y Triggers'
 };
 
 function actualizarBotonesPaneles() {
@@ -6283,6 +6511,474 @@ if ($('ewInsertar')) {
     toast('Consulta insertada en el editor');
   });
 }
+
+/* ==========================================================================
+   HERRAMIENTA: Revisor y Formateador de Funciones, Procedimientos y Triggers (#fn)
+   ========================================================================== */
+(function initPanelFuncionesTriggers(){
+  var R = window.SqlRutinas;
+  if (!R) return;
+
+  var fnRes = null;
+  var fnSel = -1; // -1 = todos
+  var fnTab = 'fmt'; // 'fmt' | 'res' | 'avi'
+  var fnTimer = null;
+
+  var TIPO_ICO = { FUNCION: '⚡', PROCEDIMIENTO: '⚙️', TRIGGER: '🔔', DO: '📦', OTRO: '📄', COMENTARIO: '💬' };
+  var AV_ICO = { error: '🔴', warn: '🟡', info: '🔵', ok: '🟢' };
+
+  function fnOpts() {
+    return {
+      kw: $('fnKw') ? $('fnKw').value : 'upper',
+      indent: $('fnIndent') ? $('fnIndent').value : '4',
+      sqlFmt: (typeof SqlFormatter !== 'undefined' && SqlFormatter.format) ? SqlFormatter.format : null
+    };
+  }
+
+  function resaltarLineaSegura(txt) {
+    if (!txt) return ' ';
+    if (typeof resaltar !== 'function') return esc(txt);
+    // Evitar que delimitadores $tag$ sin pareja pinten el resto como string
+    var dm = /(?:^|\s)(\$[A-Za-z_\u00C0-\u024F]*\$)(;?)\s*$/.exec(txt);
+    if (dm) {
+      var antes = txt.slice(0, dm.index + (dm[0].length - dm[1].length - dm[2].length));
+      var hAntes = antes ? resaltar(antes)[0] : '';
+      return hAntes + '<span class="tk-pa">' + esc(dm[1]) + '</span>' + esc(dm[2]);
+    }
+    return resaltar(txt)[0] || ' ';
+  }
+
+  function resaltarObjetoLineas(ob) {
+    var out = [];
+    if (ob.cabecera) {
+      ob.cabecera.split('\n').forEach(function(l){ out.push(resaltarLineaSegura(l)); });
+    }
+    if (ob.cuerpo) {
+      var hlBody = (typeof resaltar === 'function') ? resaltar(ob.cuerpo) : ob.cuerpo.split('\n').map(esc);
+      hlBody.forEach(function(l){ out.push(l || ' '); });
+    }
+    if (ob.pie) {
+      ob.pie.split('\n').forEach(function(l){ out.push(resaltarLineaSegura(l)); });
+    }
+    return out;
+  }
+
+  function objetosActivos() {
+    if (!fnRes || !fnRes.objetos.length) return [];
+    if (fnSel >= 0 && fnRes.objetos[fnSel]) return [fnRes.objetos[fnSel]];
+    return fnRes.objetos;
+  }
+
+  function textoActivo() {
+    var obs = objetosActivos();
+    return obs.map(function(o){ return o.texto; }).join('\n\n');
+  }
+
+  function pintarChips() {
+    var box = $('fnObjs');
+    if (!box) return;
+    if (!fnRes || !fnRes.objetos.length) { box.innerHTML = ''; return; }
+    var obs = fnRes.objetos;
+    if (obs.length <= 1) { box.innerHTML = ''; fnSel = -1; return; }
+    var html = '<button type="button" class="fn-chip' + (fnSel === -1 ? ' on' : '') + '" data-idx="-1"><span class="t">Todos (' + obs.length + ')</span></button>';
+    obs.forEach(function(o, idx){
+      var dot = o.conteo.error ? 'error' : (o.conteo.warn ? 'warn' : 'ok');
+      var cls = 'fn-chip' + (fnSel === idx ? ' on' : '') + (o.tipo === 'OTRO' || o.tipo === 'COMENTARIO' ? ' otro' : '');
+      html += '<button type="button" class="' + cls + '" data-idx="' + idx + '" title="' + esc(o.rotulo + ': ' + o.nombre) + '">' +
+        '<span>' + (TIPO_ICO[o.tipo] || '📄') + '</span>' +
+        '<span class="t">' + esc(o.nombre) + '</span>' +
+        '<span class="dot ' + dot + '"></span>' +
+      '</button>';
+    });
+    box.innerHTML = html;
+  }
+
+  function pintarCodigo() {
+    var cont = $('fnCodigo');
+    if (!cont) return;
+    var obs = objetosActivos();
+    if (!obs.length) {
+      cont.innerHTML = '<div class="fn-empty">Pega una <b>función</b>, <b>procedimiento</b> o <b>trigger</b> a la izquierda (o pulsa <b>📘 Ejemplo</b>) para verlo formateado con sangría por bloques, resumen en español y revisión de posibles problemas.</div>';
+      if ($('fnOutLines')) $('fnOutLines').textContent = '';
+      return;
+    }
+    var html = '', totalLineas = 0;
+    obs.forEach(function(ob){
+      var mapaAv = {};
+      ob.avisos.forEach(function(a){
+        if (!a.linea) return;
+        var prev = mapaAv[a.linea];
+        var peso = { error: 0, warn: 1, info: 2, ok: 3 };
+        if (!prev || peso[a.nivel] < peso[prev.nivel]) mapaAv[a.linea] = a;
+      });
+      if (obs.length > 1) {
+        html += '<div class="fn-objbar" data-obj="' + ob.id + '">' +
+          '<span>' + (TIPO_ICO[ob.tipo] || '📄') + ' ' + esc(ob.rotulo) + ' · ' + esc(ob.nombre) + '</span>' +
+          '<small>' + ob.lineas + ' lín.' +
+          (ob.conteo.error ? ' · 🔴 ' + ob.conteo.error : '') +
+          (ob.conteo.warn ? ' · 🟡 ' + ob.conteo.warn : '') + '</small></div>';
+      }
+      var lineas = resaltarObjetoLineas(ob);
+      for (var i = 0; i < lineas.length; i++) {
+        var ln = i + 1;
+        var av = mapaAv[ln];
+        var cls = 'code-line' + (av && av.nivel !== 'ok' ? (' fn-l-' + av.nivel) : '');
+        var ttl = av ? (' title="' + esc(av.titulo + (av.detalle ? ': ' + av.detalle : '')) + '"') : '';
+        html += '<div class="' + cls + '" data-obj="' + ob.id + '" data-ln="' + ln + '"' + ttl + '>' +
+          '<span class="ln">' + ln + '</span><span class="code-text">' + (lineas[i] || ' ') + '</span></div>';
+      }
+      totalLineas += lineas.length;
+    });
+    cont.innerHTML = html;
+    if ($('fnOutLines')) $('fnOutLines').textContent = totalLineas + ' lín.';
+  }
+
+  function htmlResumenObj(ob) {
+    var res = ob.resumen || {};
+    var h = '<div class="fn-sec" style="padding:12px; border-radius:12px; background:var(--panel); border:1px solid var(--panel-edge); gap:10px;">';
+    h += '<div style="display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap;">' +
+      '<div style="font-size:13.5px; font-weight:800; color:var(--text);">' + (TIPO_ICO[ob.tipo] || '📄') + ' ' + esc(ob.rotulo) + ' · <span style="color:var(--accent);">' + esc(ob.nombre) + '</span></div>' +
+      '<span style="font-size:11px; color:var(--muted); font-family:var(--mono);">' + ob.lineas + ' líneas</span></div>';
+
+    if (res.descripcion) h += '<div class="fn-desc">' + esc(res.descripcion) + '</div>';
+
+    // Diagrama de flujo visual para triggers
+    if (ob.tipo === 'TRIGGER' && res.trigger) {
+      var tg = res.trigger;
+      h += '<div class="fn-flow">' +
+        '<div class="box"><small>Tabla</small>' + esc(tg.tabla || '—') + '</div>' +
+        '<span class="arr">→</span>' +
+        '<div class="box"><small>' + esc(tg.momento || '') + '</small>' + esc((tg.eventos || []).join(' / ') || '—') + '</div>' +
+        '<span class="arr">→</span>' +
+        '<div class="box"><small>Alcance</small>FOR EACH ' + esc(tg.nivel || 'STATEMENT') + '</div>' +
+        (tg.funcion ? '<span class="arr">→</span><div class="box"><small>Ejecuta</small>' + esc(tg.funcion) + '(' + esc(tg.args || '') + ')</div>' : '') +
+      '</div>';
+    }
+
+    if (res.datos && res.datos.length) {
+      h += '<dl class="fn-kv">';
+      res.datos.forEach(function(d){ h += '<dt>' + esc(d.k) + ':</dt><dd>' + esc(d.v) + '</dd>'; });
+      h += '</dl>';
+    }
+
+    if (res.metricas) {
+      var m = res.metricas;
+      var cxCls = m.complejidad <= 5 ? 'ok' : (m.complejidad <= 15 ? 'warn' : 'error');
+      var pct = Math.min(100, Math.round((m.complejidad / 25) * 100));
+      var col = cxCls === 'ok' ? '#22c55e' : (cxCls === 'warn' ? '#f59e0b' : '#ef4444');
+      h += '<div class="fn-sec"><div class="fn-sec-t">Métricas de lectura</div>' +
+        '<div class="fn-kpis">' +
+          '<div class="fn-kpi ' + cxCls + '"><b>' + m.complejidad + '</b><span>Complejidad (' + esc(m.nivel) + ')</span></div>' +
+          '<div class="fn-kpi"><b>' + m.ifs + '</b><span>IF / ELSIF</span></div>' +
+          '<div class="fn-kpi"><b>' + m.bucles + '</b><span>Bucles</span></div>' +
+          '<div class="fn-kpi"><b>' + m.sql + '</b><span>Consultas SQL</span></div>' +
+          '<div class="fn-kpi"><b>' + m.profundidad + '</b><span>Anidación máx.</span></div>' +
+        '</div>' +
+        '<div class="fn-bar"><i style="width:' + pct + '%; background:' + col + ';"></i></div>' +
+      '</div>';
+    }
+
+    if (res.parametros && res.parametros.length) {
+      h += '<div class="fn-sec"><div class="fn-sec-t">Parámetros (' + res.parametros.length + ')</div>' +
+        '<table class="fn-tbl"><thead><tr><th>Modo</th><th>Nombre</th><th>Tipo</th><th>Por defecto</th></tr></thead><tbody>';
+      res.parametros.forEach(function(pm){
+        h += '<tr><td>' + esc(pm.modo || 'IN') + '</td><td>' + esc(pm.nombre || '—') + '</td><td>' + esc(pm.tipo) + '</td><td>' + esc(pm.def != null ? pm.def : '—') + '</td></tr>';
+      });
+      h += '</tbody></table></div>';
+    }
+
+    if (res.variables && res.variables.length) {
+      h += '<div class="fn-sec"><div class="fn-sec-t">Variables declaradas (' + res.variables.length + ')</div>' +
+        '<table class="fn-tbl"><thead><tr><th>Variable</th><th>Tipo</th><th>Valor inicial</th></tr></thead><tbody>';
+      res.variables.forEach(function(v){
+        h += '<tr><td>' + esc(v.nombre) + (v.constante ? ' <small style="color:var(--accent);">CONST</small>' : '') + '</td><td>' + esc(v.tipo) + '</td><td>' + esc(v.valor || '—') + '</td></tr>';
+      });
+      h += '</tbody></table></div>';
+    }
+
+    if ((res.lee && res.lee.length) || (res.escribe && res.escribe.length)) {
+      h += '<div class="fn-sec"><div class="fn-sec-t">Tablas que toca</div><div class="fn-pills">';
+      (res.lee || []).forEach(function(t){ h += '<span class="fn-pill r" title="Lectura (SELECT/JOIN)">📖 ' + esc(t) + '</span>'; });
+      (res.escribe || []).forEach(function(e){ h += '<span class="fn-pill w" title="Escritura">✏️ ' + esc(e.tabla) + ' <small>' + esc(e.ops.join('/')) + '</small></span>'; });
+      h += '</div></div>';
+    }
+
+    if (res.excepciones && res.excepciones.length) {
+      h += '<div class="fn-sec"><div class="fn-sec-t">Mensajes y excepciones (RAISE)</div>' +
+        '<table class="fn-tbl"><thead><tr><th>Nivel</th><th>Mensaje</th><th>Línea</th></tr></thead><tbody>';
+      res.excepciones.forEach(function(ex){
+        h += '<tr class="click" data-jump-obj="' + ob.id + '" data-jump-ln="' + (ex.linea || 1) + '">' +
+          '<td>' + esc(ex.nivel) + '</td><td>' + esc(ex.mensaje || '(re-raise)') + '</td><td>l.' + (ex.linea || '—') + '</td></tr>';
+      });
+      h += '</tbody></table></div>';
+    }
+
+    if (res.retornos && res.retornos.length) {
+      h += '<div class="fn-sec"><div class="fn-sec-t">Puntos de retorno (RETURN)</div><div class="fn-pills">';
+      res.retornos.forEach(function(rt){
+        h += '<span class="fn-pill" style="cursor:pointer;" data-jump-obj="' + ob.id + '" data-jump-ln="' + (rt.linea || 1) + '" title="Ir a la línea ' + rt.linea + '">↩ ' + esc(rt.valor) + ' <small>l.' + rt.linea + '</small></span>';
+      });
+      h += '</div></div>';
+    }
+
+    h += '</div>';
+    return h;
+  }
+
+  function pintarResumen() {
+    var cont = $('fnResumen');
+    if (!cont) return;
+    var obs = objetosActivos();
+    if (!obs.length) {
+      cont.innerHTML = '<div class="fn-empty">Aquí verás el <b>resumen legible</b> de cada función y trigger: qué hace, qué parámetros y variables tiene, qué tablas lee o modifica y su nivel de complejidad.</div>';
+      return;
+    }
+    cont.innerHTML = obs.map(htmlResumenObj).join('');
+  }
+
+  function pintarAvisos() {
+    var cont = $('fnAvisos');
+    if (!cont) return;
+    var obs = objetosActivos();
+    if (!obs.length) {
+      cont.innerHTML = '<div class="fn-empty">Aquí aparecerán los <b>hallazgos de revisión</b>: bloques sin cerrar, <code>UPDATE/DELETE</code> sin <code>WHERE</code>, <code>SECURITY DEFINER</code> sin <code>search_path</code>, SQL dinámico riesgoso, posible recursión en triggers y más.</div>';
+      return;
+    }
+    var lista = [];
+    obs.forEach(function(ob){
+      ob.avisos.forEach(function(a){ lista.push({ ob: ob, av: a }); });
+    });
+    if (!lista.length) {
+      cont.innerHTML = '<div class="fn-av ok"><span class="fn-av-ico">✅</span><div class="fn-av-body"><div class="fn-av-t">Sin hallazgos ni errores</div><div class="fn-av-d">La estructura de bloques, las cabeceras y las validaciones básicas están limpias.</div></div></div>';
+      return;
+    }
+    var html = '';
+    lista.forEach(function(item){
+      var ob = item.ob, a = item.av;
+      html += '<div class="fn-av ' + a.nivel + '">' +
+        '<span class="fn-av-ico">' + (AV_ICO[a.nivel] || 'ℹ️') + '</span>' +
+        '<div class="fn-av-body">' +
+          (obs.length > 1 ? '<div class="fn-av-o">' + (TIPO_ICO[ob.tipo] || '') + ' ' + esc(ob.nombre) + '</div>' : '') +
+          '<div class="fn-av-t">' + esc(a.titulo) + '</div>' +
+          (a.detalle ? '<div class="fn-av-d">' + esc(a.detalle) + '</div>' : '') +
+        '</div>' +
+        (a.linea ? '<button type="button" class="secondary" data-jump-obj="' + ob.id + '" data-jump-ln="' + a.linea + '">Ir a l.' + a.linea + '</button>' : '') +
+      '</div>';
+    });
+    cont.innerHTML = html;
+  }
+
+  function cambiarTab(tab) {
+    fnTab = tab;
+    document.querySelectorAll('#fnTabs .fn-tab').forEach(function(b){
+      b.classList.toggle('on', b.getAttribute('data-tab') === tab);
+    });
+    if ($('fnCodigo')) $('fnCodigo').style.display = tab === 'fmt' ? '' : 'none';
+    if ($('fnResumen')) $('fnResumen').style.display = tab === 'res' ? 'flex' : 'none';
+    if ($('fnAvisos')) $('fnAvisos').style.display = tab === 'avi' ? 'flex' : 'none';
+  }
+
+  function irALineaFn(objId, ln) {
+    cambiarTab('fmt');
+    setTimeout(function(){
+      var cont = $('fnCodigo');
+      if (!cont) return;
+      var el = cont.querySelector('.code-line[data-obj="' + objId + '"][data-ln="' + ln + '"]');
+      if (!el && fnSel !== -1) {
+        fnSel = -1;
+        pintarChips();
+        pintarCodigo();
+        el = cont.querySelector('.code-line[data-obj="' + objId + '"][data-ln="' + ln + '"]');
+      }
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.classList.remove('fn-flash');
+        void el.offsetWidth;
+        el.classList.add('fn-flash');
+      }
+    }, 30);
+  }
+
+  function fnAnalizar() {
+    var raw = $('fnEntrada') ? ($('fnEntrada').value || '') : '';
+    if ($('fnInLines')) {
+      var nl = raw.trim() ? raw.split('\n').length : 0;
+      $('fnInLines').textContent = nl ? (nl + ' lín.') : '';
+    }
+    if (!raw.trim()) {
+      fnRes = null; fnSel = -1;
+      pintarChips(); pintarCodigo(); pintarResumen(); pintarAvisos();
+      if ($('fnBadge')) { $('fnBadge').className = 'fn-badge'; $('fnBadge').textContent = 'Esperando código…'; }
+      if ($('fnTabCnt')) $('fnTabCnt').style.display = 'none';
+      if ($('fnStatus')) $('fnStatus').textContent = '';
+      if ($('fnSideResumen')) $('fnSideResumen').textContent = 'Esperando código…';
+      return;
+    }
+
+    fnRes = R.analizar(raw, fnOpts());
+    if (fnSel >= fnRes.objetos.length) fnSel = -1;
+
+    var t = fnRes.totales;
+    var partes = [];
+    if (t.funciones) partes.push(t.funciones + (t.funciones === 1 ? ' función' : ' funciones'));
+    if (t.procedimientos) partes.push(t.procedimientos + (t.procedimientos === 1 ? ' proc.' : ' procs.'));
+    if (t.triggers) partes.push(t.triggers + (t.triggers === 1 ? ' trigger' : ' triggers'));
+    if (t.otros) partes.push(t.otros + (t.otros === 1 ? ' otra' : ' otras'));
+    var resumenTxt = partes.join(' · ') || 'Sin objetos';
+
+    if ($('fnBadge')) {
+      var b = $('fnBadge');
+      b.className = 'fn-badge ' + (t.errores ? 'err' : (t.avisos ? 'warn' : 'ok'));
+      b.textContent = resumenTxt + (t.errores ? ' · ' + t.errores + ' err.' : (t.avisos ? ' · ' + t.avisos + ' av.' : ' · OK'));
+    }
+    if ($('fnTabCnt')) {
+      var cntEl = $('fnTabCnt');
+      var nProb = t.errores + t.avisos;
+      if (nProb > 0) {
+        cntEl.style.display = '';
+        cntEl.textContent = nProb;
+        cntEl.className = 'fn-tab-cnt' + (t.errores ? '' : ' warn');
+      } else {
+        cntEl.style.display = 'none';
+      }
+    }
+    if ($('fnStatus')) $('fnStatus').textContent = resumenTxt;
+    if ($('fnSideResumen')) {
+      $('fnSideResumen').innerHTML =
+        '<div><strong>' + esc(resumenTxt) + '</strong></div>' +
+        '<div style="font-size:11px; color:var(--muted);">🔴 Errores: <b>' + t.errores + '</b> · 🟡 Avisos: <b>' + t.avisos + '</b></div>';
+    }
+
+    pintarChips();
+    pintarCodigo();
+    pintarResumen();
+    pintarAvisos();
+  }
+
+  function programarAnalisis() {
+    clearTimeout(fnTimer);
+    fnTimer = setTimeout(fnAnalizar, 140);
+  }
+
+  if ($('btnFN')) {
+    $('btnFN').addEventListener('click', function(){
+      var p = $('fn');
+      if (!p) return;
+      var abierto = p.classList.toggle('on');
+      if (abierto) {
+        if ($('fnEntrada') && !$('fnEntrada').value.trim() && entrada && entrada.value.trim()) {
+          $('fnEntrada').value = entrada.value.trim();
+        }
+        fnAnalizar();
+        setTimeout(function(){ if ($('fnEntrada')) $('fnEntrada').focus(); }, 40);
+      }
+      actualizarBotonesPaneles();
+    });
+  }
+
+  if ($('fnCerrar')) {
+    $('fnCerrar').addEventListener('click', function(){
+      if ($('fn')) $('fn').classList.remove('on');
+      actualizarBotonesPaneles();
+      if (entrada) entrada.focus();
+    });
+  }
+
+  if ($('fnEntrada')) $('fnEntrada').addEventListener('input', programarAnalisis);
+  if ($('fnKw')) $('fnKw').addEventListener('change', fnAnalizar);
+  if ($('fnIndent')) $('fnIndent').addEventListener('change', fnAnalizar);
+
+  if ($('fnTabs')) {
+    $('fnTabs').addEventListener('click', function(e){
+      var b = e.target.closest('.fn-tab');
+      if (!b) return;
+      cambiarTab(b.getAttribute('data-tab'));
+    });
+  }
+
+  if ($('fnObjs')) {
+    $('fnObjs').addEventListener('click', function(e){
+      var c = e.target.closest('.fn-chip');
+      if (!c) return;
+      fnSel = parseInt(c.getAttribute('data-idx'), 10);
+      if (isNaN(fnSel)) fnSel = -1;
+      pintarChips();
+      pintarCodigo();
+      pintarResumen();
+      pintarAvisos();
+    });
+  }
+
+  function onJumpClick(e) {
+    var el = e.target.closest('[data-jump-obj]');
+    if (!el) return;
+    irALineaFn(parseInt(el.getAttribute('data-jump-obj'), 10), parseInt(el.getAttribute('data-jump-ln'), 10));
+  }
+  if ($('fnResumen')) $('fnResumen').addEventListener('click', onJumpClick);
+  if ($('fnAvisos')) $('fnAvisos').addEventListener('click', onJumpClick);
+
+  function cargarEjemploFn() {
+    if ($('fnEntrada')) {
+      $('fnEntrada').value = R.EJEMPLO;
+      fnSel = -1;
+      fnAnalizar();
+      toast('Ejemplo de función y trigger cargado');
+    }
+  }
+  if ($('fnBtnEjemplo')) $('fnBtnEjemplo').addEventListener('click', cargarEjemploFn);
+  if ($('fnSideEjemplo')) $('fnSideEjemplo').addEventListener('click', cargarEjemploFn);
+
+  if ($('fnBtnFormatear')) {
+    $('fnBtnFormatear').addEventListener('click', function(){
+      if (!fnRes || !fnRes.texto) { toast('Pega código primero'); return; }
+      $('fnEntrada').value = fnRes.texto;
+      fnAnalizar();
+      toast('Código formateado');
+    });
+  }
+
+  if ($('fnCargarEditor')) {
+    $('fnCargarEditor').addEventListener('click', function(){
+      if (entrada && entrada.value.trim()) {
+        $('fnEntrada').value = entrada.value.trim();
+        fnSel = -1;
+        fnAnalizar();
+        toast('Código cargado desde el editor principal');
+      } else {
+        toast('El editor principal está vacío');
+      }
+    });
+  }
+
+  if ($('fnLimpiar')) {
+    $('fnLimpiar').addEventListener('click', function(){
+      if ($('fnEntrada')) $('fnEntrada').value = '';
+      fnAnalizar();
+      if ($('fnEntrada')) $('fnEntrada').focus();
+    });
+  }
+
+  function copiarFn() {
+    var txt = textoActivo();
+    if (!txt) { toast('No hay código para copiar'); return; }
+    copiar(txt, 'Código formateado copiado');
+  }
+  if ($('fnCopiar')) $('fnCopiar').addEventListener('click', copiarFn);
+  if ($('fnBtnCopiarTop')) $('fnBtnCopiarTop').addEventListener('click', copiarFn);
+
+  if ($('fnEnviar')) {
+    $('fnEnviar').addEventListener('click', function(){
+      var txt = textoActivo();
+      if (!txt) { toast('Pega y formatea código primero'); return; }
+      if (entrada) entrada.value = txt;
+      if ($('fn')) $('fn').classList.remove('on');
+      actualizarBotonesPaneles();
+      procesar();
+      if (entrada) entrada.focus();
+      toast('Código enviado al editor principal');
+    });
+  }
+})();
 
 document.addEventListener('keydown', function(e){
   var k = e.key.toLowerCase();
