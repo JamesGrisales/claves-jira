@@ -13,23 +13,32 @@ set "PROYECTO_DIR=%~dp0"
 if "%PROYECTO_DIR:~-1%"=="\" set "PROYECTO_DIR=%PROYECTO_DIR:~0,-1%"
 cd /d "%PROYECTO_DIR%"
 
-:: 1. Liberar puerto 5050 matando cualquier proceso previo en el puerto
-for /f "tokens=5" %%a in ('netstat -ano -p tcp ^| findstr /R /C:":5050  .*LISTENING"') do (
-    if not "%%a"=="0" taskkill /F /PID %%a 2>nul
+:: 1. Comprobar de inmediato si el servidor ya está respondiendo en el puerto 5050
+curl.exe -s -o nul --max-time 1 "http://127.0.0.1:5050/login" >nul 2>&1
+if %errorlevel%==0 (
+    start "" "http://localhost:5050/login"
+    exit /b 0
 )
-ping 127.0.0.1 -n 2 >nul 2>&1
 
-:: 2. Iniciar servidor Node.js en segundo plano absoluto usando wscript
-if exist "%PROYECTO_DIR%\ejecutar_segundo_plano.vbs" (
+:: 2. Si no estaba corriendo, iniciar Node.js en segundo plano absoluto
+if exist "%PROYECTO_DIR%\auto_iniciar_servidor.vbs" (
+    start "" wscript.exe //B //Nologo "%PROYECTO_DIR%\auto_iniciar_servidor.vbs"
+) else if exist "%PROYECTO_DIR%\ejecutar_segundo_plano.vbs" (
     start "" wscript.exe //B //Nologo "%PROYECTO_DIR%\ejecutar_segundo_plano.vbs" node server.js
 ) else (
     start "" /B node server.js > "%PROYECTO_DIR%\servidor.log" 2>&1
 )
 
-:: 3. Esperar a que el servidor este listo
-ping 127.0.0.1 -n 3 >nul 2>&1
+:: 3. Esperar solo lo necesario hasta que responda (máximo ~15s) y abrir de una vez
+set /a INTENTOS=0
+:ESPERAR
+set /a INTENTOS+=1
+curl.exe -s -o nul --max-time 1 "http://127.0.0.1:5050/login" >nul 2>&1
+if %errorlevel%==0 goto ABRIR
+if %INTENTOS% GEQ 25 goto ABRIR
+ping 127.0.0.1 -n 2 -w 400 >nul 2>&1
+goto ESPERAR
 
-:: 4. Abrir en el navegador por defecto
+:ABRIR
 start "" "http://localhost:5050/login"
-
 exit /b 0

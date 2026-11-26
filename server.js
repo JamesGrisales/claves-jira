@@ -14,9 +14,9 @@ const express = require("express");
 function getAppVersion() {
   try {
     delete require.cache[require.resolve("./package.json")];
-    return require("./package.json").version || "2.10.56";
+    return require("./package.json").version || "2.10.57";
   } catch(e) {
-    return "2.10.56";
+    return "2.10.57";
   }
 }
 
@@ -400,12 +400,16 @@ app.get("/login", async (req, res) => {
     return res.redirect("/registro");
   }
 
+  // Nunca mostrar menú ni barra de usuario en la pantalla de login
+  res.locals.currentUser = null;
+
   // Al abrir /login, asegurarse de limpiar cualquier sesión previa activa para exigir inicio de sesión
   if (req.session && req.session.user) {
     delete req.session.user;
     req.session.save(() => {
       res.render("login", {
         title: "Iniciar sesión",
+        currentUser: null,
       });
     });
     return;
@@ -413,6 +417,7 @@ app.get("/login", async (req, res) => {
 
   res.render("login", {
     title: "Iniciar sesión",
+    currentUser: null,
   });
 });
 
@@ -2790,26 +2795,35 @@ app.post("/api/sistema/ejecutar-actualizacion", requireLogin, (req, res) => {
   }
 });
 
-initDb()
-  .then(() => {
-    const servidor = app.listen(PORT, "0.0.0.0", () => {
-      console.log(
-        `Bóveda de claves corriendo en http://localhost:${PORT}` +
-          ` (archivos de hasta ${MAX_UPLOAD_MB} MB)`
+async function startServerWithRetry(maxAttempts = 30, delayMs = 2000) {
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      await initDb();
+      const servidor = app.listen(PORT, "0.0.0.0", () => {
+        console.log(
+          `Bóveda de claves corriendo en http://localhost:${PORT}` +
+            ` (archivos de hasta ${MAX_UPLOAD_MB} MB)`
+        );
+      });
+
+      // Sin tiempo máximo para recibir/enviar archivos grandes (por defecto Node
+      // corta cualquier petición que tarde más de 5 minutos).
+      servidor.requestTimeout = 0;
+      servidor.timeout = 0;
+      return;
+    } catch (err) {
+      console.error(
+        `[Intento ${attempt}/${maxAttempts}] PostgreSQL aún no responde:`,
+        err.message
       );
-    });
+      if (attempt === maxAttempts) {
+        console.error("No se pudo conectar/inicializar PostgreSQL tras varios intentos.");
+        process.exit(1);
+      }
+      await new Promise((r) => setTimeout(r, delayMs));
+    }
+  }
+}
 
-    // Sin tiempo máximo para recibir/enviar archivos grandes (por defecto Node
-    // corta cualquier petición que tarde más de 5 minutos).
-    servidor.requestTimeout = 0;
-    servidor.timeout = 0;
-  })
-  .catch((err) => {
-    console.error(
-      "No se pudo conectar/inicializar PostgreSQL:",
-      err.message
-    );
-
-    process.exit(1);
-  });
+startServerWithRetry();
 
