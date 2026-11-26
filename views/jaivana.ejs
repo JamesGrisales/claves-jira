@@ -1377,6 +1377,8 @@
           <span class="match-count" id="matches-<%= n.id %>"></span>
           <button type="button" class="iconbtn" title="Coincidencia anterior (Shift+Enter)" onclick="event.stopPropagation(); irACoincidencia(<%= n.id %>, -1)">▲</button>
           <button type="button" class="iconbtn" title="Siguiente coincidencia (Enter)" onclick="event.stopPropagation(); irACoincidencia(<%= n.id %>, 1)">▼</button>
+          <button type="button" class="iconbtn btn-nota-ext" style="width:auto; padding:0 9px; font-size:11.5px; font-weight:700; gap:4px;" title="Ir al inicio de la nota" onclick="event.stopPropagation(); irExtremoNota(<%= n.id %>, 'top')">⬆ Inicio</button>
+          <button type="button" class="iconbtn btn-nota-ext" style="width:auto; padding:0 9px; font-size:11.5px; font-weight:700; gap:4px;" title="Ir al final de la nota" onclick="event.stopPropagation(); irExtremoNota(<%= n.id %>, 'bottom')">⬇ Final</button>
           <button type="button" class="iconbtn" title="Pantalla completa (Esc para salir)" onclick="event.stopPropagation(); pantallaCompleta(<%= n.id %>)">⤢</button>
         </div>
         <div class="contenido" id="texto-<%= n.id %>" oncontextmenu="mostrarMenuContextual(event, <%= n.id %>)"><div class="cargando">Cargando contenido…</div></div>
@@ -1459,6 +1461,12 @@
                   </div>
                 </div>
                 <div class="nt-ed-fb-right">
+                  <button type="button" class="nt-ed-fb-pill" onclick="irExtremoEditor(<%= n.id %>, 'top')" title="Ir al inicio del editor (primera línea)">
+                    <span>⬆ Inicio</span>
+                  </button>
+                  <button type="button" class="nt-ed-fb-pill" onclick="irExtremoEditor(<%= n.id %>, 'bottom')" title="Ir al final del editor (última línea)">
+                    <span>⬇ Final</span>
+                  </button>
                   <button type="button" class="nt-ed-fb-pill" id="btnListEd-<%= n.id %>" onclick="alternarListaFiltradas(<%= n.id %>)" title="Ver listado desplegable de líneas que coinciden">
                     <span>📋 Líneas filtradas</span>
                     <span class="nt-ed-fb-badge" id="badgeEd-<%= n.id %>" style="display:none;">0</span>
@@ -3010,6 +3018,34 @@ function saltarAMatchEditor(id, matchIdx, enfocar) {
       el.classList.toggle('active', el.textContent.includes('Lín ' + match.lineNum));
     });
   }
+}
+
+function irExtremoNota(id, pos) {
+  const cont = document.getElementById('texto-' + id);
+  if (!cont) return;
+  const scroller = cont.querySelector('.code-block, .excel-table-wrap') || cont;
+  const top = pos === 'top' ? 0 : scroller.scrollHeight;
+  scroller.scrollTo({ top, behavior: 'smooth' });
+  if (scroller !== cont) {
+    cont.scrollTo({ top: pos === 'top' ? 0 : cont.scrollHeight, behavior: 'smooth' });
+  }
+}
+
+function irExtremoEditor(id, pos) {
+  const panel = document.getElementById('edit-' + id);
+  if (!panel) return;
+  const ta = panel.querySelector('.nt-ed-input');
+  if (!ta) return;
+  ta.focus();
+  const offset = pos === 'top' ? 0 : (ta.value || '').length;
+  ta.setSelectionRange(offset, offset);
+  const top = pos === 'top' ? 0 : ta.scrollHeight;
+  ta.scrollTo({ top, behavior: 'smooth' });
+  setTimeout(() => {
+    ta.scrollTop = pos === 'top' ? 0 : ta.scrollHeight;
+    ta.dispatchEvent(new Event('scroll'));
+    ta.dispatchEvent(new Event('keyup'));
+  }, 180);
 }
 
 function saltarALineaEditor(id, numStr) {
