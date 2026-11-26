@@ -17,7 +17,6 @@
     position: relative !important;
     box-sizing: border-box !important;
     font-family: var(--sans);
-    --planet-accent: #00f5ff;
   }
 
   :root[data-theme="oled"] body.guest {
@@ -764,7 +763,7 @@
     cursor: pointer;
     color: #040814 !important;
     font-weight: 850 !important;
-    background: linear-gradient(135deg, var(--planet-accent, #00f5ff) 0%, rgba(var(--accent-rgb, 0, 245, 255), 0.9) 45%, #0284c7 100%) !important;
+    background: linear-gradient(135deg, var(--planet-accent, #00f5ff) 0%, rgba(var(--accent-rgb, 0, 245, 255), 0.88) 52%, color-mix(in srgb, var(--planet-accent, #00f5ff) 68%, #040814) 100%) !important;
     border: 1px solid rgba(255, 255, 255, 0.4) !important;
     box-shadow: 0 0 30px -2px var(--planet-accent, rgba(0, 245, 255, 0.75)), inset 0 1px 2px rgba(255, 255, 255, 0.6) !important;
     transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -961,8 +960,8 @@
   }
   .bio-hero-pod.scanning .orbit-beam {
     animation: orbitSpin 1.4s linear infinite;
-    stroke: #00f5ff;
-    filter: drop-shadow(0 0 10px #00f5ff) drop-shadow(0 0 20px #00f5ff);
+    stroke: var(--planet-accent, #00f5ff);
+    filter: drop-shadow(0 0 10px var(--planet-accent, #00f5ff)) drop-shadow(0 0 20px var(--planet-accent, #00f5ff));
   }
   @keyframes orbitSpin {
     from { transform: rotate(0deg); }
@@ -1100,13 +1099,13 @@
 
   /* Estados interactivos */
   .bio-hero-pod.scanning {
-    border-color: #00f5ff !important;
+    border-color: var(--planet-accent, #00f5ff) !important;
     background: rgba(6, 18, 34, 0.98) !important;
     box-shadow: 0 12px 42px rgba(0, 0, 0, 0.9), 0 0 45px rgba(0, 245, 255, 0.65) !important;
   }
   .bio-hero-pod.scanning .bh-title {
-    color: #00f5ff !important;
-    text-shadow: 0 0 14px #00f5ff !important;
+    color: var(--planet-accent, #00f5ff) !important;
+    text-shadow: 0 0 14px var(--planet-accent, #00f5ff) !important;
   }
 
   .bio-hero-pod.authorized {
@@ -1214,7 +1213,7 @@
   .atb-chip svg {
     width: 11px;
     height: 11px;
-    stroke: #00f5ff;
+    stroke: var(--planet-accent, #00f5ff);
   }
   .atb-flag {
     font-size: 11px;
@@ -2604,11 +2603,19 @@
     if (aebIcon) aebIcon.textContent = theme.icon;
     if (aebTxt) aebTxt.textContent = theme.name;
 
-    // Actualizar color dinámico en todo el documento
-    document.documentElement.style.setProperty('--planet-accent', theme.accent);
-    document.documentElement.style.setProperty('--p1', theme.accent);
-    document.documentElement.style.setProperty('--accent-rgb', theme.accentRgb);
-    document.documentElement.setAttribute('data-db-engine', themeId);
+    // Actualizar color dinámico en todo el documento (bordes, reloj, terminal, botón y resplandor)
+    var rootEl = document.documentElement;
+    rootEl.style.setProperty('--planet-accent', theme.accent);
+    rootEl.style.setProperty('--planet-bg-glow1', 'rgba(' + theme.accentRgb + ', 0.22)');
+    rootEl.style.setProperty('--planet-bg-glow2', 'rgba(' + theme.accentRgb + ', 0.12)');
+    rootEl.style.setProperty('--p1', theme.accent);
+    rootEl.style.setProperty('--p2', 'color-mix(in srgb, ' + theme.accent + ' 70%, #040814)');
+    rootEl.style.setProperty('--accent', theme.accent);
+    rootEl.style.setProperty('--accent-rgb', theme.accentRgb);
+    rootEl.setAttribute('data-db-engine', themeId);
+    if (persist) {
+      try { localStorage.setItem('boveda-pal', 'db-engine'); } catch(e) {}
+    }
 
     // Actualizar fondo ambiental
     if (backdrop) {
