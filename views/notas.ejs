@@ -3315,6 +3315,32 @@ function pantallaCompleta(id){
   const wrap = document.getElementById('wrap-' + id);
   if (!wrap) return;
   const activa = !wrap.classList.contains('fullscreen');
+
+  // Guardar posición de scroll y línea visible antes de mover el nodo en el DOM
+  const cont = document.getElementById('texto-' + id);
+  const scrollers = [];
+  if (cont) {
+    [cont, ...cont.querySelectorAll('.code-block, .excel-table-wrap')].forEach(function(el){
+      if (el.scrollTop > 0 || el.scrollLeft > 0 || el.scrollHeight > el.clientHeight) {
+        let topLine = null;
+        let topOffset = 0;
+        const lines = el.querySelectorAll('.code-line, .ln-row');
+        if (lines.length) {
+          const elRect = el.getBoundingClientRect();
+          for (let i = 0; i < lines.length; i++) {
+            const r = lines[i].getBoundingClientRect();
+            if (r.bottom > elRect.top + 2) {
+              topLine = lines[i];
+              topOffset = r.top - elRect.top;
+              break;
+            }
+          }
+        }
+        scrollers.push({ el, top: el.scrollTop, left: el.scrollLeft, topLine, topOffset });
+      }
+    });
+  }
+
   if (activa) {
     nodoNotaOrig[id] = { padre: wrap.parentNode, hermano: wrap.nextSibling };
     document.body.appendChild(wrap);
@@ -3329,6 +3355,22 @@ function pantallaCompleta(id){
     }
     document.body.style.overflow = '';
   }
+
+  // Restaurar la misma línea y posición de scroll tras reubicar el nodo
+  const restaurar = function() {
+    scrollers.forEach(function(s){
+      if (s.topLine && s.el.contains(s.topLine)) {
+        const elRect = s.el.getBoundingClientRect();
+        const lineRect = s.topLine.getBoundingClientRect();
+        s.el.scrollTop += (lineRect.top - elRect.top) - s.topOffset;
+      } else {
+        s.el.scrollTop = s.top;
+      }
+      s.el.scrollLeft = s.left;
+    });
+  };
+  restaurar();
+  requestAnimationFrame(restaurar);
 }
 
 let toastTimer;
