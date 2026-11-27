@@ -555,7 +555,7 @@
       <span>👁️</span> Visor e Inspección
     </button>
     <button type="button" id="tabModoComparador" data-seccion="comparador" style="font-weight:700; display:inline-flex; align-items:center; gap:6px;">
-      <span>⚖️</span> Comparar XML / JSON
+      <span>⚖️</span> Comparar XML / JSON / SQL
       <span class="diff-badge-new">DIFF</span>
     </button>
   </div>
@@ -762,6 +762,9 @@
       <label class="chk" title="Ignorar diferencias entre mayúsculas y minúsculas">
         <input type="checkbox" id="chkDiffCase"> Ignorar mayúsculas
       </label>
+      <label class="chk chk-highlight" title="Formatea automáticamente consultas, funciones y triggers SQL antes de comparar para ver solo los cambios reales">
+        <input type="checkbox" id="chkDiffFmtSql" checked> Formatear SQL al comparar
+      </label>
     </div>
 
     <!-- Grilla de Entradas Duales (Lado A y Lado B) -->
@@ -775,22 +778,23 @@
               <button type="button" class="active" data-mododiff="auto" style="padding:3px 7px; font-size:11px;">Auto</button>
               <button type="button" data-mododiff="json" style="padding:3px 7px; font-size:11px;">JSON</button>
               <button type="button" data-mododiff="xml" style="padding:3px 7px; font-size:11px;">XML</button>
+              <button type="button" data-mododiff="sql" style="padding:3px 7px; font-size:11px;">SQL</button>
             </div>
           </div>
           <div style="display:inline-flex; align-items:center; gap:4px; flex-shrink:0;">
-            <label class="btn secondary" for="inputDiffFileA" title="Abrir archivo XML, JSON, TXT, LOG, SOAP, WSDL" style="padding:4px 8px; font-size:11.5px;">
+            <label class="btn secondary" for="inputDiffFileA" title="Abrir archivo XML, JSON, SQL, TXT, LOG, SOAP, WSDL" style="padding:4px 8px; font-size:11.5px;">
               <span>📁</span> Abrir
             </label>
-            <input type="file" id="inputDiffFileA" accept=".log,.xml,.json,.txt,.xsd,.xsl,.xslt,.svg,.config,.csproj,.wsdl,.soap,.html,.ndjson" style="display:none;">
+            <input type="file" id="inputDiffFileA" accept=".sql,.psql,.pgsql,.log,.xml,.json,.txt,.xsd,.xsl,.xslt,.svg,.config,.csproj,.wsdl,.soap,.html,.ndjson" style="display:none;">
             <button type="button" class="secondary" id="btnPegarA" title="Pegar desde el portapapeles" style="padding:4px 8px; font-size:11.5px;">📋 Pegar</button>
-            <button type="button" class="secondary" id="btnFmtA" title="Formatear este documento (XML o JSON)" style="padding:4px 8px; font-size:11.5px;">🪄 Formatear</button>
+            <button type="button" class="secondary" id="btnFmtA" title="Formatear este documento (XML, JSON o SQL)" style="padding:4px 8px; font-size:11.5px;">🪄 Formatear</button>
             <button type="button" class="secondary" id="btnToggleColorA" title="Alternar colores de sintaxis en el editor" style="padding:4px 8px; font-size:11.5px;">🌈 Colores</button>
             <button type="button" class="secondary" id="btnLimpiarA" title="Borrar contenido de A" style="padding:4px 8px; font-size:11.5px;">Limpiar</button>
           </div>
         </div>
         <div class="syntax-editor-container" id="wrapDiffA">
           <pre class="syntax-backdrop diff-syntax-backdrop"><code id="codeDiffA"></code></pre>
-          <textarea id="diffEntradaA" class="syntax-textarea diff-textarea" spellcheck="false" wrap="off" placeholder="Pega aquí el XML o JSON base (Documento A) o arrastra un archivo…"></textarea>
+          <textarea id="diffEntradaA" class="syntax-textarea diff-textarea" spellcheck="false" wrap="off" placeholder="Pega aquí el XML, JSON o SQL base (Documento A) o arrastra un archivo…"></textarea>
         </div>
         <div class="diff-footer-stats">
           <span id="diffStatsA">Vacío · Pega o abre un archivo</span>
@@ -807,22 +811,23 @@
               <button type="button" class="active" data-mododiff="auto" style="padding:3px 7px; font-size:11px;">Auto</button>
               <button type="button" data-mododiff="json" style="padding:3px 7px; font-size:11px;">JSON</button>
               <button type="button" data-mododiff="xml" style="padding:3px 7px; font-size:11px;">XML</button>
+              <button type="button" data-mododiff="sql" style="padding:3px 7px; font-size:11px;">SQL</button>
             </div>
           </div>
           <div style="display:inline-flex; align-items:center; gap:4px; flex-shrink:0;">
-            <label class="btn secondary" for="inputDiffFileB" title="Abrir archivo XML, JSON, TXT, LOG, SOAP, WSDL" style="padding:4px 8px; font-size:11.5px;">
+            <label class="btn secondary" for="inputDiffFileB" title="Abrir archivo XML, JSON, SQL, TXT, LOG, SOAP, WSDL" style="padding:4px 8px; font-size:11.5px;">
               <span>📁</span> Abrir
             </label>
-            <input type="file" id="inputDiffFileB" accept=".log,.xml,.json,.txt,.xsd,.xsl,.xslt,.svg,.config,.csproj,.wsdl,.soap,.html,.ndjson" style="display:none;">
+            <input type="file" id="inputDiffFileB" accept=".sql,.psql,.pgsql,.log,.xml,.json,.txt,.xsd,.xsl,.xslt,.svg,.config,.csproj,.wsdl,.soap,.html,.ndjson" style="display:none;">
             <button type="button" class="secondary" id="btnPegarB" title="Pegar desde el portapapeles" style="padding:4px 8px; font-size:11.5px;">📋 Pegar</button>
-            <button type="button" class="secondary" id="btnFmtB" title="Formatear este documento (XML o JSON)" style="padding:4px 8px; font-size:11.5px;">🪄 Formatear</button>
+            <button type="button" class="secondary" id="btnFmtB" title="Formatear este documento (XML, JSON o SQL)" style="padding:4px 8px; font-size:11.5px;">🪄 Formatear</button>
             <button type="button" class="secondary" id="btnToggleColorB" title="Alternar colores de sintaxis en el editor" style="padding:4px 8px; font-size:11.5px;">🌈 Colores</button>
             <button type="button" class="secondary" id="btnLimpiarB" title="Borrar contenido de B" style="padding:4px 8px; font-size:11.5px;">Limpiar</button>
           </div>
         </div>
         <div class="syntax-editor-container" id="wrapDiffB">
           <pre class="syntax-backdrop diff-syntax-backdrop"><code id="codeDiffB"></code></pre>
-          <textarea id="diffEntradaB" class="syntax-textarea diff-textarea" spellcheck="false" wrap="off" placeholder="Pega aquí el XML o JSON a comparar (Documento B) o arrastra un archivo…"></textarea>
+          <textarea id="diffEntradaB" class="syntax-textarea diff-textarea" spellcheck="false" wrap="off" placeholder="Pega aquí el XML, JSON o SQL a comparar (Documento B) o arrastra un archivo…"></textarea>
         </div>
         <div class="diff-footer-stats">
           <span id="diffStatsB">Vacío · Pega o abre un archivo</span>
@@ -982,6 +987,7 @@
 <div class="toast" id="toast">Copiado</div>
 
 <script src="/sql-formatter.js"></script>
+<script src="/sql-rutinas.js"></script>
 <script>
 /* ---------- Controlador Reactivo Alpine.js de Visor ---------- */
 window.visorAlpineApp = function() {
@@ -1121,18 +1127,57 @@ document.addEventListener('visibilitychange', function(){
 /* ======================================================================
    RESALTADOR DE SINTAXIS Y FORMATEADOR UNIVERSAL EN VIVO (XML & JSON)
    ====================================================================== */
+function esTextoSql(str) {
+  if (!str) return false;
+  var s = str.replace(/^\uFEFF/, '').trim();
+  if (!s) return false;
+  if (s.startsWith('{') || s.startsWith('[') || s.startsWith('<')) return false;
+  var sinCom = s.replace(/^(?:\s*(?:--[^\n]*\n?|\/\*[\s\S]*?\*\/\s*))+/g, '').trim();
+  return /^(?:SELECT|WITH|INSERT|UPDATE|DELETE|CREATE|ALTER|DROP|TRUNCATE|GRANT|REVOKE|BEGIN|DECLARE|DO|MERGE|EXPLAIN|CALL|SET|COMMENT\s+ON|REPLACE|PRAGMA)\b/i.test(sinCom);
+}
+
+function formatearSqlDiff(str) {
+  var t = (str || '').replace(/^\uFEFF/, '').trim();
+  if (!t) return '';
+  try {
+    if (/\bCREATE\s+(?:OR\s+REPLACE\s+)?(?:FUNCTION|PROCEDURE|TRIGGER)\b|\bDO\s+\$/i.test(t) && window.SqlRutinas && typeof window.SqlRutinas.analizar === 'function') {
+      var rRut = window.SqlRutinas.analizar(t, { kw: 'upper', indent: '4', sqlFmt: (window.SqlFormatter && window.SqlFormatter.format) ? window.SqlFormatter.format : null });
+      if (rRut && rRut.texto) return rRut.texto;
+    }
+    if (window.SqlFormatter && typeof window.SqlFormatter.format === 'function') {
+      var rFmt = window.SqlFormatter.format(t, { kw: 'upper', indent: '4' });
+      if (rFmt && rFmt.text) return rFmt.text;
+    }
+  } catch(e) {}
+  return t;
+}
+
 function detectarTipoDocumento(str) {
   if (!str) return 'json';
   var s = str.replace(/^\uFEFF/, '').trim();
   if (s.startsWith('<') || /^\s*<\?xml/i.test(s) || /^\s*<!--/i.test(s) || /^\s*<!DOCTYPE/i.test(s)) return 'xml';
   if (s.startsWith('{') || s.startsWith('[')) return 'json';
+  if (esTextoSql(s)) return 'sql';
   if (/<[a-zA-Z0-9_:\.\-]+[^>]*>/.test(s)) return 'xml';
   return 'json';
 }
 
 function highlightCodeTokens(code, modo) {
   if (!code) return '';
-  var isXml = modo === 'xml' || (modo !== 'json' && detectarTipoDocumento(code) === 'xml');
+  var tipoDet = (modo === 'xml' || modo === 'json' || modo === 'sql') ? modo : detectarTipoDocumento(code);
+  var isXml = tipoDet === 'xml';
+
+  if (tipoDet === 'sql') {
+    var sqlRegex = /(--[^\n]*|\/\*[\s\S]*?\*\/)|('(?:''|[^'])*')|(-?\b\d+(?:\.\d+)?\b)|(\b(?:SELECT|FROM|WHERE|AND|OR|NOT|IN|IS|NULL|LIKE|ILIKE|BETWEEN|AS|ON|JOIN|INNER|LEFT|RIGHT|FULL|OUTER|CROSS|GROUP|BY|ORDER|HAVING|LIMIT|OFFSET|UNION|ALL|DISTINCT|INSERT|INTO|VALUES|UPDATE|SET|DELETE|RETURNING|WITH|CASE|WHEN|THEN|ELSE|END|ASC|DESC|EXISTS|CREATE|OR|REPLACE|FUNCTION|PROCEDURE|TRIGGER|TABLE|VIEW|INDEX|ALTER|DROP|TRUNCATE|RETURNS|LANGUAGE|DECLARE|BEGIN|IF|ELSIF|ELSEIF|LOOP|WHILE|FOR|RETURN|RAISE|EXCEPTION|EXECUTE|PERFORM|BEFORE|AFTER|INSTEAD|OF|EACH|ROW|STATEMENT|DEFAULT|SECURITY|DEFINER|INVOKER|STABLE|IMMUTABLE|VOLATILE|TRUE|FALSE|COALESCE|COUNT|SUM|AVG|MIN|MAX|OVER|PARTITION)\b)|([(),;.=<>!+\-*/|]+)|([^\s'"(),;.=<>!+\-*/|]+|\s+)/gi;
+    return code.replace(sqlRegex, function(m, cm, str, num, kw, op) {
+      if (cm) return '<span class="tk-cm">' + escapeHtml(cm) + '</span>';
+      if (str) return '<span class="tk-js">' + escapeHtml(str) + '</span>';
+      if (num) return '<span class="tk-jn">' + escapeHtml(num) + '</span>';
+      if (kw) return '<span class="tk-jk">' + escapeHtml(kw) + '</span>';
+      if (op) return '<span class="tk-pn">' + escapeHtml(op) + '</span>';
+      return escapeHtml(m);
+    });
+  }
 
   if (isXml) {
     var xmlRegex = /(<!--[\s\S]*?-->)|(<!\[CDATA\[[\s\S]*?\]\]>)|(<\?[\s\S]*?\?>)|(<!DOCTYPE[\s\S]*?>)|(<\/?)([a-zA-Z0-9_:\.\-]+)((?:\s+[a-zA-Z0-9_:\.\-]+(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+))?)*\s*)(\/?>)|([^<]+)/g;
@@ -1325,6 +1370,12 @@ function formatearDocumentoUniversal(txt, modo) {
 function formatearCualquierDocumento(txt, modo) {
   var t = (txt || '').replace(/^\uFEFF/, '').trim();
   if (!t) return { ok: false, texto: '', tipo: 'vacio' };
+
+  // 0. Si es SQL (explícito o autodetectado), formatear con SqlRutinas / SqlFormatter
+  if (modo === 'sql' || ((!modo || modo === 'auto') && esTextoSql(t))) {
+    var fmtSql = formatearSqlDiff(t);
+    return { ok: true, texto: fmtSql, tipo: 'sql' };
+  }
 
   // 1. Intentar con analizar() del visor (soporta XML, SOAP, JSON, NDJSON)
   try {
@@ -3397,6 +3448,19 @@ function prepararParaDiff(rawTxt, modoForzado) {
   var t = (rawTxt || '').replace(/^\uFEFF/, '').trim();
   if (!t) return { ok: false, error: 'Documento vacío', tipo: 'vacio', lineas: [], textoFormateado: '', objeto: null };
 
+  var esSql = (modoForzado === 'sql') || (modoForzado !== 'xml' && modoForzado !== 'json' && esTextoSql(t));
+  if (esSql) {
+    var chkFmtSql = $('chkDiffFmtSql') ? $('chkDiffFmtSql').checked : true;
+    var sqlOut = chkFmtSql ? formatearSqlDiff(t) : t;
+    return {
+      ok: true,
+      tipo: 'sql',
+      objeto: null,
+      textoFormateado: sqlOut,
+      lineas: sqlOut.split(/\r?\n/)
+    };
+  }
+
   var esXml = (modoForzado === 'xml') || (modoForzado !== 'json' && (t.charAt(0) === '<' || /^\s*<\?xml/i.test(t) || /<\/?[a-z_0-9]+(\s|:[a-z_0-9]+|>)/i.test(t)));
 
   if (esXml) {
@@ -3894,11 +3958,12 @@ function ejecutarComparacion(esSilencioso) {
   }
 
   // Actualizar etiqueta del botón de descarga según el formato de archivo comparado
-  var esDocXml = (prepA && prepA.tipo === 'xml') || (prepB && prepB.tipo === 'xml');
+  var esDocSql = (prepA && prepA.tipo === 'sql') || (prepB && prepB.tipo === 'sql');
+  var esDocXml = !esDocSql && ((prepA && prepA.tipo === 'xml') || (prepB && prepB.tipo === 'xml'));
   var lblNat = $('txtLabelDescargarNativo');
   var titOpc = $('titOpcNativo');
-  if (lblNat) lblNat.textContent = esDocXml ? 'Descargar .XML' : 'Descargar .JSON';
-  if (titOpc) titOpc.textContent = esDocXml ? 'Documento .XML con Diferencias' : 'Documento .JSON con Diferencias';
+  if (lblNat) lblNat.textContent = esDocSql ? 'Descargar .SQL' : (esDocXml ? 'Descargar .XML' : 'Descargar .JSON');
+  if (titOpc) titOpc.textContent = esDocSql ? 'Documento .SQL con Diferencias' : (esDocXml ? 'Documento .XML con Diferencias' : 'Documento .JSON con Diferencias');
 
   // 5. Renderizado de Tabla de Diferencias
   renderTablaDiferencias();
@@ -4299,7 +4364,8 @@ function generarDocumentoDiffEstructurado(forzarTipo) {
   var rows = diffState.diffRows || [];
   if (!rows || rows.length === 0) return '';
 
-  var esXml = forzarTipo === 'xml' || (!forzarTipo && ((diffState.resParsedB && diffState.resParsedB.tipo === 'xml') || (diffState.resParsedA && diffState.resParsedA.tipo === 'xml')));
+  var esSql = forzarTipo === 'sql' || (!forzarTipo && ((diffState.resParsedB && diffState.resParsedB.tipo === 'sql') || (diffState.resParsedA && diffState.resParsedA.tipo === 'sql')));
+  var esXml = !esSql && (forzarTipo === 'xml' || (!forzarTipo && ((diffState.resParsedB && diffState.resParsedB.tipo === 'xml') || (diffState.resParsedA && diffState.resParsedA.tipo === 'xml'))));
   var lineas = [];
   var fecha = new Date().toLocaleString('es-CO');
 
@@ -4312,10 +4378,10 @@ function generarDocumentoDiffEstructurado(forzarTipo) {
     lineas.push('============================================================================== -->');
   } else {
     lineas.push('/* ==============================================================================');
-    lineas.push('  COMPARACIÓN ESTRUCTURAL JSON - DOCUMENTO A vs DOCUMENTO B');
+    lineas.push('  COMPARACIÓN ESTRUCTURAL ' + (esSql ? 'SQL' : 'JSON') + ' - DOCUMENTO A vs DOCUMENTO B');
     lineas.push('  Fecha: ' + fecha);
-    lineas.push('  [-] Propiedad / línea original en Documento A (Eliminada o Modificada)');
-    lineas.push('  [+] Propiedad / línea nueva en Documento B (Agregada o Modificada)');
+    lineas.push('  [-] Línea original en Documento A (Eliminada o Modificada)');
+    lineas.push('  [+] Línea nueva en Documento B (Agregada o Modificada)');
     lineas.push('============================================================================== */');
   }
 
@@ -4514,10 +4580,11 @@ function descargarFormatoNativoActual() {
     toast('No hay una comparación activa para descargar');
     return;
   }
-  var esDocXml = ((diffState.resParsedB && diffState.resParsedB.tipo === 'xml') || (diffState.resParsedA && diffState.resParsedA.tipo === 'xml'));
-  var ext = esDocXml ? 'xml' : 'json';
+  var esDocSql = ((diffState.resParsedB && diffState.resParsedB.tipo === 'sql') || (diffState.resParsedA && diffState.resParsedA.tipo === 'sql'));
+  var esDocXml = !esDocSql && ((diffState.resParsedB && diffState.resParsedB.tipo === 'xml') || (diffState.resParsedA && diffState.resParsedA.tipo === 'xml'));
+  var ext = esDocSql ? 'sql' : (esDocXml ? 'xml' : 'json');
   var contenido = generarDocumentoDiffEstructurado(ext);
-  var mime = esDocXml ? 'application/xml;charset=utf-8' : 'application/json;charset=utf-8';
+  var mime = esDocSql ? 'text/plain;charset=utf-8' : (esDocXml ? 'application/xml;charset=utf-8' : 'application/json;charset=utf-8');
   var nombre = 'comparacion_completa_' + Date.now() + '.' + ext;
   descargarBlob(contenido, nombre, mime);
   toast('Archivo .' + ext.toUpperCase() + ' con estructura completa descargado');
