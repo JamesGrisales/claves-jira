@@ -14,9 +14,9 @@ const express = require("express");
 function getAppVersion() {
   try {
     delete require.cache[require.resolve("./package.json")];
-    return require("./package.json").version || "2.10.59";
+    return require("./package.json").version || "2.10.60";
   } catch(e) {
-    return "2.10.59";
+    return "2.10.60";
   }
 }
 

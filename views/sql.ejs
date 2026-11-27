@@ -879,6 +879,44 @@
   .ed-wrap.fullscreen{ position:fixed; inset:0; z-index:999999 !important; background:var(--bg) !important; padding:16px 20px; margin:0; display:flex; flex-direction:column; overflow-y:auto; overflow-x:hidden; }
   .ed-wrap.fullscreen > .ed-layout{ flex:1 1 auto; min-height:0; }
 
+  /* En pantalla completa, Funciones y Triggers (#fn) y Envolver (#ew) ocupan el 100% de la altura */
+  .ed-wrap.fullscreen #fn.rp.on,
+  .ed-wrap.fullscreen #ew.rp.on {
+    max-height: none !important;
+    height: 100% !important;
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
+  .ed-wrap.fullscreen #fn.rp.on .fn-grid,
+  .ed-wrap.fullscreen #ew.rp.on .ew-grid {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    height: 100% !important;
+  }
+  .ed-wrap.fullscreen #fn.rp.on .fn-col,
+  .ed-wrap.fullscreen #ew.rp.on .ew-col {
+    min-height: 0 !important;
+    height: 100% !important;
+  }
+  .ed-wrap.fullscreen #fn.rp.on .fn-view {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  .ed-wrap.fullscreen #fnEntrada,
+  .ed-wrap.fullscreen #fnCodigo,
+  .ed-wrap.fullscreen #fnResumen,
+  .ed-wrap.fullscreen #fnAvisos,
+  .ed-wrap.fullscreen #ewEntrada,
+  .ed-wrap.fullscreen #ewCodigo {
+    flex: 1 1 0 !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    max-height: none !important;
+  }
+
   /* sugerencias al escribir (como pgAdmin) */
   .ac{ position:absolute; z-index:6; display:none; min-width:250px; max-width:440px; max-height:236px; overflow:auto; padding:4px; background:var(--panel); border:1px solid var(--panel-edge);
     border-radius:12px; box-shadow:var(--shadow-lg); font-family:var(--mono); font-size:12.5px; animation:panelIn .12s ease; }
